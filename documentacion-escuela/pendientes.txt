@@ -1,0 +1,6 @@
+17/10/2026
+-> Checar todo acerca de email de usuario y de admin, envíos automáticos, incorporación con cloudflare, etc.
+-> Checar cómo funciona la adminstración de clientes
+-> Cechar la base de datos en una interfas
+-> Verificar cómo utilizar la base de datos de preview, desarrollo y producción
+

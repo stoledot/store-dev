@@ -1,0 +1,32 @@
+INTEGRACIÓN EN LAYOUT.astro
+
+1) Abre layouts/Layout.astro.
+2) Añade este import junto a los imports de componentes:
+
+import SchoolQuickNav from './SchoolQuickNav.astro';
+
+3) Busca esta línea del HTML:
+
+<StoreHeader model={shell} />
+
+4) Inmediatamente debajo, añade:
+
+<SchoolQuickNav />
+
+No reemplaces el resto de Layout.astro. Esto conserva el header y el menú de MinShop, y añade accesos a la escuela en las páginas públicas de la tienda.
+
+INTEGRACIÓN EN pages/index.astro
+
+1) Añade este import:
+
+import SchoolHomeBanner from '../features/school/SchoolHomeBanner.astro';
+
+2) Conserva sin cambios la lógica `resolveHomePath` y `Astro.rewrite(homePath)` que ya existe.
+3) En el HTML de la portada, dentro de `<Layout>`, coloca el banner antes del catálogo:
+
+<Layout>
+  <SchoolHomeBanner />
+  <ProductList />
+</Layout>
+
+Si tu portada no usa exactamente ese bloque, agrega `<SchoolHomeBanner />` justo antes del componente que renderiza el catálogo. No cambies la lógica de homePath.

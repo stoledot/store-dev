@@ -1,0 +1,234 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../../../features/auth/customer';
+import { renderMarkdown } from '../../../../features/pages/markdown';
+
+if (!(await accountsEnabled())) return Astro.redirect('/', 303);
+const email = await getCustomerEmail(Astro.cookies);
+if (!email) return Astro.redirect('/account/login', 303);
+
+const courseSlug = Astro.params.curso ?? '';
+const lessonSlug = Astro.params.slug ?? '';
+
+// El alumno solo puede abrir el curso que tiene asignado y con pagos vigentes.
+const access = await env.DB.prepare(`
+  SELECT c.id AS course_id, c.title AS course_title, c.slug AS course_slug,
+         c.level_code, a.title AS area_title
+  FROM school_course_assignments x
+  JOIN school_courses c ON c.id = x.course_id
+  JOIN school_student_intake i
+    ON i.student_email = x.student_email COLLATE NOCASE
+   AND i.status = 'approved'
+   AND i.selected_area_id = c.area_id
+   AND i.approved_level = c.level_code
+  LEFT JOIN school_areas a ON a.id = c.area_id
+  WHERE x.student_email = ? COLLATE NOCASE
+    AND x.status = 'active'
+    AND c.slug = ?
+    AND c.status = 'published'
+    AND EXISTS (
+      SELECT 1 FROM school_fee_payments p
+      WHERE p.student_email = x.student_email COLLATE NOCASE
+        AND p.fee_type = 'enrollment' AND p.valid_until >= date('now')
+    )
+    AND EXISTS (
+      SELECT 1 FROM school_fee_payments p
+      WHERE p.student_email = x.student_email COLLATE NOCASE
+        AND p.fee_type = 'monthly' AND p.valid_until >= date('now')
+    )
+  LIMIT 1
+`).bind(email, courseSlug).first<{
+  course_id: string;
+  course_title: string;
+  course_slug: string;
+  level_code: string;
+  area_title: string | null;
+}>();
+if (!access) return Astro.redirect('/escuela/mi-escuela', 303);
+
+const lesson = await env.DB.prepare(`
+  SELECT id, slug, title, summary, content_md, content_html, sequence_no,
+         lesson_type, content_version
+  FROM school_lessons
+  WHERE course_id = ? AND slug = ? AND status = 'published'
+  LIMIT 1
+`).bind(access.course_id, lessonSlug).first<{
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  content_md: string;
+  content_html: string | null;
+  sequence_no: number;
+  lesson_type: 'reading' | 'quiz' | 'exercise' | 'assignment';
+  content_version: number;
+}>();
+if (!lesson) return Astro.redirect('/escuela/mi-escuela', 303);
+
+const lessonHtml = lesson.content_html || renderMarkdown(lesson.content_md);
+const nav = (await env.DB.prepare(`
+  SELECT slug, title, sequence_no
+  FROM school_lessons
+  WHERE course_id = ? AND status = 'published'
+  ORDER BY sequence_no
+`).bind(access.course_id).all<{ slug: string; title: string; sequence_no: number }>()).results ?? [];
+const index = nav.findIndex((item) => item.slug === lessonSlug);
+const previous = index > 0 ? nav[index - 1] : null;
+const next = index >= 0 && index < nav.length - 1 ? nav[index + 1] : null;
+const progress = await env.DB.prepare(`
+  SELECT status, completed_at, submission_at
+  FROM school_lesson_progress
+  WHERE student_email = ? COLLATE NOCASE AND lesson_id = ?
+  LIMIT 1
+`).bind(email, lesson.id).first<{
+  status: string;
+  completed_at: string | null;
+  submission_at: string | null;
+}>();
+const isReading = lesson.lesson_type === 'reading';
+const isComplete = progress?.status === 'completed';
+const apiUrl = `/api/escuela/cursos/${encodeURIComponent(courseSlug)}/${encodeURIComponent(lessonSlug)}`;
+---
+<Layout title={lesson.title} description={lesson.summary || lesson.title}>
+  <main
+    id="school-lesson"
+    class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12"
+    data-course={courseSlug}
+    data-slug={lessonSlug}
+    data-api={apiUrl}
+    data-type={lesson.lesson_type}
+  >
+    <p class="text-xs uppercase tracking-widest text-kumo-muted">
+      <a href="/escuela/mi-escuela" class="underline">Mi escuela</a>
+      / {access.area_title || 'Área de estudio'} / {access.level_code}
+    </p>
+    <h1 class="mt-3 text-3xl font-bold">{lesson.title}</h1>
+    {lesson.summary && <p class="mt-3 text-kumo-muted">{lesson.summary}</p>}
+
+    <div class="mt-5 rounded-lg border border-kumo-line p-4" aria-live="polite">
+      <p id="lesson-status" class="font-medium">
+        {isComplete ? 'Lección completada' : isReading ? 'Lectura en curso' : 'Actividad pendiente'}
+      </p>
+      <p id="lesson-status-detail" class="mt-1 text-sm text-kumo-muted">
+        {isComplete
+          ? (isReading ? 'Esta lectura ya está registrada como leída.' : 'Tu entrega quedó registrada. Esto confirma la entrega, no la corrección de la respuesta.')
+          : isReading
+            ? 'Al abrir el contenido, se registrará automáticamente como leído.'
+            : 'Completa la actividad y envía tu respuesta para registrar la entrega.'}
+      </p>
+    </div>
+
+    <article id="lesson-content" class="prose mt-8 max-w-none" set:html={lessonHtml}></article>
+
+    {!isReading && !isComplete && (
+      <form id="lesson-activity-form" class="mt-10 rounded-xl border border-kumo-line p-5">
+        <h2 class="text-xl font-semibold">Entregar actividad</h2>
+        <p class="mt-2 text-sm text-kumo-muted">
+          Escribe tu procedimiento, respuesta o una explicación de lo que realizaste. La entrega quedará registrada para que tu profesor pueda revisarla.
+        </p>
+        <label for="lesson-response" class="mt-4 block font-medium">Tu respuesta o procedimiento</label>
+        <textarea
+          id="lesson-response"
+          name="response"
+          required
+          minlength="5"
+          maxlength="20000"
+          rows="7"
+          class="mt-2 w-full rounded-lg border border-kumo-line bg-transparent p-3"
+          placeholder="Escribe aquí tu procedimiento y resultado…"
+        ></textarea>
+        <p class="mt-2 text-xs text-kumo-muted">Mínimo 5 caracteres. Por ahora, el sistema registra la entrega; la calificación sigue siendo manual.</p>
+        <button type="submit" id="lesson-submit" class="mt-4 rounded-lg border border-kumo-line px-5 py-3 font-semibold">
+          Enviar respuesta
+        </button>
+        <p id="lesson-form-message" class="mt-3 text-sm" role="status" aria-live="polite"></p>
+      </form>
+    )}
+
+    <nav class="mt-10 flex flex-wrap justify-between gap-4 border-t border-kumo-line pt-5">
+      {previous ? <a class="underline" href={`/escuela/cursos/${courseSlug}/${previous.slug}`}>← {previous.title}</a> : <span></span>}
+      {next ? <a class="underline" href={`/escuela/cursos/${courseSlug}/${next.slug}`}>{next.title} →</a> : <a class="underline" href="/escuela/mi-escuela">Volver a mi curso</a>}
+    </nav>
+  </main>
+
+  <script is:inline>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script is:inline async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <script>
+    const root = document.querySelector('#school-lesson');
+    if (root instanceof HTMLElement) {
+      const api = root.dataset.api || '';
+      const type = root.dataset.type || '';
+      const status = document.querySelector('#lesson-status');
+      const detail = document.querySelector('#lesson-status-detail');
+      const formMessage = document.querySelector('#lesson-form-message');
+      const submitButton = document.querySelector('#lesson-submit');
+
+      const markRead = async () => {
+        try {
+          const response = await fetch(api, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ action: 'read' })
+          });
+          if (!response.ok) throw new Error('No se pudo registrar la lectura. Recarga la página para intentarlo de nuevo.');
+          if (status) status.textContent = 'Lección completada';
+          if (detail) detail.textContent = 'Esta lectura ya está registrada como leída.';
+        } catch (error) {
+          if (detail) detail.textContent = error instanceof Error ? error.message : 'No se pudo registrar la lectura.';
+        }
+      };
+
+      if (type === 'reading' && status?.textContent?.trim() !== 'Lección completada') {
+        void markRead();
+      }
+
+      const form = document.querySelector('#lesson-activity-form');
+      if (form instanceof HTMLFormElement) {
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const input = document.querySelector('#lesson-response');
+          if (!(input instanceof HTMLTextAreaElement) || input.value.trim().length < 5) {
+            if (formMessage) formMessage.textContent = 'Escribe una respuesta de al menos 5 caracteres.';
+            return;
+          }
+          if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
+          if (formMessage) formMessage.textContent = 'Enviando…';
+          try {
+            const response = await fetch(api, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ action: 'submit', response: input.value.trim() })
+            });
+            let result: { error?: string } = {};
+
+            try {
+              result = await response.json();
+            } catch {
+              // La respuesta no contiene JSON válido.
+            }
+
+            if (!response.ok) {
+              throw new Error(
+                result.error || 'No se pudo registrar la entrega.'
+              );
+            }
+            if (status) status.textContent = 'Actividad entregada';
+            if (detail) detail.textContent = 'Tu respuesta quedó registrada. Esto confirma la entrega, no la corrección de la respuesta.';
+            if (formMessage) formMessage.textContent = 'Entrega registrada correctamente.';
+            form.remove();
+          } catch (error) {
+            if (formMessage) formMessage.textContent = error instanceof Error ? error.message : 'Ocurrió un error al enviar.';
+            if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
+          }
+        });
+      }
+    }
+  </script>
+</Layout>

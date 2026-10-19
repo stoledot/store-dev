@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import Layout from '../layouts/Layout.astro';
 import ProductList from '../features/products/ProductList.astro';
 import { resolveHomePath } from '../features/settings/home';
+import SchoolHomeBanner from '../features/school/SchoolHomeBanner.astro';
 
 // A store can point `/` at a page or a single product instead of the catalog.
 // Rewriting rather than duplicating those templates keeps one implementation of
@@ -15,5 +16,6 @@ if (homePath) return Astro.rewrite(homePath);
 ---
 
 <Layout>
+  <SchoolHomeBanner />
   <ProductList />
 </Layout>

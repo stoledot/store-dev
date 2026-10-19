@@ -1,0 +1,54 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout
+  title="Escuela de Matemáticas"
+  description="Escuela online de matemáticas con diagnóstico inicial, asignación por nivel y seguimiento académico."
+>
+  <main class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+    <section class="grid gap-8 rounded-2xl border border-kumo-line bg-kumo-subtle p-6 sm:p-9 md:grid-cols-[1.3fr_0.7fr] md:items-center">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-kumo-muted">Escuela online</p>
+        <h1 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Matemáticas con estructura, diagnóstico y acompañamiento</h1>
+        <p class="mt-4 max-w-2xl text-base leading-7 text-kumo-muted">
+          Estudia un área de tu interés —como Álgebra, Cálculo o Topología— y comienza en el nivel adecuado para ti. Revisamos tu diagnóstico y tu avance para decidir la asignación y el siguiente nivel.
+        </p>
+        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+          <a href="/escuela/diagnostico" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-inverted-foreground transition hover:opacity-90">Elegir mi área</a>
+          <a href="/escuela/mi-escuela" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-kumo-line bg-kumo-base px-5 py-3 text-sm font-semibold transition hover:bg-kumo-base/70">Ya soy alumno</a>
+        </div>
+      </div>
+      <aside class="rounded-xl border border-kumo-line bg-kumo-base p-5">
+        <h2 class="text-lg font-semibold">¿Cómo funciona?</h2>
+        <ol class="mt-4 space-y-4 text-sm">
+          <li class="flex gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-kumo-subtle font-semibold">1</span><span><strong>Elige un área.</strong><br /><span class="text-kumo-muted">Selecciona qué rama de las matemáticas te interesa.</span></span></li>
+          <li class="flex gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-kumo-subtle font-semibold">2</span><span><strong>Presenta el diagnóstico.</strong><br /><span class="text-kumo-muted">La escuela revisa qué nivel te corresponde.</span></span></li>
+          <li class="flex gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-kumo-subtle font-semibold">3</span><span><strong>Estudia un curso a la vez.</strong><br /><span class="text-kumo-muted">Tu acceso se limita al curso que te asignemos.</span></span></li>
+        </ol>
+      </aside>
+    </section>
+
+    <section class="mt-8 grid gap-4 sm:grid-cols-3" aria-label="Información de la escuela">
+      <article class="rounded-xl border border-kumo-line p-5">
+        <h2 class="font-semibold">Áreas de interés</h2>
+        <p class="mt-2 text-sm leading-6 text-kumo-muted">Elige una rama y construye tu formación por niveles: N0, N1, N2 y siguientes.</p>
+      </article>
+      <article class="rounded-xl border border-kumo-line p-5">
+        <h2 class="font-semibold">Inscripción y mensualidad</h2>
+        <p class="mt-2 text-sm leading-6 text-kumo-muted">La inscripción se paga al ingresar y se renueva cada seis meses. La mensualidad cubre un curso asignado.</p>
+      </article>
+      <article class="rounded-xl border border-kumo-line p-5">
+        <h2 class="font-semibold">Avance acompañado</h2>
+        <p class="mt-2 text-sm leading-6 text-kumo-muted">Tu progreso y evaluación ayudan a decidir cuándo estás listo para avanzar.</p>
+      </article>
+    </section>
+
+    <section class="mt-8 flex flex-col gap-3 rounded-xl border border-kumo-line p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <div>
+        <h2 class="text-lg font-semibold">¿Quieres comenzar?</h2>
+        <p class="mt-1 text-sm text-kumo-muted">Selecciona tu área de interés y continúa con el diagnóstico.</p>
+      </div>
+      <a href="/escuela/diagnostico" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-inverted-foreground transition hover:opacity-90">Comenzar</a>
+    </section>
+  </main>
+</Layout>

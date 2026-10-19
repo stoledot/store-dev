@@ -1,0 +1,15 @@
+Enlaces útiles para el administrador
+
+Evaluaciones y peso de calificación:
+  /admin/escuela/evaluaciones
+
+Orden seguro de lecciones:
+  /admin/escuela/orden-lecciones?curso=ID_DEL_CURSO
+
+Entregas, notas y retroalimentación:
+  /admin/escuela/calificaciones
+
+Si quieres que aparezcan como botones en tu página actual /admin/escuela, agrega enlaces a estas tres rutas en el encabezado de esa página. No reemplaces la página administrativa completa si ya la personalizaste.
+
+Calificaciones del alumno:
+  /escuela/mi-escuela/calificaciones

@@ -1,0 +1,154 @@
+---
+/**
+ * Esta página permite a los clientes consultar y administrar su suscripción
+ */
+
+export const prerender = false;
+
+import { env } from 'cloudflare:workers';
+import Layout from '../../../layouts/Layout.astro';
+import {
+  accountsEnabled,
+  getCustomerEmail,
+} from '../../../features/auth/customer';
+
+// La página requiere una cuenta de cliente.
+if (!(await accountsEnabled())) {
+  return Astro.redirect('/', 303);
+}
+
+const customerEmail = await getCustomerEmail(Astro.cookies);
+
+if (!customerEmail) {
+  return Astro.redirect('/account/login', 303);
+}
+
+// TODO: Consultar la suscripción del cliente utilizando
+// las tablas y los helpers reales del proyecto.
+//
+// No se debe asumir que una suscripción está activa
+// solamente porque exista un registro en D1.
+//
+// Tampoco se debe cancelar una suscripción modificando
+// únicamente la base de datos: la operación debe
+// sincronizarse con el proveedor de pagos.
+
+const subscription = null;
+
+const statusLabels: Record<string, string> = {
+  active: 'Activa',
+  trialing: 'En periodo de prueba',
+  past_due: 'Pago pendiente',
+  unpaid: 'Pago pendiente',
+  canceled: 'Cancelada',
+  incomplete: 'Pendiente de activación',
+  incomplete_expired: 'Activación vencida',
+  paused: 'Pausada',
+};
+
+const status = subscription?.status ?? null;
+const statusLabel = status
+  ? statusLabels[status] ?? status
+  : 'Sin suscripción registrada';
+
+const hasSubscription = Boolean(subscription);
+---
+
+<Layout
+  title="Administrar suscripción"
+  description="Consulta y administra tu suscripción a la Escuela de Matemáticas."
+>
+  <main class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:py-12">
+    <header class="mb-8">
+      <a
+        href="/escuela/mi-escuela/"
+        class="text-sm text-kumo-muted underline underline-offset-4"
+      >
+        ← Volver a mi escuela
+      </a>
+
+      <p class="mt-6 text-sm font-medium text-kumo-muted">
+        ESCUELA DE MATEMÁTICAS
+      </p>
+
+      <h1 class="mt-2 text-3xl font-bold tracking-tight">
+        Administrar suscripción
+      </h1>
+
+      <p class="mt-3 max-w-2xl text-sm leading-6 text-kumo-muted">
+        Consulta el estado de tu suscripción y administra tus opciones de pago
+        y renovación.
+      </p>
+    </header>
+
+    <section class="rounded-xl border border-kumo-line bg-kumo-base p-5 sm:p-7">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="text-sm text-kumo-muted">Tu suscripción</p>
+          <h2 class="mt-1 text-xl font-semibold">
+            Escuela de Matemáticas
+          </h2>
+          <p class="mt-2 text-sm text-kumo-muted">
+            {customerEmail}
+          </p>
+        </div>
+
+        <span class="inline-flex w-fit items-center rounded-full border border-kumo-line px-3 py-1.5 text-sm font-medium">
+          {statusLabel}
+        </span>
+      </div>
+
+      <div class="my-6 border-t border-kumo-line"></div>
+
+      {hasSubscription ? (
+        <div class="space-y-5">
+          <div>
+            <h3 class="font-medium">Estado de la renovación</h3>
+            <p class="mt-1 text-sm leading-6 text-kumo-muted">
+              Los detalles de tu siguiente cobro, fecha de renovación y
+              posibles cancelaciones aparecerán aquí cuando estén conectados
+              con los datos reales de tu suscripción.
+            </p>
+          </div>
+
+          <div class="rounded-lg border border-kumo-line p-4">
+            <p class="text-sm font-medium">Administración de pagos</p>
+            <p class="mt-2 text-sm leading-6 text-kumo-muted">
+              Utiliza el portal seguro de tu proveedor de pagos para modificar
+              tu método de pago, consultar tus cargos y administrar la
+              renovación, cuando esa integración esté habilitada.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <h3 class="font-semibold">No encontramos una suscripción</h3>
+          <p class="mt-2 text-sm leading-6 text-kumo-muted">
+            Si ya realizaste un pago, verifica que hayas ingresado con el
+            correo electrónico utilizado al contratar la suscripción.
+          </p>
+          <a
+            href="/products/suscripcion-escuela-matematicas"
+            class="mt-5 inline-flex items-center justify-center rounded-lg bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-inverted-foreground"
+          >
+            Ver suscripción
+          </a>
+        </div>
+      )}
+    </section>
+
+    <section class="mt-6 rounded-xl border border-kumo-line p-5 sm:p-6">
+      <h2 class="text-lg font-semibold">¿Necesitas ayuda?</h2>
+      <p class="mt-2 text-sm leading-6 text-kumo-muted">
+        Si tienes un problema con un cobro o necesitas ayuda con tu cuenta,
+        puedes volver a tu panel de cliente.
+      </p>
+      <a
+        href="/account"
+        class="mt-4 inline-flex items-center justify-center rounded-lg border border-kumo-line px-4 py-2.5 text-sm font-medium"
+      >
+        Ir a mi cuenta
+      </a>
+    </section>
+  </main>
+</Layout>

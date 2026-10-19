@@ -1,0 +1,82 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+const notice = Astro.url.searchParams.get('ok');
+const errorMessage = Astro.url.searchParams.get('error');
+const escapeRedirect = (key: string, value: string) => Astro.redirect(`/admin/escuela/evaluaciones?${key}=${encodeURIComponent(value)}`, 303);
+if (Astro.request.method === 'POST') {
+  try {
+    const form = await Astro.request.formData();
+    const lessonId = String(form.get('lesson_id') ?? '').trim();
+    const weight = Number(form.get('grading_weight'));
+    const raw = String(form.get('assessment_json') ?? '');
+    if (!lessonId || !Number.isFinite(weight) || weight <= 0 || weight > 1000) throw new Error('El peso debe ser mayor que 0 y no superar 1000.');
+    let assessment: {version?:number;questions?:unknown};
+    try { assessment = JSON.parse(raw) as typeof assessment; } catch { throw new Error('La configuración de preguntas no es JSON válido.'); }
+    if (!Array.isArray(assessment.questions) || assessment.questions.length > 100) throw new Error('La evaluación debe contener una lista de hasta 100 preguntas.');
+    const cleanQuestions = assessment.questions.map((q: any, index: number) => {
+      const type = String(q?.type ?? '');
+      const prompt = String(q?.prompt ?? '').trim().slice(0, 2000);
+      const id = String(q?.id ?? `q${index+1}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || `q${index+1}`;
+      if (!['multiple_choice','short_answer','long_answer','file_upload'].includes(type) || !prompt) throw new Error(`Revisa la pregunta ${index+1}.`);
+      const required = q?.required !== false;
+      if (type === 'multiple_choice') {
+        const options = Array.isArray(q.options) ? q.options.map((v:unknown)=>String(v).trim().slice(0,500)).filter(Boolean).slice(0,20) : [];
+        if (options.length < 2) throw new Error(`La pregunta ${index+1} de opción múltiple necesita al menos dos opciones.`);
+        return {id,type,prompt,options,required};
+      }
+      return {id,type,prompt,required};
+    });
+    if (new Set(cleanQuestions.map((q:any)=>q.id)).size !== cleanQuestions.length) throw new Error('Cada pregunta debe tener un identificador único.');
+    const exists = await env.DB.prepare('SELECT id FROM school_lessons WHERE id=?').bind(lessonId).first();
+    if (!exists) throw new Error('La lección ya no existe.');
+    await env.DB.prepare(`UPDATE school_lessons SET assessment_json=?, grading_weight=?, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=?`)
+      .bind(JSON.stringify({version:1,questions:cleanQuestions}), weight, lessonId).run();
+    return escapeRedirect('ok','Configuración guardada');
+  } catch (err) { return escapeRedirect('error', err instanceof Error ? err.message : 'No se pudo guardar.'); }
+}
+const courses = (await env.DB.prepare('SELECT id,title,slug FROM school_courses ORDER BY title').all<{id:string;title:string;slug:string}>()).results ?? [];
+const selectedCourse = Astro.url.searchParams.get('curso') ?? courses[0]?.id ?? '';
+const lessons = selectedCourse ? ((await env.DB.prepare(`SELECT l.id,l.title,l.slug,l.lesson_type,l.grading_weight,l.assessment_json,c.title AS course_title FROM school_lessons l JOIN school_courses c ON c.id=l.course_id WHERE l.course_id=? ORDER BY l.sequence_no`).bind(selectedCourse).all<{id:string;title:string;slug:string;lesson_type:string;grading_weight:number;assessment_json:string;course_title:string}>()).results ?? []) : [];
+const parseAssessment = (raw:string) => { try { const value=JSON.parse(raw); return {version:1,questions:Array.isArray(value.questions)?value.questions:[]}; } catch { return {version:1,questions:[]}; } };
+---
+<AdminLayout title="Configurar evaluaciones" active="school">
+  <main class="mx-auto max-w-5xl px-4 py-8">
+    <p class="text-xs uppercase tracking-widest text-gray-500">Escuela de Matemáticas</p><h1 class="mt-2 text-3xl font-semibold">Evaluaciones y peso de calificación</h1>
+    <p class="mt-2 max-w-3xl text-sm text-gray-600">Configura preguntas para cuestionarios, ejercicios y tareas. La calificación y retroalimentación las registra el administrador en la bandeja de entregas.</p>
+    {notice && <p class="my-4 rounded border border-green-200 bg-green-50 p-3 text-sm">{notice}</p>}{errorMessage && <p class="my-4 rounded border border-red-200 bg-red-50 p-3 text-sm">{errorMessage}</p>}
+    <div class="my-5 flex flex-wrap gap-3"><a class="rounded border border-line px-4 py-2 text-sm" href="/admin/escuela/calificaciones">Revisar entregas y calificar</a><a class="rounded border border-line px-4 py-2 text-sm" href="/admin/escuela/orden-lecciones">Ordenar lecciones</a></div>
+    <form method="get" class="my-6 flex flex-wrap items-end gap-3"><label class="text-sm">Curso<select name="curso" class="mt-1 block rounded border border-line p-2">{courses.map(c=><option value={c.id} selected={c.id===selectedCourse}>{c.title}</option>)}</select></label><button class="rounded border border-line px-4 py-2 text-sm">Mostrar lecciones</button><a class="rounded border border-line px-4 py-2 text-sm" href={`/admin/escuela/orden-lecciones?curso=${selectedCourse}`}>Ordenar lecciones</a></form>
+    {lessons.length ? <div class="space-y-5">{lessons.map((lesson) => <section class="rounded-xl border border-line p-5" data-assessment-form data-assessment={JSON.stringify(parseAssessment(lesson.assessment_json))}>
+      <div class="mb-4 flex flex-wrap items-start justify-between gap-3"><div><h2 class="text-lg font-semibold">{lesson.title}</h2><p class="text-xs text-gray-500">{lesson.course_title} · {lesson.lesson_type} · {lesson.slug}</p></div><a class="text-sm underline" href={`/escuela/cursos/${courses.find(c=>c.id===selectedCourse)?.slug ?? ''}/${lesson.slug}`} target="_blank" rel="noreferrer">Vista previa del alumno</a></div>
+      <form method="post" class="assessment-save-form space-y-4"><input type="hidden" name="lesson_id" value={lesson.id}/><input type="hidden" name="assessment_json" class="assessment-json" value={JSON.stringify(parseAssessment(lesson.assessment_json))}/>
+        <label class="block text-sm">Peso de calificación <input name="grading_weight" type="number" min="0.01" max="1000" step="0.01" required value={lesson.grading_weight || 1} class="ml-2 w-32 rounded border border-line p-2"/><span class="ml-2 text-xs text-gray-500">1 = normal; 2 = doble peso; 0.5 = medio peso.</span></label>
+        <div class="question-list space-y-3"></div>
+        <div class="flex flex-wrap gap-2"><button type="button" data-add-question="multiple_choice" class="rounded border border-line px-3 py-2 text-sm">+ Opción múltiple</button><button type="button" data-add-question="short_answer" class="rounded border border-line px-3 py-2 text-sm">+ Respuesta corta</button><button type="button" data-add-question="long_answer" class="rounded border border-line px-3 py-2 text-sm">+ Respuesta larga</button><button type="button" data-add-question="file_upload" class="rounded border border-line px-3 py-2 text-sm">+ Envío de archivo</button></div>
+        <p class="text-xs text-gray-500">Si agregas opción múltiple, escribe una opción por línea. Por ahora todas las respuestas se revisan manualmente; la plataforma no decide si una respuesta es correcta.</p><button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">Guardar evaluación</button>
+      </form>
+    </section>)}</div> : <p class="rounded border border-line p-5 text-sm">No hay lecciones en este curso.</p>}
+  </main>
+  <script>
+    type Q = {id:string;type:string;prompt:string;options?:string[];required?:boolean};
+    const labels:Record<string,string>={multiple_choice:'Opción múltiple',short_answer:'Respuesta corta',long_answer:'Respuesta larga',file_upload:'Envío de archivo'};
+    document.querySelectorAll<HTMLElement>('[data-assessment-form]').forEach((section)=>{
+      const form=section.querySelector<HTMLFormElement>('.assessment-save-form'); const list=section.querySelector<HTMLElement>('.question-list'); const hidden=section.querySelector<HTMLInputElement>('.assessment-json');
+      let questions:Q[]=[]; try { questions=JSON.parse(section.dataset.assessment||'{}').questions||[]; } catch {}
+      const render=()=>{
+        if(!list)return; list.replaceChildren();
+        questions.forEach((q,index)=>{
+          const card=document.createElement('div'); card.className='rounded-lg border border-line p-4';
+          const heading=document.createElement('div'); heading.className='mb-3 flex items-center justify-between gap-3'; const title=document.createElement('strong'); title.textContent=`Pregunta ${index+1} · ${labels[q.type]||q.type}`; const remove=document.createElement('button'); remove.type='button'; remove.className='text-sm underline'; remove.textContent='Eliminar'; remove.addEventListener('click',()=>{questions=questions.filter((_,i)=>i!==index);render();}); heading.append(title,remove); card.append(heading);
+          const promptLabel=document.createElement('label'); promptLabel.className='block text-sm'; promptLabel.textContent='Enunciado'; const prompt=document.createElement('textarea'); prompt.required=true; prompt.rows=2; prompt.maxLength=2000; prompt.className='mt-1 block w-full rounded border border-line p-2'; prompt.value=q.prompt||''; prompt.addEventListener('input',()=>q.prompt=prompt.value); promptLabel.append(prompt); card.append(promptLabel);
+          if(q.type==='multiple_choice') { const optsLabel=document.createElement('label'); optsLabel.className='mt-3 block text-sm'; optsLabel.textContent='Opciones (una por línea)'; const opts=document.createElement('textarea'); opts.rows=4; opts.className='mt-1 block w-full rounded border border-line p-2'; opts.value=(q.options||[]).join('\n'); opts.addEventListener('input',()=>q.options=opts.value.split('\n').map(x=>x.trim()).filter(Boolean)); optsLabel.append(opts); card.append(optsLabel); }
+          const requiredLabel=document.createElement('label'); requiredLabel.className='mt-3 flex items-center gap-2 text-sm'; const required=document.createElement('input'); required.type='checkbox'; required.checked=q.required!==false; required.addEventListener('change',()=>q.required=required.checked); requiredLabel.append(required,document.createTextNode('Respuesta obligatoria')); card.append(requiredLabel); list.append(card);
+        });
+        if(hidden) hidden.value=JSON.stringify({version:1,questions});
+      };
+      section.querySelectorAll<HTMLButtonElement>('[data-add-question]').forEach((button)=>button.addEventListener('click',()=>{questions.push({id:`q_${crypto.randomUUID()}`,type:button.dataset.addQuestion||'short_answer',prompt:'',options:button.dataset.addQuestion==='multiple_choice'?['Opción 1','Opción 2']:[],required:true});render();}));
+      form?.addEventListener('submit',()=>{if(hidden)hidden.value=JSON.stringify({version:1,questions});}); render();
+    });
+  </script>
+</AdminLayout>

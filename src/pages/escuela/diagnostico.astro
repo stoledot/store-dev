@@ -1,0 +1,38 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+
+if (!(await accountsEnabled())) return Astro.redirect('/', 303);
+const email = await getCustomerEmail(Astro.cookies);
+if (!email) return Astro.redirect('/account/login', 303);
+const error = Astro.url.searchParams.get('error');
+const ok = Astro.url.searchParams.get('ok');
+const areas = (await env.DB.prepare(`SELECT id,title,description FROM school_areas WHERE status='active' ORDER BY title`).all<{id:string;title:string;description:string}>()).results ?? [];
+const existing = await env.DB.prepare(`SELECT selected_area_id, diagnostic_answers, status FROM school_student_intake WHERE student_email=? COLLATE NOCASE`).bind(email).first<{selected_area_id:string;diagnostic_answers:string;status:string}>();
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const areaId = String(form.get('area_id') ?? '').trim();
+  const answers = String(form.get('diagnostic_answers') ?? '').trim().slice(0, 12000);
+  const area = await env.DB.prepare(`SELECT id FROM school_areas WHERE id=? AND status='active'`).bind(areaId).first();
+  if (!area || answers.length < 30) return Astro.redirect('/escuela/diagnostico?error=Completa+el+área+y+responde+con+al+menos+30+caracteres', 303);
+  await env.DB.prepare(`INSERT INTO school_student_intake (student_email,selected_area_id,diagnostic_answers,status,suggested_level,approved_level,admin_notes,submitted_at,reviewed_at) VALUES (?, ?, ?, 'pending', NULL, NULL, '', strftime('%Y-%m-%dT%H:%M:%fZ','now'), NULL) ON CONFLICT(student_email) DO UPDATE SET selected_area_id=excluded.selected_area_id, diagnostic_answers=excluded.diagnostic_answers, status='pending', suggested_level=NULL, approved_level=NULL, admin_notes='', submitted_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'), reviewed_at=NULL`).bind(email, areaId, answers).run();
+  return Astro.redirect('/escuela/diagnostico?ok=1', 303);
+}
+---
+<Layout title="Área de interés y diagnóstico" description="Elige tu área de interés y solicita una evaluación de nivel.">
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <p class="text-xs font-semibold uppercase tracking-widest text-kumo-muted">Escuela de Matemáticas</p>
+    <h1 class="mt-2 text-3xl font-bold">Área de interés y diagnóstico</h1>
+    <p class="mt-3 text-sm text-kumo-muted">Elige el área que te interesa. Revisaremos tu experiencia y tus respuestas para determinar el nivel adecuado. La asignación definitiva requiere aprobación administrativa.</p>
+    {error && <p class="mt-5 rounded-lg border border-red-200 p-3 text-sm">{error}</p>}
+    {ok && <p class="mt-5 rounded-lg border border-green-200 p-3 text-sm">Tu solicitud quedó registrada. El equipo académico revisará tu diagnóstico.</p>}
+    {areas.length === 0 ? <p class="mt-6 rounded-lg border border-kumo-line p-4">Todavía no hay áreas disponibles. Contacta a la administración de la escuela.</p> : <form method="POST" class="mt-6 space-y-5 rounded-xl border border-kumo-line p-5">
+      <label class="block text-sm font-medium">Área de interés<select name="area_id" required class="mt-2 block w-full rounded-lg border border-kumo-line bg-transparent p-3">{areas.map(a=><option value={a.id} selected={existing?.selected_area_id===a.id}>{a.title}</option>)}</select></label>
+      <label class="block text-sm font-medium">Diagnóstico inicial<textarea name="diagnostic_answers" required minlength="30" maxlength="12000" rows="10" class="mt-2 block w-full rounded-lg border border-kumo-line bg-transparent p-3" placeholder="Cuéntanos qué temas dominas, qué cursos has tomado y resuelve aquí algunos ejercicios relacionados con el área que elegiste. Puedes escribir fórmulas en LaTeX, por ejemplo $x^2-1=(x-1)(x+1)$.">{existing?.diagnostic_answers ?? ''}</textarea><span class="mt-1 block text-xs text-kumo-muted">Esta versión guarda respuestas abiertas para revisión del equipo; no asigna un nivel automáticamente.</span></label>
+      <button type="submit" class="rounded-lg bg-kumo-strong px-5 py-3 text-sm font-semibold text-white">Enviar diagnóstico</button>
+    </form>}
+    <p class="mt-6 text-sm"><a class="underline" href="/escuela/mi-escuela">Volver a Mi escuela</a></p>
+  </main>
+</Layout>

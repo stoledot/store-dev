@@ -1,0 +1,480 @@
+---
+export const prerender = false;
+
+import { env } from 'cloudflare:workers';
+import Layout from '../../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail} from '../../../features/auth/customer';
+
+interface CourseRow {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  sequence_no: number;
+  student_status: 'not_started' | 'in_progress' | 'completed';
+  started_at: string | null;
+  completed_at: string | null;
+  lesson_total: number;
+  lessons_completed: number;
+  score: number | null;
+}
+
+interface LessonRow {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  sequence_no: number;
+  lesson_type: string;
+  required_to_complete: number;
+  student_status: 'not_started' | 'in_progress' | 'completed';
+  score: number | null;
+}
+
+if (!(await accountsEnabled())) {
+  return Astro.redirect('/', 303);
+}
+
+const email = await getCustomerEmail(Astro.cookies);
+
+if (!email) {
+  return Astro.redirect('/account/login', 303);
+}
+
+// La suscripción se verifica en el servidor mediante el correo de la
+// sesión de cliente verificada. No se acepta un correo desde la URL.
+const subscription = await env.DB.prepare(`
+  SELECT status, current_period_end, cancel_at_period_end
+    FROM school_subscriptions
+   WHERE student_email = ? COLLATE NOCASE
+     AND status IN ('active', 'trialing')
+     AND (
+       current_period_end IS NULL
+       OR current_period_end > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+     )
+   ORDER BY current_period_end DESC
+   LIMIT 1
+`).bind(email).first<{
+  status: string;
+  current_period_end: string | null;
+  cancel_at_period_end: number;
+}>();
+
+const hasAccess = subscription !== null;
+
+// El catálogo solo muestra cursos publicados.
+// El progreso se obtiene de las tablas educativas.
+const result = await env.DB.prepare(`
+  SELECT
+    c.id,
+    c.slug,
+    c.title,
+    c.summary,
+    c.sequence_no,
+    COALESCE(cp.status, 'not_started') AS student_status,
+    cp.started_at,
+    cp.completed_at,
+    cp.score,
+    (
+      SELECT COUNT(*)
+        FROM school_lessons l
+       WHERE l.course_id = c.id
+         AND l.status = 'published'
+         AND l.required_to_complete = 1
+    ) AS lesson_total,
+    (
+      SELECT COUNT(*)
+        FROM school_lessons l
+        JOIN school_lesson_progress lp
+          ON lp.lesson_id = l.id
+         AND lp.student_email = ? COLLATE NOCASE
+       WHERE l.course_id = c.id
+         AND l.status = 'published'
+         AND l.required_to_complete = 1
+         AND lp.status = 'completed'
+    ) AS lessons_completed
+  FROM school_courses c
+  LEFT JOIN school_course_progress cp
+    ON cp.course_id = c.id
+   AND cp.student_email = ? COLLATE NOCASE
+  WHERE c.status = 'published'
+  ORDER BY c.sequence_no ASC
+`).bind(email, email).all<CourseRow>();
+
+const courses = (result.results ?? []).map((course) => {
+  const total = Number(course.lesson_total ?? 0);
+  const completed = Number(course.lessons_completed ?? 0);
+
+  const progress = course.student_status === 'completed'
+    ? 100
+    : total > 0
+      ? Math.min(100, Math.round((completed / total) * 100))
+      : 0;
+
+  return { ...course, lesson_total: total, lessons_completed: completed, progress };
+});
+
+const completedCourses = courses.filter(
+  (course) => course.student_status === 'completed',
+);
+
+const unfinishedCourses = courses.filter(
+  (course) => course.student_status !== 'completed',
+);
+
+const currentCourse =
+  courses.find((course) => course.student_status === 'in_progress') ?? null;
+
+const selectedSlug = Astro.url.searchParams.get('curso');
+const selectedCourse = hasAccess
+  ? unfinishedCourses.find((course) => course.slug === selectedSlug) ?? null
+  : null;
+
+let lessons: LessonRow[] = [];
+
+if (selectedCourse) {
+  const lessonResult = await env.DB.prepare(`
+    SELECT
+      l.id,
+      l.slug,
+      l.title,
+      l.summary,
+      l.sequence_no,
+      l.lesson_type,
+      l.required_to_complete,
+      COALESCE(lp.status, 'not_started') AS student_status,
+      lp.score
+    FROM school_lessons l
+    LEFT JOIN school_lesson_progress lp
+      ON lp.lesson_id = l.id
+     AND lp.student_email = ? COLLATE NOCASE
+    WHERE l.course_id = ?
+      AND l.status = 'published'
+    ORDER BY l.sequence_no ASC
+  `).bind(email, selectedCourse.id).all<LessonRow>();
+
+  lessons = lessonResult.results ?? [];
+}
+
+const formatDate = (value: string | null | undefined) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat('es-MX', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+};
+
+const subscriptionEnd = formatDate(subscription?.current_period_end);
+---
+
+
+<Layout
+  title="Mi escuela"
+  description="Tu espacio personal de aprendizaje en la Escuela de Matemáticas."
+>
+  <main class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
+    <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-sm font-medium text-kumo-muted">
+          ESCUELA DE MATEMÁTICAS
+        </p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight">
+          Mi escuela
+        </h1>
+        <p class="mt-2 text-sm text-kumo-muted">
+          Consulta tus cursos y continúa aprendiendo a tu ritmo.
+        </p>
+      </div>
+
+      <a
+        href="/account"
+        class="inline-flex items-center justify-center rounded-lg border border-kumo-line px-4 py-2 text-sm font-medium"
+      >
+        Mi cuenta
+      </a>
+    </header>
+
+    <section class="mb-8 rounded-xl border border-kumo-line bg-kumo-base p-5 sm:p-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-kumo-muted">Acceso a la escuela</p>
+          <h2 class="mt-1 text-xl font-semibold">
+            {hasAccess ? 'Suscripción activa' : 'Suscripción no activa'}
+          </h2>
+          <p class="mt-2 text-sm text-kumo-muted">
+            {hasAccess
+              ? subscriptionEnd
+                ? `Periodo registrado hasta ${subscriptionEnd}.`
+                : 'Tu suscripción aparece vigente.'
+              : 'Necesitas una suscripción vigente para acceder al contenido de los cursos.'}
+          </p>
+
+          {hasAccess && subscription?.cancel_at_period_end === 1 && (
+            <p class="mt-2 text-sm text-kumo-muted">
+              La cancelación está programada para el final del periodo vigente.
+            </p>
+          )}
+        </div>
+
+        {!hasAccess && (
+          <a
+            href="/products/suscripcion-escuela-matematicas"
+            class="inline-flex items-center justify-center rounded-lg bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-inverted-foreground"
+          >
+            Ver suscripción
+          </a>
+        )}
+      </div>
+    </section>
+
+    <section class="mb-10">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-xl font-semibold">Curso actual</h2>
+        {currentCourse && (
+          <span class="text-sm text-kumo-muted">
+            {currentCourse.progress}% completado
+          </span>
+        )}
+      </div>
+
+      {currentCourse ? (
+        <article class="rounded-xl border border-kumo-line bg-kumo-base p-5 sm:p-6">
+          <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0 flex-1">
+              <p class="text-sm text-kumo-muted">
+                Nivel {currentCourse.sequence_no}
+              </p>
+              <h3 class="mt-1 text-xl font-semibold">
+                {currentCourse.title}
+              </h3>
+              <p class="mt-2 text-sm leading-6 text-kumo-muted">
+                {currentCourse.summary || 'Continúa con las lecciones de este curso.'}
+              </p>
+
+              <div class="mt-5">
+                <div class="mb-2 flex justify-between text-sm">
+                  <span>Progreso</span>
+                  <span>{currentCourse.progress}%</span>
+                </div>
+
+                <div
+                  class="h-2.5 overflow-hidden rounded-full bg-kumo-subtle"
+                  role="progressbar"
+                  aria-label={`Progreso de ${currentCourse.title}`}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow={currentCourse.progress}
+                >
+                  <div
+                    class="h-full rounded-full bg-kumo-inverted"
+                    style={`width: ${currentCourse.progress}%`}
+                  ></div>
+                </div>
+
+                <p class="mt-2 text-xs text-kumo-muted">
+                  {currentCourse.lessons_completed} de {currentCourse.lesson_total}
+                  {' '}lecciones obligatorias completadas
+                </p>
+              </div>
+            </div>
+
+            {hasAccess && (
+              <a
+                href={`/escuela/mi-escuela/?curso=${encodeURIComponent(currentCourse.slug)}`}
+                class="inline-flex shrink-0 items-center justify-center rounded-lg bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-inverted-foreground"
+              >
+                Ver temario
+              </a>
+            )}
+          </div>
+        </article>
+      ) : (
+        <div class="rounded-xl border border-kumo-line p-6">
+          <p class="font-medium">Todavía no tienes un curso en progreso.</p>
+          <p class="mt-2 text-sm text-kumo-muted">
+            Cuando comiences un curso, aquí podrás consultar tu avance.
+          </p>
+        </div>
+      )}
+    </section>
+
+    {selectedCourse && hasAccess && (
+      <section class="mb-10 rounded-xl border border-kumo-line bg-kumo-base p-5 sm:p-6">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p class="text-sm text-kumo-muted">Temario del curso</p>
+            <h2 class="mt-1 text-2xl font-semibold">
+              {selectedCourse.title}
+            </h2>
+            <p class="mt-2 text-sm text-kumo-muted">
+              {selectedCourse.summary}
+            </p>
+          </div>
+
+          <a
+            href="/escuela/mi-escuela/"
+            class="text-sm font-medium underline underline-offset-4"
+          >
+            Cerrar temario
+          </a>
+        </div>
+
+        {lessons.length > 0 ? (
+          <ol class="mt-6 divide-y divide-kumo-line">
+            {lessons.map((lesson) => (
+              <li class="flex items-start gap-3 py-4">
+                <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-kumo-subtle text-sm font-semibold">
+                  {lesson.sequence_no}
+                </span>
+
+                <div class="min-w-0 flex-1">
+                  <h3 class="font-medium"><a class="hover:underline" href={`/escuela/cursos/${selectedCourse.slug}/${lesson.slug}`}>{lesson.title}</a></h3>
+
+                  {lesson.summary && (
+                    <p class="mt-1 text-sm text-kumo-muted">
+                      {lesson.summary}
+                    </p>
+                  )}
+
+                  <p class="mt-2 text-xs text-kumo-muted">
+                    {lesson.lesson_type === 'reading'
+                      ? 'Lectura'
+                      : lesson.lesson_type === 'quiz'
+                        ? 'Cuestionario'
+                        : lesson.lesson_type === 'exercise'
+                          ? 'Ejercicios'
+                          : 'Actividad'}
+                    {lesson.required_to_complete
+                      ? ' · Obligatoria'
+                      : ' · Complementaria'}
+                  </p>
+                </div>
+
+                <span class="shrink-0 text-xs font-medium">
+                  {lesson.student_status === 'completed'
+                    ? 'Completada'
+                    : lesson.student_status === 'in_progress'
+                      ? 'En curso'
+                      : 'Pendiente'}
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p class="mt-6 text-sm text-kumo-muted">
+            Este curso todavía no tiene lecciones publicadas.
+          </p>
+        )}
+      </section>
+    )}
+
+    <section class="mb-10">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-xl font-semibold">Cursos disponibles</h2>
+        <span class="text-sm text-kumo-muted">
+          {unfinishedCourses.length}
+        </span>
+      </div>
+
+      {unfinishedCourses.length > 0 ? (
+        <div class="grid gap-4 md:grid-cols-2">
+          {unfinishedCourses.map((course) => (
+            <article class="flex flex-col rounded-xl border border-kumo-line bg-kumo-base p-5">
+              <p class="text-sm text-kumo-muted">
+                Nivel {course.sequence_no}
+              </p>
+              <h3 class="mt-1 text-lg font-semibold">{course.title}</h3>
+              <p class="mt-2 flex-1 text-sm leading-6 text-kumo-muted">
+                {course.summary || 'Curso de la Escuela de Matemáticas.'}
+              </p>
+
+              <div class="mt-4 flex items-center justify-between gap-3 text-sm">
+                <span class="text-kumo-muted">
+                  {course.student_status === 'in_progress'
+                    ? 'En curso'
+                    : course.started_at
+                      ? 'Por continuar'
+                      : 'Sin comenzar'}
+                </span>
+                <span class="font-semibold">{course.progress}%</span>
+              </div>
+
+              <div class="mt-2 h-2 overflow-hidden rounded-full bg-kumo-subtle">
+                <div
+                  class="h-full rounded-full bg-kumo-inverted"
+                  style={`width: ${course.progress}%`}
+                ></div>
+              </div>
+
+              <div class="mt-5">
+                {hasAccess ? (
+                  <a
+                    href={`/escuela/mi-escuela/?curso=${encodeURIComponent(course.slug)}`}
+                    class="inline-flex w-full items-center justify-center rounded-lg border border-kumo-line px-4 py-2.5 text-sm font-medium"
+                  >
+                    Ver temario
+                  </a>
+                ) : (
+                  <a
+                    href="/products/suscripcion-escuela-matematicas"
+                    class="inline-flex w-full items-center justify-center rounded-lg border border-kumo-line px-4 py-2.5 text-sm font-medium"
+                  >
+                    Obtener acceso
+                  </a>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="rounded-xl border border-kumo-line p-6">
+          <p class="font-medium">No hay cursos pendientes.</p>
+          <p class="mt-2 text-sm text-kumo-muted">
+            Cuando publiquemos nuevos cursos, aparecerán aquí.
+          </p>
+        </div>
+      )}
+    </section>
+
+    <section>
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h2 class="text-xl font-semibold">Cursos completados</h2>
+        <span class="text-sm text-kumo-muted">
+          {completedCourses.length}
+        </span>
+      </div>
+
+      {completedCourses.length > 0 ? (
+        <div class="space-y-3">
+          {completedCourses.map((course) => (
+            <article class="flex flex-col gap-3 rounded-xl border border-kumo-line p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="font-semibold">{course.title}</h3>
+                <p class="mt-1 text-sm text-kumo-muted">
+                  {course.completed_at
+                    ? `Completado el ${formatDate(course.completed_at)}`
+                    : 'Curso completado'}
+                </p>
+              </div>
+
+              <span class="inline-flex items-center gap-2 text-sm font-medium">
+                <span aria-hidden="true">✓</span>
+                100% completado
+              </span>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="rounded-xl border border-kumo-line p-6">
+          <p class="font-medium">Aún no has completado cursos.</p>
+          <p class="mt-2 text-sm text-kumo-muted">
+            Aquí aparecerá tu historial conforme completes tus cursos.
+          </p>
+        </div>
+      )}
+    </section>
+  </main>
+</Layout>

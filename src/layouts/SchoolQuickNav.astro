@@ -1,0 +1,18 @@
+---
+/** Storefront-wide shortcut bar. Keep this out of AdminLayout. */
+const path = Astro.url.pathname;
+const isSchoolPage = path === '/escuela' || path.startsWith('/escuela/');
+---
+<nav aria-label="Acceso a la escuela" class="border-b border-kumo-line bg-kumo-base">
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+    <a href="/escuela" class="inline-flex items-center gap-2 text-sm font-semibold transition hover:opacity-80" aria-current={path === '/escuela' ? 'page' : undefined}>
+      <span aria-hidden="true" class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-kumo-subtle">∑</span>
+      <span>Escuela de Matemáticas</span>
+      <span class="hidden text-xs font-normal text-kumo-muted sm:inline">Áreas · diagnóstico · cursos por nivel</span>
+    </a>
+    <div class="flex flex-wrap items-center gap-2 text-sm">
+      <a href="/escuela/diagnostico" class:list={["rounded-md px-3 py-2 transition hover:bg-kumo-subtle", isSchoolPage ? "text-kumo-muted" : ""]}>Elegir área</a>
+      <a href="/escuela/mi-escuela" class="inline-flex min-h-9 items-center justify-center rounded-md bg-kumo-inverted px-3 py-2 font-semibold text-kumo-inverted-foreground transition hover:opacity-90">Panel del alumno</a>
+    </div>
+  </div>
+</nav>

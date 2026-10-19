@@ -1,0 +1,44 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+const courses = (await env.DB.prepare(`SELECT id, title, slug FROM school_courses ORDER BY title`).all<{id:string;title:string;slug:string}>()).results ?? [];
+const selectedId = Astro.url.searchParams.get('curso') ?? courses[0]?.id ?? '';
+const lessons = selectedId ? ((await env.DB.prepare(`SELECT id,title,sequence_no,lesson_type,status FROM school_lessons WHERE course_id=? ORDER BY sequence_no`).bind(selectedId).all<{id:string;title:string;sequence_no:number;lesson_type:string;status:string}>()).results ?? []) : [];
+---
+<AdminLayout title="Ordenar lecciones" active="school">
+  <main class="mx-auto max-w-4xl px-4 py-8">
+    <p class="text-xs uppercase tracking-widest text-gray-500">Escuela de Matemáticas</p>
+    <h1 class="mt-2 text-3xl font-semibold">Ordenar lecciones</h1>
+    <p class="mt-2 text-sm text-gray-600">Asigna posiciones distintas. Al guardar, el servidor reorganiza la secuencia en dos fases para evitar errores de constraint.</p>
+    <form method="get" class="my-5 flex flex-wrap gap-3"><label class="text-sm">Curso<select name="curso" class="ml-2 rounded border border-line p-2">{courses.map(c=><option value={c.id} selected={c.id===selectedId}>{c.title}</option>)}</select></label><button class="rounded border border-line px-4 py-2 text-sm">Abrir</button></form>
+    {lessons.length ? <form id="lesson-order-form" class="space-y-3" data-course-id={selectedId}>
+      {lessons.map((lesson) => <div class="flex items-center gap-3 rounded-lg border border-line p-3" data-lesson-id={lesson.id}><span class="min-w-20 text-sm text-gray-500">Actual: {lesson.sequence_no}</span><div class="min-w-0 flex-1"><strong>{lesson.title}</strong><p class="text-xs text-gray-500">{lesson.lesson_type} · {lesson.status}</p></div><label class="text-sm">Posición<input class="lesson-position ml-2 w-20 rounded border border-line p-2" type="number" min="1" max={lessons.length} required value={lesson.sequence_no}/></label></div>)}
+      <button class="rounded bg-brand px-4 py-2 text-white" type="submit">Guardar orden</button><p id="order-message" class="text-sm" aria-live="polite"></p>
+    </form> : <p class="rounded border border-line p-4 text-sm">Este curso no tiene lecciones.</p>}
+  </main>
+  <script>
+    const form = document.querySelector<HTMLFormElement>('#lesson-order-form');
+    const message = document.querySelector<HTMLElement>('#order-message');
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const items = Array.from(form.querySelectorAll<HTMLElement>('[data-lesson-id]')).map((el) => ({ id: el.dataset.lessonId!, pos: Number(el.querySelector<HTMLInputElement>('.lesson-position')?.value) }));
+      const positions = items.map((x) => x.pos);
+      if (positions.some((n) => !Number.isInteger(n) || n < 1 || n > items.length) || new Set(positions).size !== positions.length) {
+        if (message) message.textContent = `Usa una posición única del 1 al ${items.length} para cada lección.`;
+        return;
+      }
+      items.sort((a,b) => a.pos-b.pos);
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (button) button.disabled = true;
+      try {
+        const response = await fetch('/api/admin/escuela/reordenar-lecciones', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({courseId:form.dataset.courseId, lessonIds:items.map(x=>x.id)}) });
+        const result = await response.json().catch(() => ({})) as {error?:string;ok?:boolean};
+        if (!response.ok) throw new Error(result.error || 'No se pudo guardar el orden.');
+        if (message) message.textContent = 'Orden guardado correctamente.';
+        window.location.reload();
+      } catch (error) { if (message) message.textContent = error instanceof Error ? error.message : 'Error al guardar.'; }
+      finally { if (button) button.disabled = false; }
+    });
+  </script>
+</AdminLayout>

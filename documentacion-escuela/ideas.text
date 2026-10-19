@@ -1,0 +1,32 @@
+
+
+Agregar a la tabla cliente la columna "tipo de cliente".
+    Posibles valores:
+        "NORMAL"
+        "SUSCRITO PLAN 1"
+        "SUSCRITO PLAN 2"
+        "SUSCRITO PLAN 3"
+
+Si no existe, crear la tabla "CLIENTES":
+    id
+    email
+    tipo
+    suscrito_hasta
+    fecha_de_suscripcion
+    updated_at
+    created_at
+    deleted_at
+
+
+Flujo: 
+    cliente compra suscripción -> email acceso a /escuela/mi-escuela
+
+    CAda vez que el cliente entre a /escuela/mi-escuela/ verificar si está suscrito.
+        Si está suscrito, muestra cursos, curso actual y lección actual
+        Si no está suscrito, redirige a /escuela/planes
+    
+    Cada vez que alguien entre a /escuela:
+        Si está suscrito, muestre todos los cursos que hay, y anuncios
+        Si no está suscrito, redirige a /escuela/planes
+
+    

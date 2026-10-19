@@ -1,7 +1,13 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\src",
+    "\\src\\components",
+    "\\src\\features",
+    "\\src\\features\\products",
+    "\\src\\pages",
+    "\\src\\pages\\products"
   ],
-  "SelectedNode": "\\astro.config.mjs",
+  "SelectedNode": "\\src\\pages\\products\\[slug].astro",
   "PreviewInSolutionExplorer": false
 }

@@ -19,7 +19,12 @@ type Section =
   | 'pages'
   | 'navigation'
   | 'shipping'
-  | 'settings';
+  | 'settings'
+  | 'school'
+  | 'school-admin'
+  | 'school-avance'
+  | 'school-avance'
+  | 'school-editar';
 
 interface Props {
   title?: string;
@@ -47,6 +52,10 @@ const inventoryExceptionCount = await countUnresolvedInventoryExceptions(env.DB)
 const nav: { key: Section; label: string; href: string }[] = [
   { key: 'dashboard', label: 'Dashboard', href: '/admin' },
   { key: 'products', label: 'Products', href: '/admin/products' },
+  { key: 'school', label: 'Cursos y lecciones', href: '/admin/escuela' },
+  { key: 'school-admin', label: 'Alumnos y pagos', href: '/admin/escuela/administracion' },
+  { key: 'school-avance', label: 'Avance de alumnos', href: '/admin/escuela/avance' },
+  { key: 'school-editar', label: 'Edición de escuela', href: '/admin/escuela/editar' },
   { key: 'orders', label: 'Orders', href: '/admin/orders' },
   { key: 'customers', label: 'Customers', href: '/admin/customers' },
   { key: 'categories', label: 'Categories', href: '/admin/categories' },

@@ -1,0 +1,154 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { renderMarkdown } from '../../../features/pages/markdown';
+
+const MAX_CONTENT = 100_000;
+const slugify = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 100);
+const message = Astro.url.searchParams.get('mensaje');
+const error = Astro.url.searchParams.get('error');
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = String(form.get('action') ?? '');
+  try {
+    if (action === 'create-course') {
+      const title = String(form.get('title') ?? '').trim().slice(0, 160);
+      const slug = slugify(String(form.get('slug') ?? '').trim() || title);
+      const summary = String(form.get('summary') ?? '').trim().slice(0, 500);
+      const description = String(form.get('description_md') ?? '').slice(0, 10_000);
+      const status = String(form.get('status') ?? 'draft') === 'published' ? 'published' : 'draft';
+      const areaId = String(form.get('area_id') ?? '').trim();
+      const levelCode = String(form.get('level_code') ?? 'N0').trim().toUpperCase();
+      if (!title || !slug || !areaId || !/^N[0-9]{1,2}$/.test(levelCode)) throw new Error('Escribe título, área y nivel válido (N0, N1…).');
+      const exists = await env.DB.prepare('SELECT 1 AS yes FROM school_courses WHERE slug = ?').bind(slug).first();
+      if (exists) throw new Error('Ya existe un curso con ese slug. Elige otro.');
+      const next = await env.DB.prepare('SELECT COALESCE(MAX(sequence_no), 0) + 1 AS n FROM school_courses').first<{ n: number }>();
+      await env.DB.prepare(`INSERT INTO school_courses (id, slug, title, summary, description_md, sequence_no, status, area_id, level_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        .bind(crypto.randomUUID(), slug, title, summary, description, Number(next?.n ?? 1), status, areaId, levelCode).run();
+      return Astro.redirect('/admin/escuela?mensaje=curso-creado', 303);
+    }
+    if (action === 'create-lesson') {
+      const courseId = String(form.get('course_id') ?? '').trim();
+      const title = String(form.get('title') ?? '').trim().slice(0, 160);
+      const slug = slugify(String(form.get('slug') ?? '').trim() || title);
+      const summary = String(form.get('summary') ?? '').trim().slice(0, 500);
+      const source = String(form.get('content_md') ?? '').slice(0, MAX_CONTENT);
+      const status = String(form.get('status') ?? 'draft') === 'published' ? 'published' : 'draft';
+      const lessonType = ['reading', 'quiz', 'exercise', 'assignment'].includes(String(form.get('lesson_type'))) ? String(form.get('lesson_type')) : 'reading';
+      const required = form.get('required_to_complete') === 'on' ? 1 : 0;
+      if (!courseId || !title || !slug || !source.trim()) throw new Error('Selecciona un curso e indica título y contenido.');
+      const course = await env.DB.prepare('SELECT id FROM school_courses WHERE id = ?').bind(courseId).first();
+      if (!course) throw new Error('El curso seleccionado no existe.');
+      const duplicate = await env.DB.prepare('SELECT 1 AS yes FROM school_lessons WHERE course_id = ? AND slug = ?').bind(courseId, slug).first();
+      if (duplicate) throw new Error('Ya existe una lección con ese slug en este curso.');
+      const next = await env.DB.prepare('SELECT COALESCE(MAX(sequence_no), 0) + 1 AS n FROM school_lessons WHERE course_id = ?').bind(courseId).first<{ n: number }>();
+      // html:false in renderMarkdown escapes raw HTML. We store both the editable
+      // Markdown source and safe, server-rendered HTML; LaTeX delimiters survive for MathJax.
+      const html = renderMarkdown(source);
+      await env.DB.prepare(`INSERT INTO school_lessons (id, course_id, slug, title, summary, content_md, content_html, sequence_no, lesson_type, status, required_to_complete) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        .bind(crypto.randomUUID(), courseId, slug, title, summary, source, html, Number(next?.n ?? 1), lessonType, status, required).run();
+      return Astro.redirect('/admin/escuela?mensaje=leccion-creada', 303);
+    }
+    throw new Error('Acción no reconocida.');
+  } catch (e) {
+    const text = e instanceof Error ? e.message : 'No se pudo guardar el contenido.';
+    return Astro.redirect(`/admin/escuela?error=${encodeURIComponent(text.slice(0, 180))}`, 303);
+  }
+}
+
+const areasResult = await env.DB.prepare(`SELECT id, title FROM school_areas WHERE status='active' ORDER BY title`).all<{id:string;title:string}>();
+const areas = areasResult.results ?? [];
+const coursesResult = await env.DB.prepare(`SELECT c.id, c.title, c.slug, c.status, c.sequence_no, c.level_code, a.title AS area_title, COUNT(l.id) AS lesson_count FROM school_courses c LEFT JOIN school_areas a ON a.id=c.area_id LEFT JOIN school_lessons l ON l.course_id = c.id GROUP BY c.id ORDER BY c.sequence_no`).all<{id:string;title:string;slug:string;status:string;sequence_no:number;level_code:string;area_title:string|null;lesson_count:number}>();
+const courses = coursesResult.results ?? [];
+const lessonsResult = await env.DB.prepare(`SELECT l.id, l.title, l.slug, l.status, l.sequence_no, c.title AS course_title, c.slug AS course_slug FROM school_lessons l JOIN school_courses c ON c.id = l.course_id ORDER BY c.sequence_no, l.sequence_no LIMIT 100`).all<{id:string;title:string;slug:string;status:string;sequence_no:number;course_title:string;course_slug:string}>();
+const lessons = lessonsResult.results ?? [];
+---
+<AdminLayout title="Escuela: cursos y lecciones" active="school">
+  <header class="mb-8">
+    <p class="text-xs uppercase tracking-widest text-gray-400">Contenido educativo</p>
+    <h1 class="mt-2 font-serif text-3xl tracking-tight">Cursos y lecciones</h1>
+    <p class="mt-2 max-w-2xl text-sm text-gray-500">Crea cursos, redacta lecciones con Markdown y notación LaTeX, y guarda el HTML renderizado en D1.</p>
+  </header>
+  {message === 'curso-creado' && <p class="mb-5 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">Curso creado.</p>}
+  {message === 'leccion-creada' && <p class="mb-5 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">Lección creada y HTML guardado en la base de datos.</p>}
+  {error && <p class="mb-5 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+
+  <div class="grid gap-8 xl:grid-cols-2">
+    <section class="rounded-lg border border-line p-5">
+      <h2 class="mb-4 font-serif text-xl">Crear curso</h2>
+      <form method="POST" class="space-y-4">
+        <input type="hidden" name="action" value="create-course" />
+        <label class="block text-sm">Título <input name="title" required maxlength="160" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" placeholder="Nivel 0 · Matemáticas formales" /></label>
+        <label class="block text-sm">Slug (URL) <input name="slug" maxlength="100" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" placeholder="nivel-0 (opcional; se genera del título)" /></label>
+        <label class="block text-sm">Resumen <input name="summary" maxlength="500" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" placeholder="Breve descripción del curso" /></label>
+        <label class="block text-sm">Descripción (Markdown opcional) <textarea name="description_md" rows="3" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" placeholder="Objetivos, requisitos y temario"></textarea></label>
+        <label class="block text-sm">Área <select name="area_id" required class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2">{areas.map(a => <option value={a.id}>{a.title}</option>)}</select></label>
+        <label class="block text-sm">Nivel <select name="level_code" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2">{['N0','N1','N2','N3','N4','N5'].map(n => <option value={n}>{n}</option>)}</select></label>
+        <label class="block text-sm">Estado <select name="status" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"><option value="draft">Borrador</option><option value="published">Publicado</option></select></label>
+        <button class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover" type="submit">Crear curso</button>
+      </form>
+    </section>
+
+    <section class="rounded-lg border border-line p-5">
+      <h2 class="mb-1 font-serif text-xl">Crear lección</h2>
+      <p class="mb-4 text-sm text-gray-500">Escribe Markdown y LaTeX. El servidor genera y guarda el HTML; no se acepta HTML arbitrario del navegador.</p>
+      <form method="POST" class="space-y-4" id="lesson-form">
+        <input type="hidden" name="action" value="create-lesson" />
+        <label class="block text-sm">Curso <select name="course_id" required class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2">{courses.map(c => <option value={c.id}>{c.title} ({c.status})</option>)}</select></label>
+        <label class="block text-sm">Título <input name="title" required maxlength="160" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" placeholder="El lenguaje matemático" /></label>
+        <label class="block text-sm">Slug (URL) <input name="slug" maxlength="100" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" placeholder="lenguaje-matematico (opcional)" /></label>
+        <label class="block text-sm">Resumen <input name="summary" maxlength="500" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2" /></label>
+        <label class="block text-sm">Contenido de la lección <textarea id="content-md" name="content_md" required maxlength="100000" rows="14" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm" placeholder={'# Proposiciones\n\nUna proposición es un enunciado al que se le puede asignar un valor de verdad.\n\nLa negación de $p$ se escribe $\\neg p$.\n\nEn forma desarrollada:\n\n$$\nP \\Rightarrow Q\n$$'}></textarea></label>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" id="preview-button" class="rounded-md border border-line px-3 py-2 text-sm hover:border-brand">Vista previa</button>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="required_to_complete" checked /> Requerida para completar curso</label>
+        </div>
+        <div id="lesson-preview-wrap" class="hidden rounded-md border border-line bg-white p-4">
+          <p class="mb-3 text-xs uppercase tracking-widest text-gray-400">Vista previa</p>
+          <article id="lesson-preview" class="prose max-w-none"></article>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="block text-sm">Tipo <select name="lesson_type" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"><option value="reading">Lectura</option><option value="exercise">Ejercicios</option><option value="quiz">Cuestionario</option><option value="assignment">Tarea</option></select></label>
+          <label class="block text-sm">Estado <select name="status" class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"><option value="draft">Borrador</option><option value="published">Publicada</option></select></label>
+        </div>
+        <button class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-hover" type="submit">Guardar lección</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="mt-10 rounded-lg border border-line p-5">
+    <h2 class="mb-4 font-serif text-xl">Cursos existentes</h2>
+    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase tracking-widest text-gray-400"><th class="py-2 pr-4">Curso</th><th class="py-2 pr-4">Área / nivel</th><th class="py-2 pr-4">Estado</th><th class="py-2">Lecciones</th></tr></thead><tbody>{courses.map(c => <tr class="border-b border-line"><td class="py-3 pr-4"><strong>{c.title}</strong><div class="text-xs text-gray-500">/{c.slug}</div></td><td class="py-3 pr-4">{c.area_title ?? 'Sin área'} · {c.level_code}</td><td class="py-3 pr-4">{c.status}</td><td class="py-3">{c.lesson_count}</td></tr>)}{courses.length === 0 && <tr><td colspan="4" class="py-5 text-gray-500">Aún no hay cursos. Crea el primero arriba.</td></tr>}</tbody></table></div>
+  </section>
+  <section class="mt-8 rounded-lg border border-line p-5">
+    <h2 class="mb-4 font-serif text-xl">Lecciones recientes</h2>
+    <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase tracking-widest text-gray-400"><th class="py-2 pr-4">Lección</th><th class="py-2 pr-4">Curso</th><th class="py-2">Estado</th></tr></thead><tbody>{lessons.map(l => <tr class="border-b border-line"><td class="py-3 pr-4">{l.title}<div class="text-xs text-gray-500">/{l.slug}</div></td><td class="py-3 pr-4">{l.course_title}</td><td class="py-3">{l.status}</td></tr>)}{lessons.length === 0 && <tr><td colspan="3" class="py-5 text-gray-500">Aún no hay lecciones.</td></tr>}</tbody></table></div>
+  </section>
+  <script is:inline>
+    (() => {
+      const button = document.getElementById('preview-button');
+      const source = document.getElementById('content-md');
+      const wrap = document.getElementById('lesson-preview-wrap');
+      const preview = document.getElementById('lesson-preview');
+      if (!button || !source || !wrap || !preview) return;
+      button.addEventListener('click', async () => {
+        button.disabled = true; button.textContent = 'Generando…';
+        try {
+          const response = await fetch('/api/admin/escuela/preview', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: new URLSearchParams({ body_markdown: source.value }) });
+          if (!response.ok) throw new Error('No se pudo generar la vista previa.');
+          preview.innerHTML = await response.text();
+          wrap.classList.remove('hidden');
+          if (window.MathJax && window.MathJax.typesetPromise) { await window.MathJax.typesetPromise([preview]); }
+          wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (e) { alert(e instanceof Error ? e.message : 'Error en la vista previa.'); }
+        finally { button.disabled = false; button.textContent = 'Vista previa'; }
+      });
+    })();
+  </script>
+  <script is:inline>
+    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }, options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] } };
+  </script>
+  <script is:inline async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</AdminLayout>

@@ -45,6 +45,20 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
     </div>
     <p class="mb-6 text-sm text-muted">Signed in as {email}</p>
 
+    <!-- School access: keep this link visible from the customer account page. -->
+    <section class="mb-8 rounded-xl border border-line bg-surface p-5 sm:flex sm:items-center sm:justify-between sm:gap-6">
+      <div>
+        <h2 class="text-lg font-semibold tracking-tight text-ink">Escuela de Matemáticas</h2>
+        <p class="mt-1 text-sm text-muted">Accede a tu panel académico, consulta tu curso asignado y continúa tus lecciones.</p>
+      </div>
+      <a
+        href="/escuela/mi-escuela"
+        class="mt-4 inline-flex shrink-0 items-center justify-center rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 sm:mt-0"
+      >
+        Ir a mi escuela <span aria-hidden="true" class="ml-2">→</span>
+      </a>
+    </section>
+
     {
       orders.length === 0 ? (
         <p class="rounded-lg border border-line bg-surface px-4 py-6 text-center text-sm text-muted">
