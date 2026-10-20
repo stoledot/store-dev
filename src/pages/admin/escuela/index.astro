@@ -70,6 +70,11 @@ const lessons = lessonsResult.results ?? [];
     <p class="text-xs uppercase tracking-widest text-gray-400">Contenido educativo</p>
     <h1 class="mt-2 font-serif text-3xl tracking-tight">Cursos y lecciones</h1>
     <p class="mt-2 max-w-2xl text-sm text-gray-500">Crea cursos, redacta lecciones con Markdown y notación LaTeX, y guarda el HTML renderizado en D1.</p>
+    <div class="mb-6 flex flex-wrap gap-2">
+      <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/evaluaciones">Evaluaciones y pesos</a>
+      <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/orden-lecciones">Ordenar lecciones</a>
+      <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/calificaciones">Revisar entregas y calificar</a>
+    </div>
   </header>
   {message === 'curso-creado' && <p class="mb-5 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">Curso creado.</p>}
   {message === 'leccion-creada' && <p class="mb-5 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">Lección creada y HTML guardado en la base de datos.</p>}

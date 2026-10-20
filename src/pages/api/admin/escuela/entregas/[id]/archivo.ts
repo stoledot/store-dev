@@ -10,5 +10,14 @@ export const GET: APIRoute = async ({params,cookies,locals}) => {
   if(!env.FILES) return new Response('Almacenamiento privado no configurado.',{status:503});
   const object=await env.FILES.get(row.submission_file_key);
   if(!object) return new Response('Archivo no encontrado.',{status:404});
-  return new Response(object.body,{headers:{'content-type':row.submission_file_type||'application/octet-stream','content-disposition':`attachment; filename="${safeName(row.submission_file_name||'entrega')}"`,'cache-control':'private, no-store','x-content-type-options':'nosniff'}});
+  const body = await object.arrayBuffer();
+  return new Response(body, {
+    headers: {
+      'Content-Type': object.httpMetadata?.contentType
+        ?? 'application/octet-stream',
+      'Content-Length': String(object.size),
+      'Content-Disposition': 'attachment',
+      'Cache-Control': 'private, no-store',
+    },
+  });
 };
