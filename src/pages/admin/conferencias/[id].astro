@@ -1,0 +1,325 @@
+---
+export const prerender = false;
+
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import {
+  addSession,
+  deleteSession,
+  updateSession,
+  getConference,
+  listParticipants,
+  listSessions,
+  markParticipantEmail,
+  saveConference,
+  upsertParticipant,
+} from '../../../features/conferences/db';
+import { sendConferenceEmail } from '../../../features/conferences/email';
+import { createZoomMeeting, deleteZoomMeeting, updateZoomMeeting } from '../../../features/conferences/zoom';
+
+const id = Number(Astro.params.id);
+const conference = Number.isSafeInteger(id) && id > 0 ? await getConference(env.DB, id) : null;
+if (!conference) return new Response('Conferencia no encontrada', { status: 404 });
+
+let error = Astro.url.searchParams.get('error') ?? '';
+let notice = Astro.url.searchParams.get('notice') ?? '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = String(form.get('_action') ?? '');
+
+  try {
+    if (action === 'save') {
+      const nextTitle = String(form.get('title') ?? '').trim();
+      const nextDescription = String(form.get('description') ?? '').trim();
+      const changed = nextTitle !== conference.title || nextDescription !== conference.description;
+      await saveConference(env.DB, id, nextTitle, nextDescription, String(form.get('status') ?? 'draft'));
+      if (nextTitle !== conference.title) {
+        for (const session of await listSessions(env.DB, id)) {
+          if (session.zoom_meeting_id) await updateZoomMeeting(env.DB, session.zoom_meeting_id, {
+            title: `${nextTitle} — ${session.title}`, startsAt: session.starts_at.replace(' ', 'T').slice(0, 16),
+            duration: session.duration_minutes, timeZone: session.time_zone,
+          });
+        }
+      }
+      if (changed) {
+        for (const participant of await listParticipants(env.DB, id)) {
+          try { await sendConferenceEmail(env.DB, id, participant, 'update'); await markParticipantEmail(env.DB, participant.id, true); }
+          catch (cause) { await markParticipantEmail(env.DB, participant.id, false); console.error('No se pudo notificar actualización de conferencia', participant.email, cause); }
+        }
+      }
+      notice = changed ? 'Cambios guardados y participantes notificados.' : 'Cambios guardados.';
+    } else if (action === 'add_session') {
+      const title = String(form.get('session_title') ?? '').trim();
+      const startsAt = String(form.get('starts_at') ?? '');
+      const duration = Number(form.get('duration_minutes') ?? 60);
+      const timeZone = String(form.get('time_zone') ?? 'UTC');
+      if (!title || !startsAt || !Number.isInteger(duration) || duration < 5 || duration > 600) {
+        throw new Error('Completa título, fecha y duración (5–600 minutos).');
+      }
+
+      const zoom = await createZoomMeeting(env.DB, {
+        title: `${conference.title} — ${title}`,
+        startsAt,
+        duration,
+        timeZone,
+      });
+      await addSession(env.DB, {
+        conference_id: id,
+        title,
+        starts_at: startsAt.replace('T', ' '),
+        duration_minutes: duration,
+        time_zone: timeZone,
+        zoom_meeting_id: zoom.meetingId,
+        join_url: zoom.joinUrl,
+        passcode: zoom.passcode,
+      });
+      for (const participant of await listParticipants(env.DB, id)) {
+        try { await sendConferenceEmail(env.DB, id, participant, 'update'); await markParticipantEmail(env.DB, participant.id, true); }
+        catch (cause) { await markParticipantEmail(env.DB, participant.id, false); console.error('No se pudo notificar nueva sesión', participant.email, cause); }
+      }
+      notice = 'Sesión creada en Zoom y participantes notificados.';
+    } else if (action === 'update_session') {
+      const sessionId = Number(form.get('session_id'));
+      const current = (await listSessions(env.DB, id)).find((item) => item.id === sessionId);
+      if (!current) throw new Error('Sesión no encontrada.');
+      const title = String(form.get('session_title') ?? '').trim();
+      const startsAt = String(form.get('starts_at') ?? '');
+      const duration = Number(form.get('duration_minutes') ?? current.duration_minutes);
+      const timeZone = String(form.get('time_zone') ?? current.time_zone);
+      if (!title || !startsAt || !Number.isInteger(duration) || duration < 5 || duration > 600) throw new Error('Completa título, fecha y duración (5–600 minutos).');
+      if (current.zoom_meeting_id) await updateZoomMeeting(env.DB, current.zoom_meeting_id, { title: `${conference.title} — ${title}`, startsAt, duration, timeZone });
+      await updateSession(env.DB, sessionId, id, { title, starts_at: startsAt, duration_minutes: duration, time_zone: timeZone });
+      for (const participant of await listParticipants(env.DB, id)) {
+        try { await sendConferenceEmail(env.DB, id, participant, 'update'); await markParticipantEmail(env.DB, participant.id, true); }
+        catch (cause) { await markParticipantEmail(env.DB, participant.id, false); console.error('No se pudo notificar cambio de sesión', participant.email, cause); }
+      }
+      notice = 'Sesión actualizada y participantes notificados.';
+    } else if (action === 'delete_session') {
+      const sessionId = Number(form.get('session_id'));
+      const current = (await listSessions(env.DB, id)).find((item) => item.id === sessionId);
+      if (!current) throw new Error('Sesión no encontrada.');
+      if (current.zoom_meeting_id) await deleteZoomMeeting(env.DB, current.zoom_meeting_id);
+      await deleteSession(env.DB, sessionId, id);
+      for (const participant of await listParticipants(env.DB, id)) {
+        try { await sendConferenceEmail(env.DB, id, participant, 'update'); await markParticipantEmail(env.DB, participant.id, true); }
+        catch (cause) { await markParticipantEmail(env.DB, participant.id, false); console.error('No se pudo notificar eliminación de sesión', participant.email, cause); }
+      }
+      notice = 'Sesión eliminada y participantes notificados.';
+    } else if (action === 'invite') {
+      const name = String(form.get('participant_name') ?? '').trim();
+      const emails = String(form.get('participant_emails') ?? '')
+        .split(/[\s,;]+/)
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
+      if (!emails.length) throw new Error('Escribe al menos un correo electrónico.');
+
+      let sent = 0;
+      for (const email of [...new Set(emails)]) {
+        const participant = await upsertParticipant(env.DB, id, name, email);
+        try {
+          await sendConferenceEmail(env.DB, id, participant, 'invitation');
+          await markParticipantEmail(env.DB, participant.id, true);
+          sent++;
+        } catch (cause) {
+          await markParticipantEmail(env.DB, participant.id, false);
+          throw cause;
+        }
+      }
+      notice = `Invitaciones enviadas: ${sent}.`;
+    } else if (action === 'resend') {
+      const participantId = Number(form.get('participant_id'));
+      const participant = (await listParticipants(env.DB, id)).find((item) => item.id === participantId);
+      if (!participant) throw new Error('Participante no encontrado.');
+      await sendConferenceEmail(env.DB, id, participant, 'invitation');
+      await markParticipantEmail(env.DB, participant.id, true);
+      notice = `Invitación reenviada a ${participant.email}.`;
+    } else if (action === 'remind_all') {
+      const participants = await listParticipants(env.DB, id);
+      let sent = 0;
+      for (const participant of participants) {
+        await sendConferenceEmail(env.DB, id, participant, 'reminder');
+        await markParticipantEmail(env.DB, participant.id, true);
+        sent++;
+      }
+      notice = `Recordatorios enviados: ${sent}.`;
+    } else {
+      throw new Error('Acción desconocida.');
+    }
+
+    return Astro.redirect(`/admin/conferencias/${id}?notice=${encodeURIComponent(notice)}`, 303);
+  } catch (cause) {
+    error = cause instanceof Error ? cause.message : 'No se pudo completar la operación.';
+  }
+}
+
+const sessions = await listSessions(env.DB, id);
+const participants = await listParticipants(env.DB, id);
+---
+
+<AdminLayout title={conference.title} active="conferences">
+  <a href="/admin/conferencias" class="text-sm text-gray-500 hover:text-brand">
+    ← Todas las conferencias
+  </a>
+  <h1 class="mb-2 mt-4 font-serif text-3xl">{conference.title}</h1>
+  <p class="mb-6 text-sm text-gray-500">
+    ID interno: {conference.id} · {participants.length} participante(s)
+  </p>
+
+  {error && (
+    <p class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
+  )}
+  {notice && (
+    <p class="mb-4 rounded border border-green-200 bg-green-50 p-3 text-sm text-green-700">{notice}</p>
+  )}
+
+  <section class="mb-8 max-w-3xl rounded-md border border-line p-5">
+    <h2 class="mb-4 text-lg font-semibold">Datos de la conferencia</h2>
+    <form method="POST" class="space-y-3">
+      <input type="hidden" name="_action" value="save" />
+      <label class="block text-sm">
+        Nombre
+        <input name="title" required value={conference.title} class="mt-1 w-full rounded border border-line px-3 py-2" />
+      </label>
+      <label class="block text-sm">
+        Descripción
+        <textarea name="description" rows="3" class="mt-1 w-full rounded border border-line px-3 py-2">{conference.description}</textarea>
+      </label>
+      <label class="block text-sm">
+        Estado
+        <select name="status" class="mt-1 rounded border border-line px-3 py-2">
+          {['draft', 'published', 'cancelled', 'completed'].map((status) => (
+            <option value={status} selected={conference.status === status}>{status}</option>
+          ))}
+        </select>
+      </label>
+      <button class="rounded bg-brand px-4 py-2 text-sm font-medium text-white">Guardar</button>
+    </form>
+  </section>
+
+  <section class="mb-8 rounded-md border border-line p-5">
+    <h2 class="mb-1 text-lg font-semibold">Sesiones de Zoom</h2>
+    <p class="mb-4 text-sm text-gray-500">
+      Cada sesión crea una reunión distinta en Zoom, con su propio enlace y passcode.
+    </p>
+    {sessions.length > 0 && (
+      <div class="mb-5 space-y-3">
+        {sessions.map((session, index) => (
+          <article class="rounded border border-line p-4">
+            <h3 class="font-semibold">Sesión {index + 1}: {session.title}</h3>
+            <p class="mt-1 text-sm">{session.starts_at} · {session.time_zone} · {session.duration_minutes} min</p>
+            <p class="mt-1 break-all text-sm">{session.join_url ? <a class="text-accent underline" href={session.join_url}>{session.join_url}</a> : 'Sin enlace'}</p>
+            <p class="mb-3 text-sm">Clave Zoom: <code>{session.passcode ?? '—'}</code> · Meeting ID: {session.zoom_meeting_id ?? '—'}</p>
+            <form method="POST" class="grid gap-3 sm:grid-cols-2">
+              <input type="hidden" name="_action" value="update_session" />
+              <input type="hidden" name="session_id" value={session.id} />
+              <label class="text-sm">Nombre de la sesión<input name="session_title" required value={session.title} class="mt-1 w-full rounded border border-line px-3 py-2" /></label>
+              <label class="text-sm">Fecha y hora local<input name="starts_at" type="datetime-local" required value={session.starts_at.replace(' ', 'T').slice(0, 16)} class="mt-1 w-full rounded border border-line px-3 py-2" /></label>
+              <label class="text-sm">Duración (minutos)<input name="duration_minutes" type="number" min="5" max="600" required value={session.duration_minutes} class="mt-1 w-full rounded border border-line px-3 py-2" /></label>
+              <label class="text-sm">Zona horaria IANA<input name="time_zone" required value={session.time_zone} class="mt-1 w-full rounded border border-line px-3 py-2" /></label>
+              <div><button class="rounded bg-brand px-4 py-2 text-sm font-medium text-white">Guardar cambios y notificar</button></div>
+            </form>
+            <form method="POST" class="mt-3">
+              <input type="hidden" name="_action" value="delete_session" /><input type="hidden" name="session_id" value={session.id} />
+              <button class="rounded border border-red-300 px-4 py-2 text-sm text-red-700">Eliminar sesión</button>
+            </form>
+          </article>
+        ))}
+      </div>
+    )}
+
+    <form method="POST" class="grid max-w-3xl gap-3 sm:grid-cols-2">
+      <input type="hidden" name="_action" value="add_session" />
+      <label class="text-sm">
+        Nombre de la sesión
+        <input name="session_title" required placeholder="Sesión 1" class="mt-1 w-full rounded border border-line px-3 py-2" />
+      </label>
+      <label class="text-sm">
+        Fecha y hora local
+        <input name="starts_at" type="datetime-local" required class="mt-1 w-full rounded border border-line px-3 py-2" />
+      </label>
+      <label class="text-sm">
+        Duración (minutos)
+        <input name="duration_minutes" type="number" min="5" max="600" value="60" required class="mt-1 w-full rounded border border-line px-3 py-2" />
+      </label>
+      <label class="text-sm">
+        Zona horaria IANA
+        <input name="time_zone" value={Astro.locals.settings?.timeZone ?? 'America/Mexico_City'} required placeholder="America/Mexico_City" class="mt-1 w-full rounded border border-line px-3 py-2" />
+      </label>
+      <div class="sm:col-span-2">
+        <button class="rounded bg-brand px-4 py-2 text-sm font-medium text-white">Crear sesión en Zoom</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="mb-8 rounded-md border border-line p-5">
+    <h2 class="mb-1 text-lg font-semibold">Invitar participantes</h2>
+    <p class="mb-4 text-sm text-gray-500">
+      Pega varios correos separados por espacios, comas o saltos de línea.
+    </p>
+    <form method="POST" class="max-w-2xl space-y-3">
+      <input type="hidden" name="_action" value="invite" />
+      <label class="block text-sm">
+        Nombre (opcional; se aplica a todos)
+        <input name="participant_name" class="mt-1 w-full rounded border border-line px-3 py-2" />
+      </label>
+      <label class="block text-sm">
+        Correos electrónicos
+        <textarea name="participant_emails" required rows="4" placeholder="alumno1@example.com, alumno2@example.com" class="mt-1 w-full rounded border border-line px-3 py-2"></textarea>
+      </label>
+      <button class="rounded bg-brand px-4 py-2 text-sm font-medium text-white">Enviar invitaciones</button>
+    </form>
+  </section>
+
+  <section class="rounded-md border border-line p-5">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-semibold">Participantes inscritos</h2>
+        <p class="text-sm text-gray-500">El estado refleja si se envió correctamente el correo más reciente.</p>
+      </div>
+      <form method="POST">
+        <input type="hidden" name="_action" value="remind_all" />
+        <button disabled={participants.length === 0 || sessions.length === 0} class="rounded border border-line px-4 py-2 text-sm hover:border-brand disabled:opacity-40">
+          Enviar recordatorio a todos
+        </button>
+      </form>
+    </div>
+    {participants.length === 0 ? (
+      <p class="text-sm text-gray-500">Todavía no hay participantes.</p>
+    ) : (
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-line">
+              <th class="p-2">Participante</th>
+              <th class="p-2">Clave personal</th>
+              <th class="p-2">Estado</th>
+              <th class="p-2">Último correo</th>
+              <th class="p-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {participants.map((participant) => (
+              <tr class="border-b border-line last:border-0">
+                <td class="p-2">
+                  {participant.name || '—'}
+                  <div class="text-xs text-gray-500">{participant.email}</div>
+                </td>
+                <td class="p-2"><code>{participant.access_key}</code></td>
+                <td class="p-2">{participant.status}</td>
+                <td class="p-2">{participant.last_email_at ?? '—'}</td>
+                <td class="p-2">
+                  <form method="POST">
+                    <input type="hidden" name="_action" value="resend" />
+                    <input type="hidden" name="participant_id" value={participant.id} />
+                    <button class="text-accent underline">Reenviar</button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+</AdminLayout>

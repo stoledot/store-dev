@@ -1,4 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
+import { env } from 'cloudflare:workers';
+import { ensureConferenceAccessForOrder, markOrderConferenceParticipantsInvited } from '../conferences/access.ts';
 import {
   NOTIFICATION_KINDS,
   claimNotification as claim,
@@ -97,6 +99,15 @@ export async function deliverOrderNotifications(
     const attempts = await claim(db, orderId, kind);
     if (attempts == null) continue;
     try {
+      // Create the conference entitlement before the customer receipt is sent.
+      // A missing Zoom configuration fails this outbox row so the normal retry
+      // path can deliver the credential once configuration is corrected.
+      const conferenceAccess = kind === 'customer-receipt'
+        ? await ensureConferenceAccessForOrder(db, orderId, {
+            zoomUrl: env.CONFERENCE_ZOOM_URL,
+            instructions: env.CONFERENCE_INSTRUCTIONS,
+          })
+        : [];
       const emailer = await getEmailProvider(s);
       if (!emailer) {
         if (isGuestLinkReissueKind(kind)) {
@@ -164,7 +175,7 @@ export async function deliverOrderNotifications(
 
       const applicable =
         kind === 'customer-receipt'
-          ? Boolean(order.email) && shouldSendCustomerOrderEmail(order.payment_method)
+          ? Boolean(order.email) && (shouldSendCustomerOrderEmail(order.payment_method) || conferenceAccess.length > 0)
           : Boolean(notifyTo);
       if (!applicable) {
         await markSkipped(db, orderId, kind, attempts);
@@ -182,6 +193,7 @@ export async function deliverOrderNotifications(
               // Tokenized guest link — customer email is an allowlisted token
               // position. The owner notification links to admin instead.
               await guestOrderUrl(db, order.public_id, origin),
+              conferenceAccess,
             )
           : orderNotificationEmail(order, items, notifyTo!, origin, storeName, s.imageDelivery);
       // Keyed on public_id, not the row id: D1 ids restart per store, so two
@@ -191,6 +203,10 @@ export async function deliverOrderNotifications(
       // fallback is only for pre-0005 legacy rows without one.
       await emailer.send({ ...msg, idempotencyKey: `${kind}/${order.public_id ?? orderId}` });
       await markSent(db, orderId, kind, attempts);
+      if (kind === 'customer-receipt') {
+        try { await markOrderConferenceParticipantsInvited(db, orderId); }
+        catch (err) { console.error('Conference participant status update failed:', err); }
+      }
     } catch (err) {
       console.error(`Order notification ${kind}/${order?.public_id ?? '(unresolved order)'} failed:`, err);
       await markFailed(db, orderId, kind, attempts, err);

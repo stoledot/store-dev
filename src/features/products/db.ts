@@ -432,10 +432,13 @@ export async function setProductFile(
 }
 
 export async function deleteProduct(db: D1Database, id: number): Promise<void> {
-  // Clear category links first (FKs aren't enforced on D1).
+  // Preserve immutable order-item snapshots before deleting a catalog product.
+  // The order keeps its purchased name/price and conference entitlements even
+  // when the product is removed from the catalog.
   await db.batch([
     db.prepare('DELETE FROM product_categories WHERE product_id = ?').bind(id),
     db.prepare('DELETE FROM product_images WHERE product_id = ?').bind(id),
+    db.prepare('UPDATE order_items SET product_id = NULL WHERE product_id = ?').bind(id),
     db.prepare('DELETE FROM products WHERE id = ?').bind(id),
   ]);
 }

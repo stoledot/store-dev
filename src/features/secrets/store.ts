@@ -20,7 +20,10 @@ export type SecretName =
   | 'resend_api_key'
   | 'turnstile_secret_key'
   | 'lnbits_api_key'
-  | 'phoenixd_password';
+  | 'phoenixd_password'
+  | 'zoom_account_id'
+  | 'zoom_client_id'
+  | 'zoom_client_secret';
 
 export const SECRET_NAMES: readonly SecretName[] = [
   'stripe_secret_key',
@@ -31,6 +34,9 @@ export const SECRET_NAMES: readonly SecretName[] = [
   'turnstile_secret_key',
   'lnbits_api_key',
   'phoenixd_password',
+  'zoom_account_id',
+  'zoom_client_id',
+  'zoom_client_secret',
 ];
 
 /** D1 settings-row key holding the encrypted blob for a secret. */

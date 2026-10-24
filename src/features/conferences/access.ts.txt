@@ -1,0 +1,81 @@
+import type { D1Database } from '@cloudflare/workers-types';
+
+export interface ConferenceAccess {
+  id: number;
+  order_id: number;
+  order_item_id: number;
+  seat_number: number;
+  access_key: string;
+  zoom_url: string;
+  instructions: string;
+  created_at: string;
+}
+
+interface ConferenceLine {
+  id: number;
+  quantity: number;
+  description: string | null;
+}
+
+/**
+ * Conference products are deliberately opt-in by slug/name: create a product
+ * whose slug or name is exactly "conferencia". Credentials are minted only for
+ * paid orders. Set CONFERENCE_ZOOM_URL in the Worker vars before selling.
+ * CONFERENCE_INSTRUCTIONS overrides the product description as buyer guidance.
+ */
+export async function ensureConferenceAccessForOrder(
+  db: D1Database,
+  orderId: number,
+  config: { zoomUrl?: string; instructions?: string } = {},
+): Promise<ConferenceAccess[]> {
+  const order = await db
+    .prepare("SELECT id, status, refunded_cents, amount_total_cents FROM orders WHERE id = ?")
+    .bind(orderId)
+    .first<{ id: number; status: string; refunded_cents: number; amount_total_cents: number }>();
+  if (!order || order.status !== 'paid' || order.refunded_cents >= order.amount_total_cents) return [];
+
+  const { results: lines } = await db.prepare(
+    `SELECT oi.id, oi.quantity, p.description
+       FROM order_items oi
+       JOIN products p ON p.id = oi.product_id
+      WHERE oi.order_id = ?
+        AND (lower(p.slug) = 'conferencia' OR lower(trim(p.name)) = 'conferencia')
+      ORDER BY oi.id`,
+  ).bind(orderId).all<ConferenceLine>();
+  if (!lines?.length) return [];
+
+  const zoomUrl = config.zoomUrl?.trim();
+  if (!zoomUrl || !/^https:\/\/(?:[\w-]+\.)?zoom\.us\//i.test(zoomUrl)) {
+    throw new Error('Conference product found but CONFERENCE_ZOOM_URL is missing or is not a Zoom HTTPS URL.');
+  }
+
+  for (const line of lines) {
+    const instructions = config.instructions?.trim() || line.description?.trim() ||
+      'Abre el enlace de Zoom a la hora programada. Introduce tu clave de acceso cuando te la soliciten.';
+    for (let seat = 1; seat <= line.quantity; seat++) {
+      // INSERT OR IGNORE plus the UNIQUE(order_item_id, seat_number) constraint
+      // makes webhook retries and concurrent delivery safe.
+      const key = crypto.randomUUID().replaceAll('-', '').slice(0, 20).toUpperCase();
+      await db.prepare(
+        `INSERT OR IGNORE INTO conference_access
+           (order_id, order_item_id, seat_number, access_key, zoom_url, instructions)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+      ).bind(orderId, line.id, seat, key, zoomUrl, instructions).run();
+    }
+  }
+
+  const { results } = await db.prepare(
+    'SELECT * FROM conference_access WHERE order_id = ? ORDER BY order_item_id, seat_number',
+  ).bind(orderId).all<ConferenceAccess>();
+  return results ?? [];
+}
+
+export async function listConferenceAccessForOrder(
+  db: D1Database,
+  orderId: number,
+): Promise<ConferenceAccess[]> {
+  const { results } = await db.prepare(
+    'SELECT * FROM conference_access WHERE order_id = ? ORDER BY order_item_id, seat_number',
+  ).bind(orderId).all<ConferenceAccess>();
+  return results ?? [];
+}

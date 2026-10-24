@@ -9,6 +9,7 @@ import { isAccessToken } from '../../features/ids/token.ts';
 import { resolveAccessToken } from '../../features/orders/guestAccess.ts';
 import { clearCart } from '../../features/cart/cart';
 import { catalogPath } from '../../features/settings/home';
+import { ensureConferenceAccessForOrder, listConferenceAccessForOrder, type ConferenceAccess } from '../../features/conferences/access.ts';
 
 // Guest access: new orders are addressed ONLY by their otk_ access token
 // (resolved through the registry); legacy orders keep their pre-cutover
@@ -35,6 +36,20 @@ Astro.response.headers.set('referrer-policy', 'no-referrer');
 // and the header badge can't survive the purchase.
 if (order) clearCart(Astro.cookies);
 const items = order ? await listOrderItems(env.DB, order.id) : [];
+let conferenceAccess: ConferenceAccess[] = [];
+if (order) {
+  try {
+    conferenceAccess = await ensureConferenceAccessForOrder(env.DB, order.id, {
+      zoomUrl: env.CONFERENCE_ZOOM_URL,
+      instructions: env.CONFERENCE_INSTRUCTIONS,
+    });
+  } catch (error) {
+    console.error('Conference access setup failed:', error);
+    conferenceAccess = order.refunded_cents < order.amount_total_cents
+      ? await listConferenceAccessForOrder(env.DB, order.id)
+      : [];
+  }
+}
 
 // Customer reference: the ord_ token portion for new orders; legacy orders keep
 // showing their previously communicated calculated number.
@@ -111,6 +126,22 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
                       class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-on-brand hover:bg-brand-hover"
                     >Download</a>
                   )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {conferenceAccess.length > 0 && (
+          <section class="mt-8 rounded-lg border border-line bg-surface p-5">
+            <h2 class="font-serif text-2xl">Acceso a tu conferencia</h2>
+            <p class="mt-2 text-sm text-muted">Guarda tu clave y úsala para entrar a la conferencia.</p>
+            <ul class="mt-4 space-y-4">
+              {conferenceAccess.map((access, index) => (
+                <li class="rounded-md border border-line p-4">
+                  <p class="text-sm font-semibold">Acceso {index + 1}</p>
+                  <p class="mt-1 font-mono text-lg tracking-wide">{access.access_key}</p>
+                  {access.zoom_url && <a href={access.zoom_url} target="_blank" rel="noreferrer" class="mt-2 inline-block text-accent hover:underline">Abrir Zoom</a>}
+                  {access.instructions && <p class="mt-2 whitespace-pre-line text-sm">{access.instructions}</p>}
                 </li>
               ))}
             </ul>

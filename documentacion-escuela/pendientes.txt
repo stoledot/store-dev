@@ -4,3 +4,4 @@
 -> Cechar la base de datos en una interfas
 -> Verificar cómo utilizar la base de datos de preview, desarrollo y producción
 
+-> Propuesta de implementación de pago de suscripción

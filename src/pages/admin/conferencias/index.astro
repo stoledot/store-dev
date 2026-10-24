@@ -1,0 +1,98 @@
+---
+export const prerender = false;
+
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { createConference, listConferences } from '../../../features/conferences/db';
+
+let error = Astro.url.searchParams.get('error') ?? '';
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const title = String(form.get('title') ?? '').trim();
+  const description = String(form.get('description') ?? '').trim();
+
+  if (!title) {
+    error = 'Escribe el nombre de la conferencia.';
+  } else {
+    try {
+      const id = await createConference(env.DB, title, description);
+      return Astro.redirect(`/admin/conferencias/${id}`, 303);
+    } catch (cause) {
+      error = cause instanceof Error ? cause.message : 'No se pudo crear la conferencia.';
+    }
+  }
+}
+
+const conferences = await listConferences(env.DB);
+---
+
+<AdminLayout title="Conferencias Zoom" active="conferences">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <h1 class="font-serif text-3xl">Conferencias Zoom</h1>
+      <p class="mt-2 text-sm text-gray-500">
+        Administra eventos, sesiones, participantes e invitaciones.
+      </p>
+    </div>
+  </div>
+
+  {error && (
+    <p class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+      {error}
+    </p>
+  )}
+
+  <section class="mb-8 max-w-2xl rounded-md border border-line p-5">
+    <h2 class="mb-4 text-lg font-semibold">Crear conferencia</h2>
+    <form method="POST" class="space-y-3">
+      <label class="block text-sm">
+        Nombre
+        <input name="title" required maxlength="200" class="mt-1 w-full rounded border border-line px-3 py-2" />
+      </label>
+      <label class="block text-sm">
+        Descripción e instrucciones generales
+        <textarea name="description" rows="3" class="mt-1 w-full rounded border border-line px-3 py-2"></textarea>
+      </label>
+      <button class="rounded bg-brand px-4 py-2 text-sm font-medium text-white">
+        Crear conferencia
+      </button>
+    </form>
+  </section>
+
+  <section>
+    <h2 class="mb-3 text-lg font-semibold">Conferencias existentes</h2>
+    {conferences.length === 0 ? (
+      <p class="text-sm text-gray-500">Todavía no hay conferencias.</p>
+    ) : (
+      <div class="overflow-x-auto rounded-md border border-line">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-line bg-surface">
+              <th class="p-3">Conferencia</th>
+              <th class="p-3">Estado</th>
+              <th class="p-3">Creada</th>
+              <th class="p-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {conferences.map((conference) => (
+              <tr class="border-b border-line last:border-0">
+                <td class="p-3 font-medium">
+                  {conference.title}
+                  <p class="mt-1 text-xs text-gray-500">{conference.description}</p>
+                </td>
+                <td class="p-3">{conference.status}</td>
+                <td class="p-3">{conference.created_at}</td>
+                <td class="p-3">
+                  <a class="text-accent underline" href={`/admin/conferencias/${conference.id}`}>
+                    Administrar →
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+</AdminLayout>

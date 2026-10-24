@@ -1,0 +1,81 @@
+import type { D1Database } from '@cloudflare/workers-types';
+
+export type ConferenceCreateInput = Record<string, unknown> & {
+  name?: string;
+  title?: string;
+  slug?: string;
+};
+
+export type ConferenceCreateResult = {
+  conference: Record<string, unknown>;
+  related: Record<string, unknown[]>;
+};
+
+const quoteIdentifier = (identifier: string) => `"${identifier.replaceAll('"', '""')}"`;
+
+const bindValue = (value: unknown): string | number | boolean | null => {
+  if (value === undefined) return null;
+  if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return value;
+  }
+
+  return JSON.stringify(value);
+};
+
+const insertRows = async (
+  db: D1Database,
+  table: string,
+  rows: Record<string, unknown>[],
+): Promise<Record<string, unknown>[]> => {
+  if (rows.length === 0) return [];
+
+  const columns = [...new Set(rows.flatMap((row) => Object.keys(row)))];
+  if (columns.length === 0) {
+    throw new Error(`Cannot insert rows with no columns into ${table}`);
+  }
+
+  const placeholders = rows
+    .map((row) => `(${columns.map(() => '?').join(', ')})`)
+    .join(', ');
+  const sql = `INSERT INTO ${quoteIdentifier(table)} (${columns.map(quoteIdentifier).join(', ')}) VALUES ${placeholders} RETURNING *`;
+  const bindings = rows.flatMap((row) => columns.map((column) => bindValue(row[column])));
+  const result = await db.prepare(sql).bind(...bindings).all<Record<string, unknown>>();
+
+  if (!result.success) throw new Error(`Failed to insert related records into ${table}`);
+  return result.results;
+};
+
+/**
+ * Creates a conference and all of its related records in a single database transaction.
+ * The payload is intentionally passed through unchanged so that all columns introduced
+ * by migration 0050 can be used without duplicating the schema in application code.
+ */
+export async function createConference(
+  db: D1Database,
+  input: ConferenceCreateInput,
+): Promise<ConferenceCreateResult> {
+  const { related, ...conference } = input;
+  const inserted = await insertRows(db, 'conferences', [conference]);
+  const data = inserted[0];
+
+  if (!data) throw new Error('Conference was created but no record was returned');
+
+  const relatedRecords: Record<string, unknown[]> = {};
+  const id = data.id as string | number;
+
+  if (related && typeof related === 'object' && !Array.isArray(related)) {
+    for (const [table, rows] of Object.entries(related)) {
+      if (!Array.isArray(rows) || rows.length === 0) continue;
+
+      const payload = rows.map((row) =>
+        typeof row === 'object' && row !== null
+          ? { ...row, conference_id: id }
+          : row,
+      ) as Record<string, unknown>[];
+
+      relatedRecords[table] = await insertRows(db, table, payload);
+    }
+  }
+
+  return { conference: data, related: relatedRecords };
+}

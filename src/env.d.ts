@@ -64,6 +64,10 @@ declare namespace Cloudflare {
     // Search backend selector (overrides config.search.provider): 'fts' | 'vector'.
     SEARCH_PROVIDER?: string;
     STORE_NAME: string;
+    /** Zoom meeting URL for products whose slug/name is exactly "conferencia". */
+    CONFERENCE_ZOOM_URL?: string;
+    /** Optional instructions included in the conference email and order page. */
+    CONFERENCE_INSTRUCTIONS?: string;
     // Fallback IANA time zone; setup/admin settings store the runtime override.
     TIME_ZONE?: string;
     // Absolute base URL for product images (e.g. an R2 custom domain) so they

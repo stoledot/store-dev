@@ -64,7 +64,10 @@
   ],
   "vars": {
     "STORE_NAME": "My Shop",
-    "TIME_ZONE": "UTC"
+    "TIME_ZONE": "UTC",
+    // Conference product: configure both before publishing a product with slug "conferencia".
+     "CONFERENCE_ZOOM_URL": "https://us04web.zoom.us/j/75835429286?pwd=om9Er5QaLu3H9hvivnqFDanDlfUaVc.1",
+     "CONFERENCE_INSTRUCTIONS": "30 de Octubre de 2026, 02:00 PM Hora de Ciudad de México"
     // Serve product images from an R2 custom domain (bypasses the Worker /images
     // route and unlocks on-demand delivery in Admin); connect a public custom
     // domain to the bucket first. See README.

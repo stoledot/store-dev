@@ -23,6 +23,7 @@ import { uploadDigitalFile, validateDigitalFile } from '../../../features/produc
 import { attachmentActive } from '../../../features/digitalDelivery/rollout.ts';
 import { CACHE_TAG } from '../../../features/cache/tags';
 import { purgeCacheTags } from '../../../features/cache/purge';
+import { setProductConference, getConference } from '../../../features/conferences/db';
 
 export const prerender = false;
 
@@ -66,6 +67,15 @@ export const POST: APIRoute = async ({ request, redirect, locals }) => {
   // media row is unreferenced until the attach lands, so a concurrent library
   // delete could leave the product pointing at an object that no longer exists.
   const productId = await createProduct(env.DB, { ...parsed.data, image_key: null, slug });
+  const conferenceRaw = String(form.get('conference_id') ?? '').trim();
+  if (conferenceRaw) {
+    const conferenceId = Number(conferenceRaw);
+    if (!Number.isSafeInteger(conferenceId) || conferenceId <= 0 || !(await getConference(env.DB, conferenceId))) {
+      await deleteProduct(env.DB, productId);
+      return redirect(fail('La conferencia seleccionada no existe.'), 303);
+    }
+    await setProductConference(env.DB, productId, conferenceId);
+  }
   if (attachmentActive() && deliverable instanceof File && deliverable.size > 0) {
     await setProductFile(env.DB, productId, await uploadDigitalFile(getFileStorage(), deliverable));
   }

@@ -23,8 +23,8 @@ type Section =
   | 'school'
   | 'school-admin'
   | 'school-avance'
-  | 'school-avance'
-  | 'school-editar';
+  | 'school-editar'
+  | 'conferences';
 
 interface Props {
   title?: string;
@@ -53,6 +53,7 @@ const nav: { key: Section; label: string; href: string }[] = [
   { key: 'dashboard', label: 'Dashboard', href: '/admin' },
   { key: 'products', label: 'Products', href: '/admin/products' },
   { key: 'school', label: 'Cursos y lecciones', href: '/admin/escuela' },
+  { key: 'conferences', label: 'Conferencias Zoom', href: '/admin/conferencias' },
   { key: 'school-admin', label: 'Alumnos y pagos', href: '/admin/escuela/administracion' },
   { key: 'school-avance', label: 'Avance de alumnos', href: '/admin/escuela/avance' },
   { key: 'school-editar', label: 'Edición de escuela', href: '/admin/escuela/editar' },

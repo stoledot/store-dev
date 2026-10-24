@@ -94,6 +94,11 @@
 	//   "vectorize": [{ "binding": "VECTORIZE", "index_name": "minshop-products" }],
 	//   "send_email": [{ "name": "EMAIL" }],
 	//
+	// Conference product: set these non-secret vars before selling a product
+	// whose slug/name is exactly "conferencia" (see docs/CONFERENCE-PRODUCT.md).
+	   "vars": { "CONFERENCE_ZOOM_URL": "https://us04web.zoom.us/j/75835429286?pwd=om9Er5QaLu3H9hvivnqFDanDlfUaVc.1",
+	             "CONFERENCE_INSTRUCTIONS": "30 de Octubre de 2026, 02:00 PM Hora de Ciudad de México" },
+	//
 	// Serve product images from an R2 custom domain (bypasses the Worker /images
 	// route and unlocks the Admin image-delivery selector) — connect a public custom
 	// domain to the bucket, then set (README → Settings):

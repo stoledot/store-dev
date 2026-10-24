@@ -8,6 +8,7 @@ import {
   getReservationStatusSnapshot,
 } from '../../../features/orders/reservations.ts';
 import { purgeStockProductCache } from '../../../features/cache/purge.ts';
+import { listConferenceAccessForOrder } from '../../../features/conferences/access.ts';
 
 export const prerender = false;
 
@@ -53,6 +54,7 @@ export const GET: APIRoute = async ({ params, request }) => {
             ? { download_url: `${base}/order/${token}/download/${item.public_id}` }
             : {}),
         })),
+        conference_access: fullyRefunded ? [] : await listConferenceAccessForOrder(env.DB, order.id),
       }),
       { status: 200, headers },
     );

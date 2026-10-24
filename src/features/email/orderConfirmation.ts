@@ -7,6 +7,7 @@ import {
 } from '../products/image';
 import { carrierName, trackingUrl } from '../orders/tracking';
 import type { EmailMessage } from './provider';
+import type { ConferenceAccess } from '../conferences/access.ts';
 import {
   PALETTE,
   emailShell,
@@ -73,6 +74,7 @@ export function orderConfirmationEmail(
   imageDelivery: ImageDelivery = 'original',
   /** Tokenized guest link (allowlisted email position); null = omit the link. */
   guestOrderUrl?: string | null,
+  conferenceAccess: ConferenceAccess[] = [],
 ): EmailMessage {
   const cfg = getConfig();
   const num = orderReference(order.public_id, order.id, cfg.orderNumber);
@@ -83,6 +85,20 @@ export function orderConfirmationEmail(
   const rows = items.map(
     (it) => `${it.name} × ${it.quantity}: ${money(it.price_cents * it.quantity)}`,
   );
+  const conferenceText = conferenceAccess.length
+    ? [
+        '',
+        'Conference access',
+        ...conferenceAccess.flatMap((access, index) => [
+          `Seat ${index + 1}: ${access.access_key}`,
+          ...(access.zoom_url ? [`Zoom: ${access.zoom_url}`] : []),
+          ...(access.instructions ? [access.instructions] : []),
+        ]),
+      ]
+    : [];
+  const conferenceHtml = conferenceAccess.length
+    ? `<section style="margin-top:24px;padding:16px;border:1px solid ${PALETTE.line};border-radius:8px;"><h2 style="margin:0 0 12px;font-size:18px;">Your conference access</h2>${conferenceAccess.map((access, index) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;"><strong>Seat ${index + 1} · Access key:</strong><br><code style="font-size:16px;letter-spacing:1px;">${escapeHtml(access.access_key)}</code>${access.zoom_url ? `<br><strong>Zoom:</strong> <a href="${escapeHtml(access.zoom_url)}">Join the conference</a>` : ''}${access.instructions ? `<br>${escapeHtml(access.instructions).replace(/\n/g, '<br>')}` : ''}</p>`).join('')}</section>`
+    : '';
 
   const text = [
     `Thanks for your order!`,
@@ -95,6 +111,7 @@ export function orderConfirmationEmail(
     ...(order.tax_cents > 0 ? [`Tax: ${money(order.tax_cents)}`] : []),
     `Total: ${money(order.amount_total_cents)}`,
     ...(hasDigital && orderUrl ? [``, `Your download is ready.`] : []),
+    ...conferenceText,
     ...(orderUrl ? [``, `View your order: ${orderUrl}`] : []),
   ].join('\n');
 
@@ -115,6 +132,7 @@ export function orderConfirmationEmail(
       (hasDigital && orderUrl
         ? `<p style="margin:20px 0 0;font-size:14px;">Your download is ready.</p>`
         : '') +
+      conferenceHtml +
       (orderUrl ? emailButton(orderUrl, 'View your order') : ''),
     footer: `Questions about this order? Just reply to this email.`,
   });
@@ -205,6 +223,7 @@ export function orderShippedEmail(
   storeName: string,
   /** Tokenized guest link (allowlisted email position); null = omit the link. */
   guestOrderUrl?: string | null,
+  conferenceAccess: ConferenceAccess[] = [],
 ): EmailMessage {
   const cfg = getConfig();
   const num = orderReference(order.public_id, order.id, cfg.orderNumber);
@@ -273,6 +292,7 @@ export function orderRefundedEmail(
   storeName: string,
   /** Tokenized guest link (allowlisted email position); null = omit the link. */
   guestOrderUrl?: string | null,
+  conferenceAccess: ConferenceAccess[] = [],
 ): EmailMessage {
   const cfg = getConfig();
   const num = orderReference(order.public_id, order.id, cfg.orderNumber);

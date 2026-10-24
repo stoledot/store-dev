@@ -1,0 +1,148 @@
+Fase I. Preparar la base técnica
+Pasos 1–8 · Objetivo: tener una base segura antes de programar.
+OK 1. Define el alcance de la primera versión. Empieza con una suscripción única, un precio mensual, un solo tipo de alumno y cursos ordenados. Deja para después las becas, varios planes, certificados avanzados y aplicaciones móviles.
+OK 2. Congela una copia funcional de MinShop. Conserva la versión que ya funciona en tu Windows. Crea una rama Git, por ejemplo feature/escuela-virtual, para que los cambios educativos no afecten a la tienda original.
+OK 3. Verifica las herramientas. El proyecto documenta Node.js 22.12 o posterior dentro de la línea compatible 22, Git, Astro y Cloudflare Workers. Confirma la versión de Node y ejecuta la instalación limpia siguiendo el README y AGENTS.md. 
+   
+   GitHub
+   +1
+OK 4. Establece una referencia de funcionamiento. Ejecuta la aplicación localmente, comprueba la tienda, el inicio de sesión administrativo, el catálogo, el checkout de prueba y las migraciones. Guarda los errores preexistentes para distinguirlos de los nuevos.
+OK 5. Identifica las funciones reutilizables. Revisa las carpetas de clientes, autenticación, pagos, correo, API y administración. No des por hecho que la autenticación de administradores equivale a un portal completo para alumnos.
+OK 6. Diseña las rutas de la escuela. Por ejemplo, /escuela, /planes, /mi-cuenta, /mi-escuela, /mi-escuela/cursos y /mi-escuela/lecciones/.... Verifica que no colisionen con las rutas actuales de MinShop.
+7. Separa desarrollo y producción. Utiliza una base D1 local para las pruebas y 
+    la base remota para producción. No hagas experimentos destructivos sobre 
+    la base que contiene pedidos reales.
+8. Define los criterios de aceptación. Antes de programar, escribe cómo demostrarás 
+    que el alumno no puede saltarse cursos, entrar sin pagar, falsificar un avance 
+    o consultar lecciones de otro usuario.
+
+Fase II. Diseñar los datos de la escuela
+Pasos 9–16 · Objetivo: modelar cursos, suscripciones y progreso sin mezclar conceptos.
+9. Crea una migración nueva de D1. Usa el mecanismo documentado de MinShop para añadir 
+    tablas mediante un archivo SQL numerado en migrations/. No edites migraciones que 
+    ya se aplicaron. 
+   
+   Cloudflare D1 docs
+   +1
+10. Define el catálogo de cursos. Tabla sugerida courses: identificador, título, 
+    descripción, 
+    orden, estado de publicación y curso previo. El orden debe poder administrarse 
+    sin reescribir las lecciones.
+11. Define las mini lecciones. Tabla lessons: identificador, curso, título, contenido, 
+    orden, tipo de actividad, estado publicado y requisitos de finalización.
+12. Define los usuarios alumnos. Reutiliza el sistema de clientes existente 
+    cuando sea compatible. Si no tiene autenticación de clientes, 
+    añade un sistema específico seguro; no inventes contraseñas ni dependas del 
+    acceso administrativo.
+13. Define la relación alumno-curso. Una tabla student_courses puede guardar cuándo 
+    comenzó un curso, su estado, fecha de finalización y la versión del contenido 
+    con la que trabajó.
+14. Define el progreso por lección. Una tabla lesson_progress registrará alumno, lección, estado, intentos, puntuación cuando corresponda y fecha de finalización. Añade restricciones para evitar registros duplicados.
+15. Define las suscripciones. Una tabla subscriptions debe relacionar al alumno con el identificador del cliente de Stripe y el identificador de la suscripción, el estado, el precio contratado, la moneda, el periodo vigente y las fechas relevantes.
+16. Define el registro de eventos de pago. Añade una tabla para registrar los identificadores de eventos de Stripe procesados y su resultado. Esto permite reconocer reintentos y evita aplicar dos veces una misma notificación.
+Fase III. Implementar la suscripción mensual automática
+Pasos 17–25 · Objetivo: cobrar correctamente y controlar el acceso a partir de información verificada.
+17. Elige Stripe como proveedor inicial. MinShop ya dispone de integración con Stripe para checkout, pero debes comprobar si su implementación actual soporta suscripciones recurrentes. No presupongas que el checkout de productos existente ya lo hace. 
+    
+    GitHub
+    +1
+18. Crea el precio recurrente en Stripe. Configura un producto como “Suscripción a la Escuela de Matemáticas”, con importe mensual de \(X\) y moneda MXN si cobrarás en pesos mexicanos. Define el tratamiento de impuestos y consulta las comisiones aplicables.
+19. Diseña la página de inscripción. Explica qué incluye la suscripción, que el acceso es ilimitado dentro de las reglas secuenciales, el precio, la periodicidad, la renovación automática, cómo cancelar y las condiciones de acceso.
+20. Crea o reutiliza la cuenta del alumno. La cuenta debe existir y quedar vinculada de forma segura antes de activar el acceso. Valida correo electrónico y contempla recuperar una cuenta si el alumno pierde su contraseña.
+21. Vincula al alumno con Stripe. Guarda en el servidor los identificadores de cliente y suscripción asociados al usuario autenticado. Nunca permitas que el navegador decida qué usuario recibirá una suscripción pagada.
+22. Implementa el checkout recurrente. Crea una sesión de Stripe Checkout en modo suscripción con el precio mensual configurado. El servidor debe comprobar el precio permitido; no confiar en un importe enviado por el navegador.
+23. Implementa el webhook de Stripe. Añade la gestión de eventos de suscripción y factura, verificando la firma del webhook con el secreto correspondiente. El webhook de checkout de MinShop, por sí solo, no demuestra que todos los ciclos futuros se hayan cobrado.
+24. Gestiona pagos exitosos y fallidos. Actualiza el estado de la suscripción a partir de los eventos verificados y, cuando sea necesario, consulta a Stripe para confirmar la situación vigente. Distingue un pago fallido de una cancelación definitiva.
+25. Implementa la renovación y la cancelación. La renovación debe ocurrir automáticamente según Stripe. Permite cancelar desde el panel y decide si la cancelación es inmediata o al final del periodo pagado. Comunica la fecha exacta en que terminará el acceso.
+Regla imprescindible: el navegador nunca debe activar una suscripción al volver de la página de pago. La activación depende de la confirmación verificada del servidor. Además, define qué hacer con pagos pendientes, reembolsos, contracargos y periodos de gracia para evitar que el estado del curso quede desincronizado del estado del pago.
+
+Fase IV. Construir el motor de cursos secuenciales
+Pasos 26–34 · Objetivo: que la plataforma se comporte como una escuela progresiva, no como una biblioteca de páginas abiertas.
+26. Crea el módulo educativo independiente. Organiza el código en una carpeta propia, por ejemplo src/features/learning/, para concentrar las operaciones de cursos, lecciones, progreso y reglas de acceso. Esta es una estructura propuesta, no una carpeta cuya existencia esté confirmada en el repositorio.
+27. Implementa el catálogo académico. Crea una página que muestre los cursos por orden, su descripción y su estado para el alumno: terminado, actual o bloqueado. El catálogo público puede mostrar el temario, pero no debe exponer el contenido completo de las lecciones protegidas.
+28. Implementa el visor de mini lecciones. Cada lección debe tener una URL propia y mostrar contenido breve, ejemplos, instrucciones y, cuando corresponda, una actividad interactiva. Añade controles “Anterior” y “Siguiente” sin permitir que estos controles evadan las reglas de acceso.
+29. Define cómo se completa una lección. Para una lección de lectura, puedes requerir una confirmación explícita; para una de ejercicios, exigir respuestas correctas o alcanzar una puntuación mínima. Decide qué actividades admiten varios intentos y cuáles requieren revisión del profesor.
+30. Implementa la secuencia dentro de cada curso. La lección \(n+1\) no se desbloquea hasta que la lección \(n\) esté completada. La condición debe validarse en el servidor, no solamente ocultando el botón en la interfaz.
+31. Implementa la secuencia entre cursos. El curso inicial queda disponible para una suscripción activa. El siguiente curso se habilita cuando el anterior cumple los requisitos de finalización. Un curso no se considera terminado simplemente porque el alumno haya abierto todas sus páginas.
+32. Crea una función central de autorización. Antes de entregar cualquier lección, verifica la identidad del alumno, su acceso por suscripción, la publicación del contenido y las reglas de secuencia. Reutiliza esta función en todas las rutas y API educativas.
+33. Registra el progreso de forma atómica. Cuando se completa una actividad, guarda el resultado y calcula el siguiente desbloqueo de forma consistente. Evita que dos solicitudes simultáneas generen avances contradictorios o que una petición manipulada marque cursos enteros como terminados.
+34. Decide qué pasa al actualizar un curso. Conserva el historial de las lecciones terminadas. Si cambias una evaluación de manera sustancial, define si el alumno debe repetirla. Guarda versiones de contenido o evaluaciones cuando resulte necesario para que el progreso no se vuelva incoherente.
+Regla de desbloqueo recomendada
+Para el alumno \(u\), un curso \(c_k\) se puede abrir si:
+\[
+\operatorname{Acceso}(u,c_k)=
+\operatorname{SuscripciónActiva}(u)
+\land
+\left(k=1\ \lor\ \operatorname{Completado}(u,c_{k-1})\right)
+\]
+
+Esta es una regla simplificada para una secuencia lineal. En producción también deben comprobarse que el curso esté publicado, que el alumno sea quien realiza la solicitud y que se cumplan los requisitos internos de las lecciones.
+Fase V. Crear el portal del alumno
+Pasos 35–41 · Objetivo: que el estudiante pueda estudiar y gestionar su cuenta sin intervención manual.
+35. Crea el inicio de sesión de alumnos. Implementa el acceso por correo y contraseña, cierre de sesión y recuperación de contraseña. Usa sesiones seguras en cookies HttpOnly, Secure en producción y protección contra solicitudes falsificadas. No reutilices las credenciales de administrador.
+36. Crea el panel principal en /mi-escuela. Muestra un saludo, estado de suscripción, progreso global, curso actual y un botón destacado para continuar estudiando. Si la suscripción no está vigente, muestra las opciones para reactivarla.
+37. Añade “Mis cursos”. Separa los cursos terminados del curso actual y los cursos bloqueados. Muestra el motivo del bloqueo sin permitir que el alumno fuerce su apertura manipulando la URL.
+38. Añade una barra de progreso. Puedes mostrar lecciones completadas sobre el total del curso, porcentaje de avance y última actividad. Calcula estos valores a partir de los registros del servidor, no de información guardada en el navegador.
+39. Añade el historial académico. Guarda las fechas de inicio y finalización, resultados de evaluaciones y, si te interesa, reconocimientos internos. Distingue claramente los certificados propios de cualquier acreditación oficial que la escuela no tenga.
+40. Crea la sección “Mi suscripción”. Muestra precio, moneda, estado, fecha de renovación o fin del periodo y un acceso para cancelar, actualizar el método de pago o gestionar la facturación. Puedes integrar el portal de clientes de Stripe para las funciones que admita tu configuración.
+41. Añade notificaciones. Envía correos de bienvenida, confirmación de inscripción, aviso de pago fallido, renovación confirmada, cancelación y recuperación de cuenta. Incluye enlaces claros para resolver problemas y no envíes datos sensibles en el correo.
+Fase VI. Seguridad, administración y pruebas
+Pasos 42–50 · Objetivo: evitar accesos indebidos, pérdida de datos y fallos de cobro antes de abrir al público.
+42. Crea el administrador académico. Añade una sección para crear, editar, ordenar, publicar y retirar cursos y mini lecciones. Permite administrar preguntas, respuestas correctas, puntuaciones y requisitos de finalización. Protege todas estas operaciones con permisos administrativos.
+43. Añade herramientas de soporte. Permite buscar un alumno, revisar su progreso y consultar el estado de su suscripción. Si autorizas ajustes manuales, registra quién los hizo, cuándo, por qué y qué valor cambió.
+44. Protege las rutas y los datos. Comprueba los permisos en el servidor para cada página, API, archivo descargable y operación. Un alumno no debe poder consultar los datos de otro, modificar precios, falsificar un pago ni desbloquear una lección enviando una solicitud directa.
+45. Evita inconsistencias de suscripción. Procesa los webhooks de forma idempotente, registra los eventos recibidos y contempla eventos duplicados o fuera de orden. Añade una comprobación de reconciliación con Stripe para detectar suscripciones cuyo estado local ya no coincide con el del proveedor.
+46. Define el comportamiento ante impagos. Decide si habrá un periodo de gracia, por ejemplo, de unos días. Durante ese periodo, indica al alumno que debe actualizar su pago. Una vez agotado, bloquea las lecciones protegidas. No borres su progreso ni su cuenta por una factura fallida.
+47. Prueba todos los casos de acceso. Verifica una suscripción activa, cancelada, vencida, con pago fallido, con reembolso y reactivada. Comprueba también que una cuenta nueva no pueda abrir cursos posteriores y que completar un curso sí desbloquee el siguiente.
+48. Prueba el funcionamiento completo en local. Simula los webhooks de Stripe con sus herramientas de prueba, crea varios alumnos ficticios y recorre el flujo desde la inscripción hasta la finalización de un curso. Ejecuta npm run verify, documentado por MinShop como su comprobación integral de pruebas, diagnósticos, compilación e integraciones. 
+    
+    GitHub
+49. Configura producción y las copias de seguridad. Crea secretos distintos y seguros para AUTH_SECRET y SECRETS_KEK, configura los secretos de Stripe y el webhook de producción, aplica las migraciones remotas y revisa que la base D1 y el almacenamiento privado estén correctamente configurados. Establece un procedimiento probado de respaldo y restauración.
+50. Haz un lanzamiento controlado. Publica primero con un grupo pequeño de alumnos de prueba. Verifica pagos reales de bajo importe si procede, correos, renovación, cancelación, experiencia móvil, errores y registros. Corrige los problemas, publica los términos y el aviso de privacidad y, después, abre la inscripción general.
+Lo que agregaría para que la escuela sea realmente sólida
+Hay seis aspectos que no conviene dejar para después.
+
+1. Un único servicio de autorización
+Todas las rutas que entreguen lecciones deben consultar la misma lógica de acceso. No basta con proteger el panel: si alguien conoce la URL de una lección, tampoco debe poder acceder sin autorización.
+
+
+
+
+2. Una política clara de impagos
+Decide cuándo se bloquea el acceso, si existe un periodo de gracia y cómo se recupera. Un fallo temporal de pago no debería borrar el progreso, ni un webhook retrasado conceder acceso indefinido.
+
+
+
+
+3. Copias de seguridad recuperables
+Respalda tanto el progreso académico como los datos de suscripción y el contenido. No basta con tener una copia: prueba que puedes restaurarla sin duplicar pagos ni perder avances.
+
+
+
+
+4. Privacidad y condiciones de servicio
+Define el tratamiento de los datos personales, las cancelaciones, las renovaciones, las facturas, los reembolsos y el soporte. Si admites menores de edad, contempla las medidas y autorizaciones que correspondan.
+
+
+
+
+5. Un sistema de evaluación coherente
+Define de antemano qué significa terminar una lección y aprobar un curso. Por ejemplo, exigir al menos 80 % en la evaluación final y permitir nuevos intentos. El porcentaje es configurable; lo importante es que el criterio sea explícito.
+
+
+
+
+6. Métricas para administrar la escuela
+Registra inscripciones, renovaciones, cancelaciones, alumnos activos, avance promedio y lecciones donde los estudiantes suelen detenerse. Esto te ayudará a mejorar el curso y detectar problemas de retención.
+
+
+
+Orden de implementación recomendado
+No intentaría construir todo a la vez. Este sería el orden más eficiente:
+Etapa	Resultado que debe quedar funcionando
+1. Base y datos	Tablas de cursos, lecciones, progreso y suscripciones
+2. Motor educativo	Secuencia y desbloqueo de cursos
+3. Cuentas	Inicio de sesión y panel de alumnos
+4. Pagos	Suscripción mensual automática y webhooks
+5. Administración	Gestión de contenido y seguimiento de alumnos
+6. Seguridad y pruebas	Impagos, cancelaciones, recuperación y lanzamiento

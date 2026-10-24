@@ -239,6 +239,10 @@ if (Astro.request.method === 'POST') {
           ? 'Add the EMAIL binding and redeploy before enabling Cloudflare Email.'
           : 'Add a Resend API key before enabling email.';
     }
+  } else if (action === 'save_zoom') {
+    await applySecrets(['zoom_account_id', 'zoom_client_id', 'zoom_client_secret']);
+    const configured = await Promise.all(['zoom_account_id','zoom_client_id','zoom_client_secret'].map((n) => getSecret(env.DB, n as SecretName)));
+    if (configured.some((v) => !v)) validationError = 'Guarda Account ID, Client ID y Client Secret para poder crear sesiones de Zoom.';
   } else if (action === 'save_turnstile') {
     const requestedEnabled = String(form.get('turnstile_enabled')) === '1';
     const siteKey = String(form.get('turnstile_site_key') ?? '').trim();
@@ -510,6 +514,7 @@ const sections = [
   { id: 'images', label: 'Images' },
   { id: 'payments', label: 'Payments' },
   { id: 'email', label: 'Email' },
+  { id: 'zoom', label: 'Zoom' },
   { id: 'turnstile', label: 'Bot protection' },
   { id: 'search', label: 'Search' },
   { id: 'build-time', label: 'Build-time' },
@@ -1227,6 +1232,21 @@ const sections = [
         Send test
       </button>
       <span data-email-test-result class="text-xs font-medium"></span>
+    </form>
+  </section>
+
+  {/* Zoom credentials are stored encrypted in the same provider-key vault as Stripe and Resend. */}
+  <section id="zoom" class="mt-10 scroll-mt-16">
+    <h2 class="mb-2 text-lg font-bold">Zoom API</h2>
+    <p class="mb-4 max-w-2xl text-sm text-gray-500">Configura una aplicación Server-to-Server OAuth de Zoom. Las credenciales se cifran en D1 con el vault de Minshop y nunca se vuelven a mostrar.</p>
+    <form method="POST" class="max-w-xl space-y-4 rounded-md border border-line p-4">
+      <input type="hidden" name="_action" value="save_zoom" />
+      <SecretField name="zoom_account_id" label="Zoom Account ID" hint="Account ID de Server-to-Server OAuth" storedInD1={inD1('zoom_account_id')} vault={vault} />
+      <SecretField name="zoom_client_id" label="Zoom Client ID" hint="Client ID" storedInD1={inD1('zoom_client_id')} vault={vault} />
+      <SecretField name="zoom_client_secret" label="Zoom Client Secret" hint="Client Secret" storedInD1={inD1('zoom_client_secret')} vault={vault} />
+      {!vault && <p class="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">El vault está desactivado. Configura SECRETS_KEK en los secretos del Worker antes de guardar credenciales.</p>}
+      <button type="submit" class="rounded-md bg-brand px-4 py-2 text-xs font-medium uppercase tracking-wider text-white hover:bg-brand-hover">Guardar credenciales de Zoom</button>
+      <p class="text-xs text-gray-500">La app de Zoom debe tener permisos para crear y administrar reuniones. El Client Secret no se guarda en el código ni se muestra al volver a abrir Ajustes.</p>
     </form>
   </section>
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Order } from '../orders/db';
 import { orderNotificationEmail } from './orderConfirmation';
+import type { ConferenceAccess } from '../conferences/access.ts';
+
 
 const order = (overrides: Partial<Order> = {}): Order =>
   ({
@@ -68,3 +70,4 @@ describe('orderNotificationEmail', () => {
     expect(message.html).not.toContain('null');
   });
 });
+

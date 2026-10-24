@@ -8,7 +8,7 @@ import {
   updateProduct,
   deleteProduct,
   setProductFile,
-} from '../../../../features/products/db';
+} from '../../../../features/products/db'; 
 import { parseProductForm } from '../../../../features/products/form';
 import { zonesRequireWeight } from '../../../../features/shipping/calculator';
 import { shippingFor } from '../../../../features/shipping/effective';
@@ -37,6 +37,7 @@ import { indexProduct, unindexProduct } from '../../../../features/search';
 import { parsePublicId } from '../../../../features/ids/publicId';
 import { CACHE_TAG } from '../../../../features/cache/tags';
 import { purgeCacheTags } from '../../../../features/cache/purge';
+import { setProductConference, getConference } from '../../../../features/conferences/db';
 
 export const prerender = false;
 
@@ -189,6 +190,14 @@ export const POST: APIRoute = async ({ request, params, redirect, locals }) => {
   }
 
   await updateProduct(env.DB, id, { ...parsed.data, image_key, slug });
+  const conferenceRaw = String(form.get('conference_id') ?? '').trim();
+  if (!conferenceRaw) {
+    await setProductConference(env.DB, id, null);
+  } else {
+    const conferenceId = Number(conferenceRaw);
+    if (!Number.isSafeInteger(conferenceId) || conferenceId <= 0 || !(await getConference(env.DB, conferenceId))) return fail('La conferencia seleccionada no existe.');
+    await setProductConference(env.DB, id, conferenceId);
+  }
   if (attachmentActive() && deliverable instanceof File && deliverable.size > 0) {
     await setProductFile(env.DB, id, await uploadDigitalFile(getFileStorage(), deliverable));
   } else if (attachmentActive() && form.get('remove_deliverable') != null) {

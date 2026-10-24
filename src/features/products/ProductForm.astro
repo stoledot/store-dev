@@ -5,6 +5,8 @@ import { getConfig, toMajorUnits, currencyDecimals } from '../../config';
 import { formatWeightValue, type WeightUnit } from '../shipping/weight';
 import { attachmentActive } from '../digitalDelivery/rollout.ts';
 
+interface ConferenceOption { id: number; title: string; status: string }
+
 interface Props {
   action: string;
   submitLabel: string;
@@ -24,6 +26,8 @@ interface Props {
   /** True when every enabled zone prices by weight, so a blank weight would make
    *  this product unsellable. Shown as a requirement rather than discovered later. */
   weightRequired?: boolean;
+  conferenceOptions?: ConferenceOption[];
+  selectedConferenceId?: number | null;
 }
 
 const {
@@ -37,6 +41,8 @@ const {
   formId,
   weightUnit = 'g',
   weightRequired = false,
+  conferenceOptions = [],
+  selectedConferenceId = null,
 } = Astro.props;
 const selected = new Set(selectedCategoryIds);
 // New products default to the store currency; edits keep their own.
@@ -136,6 +142,16 @@ const inputClass =
       </p>
     </div>
   </fieldset>}
+
+  <fieldset class="rounded-md border border-line p-4">
+    <legend class="px-1 text-sm font-medium">Conferencia Zoom (opcional)</legend>
+    <label class="block text-sm font-medium" for="conference_id">Vincular a una conferencia</label>
+    <select id="conference_id" name="conference_id" class={inputClass}>
+      <option value="">Sin conferencia vinculada</option>
+      {conferenceOptions.map((conference) => <option value={conference.id} selected={selectedConferenceId === conference.id}>{conference.title} ({conference.status})</option>)}
+    </select>
+    <p class="mt-1 text-xs text-muted">Cuando el pago se confirme, el comprador se inscribirá en esta conferencia y recibirá un correo con su clave personal y los enlaces, horarios y claves de cada sesión. Crea y publica la conferencia primero en Admin → Conferencias Zoom.</p>
+  </fieldset>
 
   <fieldset class="rounded-md border border-line p-4">
     <legend class="px-1 text-sm font-medium">Digital delivery</legend>
