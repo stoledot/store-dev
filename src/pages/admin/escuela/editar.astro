@@ -14,12 +14,20 @@ if (Astro.request.method === 'POST') {
   const action = String(f.get('action') ?? '');
   try {
     if (action === 'edit-area') {
-      const id = clean(f.get('id'), 100); const title = clean(f.get('title'), 120);
-      const slug = slugify(clean(f.get('slug'), 100) || title); const description = String(f.get('description') ?? '').slice(0, 10000);
+      const id = clean(f.get('id'), 100); 
+      const title = clean(f.get('title'), 120);
+      const slug = slugify(clean(f.get('slug'), 100) || title); 
+      const description = String(f.get('description') ?? '').slice(0, 10000);
       const status = String(f.get('status')) === 'archived' ? 'archived' : 'active';
       if (!id || !title || !slug) throw new Error('Completa nombre y slug del área.');
       await env.DB.prepare(`UPDATE school_areas SET title=?, slug=?, description=?, status=? WHERE id=?`).bind(title, slug, description, status, id).run();
       return Astro.redirect('/admin/escuela/editar?ok=area', 303);
+    }
+    if(action== 'delete-area') {
+      const id = clean(f.get('id'), 100);
+      if(!id) throw new Error('ID de área no válido.');
+      await env.DB.prepare(`DELETE FROM school_areas WHERE id=?`).bind(id).run();
+      return Astro.redirect('/admin/escuela/editar', 303);
     }
     if (action === 'edit-course') {
       const id = clean(f.get('id'), 100); const title = clean(f.get('title'), 160); const slug = slugify(clean(f.get('slug'), 100) || title);
@@ -61,6 +69,7 @@ if (Astro.request.method === 'POST') {
       await env.DB.prepare(`UPDATE school_student_intake SET status=?,approved_level=?,admin_notes=?,reviewed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE student_email=? COLLATE NOCASE`).bind(status,status==='approved'?levelRaw:null,notes,email).run();
       return Astro.redirect('/admin/escuela/editar?ok=alumno',303);
     }
+    
     throw new Error('Acción no reconocida.');
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'No se pudo guardar.';
@@ -76,12 +85,104 @@ const assignments = (await env.DB.prepare(`SELECT x.id,x.student_email,x.status,
 ---
 <AdminLayout title="Editar escuela" active="school-admin">
   <header class="mb-7"><p class="text-xs uppercase tracking-widest text-gray-400">Administración académica</p><h1 class="mt-2 font-serif text-3xl">Editar contenido y alumnos</h1><p class="mt-2 text-sm text-gray-500">Edita áreas, cursos, lecciones y estatus. Las vistas previas se muestran aquí sin publicar el contenido.</p><nav class="mt-4 flex flex-wrap gap-4 text-sm"><a class="underline" href="/admin/escuela">Crear contenido</a><a class="underline" href="/admin/escuela/administracion">Pagos y asignaciones</a><a class="underline" href="/admin/escuela/avance">Avance de alumnos</a></nav></header>
+
   {notice && <p class="mb-4 rounded border border-green-200 bg-green-50 p-3 text-sm">Cambios guardados: {notice==='area'?'área':notice==='curso'?'curso':notice==='leccion'?'lección':'alumno'}.</p>}
+
   {error && <p class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm">{error}</p>}
-  <section class="mb-8 rounded-lg border border-line p-4"><h2 class="mb-4 font-serif text-xl">Áreas de interés</h2>{areas.map(a=><details class="border-t border-line py-3"><summary class="cursor-pointer font-medium">{a.title} · {a.status} <span class="text-xs text-gray-500">(editar / vista previa)</span></summary><form method="POST" class="mt-4 grid gap-3 md:grid-cols-2"><input type="hidden" name="action" value="edit-area"/><input type="hidden" name="id" value={a.id}/><label class="text-sm">Nombre<input name="title" required value={a.title} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Slug<input name="slug" required value={a.slug} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm md:col-span-2">Descripción Markdown<textarea name="description" rows="4" class="mt-1 block w-full rounded border border-line p-2">{a.description}</textarea></label><label class="text-sm">Estado<select name="status" class="mt-1 block w-full rounded border border-line p-2"><option value="active" selected={a.status==='active'}>Activa</option><option value="archived" selected={a.status==='archived'}>Archivada</option></select></label><div class="flex items-end"><button class="rounded bg-brand px-4 py-2 text-sm text-white">Guardar área</button></div></form><div class="mt-4 rounded bg-gray-50 p-4"><p class="mb-2 text-xs uppercase tracking-wider text-gray-500">Vista previa del área</p><h3 class="text-xl font-semibold">{a.title}</h3><article class="prose mt-2 max-w-none" set:html={renderMarkdown(a.description)}/><p class="mt-3 text-xs text-gray-500">Cursos asociados: {courses.filter(c=>c.area_id===a.id).map(c=>`${c.title} (${c.level_code})`).join(' · ') || 'ninguno'}</p></div></details>)}{areas.length===0&&<p class="text-sm text-gray-500">Aún no hay áreas.</p>}</section>
+
+  <section class="mb-8 rounded-lg border border-line p-4">
+    <h2 class="mb-4 font-serif text-xl">Áreas de interés</h2>
+    {areas.map(a=>
+      <details class="border-t border-line py-3">
+        <summary class="cursor-pointer font-medium">
+          {a.title} · {a.status} 
+          <span class="text-xs text-gray-500">(editar / vista previa)</span>
+        </summary>
+
+        <form method="POST" class="mt-4 grid gap-3 md:grid-cols-2">
+          
+          <input type="hidden" name="action" value="edit-area"/>
+          
+          <input type="hidden" name="id" value={a.id}/>
+          
+          <label class="text-sm">
+            Nombre
+            <input name="title" required value={a.title} class="mt-1 block w-full rounded border border-line p-2"/>
+          </label>
+          
+          <label class="text-sm">
+            Slug
+            <input name="slug" required value={a.slug} class="mt-1 block w-full rounded border border-line p-2"/>
+          </label>
+          
+          <label class="text-sm md:col-span-2">
+            Descripción Markdown
+            <textarea name="description" rows="4" class="mt-1 block w-full rounded border border-line p-2">
+              {a.description}
+            </textarea>
+          </label>
+          
+          <label class="text-sm">
+            Estado
+            <select name="status" class="mt-1 block w-full rounded border border-line p-2">
+              <option value="active" selected={a.status==='active'}>Activa</option>
+              <option value="archived" selected={a.status==='archived'}>Archivada</option>
+            </select>
+          </label>
+          
+          <div class="flex items-end">
+            <button class="rounded bg-brand px-4 py-2 text-sm text-white">
+              Guardar área
+            </button>
+          </div>
+          
+        </form>
+
+        
+        <form method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta área? Esta acción no se puede deshacer.');">
+          <input type="hidden" name="action" value="delete-area"/>
+          <input type="hidden" name="id" value={a.id}/>
+
+          <button
+            class="mt-2 text-sm text-red-600 underline"
+            type="submit"
+          >
+            Eliminar área
+          </button>
+        </form>
+
+
+        <div class="mt-4 rounded bg-gray-50 p-4">
+          <p class="mb-2 text-xs uppercase tracking-wider text-gray-500">
+            Vista previa del área
+          </p>
+          
+          <h3 class="text-xl font-semibold">{a.title}</h3>
+          
+          <article class="prose mt-2 max-w-none" set:html={renderMarkdown(a.description)}/>
+          
+          <p class="mt-3 text-xs text-gray-500">
+            Cursos asociados: 
+            {courses.filter(c=>c.area_id===a.id).map(c=>`${c.title} (${c.level_code})`).join(' · ') || 'ninguno'}
+          </p>
+        </div>
+
+      </details>
+      )}
+      
+      {areas.length===0 && <p class="text-sm text-gray-500">Aún no hay áreas.</p>}
+    
+  </section>
+
+
   <section class="mb-8 rounded-lg border border-line p-4"><h2 class="mb-4 font-serif text-xl">Cursos</h2>{courses.map(c=><details class="border-t border-line py-3"><summary class="cursor-pointer font-medium">{c.title} · {c.level_code} · {c.status}</summary><form method="POST" class="mt-4 grid gap-3 md:grid-cols-2"><input type="hidden" name="action" value="edit-course"/><input type="hidden" name="id" value={c.id}/><label class="text-sm">Título<input name="title" required value={c.title} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Slug<input name="slug" required value={c.slug} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Resumen<input name="summary" value={c.summary} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Área<select name="area_id" required class="mt-1 block w-full rounded border border-line p-2">{areas.map(a=><option value={a.id} selected={c.area_id===a.id}>{a.title}</option>)}</select></label><label class="text-sm">Nivel<select name="level_code" class="mt-1 block w-full rounded border border-line p-2">{['N0','N1','N2','N3','N4','N5','N6','N7','N8','N9'].map(n=><option value={n} selected={c.level_code===n}>{n}</option>)}</select></label><label class="text-sm">Estado<select name="status" class="mt-1 block w-full rounded border border-line p-2">{['draft','published','archived'].map(s=><option value={s} selected={c.status===s}>{s==='draft'?'Borrador':s==='published'?'Publicado':'Archivado'}</option>)}</select></label><label class="text-sm md:col-span-2">Descripción Markdown<textarea name="description_md" rows="5" class="mt-1 block w-full rounded border border-line p-2">{c.description_md}</textarea></label><div><button class="rounded bg-brand px-4 py-2 text-sm text-white">Guardar curso</button></div></form><div class="mt-4 rounded bg-gray-50 p-4"><p class="mb-2 text-xs uppercase tracking-wider text-gray-500">Vista previa del curso</p><h3 class="text-xl font-semibold">{c.title}</h3><p class="text-sm text-gray-500">{c.area_title} · {c.level_code}</p><p class="mt-2">{c.summary}</p><article class="prose mt-2 max-w-none" set:html={renderMarkdown(c.description_md)}/><p class="mt-3 text-xs text-gray-500">URL de lectura para alumnos: /escuela/cursos/{c.slug}/… (solo alumnos asignados).</p></div></details>)}{courses.length===0&&<p class="text-sm text-gray-500">Aún no hay cursos.</p>}</section>
+
   <section class="mb-8 rounded-lg border border-line p-4"><h2 class="mb-4 font-serif text-xl">Lecciones</h2>{lessons.map(l=><details class="border-t border-line py-3"><summary class="cursor-pointer font-medium">{l.course_title} / {l.sequence_no}. {l.title} · {l.status}</summary><form method="POST" class="mt-4 grid gap-3 md:grid-cols-2"><input type="hidden" name="action" value="edit-lesson"/><input type="hidden" name="id" value={l.id}/><label class="text-sm md:col-span-2">Curso<select name="course_id" class="mt-1 block w-full rounded border border-line p-2">{courses.map(c=><option value={c.id} selected={l.course_id===c.id}>{c.title}</option>)}</select></label><label class="text-sm">Título<input name="title" required value={l.title} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Slug<input name="slug" required value={l.slug} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Resumen<input name="summary" value={l.summary} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Orden<input name="sequence_no" type="number" min="1" step="1" required value={l.sequence_no} class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Tipo<select name="lesson_type" class="mt-1 block w-full rounded border border-line p-2">{['reading','exercise','quiz','assignment'].map(t=><option value={t} selected={l.lesson_type===t}>{t}</option>)}</select></label><label class="text-sm">Estado<select name="status" class="mt-1 block w-full rounded border border-line p-2">{['draft','published','archived'].map(s=><option value={s} selected={l.status===s}>{s}</option>)}</select></label><label class="flex items-center gap-2 text-sm"><input type="checkbox" name="required_to_complete" checked={l.required_to_complete===1}/> Obligatoria para completar</label><label class="text-sm md:col-span-2">Contenido Markdown + LaTeX<textarea name="content_md" required rows="12" class="mt-1 block w-full rounded border border-line p-2 font-mono text-sm">{l.content_md}</textarea></label><div><button class="rounded bg-brand px-4 py-2 text-sm text-white">Guardar lección</button></div></form><div class="mt-4 rounded bg-gray-50 p-4"><p class="mb-2 text-xs uppercase tracking-wider text-gray-500">Vista previa de la lección</p><h3 class="text-xl font-semibold">{l.title}</h3><article class="prose mt-2 max-w-none" set:html={renderMarkdown(l.content_md)}/></div></details>)}{lessons.length===0&&<p class="text-sm text-gray-500">Aún no hay lecciones.</p>}</section>
+
   <section class="mb-8 rounded-lg border border-line p-4"><h2 class="mb-4 font-serif text-xl">Estado de asignaciones académicas</h2><p class="mb-3 text-sm text-gray-500">Activa, suspende o marca como terminado el curso de cada alumno. Al activar una asignación, cualquier otra asignación activa de ese alumno se suspende automáticamente.</p>{assignments.map(a=><form method="POST" class="grid gap-3 border-t border-line py-3 md:grid-cols-[1fr_1fr_12rem_auto]"><input type="hidden" name="action" value="edit-assignment"/><input type="hidden" name="id" value={a.id}/><input type="hidden" name="student_email" value={a.student_email}/><div class="text-sm"><strong>{a.student_email}</strong><div class="text-gray-500">{a.course_title}</div></div><div class="text-xs text-gray-500">Asignado: {a.assigned_at}</div><select name="status" class="rounded border border-line p-2 text-sm">{['active','suspended','completed'].map(v=><option value={v} selected={a.status===v}>{v==='active'?'Activo':v==='suspended'?'Suspendido':'Completado'}</option>)}</select><button class="rounded bg-brand px-3 py-2 text-sm text-white">Guardar</button></form>)}{assignments.length===0&&<p class="text-sm text-gray-500">No hay asignaciones registradas.</p>}</section>
+
   <section class="rounded-lg border border-line p-4"><h2 class="mb-4 font-serif text-xl">Estatus de alumnos</h2>{students.map(s=><details class="border-t border-line py-3"><summary class="cursor-pointer">{s.student_email} · {s.status}</summary><form method="POST" class="mt-3 grid gap-3 md:grid-cols-2"><input type="hidden" name="action" value="edit-student"/><input type="hidden" name="student_email" value={s.student_email}/><label class="text-sm">Estado del diagnóstico<select name="status" class="mt-1 block w-full rounded border border-line p-2">{['pending','approved','rejected'].map(v=><option value={v} selected={s.status===v}>{v}</option>)}</select></label><label class="text-sm">Nivel aprobado<input name="approved_level" value={s.approved_level ?? ''} placeholder="N0" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm md:col-span-2">Notas administrativas<textarea name="admin_notes" rows="2" class="mt-1 block w-full rounded border border-line p-2">{s.admin_notes}</textarea></label><div><button class="rounded bg-brand px-4 py-2 text-sm text-white">Guardar estatus</button></div></form></details>)}{students.length===0&&<p class="text-sm text-gray-500">No hay alumnos con diagnóstico registrado.</p>}</section>
+
   <script is:inline>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script><script is:inline async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
 </AdminLayout>
