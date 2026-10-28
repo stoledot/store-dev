@@ -24,6 +24,7 @@ import { attachmentActive } from '../../../features/digitalDelivery/rollout.ts';
 import { CACHE_TAG } from '../../../features/cache/tags';
 import { purgeCacheTags } from '../../../features/cache/purge';
 import { setProductConference, getConference } from '../../../features/conferences/db';
+import { getMathText, setProductMathText } from '../../../features/mathTexts/db';
 
 export const prerender = false;
 
@@ -67,6 +68,15 @@ export const POST: APIRoute = async ({ request, redirect, locals }) => {
   // media row is unreferenced until the attach lands, so a concurrent library
   // delete could leave the product pointing at an object that no longer exists.
   const productId = await createProduct(env.DB, { ...parsed.data, image_key: null, slug });
+  const mathTextRaw = String(form.get('math_text_id') ?? '').trim();
+  if (mathTextRaw) {
+    const mathTextId = Number(mathTextRaw);
+    if (!Number.isSafeInteger(mathTextId) || mathTextId <= 0 || !(await getMathText(env.DB, mathTextId))) {
+      await deleteProduct(env.DB, productId);
+      return redirect(fail('El texto matemático seleccionado no existe.'), 303);
+    }
+    await setProductMathText(env.DB, productId, mathTextId);
+  }
   const conferenceRaw = String(form.get('conference_id') ?? '').trim();
   if (conferenceRaw) {
     const conferenceId = Number(conferenceRaw);

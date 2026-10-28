@@ -1,0 +1,155 @@
+---
+import { env } from 'cloudflare:workers';
+import Layout from '../../../../layouts/Layout.astro';
+import { getOrderByPublicId, listOrderItems } from '../../../../features/orders/db';
+import { isLegacyPublicId } from '../../../../features/ids/publicId.ts';
+import { isAccessToken } from '../../../../features/ids/token.ts';
+import { resolveAccessToken } from '../../../../features/orders/guestAccess.ts';
+import { renderMathText } from '../../../../features/mathTexts/render.ts';
+
+const { token, itemPublicId } = Astro.params;
+let order = null;
+if (token && isAccessToken(token)) {
+  const access = await resolveAccessToken(env.DB, token);
+  order = access ? await getOrderByPublicId(env.DB, access.order_public_id) : null;
+} else if (token && isLegacyPublicId(token)) {
+  order = await getOrderByPublicId(env.DB, token);
+}
+Astro.response.headers.set('cache-control', 'private, no-store');
+Astro.response.headers.set('referrer-policy', 'no-referrer');
+if (!order || order.status !== 'paid' || order.refunded_cents >= order.amount_total_cents) return new Response('Not found', { status: 404 });
+const items = await listOrderItems(env.DB, order.id);
+const item = items.find((it) => it.public_id === itemPublicId && it.math_text_source && it.math_text_title);
+if (!item) return new Response('Not found', { status: 404 });
+const sections = renderMathText(item.math_text_source!);
+const firstSectionId = sections[0]?.id ?? 'math-reader';
+---
+<Layout title={item.math_text_title ?? 'Lectura matemática'}>
+  <main class="mx-auto max-w-6xl px-3 pb-28 pt-5 sm:px-6 sm:pb-10 sm:pt-8" id="math-reader-top">
+    <a href={`/order/${token}`} class="inline-flex min-h-10 items-center text-sm text-muted underline underline-offset-4">← Volver a mi pedido</a>
+    <header class="my-4 border-b border-line pb-5 sm:my-7 sm:pb-6">
+      <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand sm:text-xs sm:tracking-widest">Biblioteca de lectura</p>
+      <h1 class="mt-2 max-w-4xl break-words font-serif text-2xl leading-tight tracking-tight sm:text-3xl md:text-4xl">{item.math_text_title}</h1>
+      <p class="mt-3 max-w-3xl text-sm leading-6 text-muted">Tu lectura adquirida. Usa el índice o los controles de navegación para moverte entre temas; tu posición se mantiene mientras lees esta página.</p>
+    </header>
+
+    <div class="grid min-w-0 gap-5 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
+      <aside class="min-w-0 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
+        <details class="group rounded-2xl border border-line bg-surface shadow-sm lg:hidden">
+          <summary class="flex min-h-12 list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold">
+            <span class="flex min-w-0 items-center gap-2"><span aria-hidden="true">☷</span><span>Índice del contenido</span></span>
+            <span class="shrink-0 text-muted transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+          </summary>
+          <nav aria-label="Índice de lectura" class="border-t border-line px-3 py-3">
+            <ol class="max-h-[42dvh] space-y-1 overflow-y-auto text-sm">
+              {sections.map((s, i) => <li style={`padding-left:${Math.min(Math.max(0, s.level - 1) * 10, 30)}px`}><a class="math-toc-link block rounded-lg px-3 py-2.5 leading-5 text-muted hover:bg-paper hover:text-brand" href={`#${s.id}`} data-section-link={i}>{s.title}</a></li>)}
+            </ol>
+          </nav>
+        </details>
+        <nav aria-label="Índice de lectura" class="hidden rounded-2xl border border-line bg-surface p-4 shadow-sm lg:block">
+          <h2 class="mb-3 text-sm font-bold">En esta lectura</h2>
+          <ol class="space-y-1 text-sm">
+            {sections.map((s, i) => <li style={`padding-left:${Math.min(Math.max(0, s.level - 1) * 10, 30)}px`}><a class="math-toc-link block rounded-lg px-3 py-2 leading-5 text-muted hover:bg-paper hover:text-brand" href={`#${s.id}`} data-section-link={i}>{s.title}</a></li>)}
+          </ol>
+          <a href="#math-reader-top" class="mt-4 inline-flex text-xs font-semibold text-brand underline underline-offset-4">↑ Volver al inicio</a>
+        </nav>
+      </aside>
+
+      <article class="min-w-0 space-y-6 sm:space-y-9" id="math-reader">
+        {sections.map((s, i) => <section id={s.id} class="math-section min-w-0 scroll-mt-24 rounded-2xl border border-line bg-paper p-4 shadow-sm sm:p-6 md:p-8" data-section-index={i}>
+          <div class="mb-5 flex items-start gap-3 border-b border-line/70 pb-4 sm:mb-6 sm:pb-5">
+            <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-sm font-bold text-brand">{i + 1}</span>
+            <div class="min-w-0"><p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Tema {i + 1} de {sections.length}</p><h2 class="mt-1 break-words font-serif text-xl leading-snug sm:text-2xl">{s.title}</h2></div>
+          </div>
+          <div class="math-content" set:html={s.html}></div>
+          <div class="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-line/70 pt-4 text-sm">
+            {i > 0 ? <a href={`#${sections[i - 1].id}`} class="inline-flex min-h-10 items-center rounded-xl border border-line px-3 py-2 font-medium hover:border-brand hover:text-brand">← Tema anterior</a> : <span class="text-xs text-muted">Inicio de la lectura</span>}
+            {i + 1 < sections.length ? <a href={`#${sections[i + 1].id}`} class="inline-flex min-h-10 items-center rounded-xl bg-brand px-4 py-2 font-semibold text-on-brand hover:opacity-90">Siguiente tema →</a> : <a href="#math-reader-top" class="inline-flex min-h-10 items-center rounded-xl border border-line px-3 py-2 font-medium hover:border-brand hover:text-brand">↑ Volver al inicio</a>}
+          </div>
+        </section>)}
+      </article>
+    </div>
+  </main>
+
+  <div class="math-mobile-nav sm:hidden" role="region" aria-label="Navegación rápida de lectura">
+    <a href="#math-reader-top" class="math-nav-top" aria-label="Volver al inicio" title="Volver al inicio">↑</a>
+    <label class="sr-only" for="math-section-select">Ir a un tema</label>
+    <select id="math-section-select" class="math-nav-select">
+      {sections.map((s, i) => <option value={s.id}> {i + 1}. {s.title}</option>)}
+    </select>
+    <button type="button" class="math-nav-button" data-math-prev disabled aria-label="Tema anterior">‹</button>
+    <button type="button" class="math-nav-button math-nav-next" data-math-next aria-label="Tema siguiente">›</button>
+    <span class="sr-only" aria-live="polite" data-math-progress>1 de {sections.length}</span>
+  </div>
+
+  <style>
+    .math-content { min-width: 0; color: var(--color-ink, inherit); font-size: 1rem; line-height: 1.85; overflow-wrap: anywhere; }
+    .math-content :global(p) { margin: 0 0 1.1rem; }
+    .math-content :global(p:last-child) { margin-bottom: 0; }
+    .math-content :global(ul), .math-content :global(ol) { margin: .8rem 0 1.2rem 1.4rem; padding-left: .25rem; list-style: revert; }
+    .math-content :global(li) { padding-left: .2rem; margin: .35rem 0; }
+    .math-content :global(.math-display) { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; margin: 1.25rem 0; padding: .85rem .5rem; border-radius: .9rem; background: color-mix(in srgb, var(--color-brand, #6366f1) 6%, transparent); text-align: center; }
+    .math-content :global(mjx-container) { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+    .math-content :global(strong) { font-weight: 700; }
+    .math-content :global(em) { color: var(--color-brand, inherit); }
+    .math-toc-link[aria-current="location"] { background: color-mix(in srgb, var(--color-brand, #6366f1) 10%, transparent); color: var(--color-brand, inherit); font-weight: 650; }
+    .math-mobile-nav { position: fixed; z-index: 30; inset-inline: 0; bottom: 0; display: grid; grid-template-columns: 42px minmax(0,1fr) 42px 42px; gap: .4rem; align-items: center; padding: .55rem .65rem calc(.55rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--color-line, #ddd); background: color-mix(in srgb, var(--color-paper, #fff) 94%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 -8px 24px rgb(0 0 0 / .07); }
+    .math-nav-top, .math-nav-button { display: inline-flex; height: 42px; width: 42px; align-items: center; justify-content: center; border: 1px solid var(--color-line, #ddd); border-radius: .8rem; background: var(--color-paper, #fff); color: var(--color-ink, #222); font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+    .math-nav-select { width: 100%; min-width: 0; height: 42px; border: 1px solid var(--color-line, #ddd); border-radius: .8rem; background: var(--color-paper, #fff); padding: 0 .5rem; color: var(--color-ink, #222); font-size: .8rem; }
+    .math-nav-next { background: var(--color-brand, #4f46e5); color: var(--color-on-brand, white); border-color: transparent; }
+    .math-nav-button:disabled { opacity: .35; cursor: not-allowed; }
+    @media (prefers-reduced-motion: reduce) { html:focus-within { scroll-behavior: auto; } }
+  </style>
+  <script is:inline>
+    (() => {
+      const sections = Array.from(document.querySelectorAll('.math-section'));
+      const select = document.querySelector('#math-section-select');
+      const prev = document.querySelector('[data-math-prev]');
+      const next = document.querySelector('[data-math-next]');
+      const progress = document.querySelector('[data-math-progress]');
+      const links = Array.from(document.querySelectorAll('[data-section-link]'));
+      if (!sections.length) return;
+      let current = 0;
+      const goTo = (index) => {
+        const bounded = Math.max(0, Math.min(sections.length - 1, index));
+        sections[bounded].scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+        setCurrent(bounded);
+      };
+      const setCurrent = (index) => {
+        current = index;
+        if (select && select.value !== sections[index].id) select.value = sections[index].id;
+        if (prev) prev.disabled = index === 0;
+        if (next) next.disabled = index === sections.length - 1;
+        if (progress) progress.textContent = `${index + 1} de ${sections.length}`;
+        links.forEach((link) => {
+          if (Number(link.getAttribute('data-section-link')) === index) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        });
+      };
+      select?.addEventListener('change', () => {
+        const index = sections.findIndex((section) => section.id === select.value);
+        if (index >= 0) goTo(index);
+      });
+      prev?.addEventListener('click', () => goTo(current - 1));
+      next?.addEventListener('click', () => goTo(current + 1));
+      links.forEach((link) => link.addEventListener('click', () => {
+        const index = Number(link.getAttribute('data-section-link'));
+        if (Number.isInteger(index)) setCurrent(index);
+        const details = link.closest('details');
+        if (details) details.open = false;
+      }));
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (visible) setCurrent(Number(visible.target.getAttribute('data-section-index')) || 0);
+        }, { rootMargin: '-18% 0px -62% 0px', threshold: [0, .1, .25, .5] });
+        sections.forEach((section) => observer.observe(section));
+      }
+      setCurrent(0);
+    })();
+  </script>
+  <script is:inline>
+    window.MathJax = window.MathJax || { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }, options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] } };
+  </script>
+  <script is:inline async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</Layout>

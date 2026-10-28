@@ -59,6 +59,7 @@ export interface OrderItemInput {
   fileName?: string | null;
   fileMime?: string | null;
   fileSizeBytes?: number | null;
+  mathTextId?: number | null;
 }
 
 /** A persisted order_items row. */
@@ -76,6 +77,9 @@ export interface OrderItem {
   file_mime: string | null;
   file_size_bytes: number | null;
   downloads: number;
+  math_text_id: number | null;
+  math_text_title: string | null;
+  math_text_source: string | null;
 }
 
 export interface InventoryException {
@@ -581,9 +585,14 @@ export async function recordPaidOrder(
         .prepare(
           `INSERT INTO order_items
              (order_id, product_id, variant_id, name, price_cents, quantity,
-              public_id, file_key, file_name, file_mime, file_size_bytes)
-           SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM orders
-            WHERE provider_session_id = ? AND settlement_token = ?`,
+              public_id, file_key, file_name, file_mime, file_size_bytes,
+              math_text_id, math_text_title, math_text_source)
+           SELECT o.id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                  mt.id, mt.title, mt.source_tex
+             FROM orders o
+             LEFT JOIN products p ON p.id = ?
+             LEFT JOIN math_texts mt ON mt.id = p.math_text_id
+            WHERE o.provider_session_id = ? AND o.settlement_token = ?`,
         )
         .bind(
           it.productId,
@@ -596,6 +605,7 @@ export async function recordPaidOrder(
           it.fileName ?? null,
           it.fileMime ?? null,
           it.fileSizeBytes ?? null,
+          it.productId,
           o.providerSessionId,
           settlementToken,
         ),

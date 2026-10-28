@@ -38,6 +38,7 @@ import { parsePublicId } from '../../../../features/ids/publicId';
 import { CACHE_TAG } from '../../../../features/cache/tags';
 import { purgeCacheTags } from '../../../../features/cache/purge';
 import { setProductConference, getConference } from '../../../../features/conferences/db';
+import { getMathText, setProductMathText } from '../../../../features/mathTexts/db';
 
 export const prerender = false;
 
@@ -190,6 +191,14 @@ export const POST: APIRoute = async ({ request, params, redirect, locals }) => {
   }
 
   await updateProduct(env.DB, id, { ...parsed.data, image_key, slug });
+  const mathTextRaw = String(form.get('math_text_id') ?? '').trim();
+  if (!mathTextRaw) {
+    await setProductMathText(env.DB, id, null);
+  } else {
+    const mathTextId = Number(mathTextRaw);
+    if (!Number.isSafeInteger(mathTextId) || mathTextId <= 0 || !(await getMathText(env.DB, mathTextId))) return fail('El texto matemático seleccionado no existe.');
+    await setProductMathText(env.DB, id, mathTextId);
+  }
   const conferenceRaw = String(form.get('conference_id') ?? '').trim();
   if (!conferenceRaw) {
     await setProductConference(env.DB, id, null);

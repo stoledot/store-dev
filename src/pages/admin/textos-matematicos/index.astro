@@ -1,0 +1,47 @@
+---
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { listMathTexts, getMathText } from '../../../features/mathTexts/db';
+const texts = await listMathTexts(env.DB);
+const editId = Number(Astro.url.searchParams.get('edit') ?? 0);
+const editing = Number.isSafeInteger(editId) && editId > 0 ? await getMathText(env.DB, editId) : null;
+const error = Astro.url.searchParams.get('error');
+const updated = Astro.url.searchParams.get('updated');
+const saved = Astro.url.searchParams.get('saved');
+---
+<AdminLayout title="Textos matemáticos" active="products">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <div><a href="/admin" class="text-sm text-gray-500">← Administración</a><h1 class="mt-3 text-2xl font-bold">Biblioteca de textos matemáticos</h1><p class="mt-1 text-sm text-muted">Sube archivos .tex para vincularlos a productos y vender su lectura en línea.</p></div>
+  </div>
+  {error && <p class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+  {saved && <p class="mb-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">Texto guardado. Los pedidos anteriores no se modificaron.</p>}
+  {updated !== null && <p class="mb-4 rounded border border-sky-200 bg-sky-50 p-3 text-sm text-sky-800">Actualización propagada: {updated} artículos de pedido recibieron la versión corregida. Si un cliente ya tenía abierta la lectura, debe recargar la página.</p>}
+  <section class="mb-8 rounded-lg border border-line p-5">
+    <h2 class="mb-4 text-lg font-semibold">{editing ? 'Editar texto' : 'Agregar texto'}</h2>
+    <form method="POST" action="/api/admin/math-texts" enctype="multipart/form-data" class="max-w-3xl space-y-4">
+      {editing && <input type="hidden" name="id" value={editing.id} />}
+      <div><label for="title" class="block text-sm font-medium">Título</label><input id="title" name="title" required maxlength="180" value={editing?.title ?? ''} class="mt-1 w-full rounded border border-line px-3 py-2" /></div>
+      <div><label for="description" class="block text-sm font-medium">Descripción (opcional)</label><textarea id="description" name="description" rows="2" class="mt-1 w-full rounded border border-line px-3 py-2">{editing?.description ?? ''}</textarea></div>
+      <div><label for="source" class="block text-sm font-medium">Archivo .tex</label><input id="source" name="source" type="file" accept=".tex,text/plain" class="mt-1 block w-full text-sm" />{editing && <p class="mt-1 text-xs text-muted">Actual: {editing.file_name}. Si no eliges otro archivo se conserva el contenido actual.</p>}</div>
+      {editing && <div><label for="source_text" class="block text-sm font-medium">O edita el código LaTeX directamente</label><textarea id="source_text" name="source_text" rows="12" class="mt-1 w-full rounded border border-line px-3 py-2 font-mono text-xs">{editing.source_tex}</textarea></div>}
+      <div class="flex flex-wrap gap-3"><button class="rounded bg-brand px-4 py-2 text-sm font-medium text-on-brand" type="submit">{editing ? 'Guardar cambios' : 'Subir texto'}</button>{editing && <a href="/admin/textos-matematicos" class="rounded border border-line px-4 py-2 text-sm">Cancelar</a>}</div>
+      <p class="text-xs text-muted">Límite de archivo: 500 KB. El lector admite estructura de capítulos/secciones, párrafos, listas y fórmulas comunes; no es un compilador LaTeX completo.</p>
+    </form>
+    {editing && <div class="mt-5 max-w-3xl rounded-lg border border-amber-300 bg-amber-50 p-4"><h3 class="font-semibold text-amber-950">¿Ya corregiste una errata?</h3><p class="mt-1 text-sm text-amber-900">Primero guarda el archivo corregido. Después, este botón actualiza las copias de los pedidos pagados que todavía tienen acceso, sin cambiar pedidos reembolsados por completo.</p><form method="POST" action="/api/admin/math-texts" class="mt-3" data-confirm-propagate><input type="hidden" name="_action" value="propagate"/><input type="hidden" name="id" value={editing.id}/><button class="rounded bg-amber-700 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-800" type="submit">Actualizar contenido de compradores anteriores</button></form></div>}
+  </section>
+  <section><h2 class="mb-3 text-lg font-semibold">Textos disponibles ({texts.length})</h2>
+    {texts.length ? <div class="overflow-x-auto rounded border border-line"><table class="w-full text-left text-sm"><thead><tr class="bg-surface"><th class="p-3">Título</th><th class="p-3">Archivo</th><th class="p-3">Acciones</th></tr></thead><tbody>{texts.map(t => <tr class="border-t border-line"><td class="p-3 font-medium">{t.title}</td><td class="p-3">{t.file_name}</td><td class="p-3"><div class="flex gap-3"><a class="text-brand underline" href={`/admin/textos-matematicos?edit=${t.id}`}>Editar</a><form method="POST" action="/api/admin/math-texts" data-confirm-delete><input type="hidden" name="_action" value="delete"/><input type="hidden" name="id" value={t.id}/><button class="text-red-600 underline" type="submit">Eliminar</button></form></div></td></tr>)}</tbody></table></div> : <p class="rounded border border-dashed border-line p-5 text-sm text-muted">Todavía no hay textos.</p>}
+  </section>
+  <script>
+    document.querySelectorAll<HTMLFormElement>('form[data-confirm-propagate]').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        if (!confirm('Esto reemplazará la copia de este texto en los pedidos pagados anteriores. ¿Deseas continuar?')) event.preventDefault();
+      });
+    });
+    document.querySelectorAll<HTMLFormElement>('form[data-confirm-delete]').forEach((form) => {
+      form.addEventListener('submit', (event) => {
+        if (!confirm('¿Eliminar este texto de la biblioteca? Las compras anteriores conservarán su copia.')) event.preventDefault();
+      });
+    });
+  </script>
+</AdminLayout>
