@@ -10,6 +10,7 @@ if (!email) return Astro.redirect('/account/login', 303);
 const intake = await env.DB.prepare(`SELECT i.status,i.approved_level,a.title AS area_title FROM school_student_intake i LEFT JOIN school_areas a ON a.id=i.selected_area_id WHERE i.student_email=? COLLATE NOCASE`).bind(email).first<{status:string;approved_level:string|null;area_title:string|null}>();
 const enrollment = await env.DB.prepare(`SELECT MAX(valid_until) AS valid_until FROM school_fee_payments WHERE student_email=? COLLATE NOCASE AND fee_type='enrollment' AND valid_until>=date('now')`).bind(email).first<{valid_until:string|null}>();
 const monthly = await env.DB.prepare(`SELECT MAX(valid_until) AS valid_until FROM school_fee_payments WHERE student_email=? COLLATE NOCASE AND fee_type='monthly' AND valid_until>=date('now')`).bind(email).first<{valid_until:string|null}>();
+const currentPeriod = await env.DB.prepare(`SELECT period_no,starts_on,ends_on FROM school_periods WHERE student_email=? COLLATE NOCASE AND status='active' ORDER BY period_no DESC LIMIT 1`).bind(email).first<{period_no:number;starts_on:string;ends_on:string}>();
 const assignment = await env.DB.prepare(`SELECT x.id AS assignment_id,c.id AS course_id,c.slug,c.title,c.summary,c.level_code,a.title AS area_title FROM school_course_assignments x JOIN school_courses c ON c.id=x.course_id JOIN school_student_intake i ON i.student_email=x.student_email COLLATE NOCASE AND i.status='approved' AND i.selected_area_id=c.area_id AND i.approved_level=c.level_code LEFT JOIN school_areas a ON a.id=c.area_id WHERE x.student_email=? COLLATE NOCASE AND x.status='active' AND c.status='published' ORDER BY x.assigned_at DESC LIMIT 1`).bind(email).first<{assignment_id:string;course_id:string;slug:string;title:string;summary:string;level_code:string;area_title:string|null}>();
 const lessons = assignment ? ((await env.DB.prepare(`SELECT l.id,l.slug,l.title,l.summary,l.sequence_no,l.required_to_complete,COALESCE(p.status,'not_started') AS progress_status,p.score,p.completed_at FROM school_lessons l LEFT JOIN school_lesson_progress p ON p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE WHERE l.course_id=? AND l.status='published' ORDER BY l.sequence_no`).bind(email,assignment.course_id).all<{id:string;slug:string;title:string;summary:string;sequence_no:number;required_to_complete:number;progress_status:string;score:number|null;completed_at:string|null}>()).results ?? []) : [];
 const canStudy = Boolean(enrollment?.valid_until && monthly?.valid_until && assignment);
@@ -17,133 +18,158 @@ const totalRequired = lessons.filter(l=>l.required_to_complete===1).length;
 const completedRequired = lessons.filter(l=>l.required_to_complete===1 && l.progress_status==='completed').length;
 const percent = totalRequired ? Math.round(completedRequired/totalRequired*100) : 0;
 
+
+const nextLesson = lessons.find((lesson) => lesson.required_to_complete === 1 && lesson.progress_status !== 'completed')
+  ?? lessons.find((lesson) => lesson.progress_status !== 'completed')
+  ?? lessons[lessons.length - 1]
+  ?? null;
+const coursePercent = totalRequired ? Math.round((completedRequired / totalRequired) * 100) : 0;
+const events = (await env.DB.prepare(`SELECT id,title,description,event_date,event_type FROM school_calendar_events WHERE student_email=? COLLATE NOCASE AND event_date>=date('now') ORDER BY event_date LIMIT 8`).bind(email).all<{id:string;title:string;description:string;event_date:string;event_type:string}>()).results ?? [];
+const notifications = (await env.DB.prepare(`SELECT id,title,body,href,created_at FROM school_notifications WHERE student_email=? COLLATE NOCASE ORDER BY created_at DESC LIMIT 5`).bind(email).all<{id:string;title:string;body:string;href:string;created_at:string}>()).results ?? [];
+
 ---
+
 <Layout title="Mi escuela" description="Tu espacio personal de aprendizaje.">
-  <main class="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:py-12">
-    <header class="mb-8"><p class="text-sm font-medium text-kumo-muted">ESCUELA DE MATEMÁTICAS</p><h1 class="mt-2 text-3xl font-bold tracking-tight">Mi escuela</h1><p class="mt-2 text-sm text-kumo-muted">Tu área de interés y tu curso asignado por el equipo académico.</p></header>
-    {!intake ? <section class="rounded-xl border border-kumo-line p-6"><h2 class="text-xl font-semibold">Comienza por elegir tu área</h2><p class="mt-2 text-sm text-kumo-muted">Indica qué área de matemáticas te interesa y envía tu diagnóstico inicial. La administración revisará tu nivel antes de asignarte un curso.</p><a href="/escuela/diagnostico" class="mt-4 inline-flex rounded-lg bg-kumo-strong px-4 py-2 text-sm font-semibold text-white">Elegir área y hacer diagnóstico</a></section> : <section class="mb-6 rounded-xl border border-kumo-line p-5"><p class="text-xs uppercase tracking-widest text-kumo-muted">Área de interés</p><h2 class="mt-1 text-xl font-semibold">{intake.area_title ?? 'Área seleccionada'}</h2><p class="mt-2 text-sm">Estado del diagnóstico: <strong>{intake.status==='approved' ? `Aprobado · ${intake.approved_level ?? ''}` : intake.status==='rejected' ? 'Requiere revisión' : 'Pendiente de revisión'}</strong></p><a href="/escuela/diagnostico" class="mt-3 inline-block text-sm underline">Actualizar diagnóstico</a></section>}
-    <section class="mb-6 grid gap-4 sm:grid-cols-2">
-      <div class="rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">Inscripción semestral</h2><p class="mt-2 text-sm text-kumo-muted">{enrollment?.valid_until ? `Vigente hasta ${enrollment.valid_until}` : 'No hay una inscripción vigente registrada.'}</p><p class="mt-2 text-xs text-kumo-muted">La inscripción se renueva cada seis meses. Si ya pagaste, espera a que administración confirme el pago.</p></div>
-      <div class="rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">Mensualidad</h2><p class="mt-2 text-sm text-kumo-muted">{monthly?.valid_until ? `Vigente hasta ${monthly.valid_until}` : 'No hay una mensualidad vigente registrada.'}</p><p class="mt-2 text-xs text-kumo-muted">La mensualidad incluye un solo curso asignado.</p></div>
-    </section>
-    {!enrollment?.valid_until || !monthly?.valid_until ? 
-      <section class="mb-6 rounded-xl border border-kumo-line p-5">
-        <h2 class="font-semibold">Acceso académico pendiente</h2>
-        <p class="mt-2 text-sm text-kumo-muted">
-          Para habilitar las lecciones necesitas inscripción semestral y mensualidad vigentes. Los pagos se verifican en la tienda y administración los registra en tu expediente.
-        </p>
-        <a href="/escuela/planes" class="mt-3 inline-block text-sm underline">
-          Consultar pagos de la escuela
-        </a>
-      </section> 
-      : 
-      !assignment ? 
-      <section class="mb-6 rounded-xl border border-kumo-line p-5">
-        <h2 class="font-semibold">Todavía no tienes un curso asignado</h2>
-        <p class="mt-2 text-sm text-kumo-muted">
-          Cuando tu diagnóstico esté aprobado, la administración te asignará el nivel que corresponda a tu área.
-        </p>
-      </section> 
-      : 
+  <main class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-9">
+    <header class="mb-7 rounded-3xl border border-kumo-line bg-white p-6 shadow-sm sm:p-8">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-kumo-muted">Escuela de matemáticas</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Mi espacio académico</h1>
+      <p class="mt-3 max-w-2xl text-sm leading-6 text-kumo-muted sm:text-base">Todo lo importante de tu aprendizaje, en un solo lugar.</p>
+    </header>
 
-      /*Nueva parte de código agregada para mostrar el curso asignado y sus lecciones*/
-      
-
-        <><section class="mt-6 rounded-xl border border-kumo-line p-5">
-          <p class="text-xs uppercase tracking-widest text-kumo-muted">
-          Tu curso asignado
-        </p>
-        <h2 class="mt-2 text-2xl font-semibold">
-          {assignment.title}
-        </h2>
-        <p class="mt-2 text-sm text-kumo-muted">
-          {assignment.area_title} · {assignment.level_code}
-        </p>
-          <div class="mt-5 flex items-center justify-between text-sm">
-            <span>Lecciones obligatorias completadas</span>
-            <strong>{completedRequired} / {totalRequired} ({percent}%)</strong>
+    {!intake ? (
+      <section class="rounded-3xl border border-kumo-line bg-white p-6 sm:p-8">
+        <div class="grid gap-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start">
+          <div class="grid size-14 place-items-center rounded-2xl bg-kumo-base text-2xl" aria-hidden="true">✦</div>
+          <div>
+            <h2 class="text-xl font-semibold">Comienza por elegir tu área</h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-kumo-muted">Cuéntanos qué área de las matemáticas te interesa y completa el diagnóstico inicial. La administración revisará tu nivel para asignarte un curso adecuado.</p>
+            <a href="/escuela/diagnostico" class="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-base">Elegir área y hacer diagnóstico →</a>
           </div>
-          <div class="mt-2 h-3 overflow-hidden rounded-full bg-gray-200">
-            <div class="h-full rounded-full bg-brand" style={`width:${percent}%`}>
-            </div>
         </div>
-    </section>
+      </section>
+    ) : (
+      <>
+        <section class="mb-5 rounded-2xl border border-kumo-line bg-white p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Tu área de interés</p>
+            <h2 class="mt-1 text-xl font-semibold">{intake.area_title ?? 'Área seleccionada'}</h2>
+            <p class="mt-2 text-sm text-kumo-muted">
+              Diagnóstico: <strong class="text-kumo-strong">{intake.status === 'approved' ? `Aprobado · ${intake.approved_level ?? ''}` : intake.status === 'rejected' ? 'Requiere revisión' : 'Pendiente de revisión'}</strong>
+            </p>
+          </div>
+          <a href="/escuela/diagnostico" class="mt-4 inline-flex text-sm font-semibold underline underline-offset-4 sm:mt-0">Actualizar diagnóstico</a>
+        </section>
 
-    <section class="mt-6 rounded-xl border border-kumo-line p-5">
-      <h2 class="font-semibold">Detalle por lección</h2>
-      <ol class="mt-3 divide-y divide-kumo-line">
-          {lessons.map(l=>
-            <li class="py-4">
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p class="font-medium">{l.sequence_no}. {l.title}</p>
-                  {l.summary && <p class="mt-1 text-sm text-kumo-muted">{l.summary}</p>}
-                  <p class="mt-1 text-xs text-kumo-muted">
-                    Estado: {l.progress_status==='completed' ?
-                      'Completada':l.progress_status==='in_progress'?
-                      'En curso':'Sin iniciar'}
-                    {l.score!==null?
-                      ` · Calificación ${l.score}`:''}
-                      {l.required_to_complete!==1?' · No obligatoria':''}</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                      <a class="rounded border border-kumo-line px-3 py-2 text-sm underline" href={`/escuela/cursos/${assignment.slug}/${l.slug}`}>
-                        Abrir lección</a>
-                      {l.progress_status!=='completed' && 
-                        <form method="POST">
-                          <input type="hidden" name="lesson_id" value={l.id}/>
-                          <button class="rounded bg-kumo-strong px-3 py-2 text-sm font-semibold text-white" type="submit">
-                            Marcar completada</button>
-                        </form>}
-                    </div>
+        {assignment && (
+          <section class="mb-5 overflow-hidden rounded-3xl border border-kumo-line bg-white shadow-sm">
+            <div class="p-5 sm:p-7">
+              <div class="flex flex-wrap items-start justify-between gap-4">
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Tu curso asignado</p>
+                  <h2 class="mt-2 break-words text-2xl font-bold">{assignment.title}</h2>
+                  <p class="mt-2 text-sm text-kumo-muted">{assignment.area_title || 'Área de estudio'} · Nivel {assignment.level_code}</p>
+                  {currentPeriod && <p class="mt-1 text-xs text-kumo-muted">Periodo {currentPeriod.period_no} · {currentPeriod.starts_on} al {currentPeriod.ends_on}</p>}
+                  {assignment.summary && <p class="mt-3 max-w-2xl text-sm leading-6 text-kumo-muted">{assignment.summary}</p>}
                 </div>
-              </li>)}
-        </ol>
-        
-        {lessons.length===0 && 
-          <p class="mt-3 text-sm text-kumo-muted">Aún no hay lecciones publicadas.</p>}
+                <span class="rounded-full bg-kumo-base px-3 py-1.5 text-xs font-semibold text-kumo-strong">{coursePercent === 100 ? 'Curso completado' : coursePercent > 0 ? 'En progreso' : 'Listo para comenzar'}</span>
+              </div>
+
+              <div class="mt-6 rounded-2xl bg-gray-50 p-4 sm:p-5">
+                <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                  <span class="text-kumo-muted">Tu avance</span>
+                  <strong class="tabular-nums">{completedRequired} de {totalRequired} actividades obligatorias · {coursePercent}%</strong>
+                </div>
+                <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-label="Avance del curso" aria-valuemin="0" aria-valuemax="100" aria-valuenow={coursePercent}>
+                  <div class="h-full rounded-full bg-kumo-inverted transition-all" style={`width: ${coursePercent}%`}></div>
+                </div>
+                <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Siguiente paso</p>
+                    <p class="mt-1 font-medium">{nextLesson?.title ?? 'Todavía no hay unidades publicadas'}</p>
+                  </div>
+                  {canStudy && nextLesson && (
+                    <a href={coursePercent === 100 ? '/products' : `/escuela/cursos/${assignment.slug}/${nextLesson.slug}`} class="inline-flex min-h-11 items-center justify-center rounded-xl bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-base">
+                      {coursePercent === 100 ? 'Continuar con otro curso' : coursePercent > 0 ? 'Continuar curso' : 'Comenzar curso'} →
+                    </a>
+                  )}
+                </div>
+                {coursePercent === 100 && <p class="mt-4 text-sm leading-6 text-kumo-muted">¡Terminaste! Realiza el pago de tu siguiente periodo en la tienda. La escuela revisará tu avance y te asignará el siguiente curso.</p>}
+              </div>
+            </div>
+
+            {lessons.length > 0 && (
+              <div class="border-t border-kumo-line p-5 sm:p-7">
+                <div class="mb-4">
+                  <h3 class="text-lg font-semibold">Unidades del curso</h3>
+                  <p class="mt-1 text-sm text-kumo-muted">Elige una unidad disponible. Tu avance se guarda automáticamente cuando corresponde.</p>
+                </div>
+                <ol class="space-y-2">
+                  {lessons.map((lesson, index) => (
+                    <li>
+                      <a href={canStudy ? `/escuela/cursos/${assignment.slug}/${lesson.slug}` : '#'} aria-disabled={!canStudy ? 'true' : undefined} class={`flex items-start gap-3 rounded-2xl border border-kumo-line p-3 transition sm:items-center sm:p-4 ${canStudy ? 'hover:bg-gray-50' : 'pointer-events-none opacity-50'}`}>
+                        <span class={`grid size-9 shrink-0 place-items-center rounded-xl text-sm font-semibold ${lesson.progress_status === 'completed' ? 'bg-emerald-50 text-emerald-800' : 'bg-gray-100 text-kumo-strong'}`} aria-hidden="true">{lesson.progress_status === 'completed' ? '✓' : index + 1}</span>
+                        <span class="min-w-0 flex-1">
+                          <span class="block break-words font-medium">{lesson.title}</span>
+                          {lesson.summary && <span class="mt-1 block text-sm leading-5 text-kumo-muted">{lesson.summary}</span>}
+                          <span class="mt-1 block text-xs text-kumo-muted">{lesson.progress_status === 'completed' ? 'Completada' : lesson.progress_status === 'in_progress' ? 'En curso' : 'Pendiente'}{lesson.required_to_complete !== 1 ? ' · Complementaria' : ''}{lesson.score !== null ? ` · Calificación ${lesson.score}` : ''}</span>
+                        </span>
+                        <span class="shrink-0 self-center text-sm font-semibold text-kumo-muted" aria-hidden="true">→</span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {lessons.length === 0 && <p class="border-t border-kumo-line p-5 text-sm text-kumo-muted sm:p-7">Este curso todavía no tiene unidades publicadas. Vuelve más tarde o consulta a la administración.</p>}
+          </section>
+        )}
+
+        {(!enrollment?.valid_until || !monthly?.valid_until) && (
+          <section class="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-800">Acceso académico</p>
+            <h2 class="mt-1 text-lg font-semibold text-amber-950">Tu acceso requiere una revisión</h2>
+            <p class="mt-2 text-sm leading-6 text-amber-900">Para abrir las unidades necesitas inscripción semestral y mensualidad vigentes. Si ya pagaste, la administración debe confirmar el pago en tu expediente.</p>
+            <a href="/products" class="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-950">Ver opciones de pago</a>
+          </section>
+        )}
+
+        {enrollment?.valid_until && monthly?.valid_until && !assignment && (
+          <section class="mb-5 rounded-2xl border border-kumo-line bg-white p-5 sm:p-6">
+            <h2 class="text-lg font-semibold">Todavía no tienes un curso asignado</h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-kumo-muted">Cuando tu diagnóstico esté aprobado, la administración asignará un curso correspondiente a tu área y nivel.</p>
+          </section>
+        )}
+
+        <section class="grid gap-3 sm:grid-cols-2">
+          <article class="rounded-2xl border border-kumo-line bg-white p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Inscripción semestral</p>
+            <p class="mt-2 font-semibold">{enrollment?.valid_until ? `Vigente hasta ${enrollment.valid_until}` : 'Sin vigencia registrada'}</p>
+            <p class="mt-1 text-sm leading-5 text-kumo-muted">La administración registra la vigencia cuando confirma el pago.</p>
+          </article>
+          <article class="rounded-2xl border border-kumo-line bg-white p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Mensualidad</p>
+            <p class="mt-2 font-semibold">{monthly?.valid_until ? `Vigente hasta ${monthly.valid_until}` : 'Sin vigencia registrada'}</p>
+            <p class="mt-1 text-sm leading-5 text-kumo-muted">La mensualidad vigente habilita el curso asignado.</p>
+          </article>
         </section>
       </>
+    )}
 
-      /*Final de la nueva parte de código agregada para mostrar el curso asignado y sus lecciones*/
-      
+    {events.length > 0 && <section class="mt-6 rounded-2xl border border-kumo-line bg-white p-5 sm:p-6">
+      <div class="mb-4"><p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Organiza tu aprendizaje</p><h2 class="mt-1 text-xl font-semibold">Próximas fechas</h2></div>
+      <div class="divide-y divide-kumo-line">{events.map((event) => <div class="flex items-start justify-between gap-4 py-3"><div><p class="font-medium">{event.title}</p>{event.description && <p class="mt-1 text-sm text-kumo-muted">{event.description}</p>}<p class="mt-1 text-xs text-kumo-muted">{event.event_type === 'evaluation' ? 'Evaluación' : event.event_type === 'activity' ? 'Actividad' : event.event_type === 'start' ? 'Inicio' : event.event_type === 'end' ? 'Finalización' : 'Fecha importante'}</p></div><time class="shrink-0 rounded-xl bg-kumo-base px-3 py-2 text-sm font-semibold tabular-nums">{event.event_date}</time></div>)}</div>
+    </section>}
+    {notifications.length > 0 && <section class="mt-5 rounded-2xl border border-kumo-line bg-white p-5"><h2 class="text-lg font-semibold">Avisos de la escuela</h2><div class="mt-3 space-y-3">{notifications.map((notice) => <a href={notice.href} class="block rounded-xl bg-kumo-base p-3 transition hover:opacity-80"><p class="text-sm font-semibold">{notice.title}</p><p class="mt-1 text-sm text-kumo-muted">{notice.body}</p></a>)}</div></section>}
 
+    <footer class="mt-7 flex flex-col gap-3 rounded-2xl border border-kumo-line bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div>
+        <p class="font-semibold">¿Necesitas ayuda con tu curso?</p>
+        <p class="mt-1 text-sm text-kumo-muted">Puedes escribir a la administración desde tu buzón privado.</p>
+      </div>
+      <a href="/account/messages" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-kumo-line px-4 py-2 text-sm font-semibold hover:bg-gray-50">Abrir buzón →</a>
+    </footer>
 
-      /*Sección antigua
-      <section class="rounded-xl border border-kumo-line p-5">
-        <p class="text-xs uppercase tracking-widest text-kumo-muted">
-          Tu curso asignado
-        </p>
-        <h2 class="mt-2 text-2xl font-semibold">
-          {assignment.title}
-        </h2>
-        <p class="mt-2 text-sm text-kumo-muted">
-          {assignment.area_title} · {assignment.level_code}
-        </p>
-
-        {assignment.summary && <p class="mt-3 text-sm">{assignment.summary}</p>}
-        
-        <div class="mt-6">
-          <h3 class="font-semibold">
-            Lecciones
-          </h3>
-          
-          {lessons.length ?
-             <ol class="mt-3 divide-y divide-kumo-line">
-                {lessons.map(l=>
-                  <li class="py-3">
-                    <a class="font-medium underline" href={`/escuela/cursos/${assignment.slug}/${l.slug}`}>
-                      {l.sequence_no}. {l.title}
-                    </a>
-                    {l.summary && 
-                      <p class="mt-1 text-sm text-kumo-muted">
-                        {l.summary}</p>}
-                        </li>)}
-              </ol> : 
-              <p class="mt-3 text-sm text-kumo-muted">
-                El curso todavía no tiene lecciones publicadas.</p>}</div>
-        </section>*/
-    }
-    <p class="mt-8 text-sm"><a class="underline" href="/account">Mi cuenta</a></p>
+    <p class="mt-5 text-sm"><a class="text-kumo-muted underline underline-offset-4" href="/account">Volver a mi cuenta</a></p>
   </main>
 </Layout>

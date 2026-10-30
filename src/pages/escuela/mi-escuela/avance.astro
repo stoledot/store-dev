@@ -28,10 +28,59 @@ const totalRequired = lessons.filter(l=>l.required_to_complete===1).length;
 const completedRequired = lessons.filter(l=>l.required_to_complete===1 && l.progress_status==='completed').length;
 const percent = totalRequired ? Math.round(completedRequired/totalRequired*100) : 0;
 ---
-<Layout title="Mi avance académico" description="Consulta y actualiza tu avance en el curso asignado.">
-  <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12"><p class="text-xs uppercase tracking-widest text-kumo-muted"><a href="/escuela/mi-escuela" class="underline">Mi escuela</a> / Avance</p><h1 class="mt-3 text-3xl font-bold">Mi avance académico</h1><p class="mt-2 text-sm text-kumo-muted">Solo se muestra el curso que te asignó la administración.</p>
-  {error && <p class="mt-5 rounded border border-red-200 bg-red-50 p-3 text-sm">{error}</p>}{ok && <p class="mt-5 rounded border border-green-200 bg-green-50 p-3 text-sm">Tu avance se actualizó.</p>}
-  {!assignment ? <section class="mt-6 rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">No hay un curso habilitado</h2><p class="mt-2 text-sm text-kumo-muted">Revisa que tu inscripción, mensualidad y asignación académica estén vigentes.</p></section> : <><section class="mt-6 rounded-xl border border-kumo-line p-5"><p class="text-xs uppercase tracking-widest text-kumo-muted">{assignment.area_title} · {assignment.level_code}</p><h2 class="mt-2 text-2xl font-semibold">{assignment.title}</h2><div class="mt-5 flex items-center justify-between text-sm"><span>Lecciones obligatorias completadas</span><strong>{completedRequired} / {totalRequired} ({percent}%)</strong></div><div class="mt-2 h-3 overflow-hidden rounded-full bg-gray-200"><div class="h-full rounded-full bg-brand" style={`width:${percent}%`}></div></div></section>
-  <section class="mt-6 rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">Detalle por lección</h2><ol class="mt-3 divide-y divide-kumo-line">{lessons.map(l=><li class="py-4"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="font-medium">{l.sequence_no}. {l.title}</p>{l.summary && <p class="mt-1 text-sm text-kumo-muted">{l.summary}</p>}<p class="mt-1 text-xs text-kumo-muted">Estado: {l.progress_status==='completed'?'Completada':l.progress_status==='in_progress'?'En curso':'Sin iniciar'}{l.score!==null?` · Calificación ${l.score}`:''}{l.required_to_complete!==1?' · No obligatoria':''}</p></div><div class="flex flex-wrap gap-2"><a class="rounded border border-kumo-line px-3 py-2 text-sm underline" href={`/escuela/cursos/${assignment.slug}/${l.slug}`}>Abrir lección</a>{l.progress_status!=='completed' && <form method="POST"><input type="hidden" name="lesson_id" value={l.id}/><button class="rounded bg-kumo-strong px-3 py-2 text-sm font-semibold text-white" type="submit">Marcar completada</button></form>}</div></div></li>)}</ol>{lessons.length===0&&<p class="mt-3 text-sm text-kumo-muted">Aún no hay lecciones publicadas.</p>}</section></>}
-  <p class="mt-8 text-sm"><a href="/escuela/mi-escuela" class="underline">Volver a Mi escuela</a></p></main>
+<Layout title="Mi avance académico" 
+  description="Consulta y actualiza tu avance en el curso asignado.">
+  
+  <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:py-12">
+    <p class="text-xs uppercase tracking-widest text-kumo-muted">
+      <a href="/escuela/mi-escuela" class="underline">Mi escuela</a> / Avance</p>
+      <h1 class="mt-3 text-3xl font-bold">Mi avance académico</h1>
+      <p class="mt-2 text-sm text-kumo-muted">Solo se muestra el curso que te asignó la administración.</p>
+
+  {error && <p class="mt-5 rounded border border-red-200 bg-red-50 p-3 text-sm">{error}</p>}
+
+  {ok && 
+    <p class="mt-5 rounded border border-green-200 bg-green-50 p-3 text-sm">
+      Tu avance se actualizó.</p>}
+
+  {!assignment ? 
+    <section class="mt-6 rounded-xl border border-kumo-line p-5">
+        <h2 class="font-semibold">No hay un curso habilitado</h2>
+        <p class="mt-2 text-sm text-kumo-muted">Revisa que tu inscripción, mensualidad y asignación académica estén vigentes.</p></section> : <><section class="mt-6 rounded-xl border border-kumo-line p-5"><p class="text-xs uppercase tracking-widest text-kumo-muted">{assignment.area_title} · {assignment.level_code}</p><h2 class="mt-2 text-2xl font-semibold">{assignment.title}</h2><div class="mt-5 flex items-center justify-between text-sm"><span>Lecciones obligatorias completadas</span><strong>{completedRequired} / {totalRequired} ({percent}%)</strong></div><div class="mt-2 h-3 overflow-hidden rounded-full bg-gray-200"><div class="h-full rounded-full bg-brand" style={`width:${percent}%`}></div></div></section>
+    <section class="mt-6 rounded-xl border border-kumo-line p-5">
+      <h2 class="font-semibold">Detalle por lección</h2>
+      <ol class="mt-3 divide-y divide-kumo-line">
+          {lessons.map(l=>
+            <li class="py-4">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p class="font-medium">{l.sequence_no}. {l.title}</p>
+                  {l.summary && <p class="mt-1 text-sm text-kumo-muted">{l.summary}</p>}
+                  <p class="mt-1 text-xs text-kumo-muted">
+                    Estado: {l.progress_status==='completed' ?
+                      'Completada':l.progress_status==='in_progress'?
+                      'En curso':'Sin iniciar'}
+                    {l.score!==null?
+                      ` · Calificación ${l.score}`:''}
+                      {l.required_to_complete!==1?' · No obligatoria':''}</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      <a class="rounded border border-kumo-line px-3 py-2 text-sm underline" href={`/escuela/cursos/${assignment.slug}/${l.slug}`}>
+                        Abrir lección</a>
+                      {l.progress_status!=='completed' && 
+                        <form method="POST">
+                          <input type="hidden" name="lesson_id" value={l.id}/>
+                          <button class="rounded bg-kumo-strong px-3 py-2 text-sm font-semibold text-white" type="submit">
+                            Marcar completada</button>
+                        </form>}
+                    </div>
+                </div>
+              </li>)}
+        </ol>
+        
+        {lessons.length===0 && 
+          <p class="mt-3 text-sm text-kumo-muted">Aún no hay lecciones publicadas.</p>}
+        </section></>}
+    <p class="mt-8 text-sm"><a href="/escuela/mi-escuela" class="underline">Volver a Mi escuela</a></p></main>
+
 </Layout>

@@ -1,0 +1,27 @@
+ARCHIVOS MODIFICADOS
+src/features/products/ProductForm.astro
+src/pages/account/index.astro
+src/pages/admin/escuela/calificaciones.astro
+src/pages/admin/escuela/index.astro
+src/pages/admin/products/[id]/edit.astro
+src/pages/admin/products/new.astro
+src/pages/api/admin/escuela/calificar-entrega.ts
+src/pages/api/admin/products.ts
+src/pages/api/admin/products/[id].ts
+src/pages/api/escuela/cursos/[curso]/[slug].ts
+src/pages/escuela/cursos/[curso]/[slug].astro
+
+ARCHIVOS NUEVOS
+ARCHIVOS-INCLUIDOS.txt
+LEEME-ESCUELA-TEX.md
+docs/ESCUELA-TEX-TABLAS-EXISTENTES.md
+examples/curso-tex-demo.tex
+migrations/0052_school_tex_source.sql
+src/features/mathTexts/render.test.ts
+src/features/mathTexts/render.ts
+src/features/school/texProducts.ts
+src/pages/account/notificaciones.astro
+src/pages/admin/escuela/tex-alumnos.astro
+src/pages/admin/escuela/tex-alumnos/[id].astro
+src/pages/admin/escuela/tex.astro
+src/pages/lecturas/[slug].astro

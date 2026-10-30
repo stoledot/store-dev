@@ -1,0 +1,247 @@
+---
+export const prerender = false;
+
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+
+if (!(await accountsEnabled())) return Astro.redirect('/', 303);
+const email = await getCustomerEmail(Astro.cookies);
+if (!email) return Astro.redirect('/account/login', 303);
+
+const { results = [] } = await env.DB.prepare(`
+  SELECT
+    c.id,
+    c.slug,
+    c.title,
+    c.summary,
+    c.level_code,
+    a.title AS area_title,
+    COALESCE(cp.status, 'not_started') AS progress_status,
+    (
+      SELECT l.slug
+      FROM school_lessons l
+      WHERE l.course_id = c.id AND l.status = 'published'
+      ORDER BY l.sequence_no
+      LIMIT 1
+    ) AS first_lesson,
+    (
+      SELECT l.slug
+      FROM school_lessons l
+      LEFT JOIN school_lesson_progress lp
+        ON lp.lesson_id = l.id AND lower(lp.student_email) = lower(?)
+      WHERE l.course_id = c.id
+        AND l.status = 'published'
+        AND l.required_to_complete = 1
+        AND COALESCE(lp.status, 'not_started') != 'completed'
+      ORDER BY l.sequence_no
+      LIMIT 1
+    ) AS next_lesson,
+    (
+      SELECT l.title
+      FROM school_lessons l
+      LEFT JOIN school_lesson_progress lp
+        ON lp.lesson_id = l.id AND lower(lp.student_email) = lower(?)
+      WHERE l.course_id = c.id
+        AND l.status = 'published'
+        AND l.required_to_complete = 1
+        AND COALESCE(lp.status, 'not_started') != 'completed'
+      ORDER BY l.sequence_no
+      LIMIT 1
+    ) AS next_lesson_title,
+    (
+      SELECT COUNT(*)
+      FROM school_lessons l
+      WHERE l.course_id = c.id
+        AND l.status = 'published'
+        AND l.required_to_complete = 1
+    ) AS total_required,
+    (
+      SELECT COUNT(*)
+      FROM school_lessons l
+      JOIN school_lesson_progress lp
+        ON lp.lesson_id = l.id AND lower(lp.student_email) = lower(?)
+      WHERE l.course_id = c.id
+        AND l.status = 'published'
+        AND l.required_to_complete = 1
+        AND lp.status = 'completed'
+    ) AS completed_required
+  FROM school_courses c
+  LEFT JOIN school_areas a ON a.id = c.area_id
+  LEFT JOIN school_course_progress cp
+    ON cp.course_id = c.id AND lower(cp.student_email) = lower(?)
+  WHERE c.status = 'published'
+    AND c.content_kind = 'course'
+    AND (
+      EXISTS (
+        SELECT 1 FROM school_course_assignments x
+        WHERE x.course_id = c.id
+          AND lower(x.student_email) = lower(?)
+          AND x.status = 'active'
+      )
+      OR EXISTS (
+        SELECT 1
+        FROM order_items oi
+        JOIN orders o ON o.id = oi.order_id
+        WHERE oi.school_course_id = c.id
+          AND lower(trim(o.email)) = lower(trim(?))
+          AND o.status = 'paid'
+          AND COALESCE(o.refunded_cents, 0) < o.amount_total_cents
+      )
+    )
+  ORDER BY c.title COLLATE NOCASE
+`).bind(email, email, email, email, email, email).all<{
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  level_code: string;
+  area_title: string | null;
+  progress_status: string;
+  first_lesson: string | null;
+  next_lesson: string | null;
+  next_lesson_title: string | null;
+  total_required: number;
+  completed_required: number;
+}>();
+
+const courses = results.map((course) => {
+  const total = Number(course.total_required || 0);
+  const completed = Number(course.completed_required || 0);
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const lessonSlug = course.next_lesson || course.first_lesson;
+
+  return {
+    ...course,
+    percent,
+    completed,
+    total,
+    nextTitle: course.next_lesson_title || (percent === 100 ? 'Repasar el curso' : 'Comenzar el curso'),
+    href: lessonSlug
+      ? `/escuela/cursos/${course.slug}/${lessonSlug}`
+      : '/escuela/mi-escuela',
+    isComplete: total > 0 && completed >= total,
+  };
+});
+
+const activeCount = courses.filter((course) => course.percent > 0 && !course.isComplete).length;
+const completedCount = courses.filter((course) => course.isComplete).length;
+---
+
+<Layout title="Mis cursos" description="Continúa tus cursos y consulta tu avance académico.">
+  <main class="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
+    <a href="/account" class="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-ink">
+      <span aria-hidden="true">←</span> Mi cuenta
+    </a>
+
+    <header class="mt-6 overflow-hidden rounded-3xl border border-line bg-surface">
+      <div class="grid gap-6 p-6 sm:p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Tu espacio de aprendizaje</p>
+          <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Mis cursos</h1>
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">
+            Aquí tienes tus cursos y el punto en el que vas. Puedes avanzar a tu ritmo; tu progreso se conserva mientras estudias.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 md:min-w-56">
+          <div class="rounded-2xl bg-background p-4">
+            <p class="text-xs text-muted">En curso</p>
+            <p class="mt-1 text-2xl font-semibold tabular-nums">{activeCount}</p>
+          </div>
+          <div class="rounded-2xl bg-background p-4">
+            <p class="text-xs text-muted">Completados</p>
+            <p class="mt-1 text-2xl font-semibold tabular-nums">{completedCount}</p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    {courses.length > 0 ? (
+      <section class="mt-7" aria-labelledby="course-list-title">
+        <div class="mb-4 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 id="course-list-title" class="text-xl font-semibold">Tus espacios de estudio</h2>
+            <p class="mt-1 text-sm text-muted">Elige un curso para continuar donde lo dejaste.</p>
+          </div>
+          <span class="text-sm text-muted">{courses.length} {courses.length === 1 ? 'curso' : 'cursos'}</span>
+        </div>
+
+        <div class="grid gap-4 lg:grid-cols-2">
+          {courses.map((course) => (
+            <article class="flex min-w-0 flex-col rounded-3xl border border-line bg-surface p-5 transition hover:border-accent/50 sm:p-6">
+              <div class="flex items-start gap-4">
+                <div class="grid size-12 shrink-0 place-items-center rounded-2xl bg-accent/10 text-xl" aria-hidden="true">✦</div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="rounded-full bg-background px-2.5 py-1 text-xs font-medium text-muted">
+                      {course.isComplete ? 'Finalizado' : course.percent > 0 ? 'En progreso' : 'Listo para comenzar'}
+                    </span>
+                    {course.level_code && <span class="text-xs text-muted">Nivel {course.level_code}</span>}
+                  </div>
+                  <h3 class="mt-2 break-words text-xl font-semibold leading-snug">{course.title}</h3>
+                  <p class="mt-1 text-sm text-muted">{course.area_title || 'Curso académico'}</p>
+                </div>
+              </div>
+
+              {course.summary && <p class="mt-4 line-clamp-3 text-sm leading-6 text-muted">{course.summary}</p>}
+
+              <div class="mt-5 rounded-2xl bg-background p-4">
+                <div class="flex items-center justify-between gap-3 text-sm">
+                  <span class="text-muted">Tu avance</span>
+                  <strong class="tabular-nums">{course.percent}%</strong>
+                </div>
+                <div
+                  class="mt-2 h-2.5 overflow-hidden rounded-full bg-line/70"
+                  role="progressbar"
+                  aria-label={`Avance de ${course.title}`}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow={course.percent}
+                >
+                  <div class="h-full rounded-full bg-accent transition-all" style={`width: ${course.percent}%`}></div>
+                </div>
+                <p class="mt-2 text-xs text-muted">
+                  {course.total > 0
+                    ? `${course.completed} de ${course.total} actividades obligatorias completadas`
+                    : 'Este curso todavía no tiene actividades obligatorias.'}
+                </p>
+              </div>
+
+              <div class="mt-5 flex flex-1 flex-col justify-end">
+                <p class="text-xs font-semibold uppercase tracking-wide text-muted">Siguiente paso</p>
+                <p class="mt-1 font-medium">{course.nextTitle}</p>
+                <a
+                  href={course.href}
+                  class="mt-4 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                >
+                  {course.isComplete ? 'Repasar curso' : course.percent > 0 ? 'Continuar aprendiendo' : 'Comenzar curso'}
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <section class="mt-7 rounded-3xl border border-dashed border-line bg-surface px-6 py-12 text-center sm:px-10">
+        <div class="mx-auto grid size-14 place-items-center rounded-2xl bg-accent/10 text-2xl" aria-hidden="true">✦</div>
+        <h2 class="mt-4 text-xl font-semibold">Tu espacio de estudio está listo</h2>
+        <p class="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted">
+          Cuando compres un curso o la administración te asigne uno, aparecerá aquí con tu avance y el siguiente paso recomendado.
+        </p>
+        <div class="mt-5 flex flex-wrap justify-center gap-3">
+          <a href="/" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white">Explorar la tienda</a>
+          <a href="/account/messages" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-line px-4 py-2.5 text-sm font-semibold transition hover:bg-background">Contactar a la escuela</a>
+        </div>
+      </section>
+    )}
+
+    <footer class="mt-8 rounded-2xl border border-line px-4 py-4 sm:flex sm:items-center sm:justify-between sm:gap-4 sm:px-5">
+      <div>
+        <p class="text-sm font-semibold">¿Necesitas ayuda?</p>
+        <p class="mt-1 text-sm text-muted">Escribe a la administración si tienes dudas sobre tu curso o tu avance.</p>
+      </div>
+      <a href="/account/messages" class="mt-3 inline-flex text-sm font-semibold text-accent hover:underline sm:mt-0">Abrir buzón →</a>
+    </footer>
+  </main>
+</Layout>

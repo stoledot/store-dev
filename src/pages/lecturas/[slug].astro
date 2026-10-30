@@ -1,0 +1,28 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+import { renderCourseTex } from '../../features/mathTexts/render';
+if (!(await accountsEnabled())) return Astro.redirect('/',303);
+const email=await getCustomerEmail(Astro.cookies); if(!email) return Astro.redirect('/account/login',303);
+const slug=Astro.params.slug??'';
+const course=await env.DB.prepare(`SELECT c.id,c.title,c.slug,c.summary,c.tex_source_key FROM school_courses c WHERE c.slug=? AND c.status='published' AND c.content_kind='reading' AND EXISTS(SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE oi.school_course_id=c.id AND lower(trim(o.email))=lower(trim(?)) AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents) LIMIT 1`).bind(slug,email).first<{id:string;title:string;slug:string;summary:string;tex_source_key:string|null}>();
+if(!course) return Astro.redirect('/account',303);
+const sections=(await env.DB.prepare(`SELECT id,slug,title,summary,tex_node_id,sequence_no FROM school_lessons WHERE course_id=? AND status='published' ORDER BY sequence_no`).bind(course.id).all<{id:string;slug:string;title:string;summary:string;tex_node_id:string|null;sequence_no:number}>()).results??[];
+let rendered=new Map<string,string>();
+if(course.tex_source_key&&env.FILES){const object=await env.FILES.get(course.tex_source_key);if(object){for(const node of renderCourseTex(await object.text()))rendered.set(node.id,node.html);}}
+---
+<Layout title={course.title} description={course.summary||course.title}>
+  <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+    <a href="/account" class="text-sm underline">← Volver a mi cuenta</a>
+    <header class="mt-4 rounded-2xl border border-line bg-surface p-5 sm:p-8"><p class="text-xs font-semibold uppercase tracking-widest text-muted">Lectura matemática</p><h1 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{course.title}</h1>{course.summary&&<p class="mt-3 max-w-3xl text-muted">{course.summary}</p>}</header>
+    <div class="mt-6 grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+      <aside class="h-fit rounded-xl border border-line bg-surface p-4 lg:sticky lg:top-5"><h2 class="font-semibold">Contenido</h2><details class="mt-3 lg:hidden"><summary class="cursor-pointer rounded-lg bg-gray-50 p-3 text-sm">Abrir índice de lectura</summary><nav class="mt-2 space-y-1">{sections.map((s)=><a class="block rounded px-2 py-2 text-sm hover:bg-gray-50" href={`#${s.slug}`}>{s.sequence_no}. {s.title}</a>)}</nav></details><nav class="mt-3 hidden max-h-[70vh] space-y-1 overflow-y-auto lg:block">{sections.map((s)=><a class="block rounded px-2 py-2 text-sm hover:bg-gray-50" href={`#${s.slug}`}>{s.sequence_no}. {s.title}</a>)}</nav><a href="#lectura-top" class="mt-4 block text-sm underline">↑ Volver arriba</a></aside>
+      <article id="lectura-top" class="min-w-0 space-y-5">{sections.map((s)=><section id={s.slug} class="scroll-mt-5 rounded-xl border border-line bg-surface p-5 sm:p-8"><div class="mb-4 flex items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-wider text-muted">Sección {s.sequence_no}</p><h2 class="mt-1 text-2xl font-semibold">{s.title}</h2></div><a class="shrink-0 text-sm underline" href="#lectura-top">↑ Arriba</a></div><div class="tex-content prose max-w-none" set:html={s.tex_node_id?rendered.get(s.tex_node_id)??'<p>Contenido no disponible.</p>':'<p>Contenido no disponible.</p>'}></div></section>)}</article>
+    </div>
+    <nav class="sticky bottom-2 mt-8 flex items-center justify-between rounded-xl border border-line bg-white/95 p-3 shadow-lg backdrop-blur"><a href="/account" class="rounded-lg border border-line px-4 py-2 text-sm">Mi cuenta</a><a href="#lectura-top" class="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white">↑ Inicio</a></nav>
+  </main>
+  <script is:inline>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+  <script is:inline async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</Layout>

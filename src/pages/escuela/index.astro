@@ -1,54 +1,108 @@
 ---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
+import { getCustomerEmail } from '../../features/auth/customer';
+import { getEnrollmentChecklist } from '../../features/school/enrollmentChecklist';
+import EnrollmentChecklist from '../../components/school/EnrollmentChecklist.astro';
+
+const studentEmail = await getCustomerEmail(Astro.cookies);
+const enrollmentSteps = await getEnrollmentChecklist(env.DB, studentEmail);
+const showChecklist = enrollmentSteps.some((step) => !step.done);
+
+// Información dinámica: las áreas y cursos publicados se administran desde el panel escolar.
+const areasResult = await env.DB.prepare(`
+  SELECT a.id, a.title, a.description, COUNT(c.id) AS course_count
+  FROM school_areas a
+  LEFT JOIN school_courses c ON c.area_id = a.id AND c.status = 'published'
+  WHERE a.status = 'active'
+  GROUP BY a.id, a.title, a.description
+  ORDER BY a.title
+`).all<{ id: string; title: string; description: string; course_count: number }>();
+const areas = areasResult.results ?? [];
+const coursesResult = await env.DB.prepare(`
+  SELECT id, title, summary, level_code
+  FROM school_courses
+  WHERE status = 'published'
+  ORDER BY sequence_no
+  LIMIT 6
+`).all<{ id: string; title: string; summary: string; level_code: string }>();
+const courses = coursesResult.results ?? [];
 ---
 <Layout
-  title="Escuela de Matemáticas"
-  description="Escuela online de matemáticas con diagnóstico inicial, asignación por nivel y seguimiento académico."
+  title="Nuestra escuela"
+  description="Conoce la escuela en línea, sus programas de matemáticas y lectura, su modelo de aprendizaje y los pasos para inscribirte."
 >
   <main class="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-    <section class="grid gap-8 rounded-2xl border border-kumo-line bg-kumo-subtle p-6 sm:p-9 md:grid-cols-[1.3fr_0.7fr] md:items-center">
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-kumo-muted">Escuela online</p>
-        <h1 class="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Matemáticas con estructura, diagnóstico y acompañamiento</h1>
-        <p class="mt-4 max-w-2xl text-base leading-7 text-kumo-muted">
-          Estudia un área de tu interés —como Álgebra, Cálculo o Topología— y comienza en el nivel adecuado para ti. Revisamos tu diagnóstico y tu avance para decidir la asignación y el siguiente nivel.
-        </p>
-        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-          <a href="/escuela/diagnostico" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-inverted-foreground transition hover:opacity-90">Elegir mi área</a>
-          <a href="/escuela/mi-escuela" class="inline-flex min-h-11 items-center justify-center rounded-lg border border-kumo-line bg-kumo-base px-5 py-3 text-sm font-semibold transition hover:bg-kumo-base/70">Ya soy alumno</a>
+    <section class="relative isolate overflow-hidden rounded-[2rem] border border-line bg-paper">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-brand/15 via-paper to-surface"></div>
+      <div aria-hidden="true" class="pointer-events-none absolute -right-16 -top-20 -z-10 h-64 w-64 rounded-full border-[32px] border-brand/10 sm:h-80 sm:w-80"></div>
+      <div class="grid gap-8 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-14">
+        <div>
+          <p class="inline-flex items-center gap-2 rounded-full border border-line bg-paper/80 px-3 py-1.5 text-xs font-bold uppercase tracking-[.16em] text-muted"><span class="h-2 w-2 rounded-full bg-brand"></span> Escuela en línea</p>
+          <h1 class="mt-5 max-w-3xl font-serif text-4xl leading-tight tracking-tight sm:text-5xl">Aprende con claridad, desde el nivel en el que estás.</h1>
+          <p class="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">Una escuela para aprender matemáticas y fortalecer la lectura mediante rutas progresivas, actividades y seguimiento de tu avance. Primero conocemos tus intereses y experiencia; después te asignamos un curso adecuado.</p>
+          <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <a href={studentEmail ? '/account/profile' : '/account/login'} class="inline-flex min-h-12 items-center justify-center rounded-full bg-brand px-6 py-3 text-sm font-semibold text-on-brand shadow-sm transition hover:opacity-90">Iniciar proceso de Inscripción <span aria-hidden="true" class="ml-2">↗</span></a>
+            <a href="#programas" class="inline-flex min-h-12 items-center justify-center rounded-full border border-line bg-paper/80 px-6 py-3 text-sm font-semibold transition hover:border-brand hover:text-brand">Conocer los programas</a>
+          </div>
         </div>
+        <aside class="rounded-2xl border border-line bg-paper/90 p-6 shadow-sm">
+          <p class="text-xs font-bold uppercase tracking-[.16em] text-brand">Nuestro enfoque</p>
+          <h2 class="mt-2 font-serif text-2xl">Comprender antes que memorizar</h2>
+          <ul class="mt-4 space-y-3 text-sm leading-6 text-muted">
+            <li class="flex gap-3"><span class="mt-1 text-brand">✓</span><span>Contenidos organizados en cursos y lecciones.</span></li>
+            <li class="flex gap-3"><span class="mt-1 text-brand">✓</span><span>Actividades para practicar y demostrar lo aprendido.</span></li>
+            <li class="flex gap-3"><span class="mt-1 text-brand">✓</span><span>Un nivel inicial definido a partir de tu diagnóstico y revisión académica.</span></li>
+            <li class="flex gap-3"><span class="mt-1 text-brand">✓</span><span>Seguimiento de cursos, entregas y avances desde tu espacio de alumno.</span></li>
+          </ul>
+        </aside>
       </div>
-      <aside class="rounded-xl border border-kumo-line bg-kumo-base p-5">
-        <h2 class="text-lg font-semibold">¿Cómo funciona?</h2>
-        <ol class="mt-4 space-y-4 text-sm">
-          <li class="flex gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-kumo-subtle font-semibold">1</span><span><strong>Elige un área.</strong><br /><span class="text-kumo-muted">Selecciona qué rama de las matemáticas te interesa.</span></span></li>
-          <li class="flex gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-kumo-subtle font-semibold">2</span><span><strong>Presenta el diagnóstico.</strong><br /><span class="text-kumo-muted">La escuela revisa qué nivel te corresponde.</span></span></li>
-          <li class="flex gap-3"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-kumo-subtle font-semibold">3</span><span><strong>Estudia un curso a la vez.</strong><br /><span class="text-kumo-muted">Tu acceso se limita al curso que te asignemos.</span></span></li>
-        </ol>
-      </aside>
     </section>
 
-    <section class="mt-8 grid gap-4 sm:grid-cols-3" aria-label="Información de la escuela">
-      <article class="rounded-xl border border-kumo-line p-5">
-        <h2 class="font-semibold">Áreas de interés</h2>
-        <p class="mt-2 text-sm leading-6 text-kumo-muted">Elige una rama y construye tu formación por niveles: N0, N1, N2 y siguientes.</p>
-      </article>
-      <article class="rounded-xl border border-kumo-line p-5">
-        <h2 class="font-semibold">Inscripción y mensualidad</h2>
-        <p class="mt-2 text-sm leading-6 text-kumo-muted">La inscripción se paga al ingresar y se renueva cada seis meses. La mensualidad cubre un curso asignado.</p>
-      </article>
-      <article class="rounded-xl border border-kumo-line p-5">
-        <h2 class="font-semibold">Avance acompañado</h2>
-        <p class="mt-2 text-sm leading-6 text-kumo-muted">Tu progreso y evaluación ayudan a decidir cuándo estás listo para avanzar.</p>
-      </article>
+    {showChecklist && <section class="my-8 sm:my-10" aria-label="Pasos para inscribirte"><EnrollmentChecklist steps={enrollmentSteps} /></section>}
+
+    <section class="my-12 sm:my-16" aria-labelledby="about-school-title">
+      <div class="max-w-3xl">
+        <p class="text-xs font-bold uppercase tracking-[.18em] text-muted">Cómo funciona</p>
+        <h2 id="about-school-title" class="mt-2 font-serif text-3xl tracking-tight sm:text-4xl">Una ruta académica organizada para ti</h2>
+        <p class="mt-3 text-sm leading-7 text-muted sm:text-base">La escuela trabaja mediante cursos asignados. Al comenzar, eliges el área que te interesa y compartes tu experiencia mediante un diagnóstico. La administración revisa tus respuestas y determina el nivel y curso inicial. Tu espacio de alumno reúne las lecciones, actividades, calificaciones y avisos relacionados con tu formación.</p>
+      </div>
+      <div class="mt-6 grid gap-4 sm:grid-cols-3">
+        <article class="rounded-2xl border border-line bg-surface p-5"><span class="text-2xl" aria-hidden="true">⌕</span><h3 class="mt-3 font-semibold">Conocemos tu punto de partida</h3><p class="mt-2 text-sm leading-6 text-muted">Nos cuentas qué deseas aprender y qué conocimientos tienes. El diagnóstico ayuda a orientar tu nivel.</p></article>
+        <article class="rounded-2xl border border-line bg-surface p-5"><span class="text-2xl" aria-hidden="true">▤</span><h3 class="mt-3 font-semibold">Recibes un curso asignado</h3><p class="mt-2 text-sm leading-6 text-muted">La asignación considera el área elegida, el diagnóstico y la revisión del equipo académico.</p></article>
+        <article class="rounded-2xl border border-line bg-surface p-5"><span class="text-2xl" aria-hidden="true">↗</span><h3 class="mt-3 font-semibold">Avanzas y recibes seguimiento</h3><p class="mt-2 text-sm leading-6 text-muted">Consulta tus lecciones, actividades, evaluaciones y progreso desde tu cuenta.</p></article>
+      </div>
     </section>
 
-    <section class="mt-8 flex flex-col gap-3 rounded-xl border border-kumo-line p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-      <div>
-        <h2 class="text-lg font-semibold">¿Quieres comenzar?</h2>
-        <p class="mt-1 text-sm text-kumo-muted">Selecciona tu área de interés y continúa con el diagnóstico.</p>
+    <section id="programas" class="my-12 scroll-mt-8 sm:my-16">
+      <div class="mb-6 max-w-3xl"><p class="text-xs font-bold uppercase tracking-[.18em] text-muted">Áreas de aprendizaje</p><h2 class="mt-2 font-serif text-3xl tracking-tight sm:text-4xl">Conoce nuestros programas</h2><p class="mt-3 text-sm leading-7 text-muted">Explora las dos líneas principales de formación. Puedes conocerlas antes de inscribirte y elegir la que mejor corresponda con tus objetivos.</p></div>
+      <div class="grid gap-4 lg:grid-cols-2">
+        <article class="flex flex-col rounded-2xl border border-line bg-surface p-6 sm:p-7">
+          <span class="grid size-12 place-items-center rounded-xl bg-brand/10 font-serif text-2xl text-brand" aria-hidden="true">∑</span>
+          <h3 class="mt-4 font-serif text-2xl">Matemáticas</h3>
+          <p class="mt-2 text-sm leading-6 text-muted">Desarrolla comprensión matemática, razonamiento y capacidad para resolver problemas. La ruta puede comenzar desde los fundamentos y avanzar gradualmente hacia contenidos de mayor profundidad.</p>
+          <ul class="mt-4 space-y-2 text-sm text-muted"><li>• Lenguaje y pensamiento matemático.</li><li>• Lógica, conjuntos y razonamiento.</li><li>• Desarrollo progresivo de conceptos y técnicas.</li><li>• Ejercicios y actividades secuenciales.</li></ul>
+          <a href="/programas/matematicas" class="mt-6 inline-flex font-semibold text-brand hover:underline">Ver programa de matemáticas →</a>
+        </article>
+        <article class="flex flex-col rounded-2xl border border-line bg-surface p-6 sm:p-7">
+          <span class="grid size-12 place-items-center rounded-xl bg-brand/10 font-serif text-2xl text-brand" aria-hidden="true">Aa</span>
+          <h3 class="mt-4 font-serif text-2xl">Lectura</h3>
+          <p class="mt-2 text-sm leading-6 text-muted">Fortalece la comprensión lectora para interpretar textos, identificar ideas, construir inferencias y comunicar con claridad lo que has comprendido.</p>
+          <ul class="mt-4 space-y-2 text-sm text-muted"><li>• Comprensión de ideas principales y detalles.</li><li>• Vocabulario e interpretación en contexto.</li><li>• Inferencias, análisis y reflexión.</li><li>• Resúmenes y expresión de ideas.</li></ul>
+          <a href="/programas/lectura" class="mt-6 inline-flex font-semibold text-brand hover:underline">Ver programa de lectura →</a>
+        </article>
       </div>
-      <a href="/escuela/diagnostico" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-inverted-foreground transition hover:opacity-90">Comenzar</a>
+    </section>
+
+    <section class="my-12 sm:my-16" aria-labelledby="catalog-title">
+      <div class="mb-5"><p class="text-xs font-bold uppercase tracking-[.18em] text-muted">Catálogo académico</p><h2 id="catalog-title" class="mt-2 font-serif text-3xl tracking-tight">Áreas y cursos disponibles</h2><p class="mt-2 max-w-3xl text-sm leading-6 text-muted">El catálogo se actualiza desde la administración. El curso que verás en tu cuenta dependerá de tu diagnóstico y de la asignación académica.</p></div>
+      {areas.length > 0 ? <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{areas.map((area) => <article class="rounded-xl border border-line bg-surface p-5"><h3 class="font-semibold">{area.title}</h3>{area.description && <p class="mt-2 text-sm leading-6 text-muted">{area.description}</p>}<p class="mt-3 text-xs font-medium text-brand">{area.course_count} {area.course_count === 1 ? 'curso publicado' : 'cursos publicados'}</p></article>)}</div> : <p class="rounded-xl border border-dashed border-line p-5 text-sm leading-6 text-muted">Las áreas específicas se publicarán aquí conforme la administración habilite el catálogo. Puedes conocer desde ahora los programas de matemáticas y lectura.</p>}
+      {courses.length > 0 && <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{courses.map((course) => <article class="rounded-xl border border-line p-4"><p class="text-xs font-bold uppercase tracking-wide text-brand">{course.level_code}</p><h3 class="mt-1 font-semibold">{course.title}</h3>{course.summary && <p class="mt-2 text-sm leading-6 text-muted">{course.summary}</p>}</article>)}</div>}
+    </section>
+
+    <section class="my-12 rounded-2xl border border-line bg-surface px-6 py-8 sm:my-16 sm:px-10 sm:py-10">
+      <div class="mx-auto max-w-3xl text-center"><p class="text-xs font-bold uppercase tracking-[.18em] text-brand">Tu siguiente paso</p><h2 class="mt-2 font-serif text-3xl tracking-tight">Comienza tu proceso de inscripción</h2><p class="mt-3 text-sm leading-7 text-muted">Crea tu cuenta o inicia sesión. Desde tu perfil podrás consultar los pasos pendientes y continuar tu proceso.</p><div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row"><a href={studentEmail ? '/account/profile' : '/account/login'} class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-6 py-3 text-sm font-semibold text-on-brand">Iniciar proceso de Inscripción</a><a href="/escuela/mi-escuela" class="inline-flex min-h-11 items-center justify-center rounded-full border border-line px-6 py-3 text-sm font-semibold hover:border-brand">Ya soy alumno</a></div></div>
     </section>
   </main>
 </Layout>

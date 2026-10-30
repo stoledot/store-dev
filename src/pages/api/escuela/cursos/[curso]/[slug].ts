@@ -33,15 +33,15 @@ export const POST: APIRoute = async ({ request, cookies, params, url }) => {
   if (action !== 'read' && action !== 'submit') return json({ error: 'Acción no válida.' }, 400);
 
   const access = await env.DB.prepare(`
-    SELECT c.id AS course_id FROM school_course_assignments x
-    JOIN school_courses c ON c.id=x.course_id
-    JOIN school_student_intake i ON i.student_email=x.student_email COLLATE NOCASE
-      AND i.status='approved' AND i.selected_area_id=c.area_id AND i.approved_level=c.level_code
-    WHERE x.student_email=? COLLATE NOCASE AND x.status='active' AND c.slug=? AND c.status='published'
-      AND EXISTS (SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='enrollment' AND p.valid_until>=date('now'))
-      AND EXISTS (SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='monthly' AND p.valid_until>=date('now'))
-    LIMIT 1`).bind(email, params.curso ?? '').first<{course_id:string}>();
+    SELECT c.id AS course_id FROM school_courses c
+    WHERE c.slug=? AND c.status='published' AND c.content_kind='course' AND (
+      EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE oi.school_course_id=c.id AND lower(trim(o.email))=lower(trim(?)) AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents)
+      OR EXISTS (SELECT 1 FROM school_course_assignments x JOIN school_student_intake i ON i.student_email=x.student_email COLLATE NOCASE AND i.status='approved' AND i.selected_area_id=c.area_id AND i.approved_level=c.level_code WHERE x.course_id=c.id AND x.student_email=? COLLATE NOCASE AND x.status='active' AND EXISTS (SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='enrollment' AND p.valid_until>=date('now')) AND EXISTS (SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='monthly' AND p.valid_until>=date('now')))
+    ) LIMIT 1`).bind(params.curso ?? '', email, email).first<{course_id:string}>();
   if (!access) return json({ error: 'No tienes acceso vigente a este curso.' }, 403);
+
+  const blocked = await env.DB.prepare(`SELECT COUNT(*) AS n FROM school_lessons l WHERE l.course_id=? AND l.status='published' AND l.sequence_no<(SELECT sequence_no FROM school_lessons WHERE course_id=? AND slug=? AND status='published') AND NOT EXISTS(SELECT 1 FROM school_lesson_progress p WHERE p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE AND p.status='completed')`).bind(access.course_id, access.course_id, params.slug ?? '', email).first<{n:number}>();
+  if (Number(blocked?.n ?? 0) > 0) return json({error:'Completa primero la unidad anterior para continuar.'},403);
 
   const lesson = await env.DB.prepare(`SELECT id,lesson_type,content_version,assessment_json FROM school_lessons WHERE course_id=? AND slug=? AND status='published' LIMIT 1`)
     .bind(access.course_id, params.slug ?? '').first<{id:string;lesson_type:string;content_version:number;assessment_json:string}>();

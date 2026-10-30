@@ -1,18 +1,53 @@
 ---
-/** Storefront-wide shortcut bar. Keep this out of AdminLayout. */
+import { getConfig } from '../config';
 const path = Astro.url.pathname;
-const isSchoolPage = path === '/escuela' || path.startsWith('/escuela/');
+const configuredName = Astro.locals.settings?.storeName ?? getConfig().storeName;
+const schoolName = !configuredName || configuredName === 'My Shop' ? 'Escuela de Matemáticas' : configuredName;
+const links = [
+  { href: '/programas/matematicas', label: 'Programa de matemáticas' },
+  { href: '/programas/lectura', label: 'Programa de lectura' },
+  { href: '/preguntas-frecuentes', label: 'Preguntas frecuentes' },
+  { href: '/acerca-de', label: 'Acerca de la escuela' },
+  { href: '/buscar', label: 'Buscar' },
+  { href: '/account', label: 'Cuenta' },
+  { href: '/cart', label: 'Carrito' },
+];
+const active = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
-<nav aria-label="Acceso a la escuela" class="border-b border-kumo-line bg-kumo-base">
-  <div class="mx-auto flex w-full max-w-7xl flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-    <a href="/escuela" class="inline-flex items-center gap-2 text-sm font-semibold transition hover:opacity-80" aria-current={path === '/escuela' ? 'page' : undefined}>
-      <span aria-hidden="true" class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-kumo-subtle">∑</span>
-      <span>Escuela de Matemáticas</span>
-      <span class="hidden text-xs font-normal text-kumo-muted sm:inline">Áreas · diagnóstico · cursos por nivel</span>
+<nav aria-label="Navegación principal de la escuela" class="relative z-30 border-b border-line bg-paper/95 text-ink shadow-sm">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-6 lg:px-8">
+    <a href="/" class="inline-flex min-w-0 items-center gap-2 rounded-full px-2 py-1.5 text-sm font-semibold tracking-tight transition hover:text-brand">
+      <span aria-hidden="true" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand text-on-brand">∑</span>
+      <span class="truncate">{schoolName}</span>
     </a>
-    <div class="flex flex-wrap items-center gap-2 text-sm">
-      <a href="/escuela/diagnostico" class:list={["rounded-md px-3 py-2 transition hover:bg-kumo-subtle", isSchoolPage ? "text-kumo-muted" : ""]}>Elegir área</a>
-      <a href="/escuela/mi-escuela" class="inline-flex min-h-9 items-center justify-center rounded-md bg-kumo-inverted px-3 py-2 font-semibold text-kumo-inverted-foreground transition hover:opacity-90">Panel del alumno</a>
-    </div>
+    <details data-school-menu class="group relative shrink-0">
+      <summary class="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-full border border-line bg-paper px-4 py-2 text-sm font-semibold shadow-sm transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand [&::-webkit-details-marker]:hidden">
+        <span>Explorar</span>
+        <svg aria-hidden="true" class="h-4 w-4 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="none"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </summary>
+      <div class="absolute right-0 top-full mt-2 w-[min(21rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-line bg-paper p-2 shadow-xl">
+        <p class="px-3 pb-2 pt-2 text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Conoce la escuela</p>
+        {links.map((link) => (
+          <a href={link.href} aria-current={active(link.href) ? 'page' : undefined} class:list={[
+            'flex min-h-11 items-center justify-between rounded-xl px-3 py-2.5 text-sm transition hover:bg-surface hover:text-brand',
+            active(link.href) ? 'bg-surface font-semibold text-brand' : 'text-ink',
+          ]}>
+            <span>{link.label}</span>
+            {active(link.href) && <span aria-hidden="true" class="text-brand">●</span>}
+          </a>
+        ))}
+      </div>
+    </details>
   </div>
 </nav>
+<script>
+  const menus = document.querySelectorAll('[data-school-menu]');
+  for (const menu of menus) {
+    document.addEventListener('click', (event) => {
+      if (event.target instanceof Node && !menu.contains(event.target)) menu.removeAttribute('open');
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') menu.removeAttribute('open');
+    });
+  }
+</script>

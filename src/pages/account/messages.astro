@@ -1,0 +1,337 @@
+---
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import {
+  accountsEnabled,
+  getCustomerEmail,
+} from '../../features/auth/customer';
+
+if (!(await accountsEnabled())) {
+  return Astro.redirect('/', 303);
+}
+
+const email = await getCustomerEmail(Astro.cookies);
+
+if (!email) {
+  return Astro.redirect('/account/login', 303);
+}
+---
+
+<Layout title="Mi buzón">
+  <main class="mx-auto max-w-3xl px-3 py-5 sm:px-6 sm:py-8">
+    <a
+      href="/account"
+      class="text-sm text-accent hover:underline"
+    >
+      ← Mi cuenta
+    </a>
+
+    <header class="my-4">
+      <h1 class="text-3xl font-semibold tracking-tight">
+        Buzón de la escuela
+      </h1>
+
+      <p class="mt-2 text-sm text-muted">
+        Comunícate con la administración. Los mensajes se conservan y
+        puedes desplazarte hacia arriba para consultar conversaciones anteriores.
+      </p>
+    </header>
+
+    <section
+      class="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm"
+    >
+      <!-- Encabezado de la conversación -->
+      <div class="flex items-center gap-3 border-b border-line px-4 py-3">
+        <span
+          class="grid size-10 place-items-center rounded-full bg-accent/10 text-lg"
+          aria-hidden="true"
+        >
+          ✉
+        </span>
+
+        <div>
+          <p class="font-semibold">Administración de la escuela</p>
+          <p class="text-xs text-muted">Conversación privada</p>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div
+        id="chat-messages"
+        aria-live="polite"
+        class="h-[55vh] min-h-72 overflow-y-auto overscroll-contain p-3 sm:h-[60vh] sm:p-5"
+      >
+        <p class="py-8 text-center text-sm text-muted">
+          Cargando conversación…
+        </p>
+      </div>
+
+      <!-- Estado y botón para mensajes anteriores -->
+      <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-2">
+        <p
+          id="chat-status"
+          class="text-xs text-muted"
+          role="status"
+          aria-live="polite"
+        ></p>
+
+        <button
+          id="chat-load-older"
+          type="button"
+          hidden
+          class="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold hover:bg-background"
+        >
+          Cargar mensajes anteriores ↑
+        </button>
+      </div>
+
+      <!-- Formulario para enviar mensajes -->
+      <form
+        id="chat-form"
+        class="flex items-end gap-2 border-t border-line p-3 sm:p-4"
+      >
+        <label class="sr-only" for="chat-body">
+          Mensaje
+        </label>
+
+        <textarea
+          id="chat-body"
+          rows="2"
+          maxlength="5000"
+          required
+          placeholder="Escribe tu mensaje…"
+          class="min-h-12 max-h-36 flex-1 resize-y rounded-xl border border-line bg-background px-3 py-2.5 text-sm"
+        ></textarea>
+
+        <button
+          type="submit"
+          class="rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
+        >
+          Enviar
+        </button>
+      </form>
+    </section>
+  </main>
+  
+</Layout>
+
+<script is:inline>
+  // 1. ELEMENTOS DEL DOM
+const box = document.querySelector('#chat-messages');
+const form = document.querySelector('#chat-form');
+const input = document.querySelector('#chat-body');
+const status = document.querySelector('#chat-status');
+const olderButton = document.querySelector('#chat-load-older');
+
+if (
+  !(box instanceof HTMLDivElement) ||
+  !(form instanceof HTMLFormElement) ||
+  !(input instanceof HTMLTextAreaElement) ||
+  !(status instanceof HTMLElement) ||
+  !(olderButton instanceof HTMLButtonElement)
+) {
+  throw new Error('No se encontraron todos los elementos del chat.');
+}
+
+const sendButton = form.querySelector('button[type="submit"]');
+if (!(sendButton instanceof HTMLButtonElement)) {
+  throw new Error('No se encontró el botón para enviar mensajes.');
+}
+
+// =========================================================
+// 2. ESTADO DE LA CONVERSACIÓN
+let oldest = '';
+let loading = false;
+let hasMore = false;
+let firstLoad = true;
+
+const known = new Set(); // En JS no se le ponen los <brackets> al Set
+
+// =========================================================
+// 3. UTILIDADES
+function setStatus(message) {
+  status.textContent = message;
+}
+
+function showEmptyMessage() {
+  if (known.size > 0) return;
+  box.innerHTML = '';
+  const message = document.createElement('p');
+  message.className = 'py-12 text-center text-sm text-muted';
+  message.textContent = 'Aún no hay mensajes. Puedes escribir a la administración.';
+  box.append(message);
+}
+
+// =========================================================
+// 4. MOSTRAR UN MENSAJE
+function render(message, prepend = false) {
+  if (known.has(message.id)) return;
+  known.add(message.id);
+
+  const article = document.createElement('article');
+  const isCustomer = message.sender_role === 'customer';
+  article.className = `mb-3 flex ${ isCustomer ? 'justify-end' : 'justify-start' }`;
+
+  const bubble = document.createElement('div');
+  bubble.className = `max-w-[88%] rounded-2xl px-3 py-2.5 text-sm shadow-sm ${ isCustomer ? 'bg-accent text-white rounded-br-sm' : 'bg-background border border-line text-ink rounded-bl-sm' }`;
+
+  const label = document.createElement('p');
+  label.className = 'mb-1 text-[11px] font-semibold opacity-75';
+  label.textContent = isCustomer ? 'Tú' : 'Administración';
+
+  const body = document.createElement('p');
+  body.className = 'whitespace-pre-wrap break-words';
+  body.textContent = message.body;
+
+  const date = document.createElement('p');
+  date.className = 'mt-1 text-[10px] opacity-70';
+  date.textContent = new Date(message.created_at).toLocaleString(
+    'es-MX',
+    { dateStyle: 'short', timeStyle: 'short' },
+  );
+
+  bubble.append(label, body, date);
+  article.append(bubble);
+
+  if (prepend) {
+    box.prepend(article);
+  } else {
+    box.append(article);
+  }
+
+  if (!oldest || message.created_at < oldest) {
+    oldest = message.created_at;
+  }
+}
+
+// =========================================================
+// 5. CARGAR MENSAJES
+async function load(before = '', prepend = false) {
+  if (loading) return;
+  loading = true;
+
+  const previousHeight = box.scrollHeight;
+  const previousTop = box.scrollTop;
+
+  try {
+    const url = new URL('/api/account/messages', window.location.origin);
+
+    if (before) {
+      url.searchParams.set('before', before);
+    }
+
+    const response = await fetch(url, { cache: 'no-store' });
+    const data = await response.json();
+
+    // En JS validamos el error de forma segura usando cortocircuitos nativos, sin Typescript.
+    if (!response.ok) {
+      throw new Error((data && data.error) || 'No se pudieron cargar los mensajes.');
+    }
+
+    const incoming = (data && data.messages) || [];
+
+    if (firstLoad) {
+      box.innerHTML = '';
+    }
+
+    const messagesToRender = prepend ? [...incoming].reverse() : incoming;
+
+    for (const message of messagesToRender) {
+      render(message, prepend);
+    }
+
+    hasMore = Boolean(data && data.hasMore);
+    olderButton.hidden = !hasMore;
+
+    if (prepend) {
+      box.scrollTop = previousTop + (box.scrollHeight - previousHeight);
+    } else if (firstLoad) {
+      box.scrollTop = box.scrollHeight;
+    }
+
+    if (incoming.length === 0 && known.size === 0) {
+      showEmptyMessage();
+    }
+
+    setStatus(
+      hasMore ? 'Desplázate hacia arriba para cargar mensajes anteriores.' : 'Los mensajes se conservan en tu cuenta.',
+    );
+    firstLoad = false;
+  } catch (error) {
+    setStatus(
+      error instanceof Error ? error.message : 'Error de conexión al cargar mensajes.',
+    );
+  } finally {
+    loading = false;
+  }
+}
+
+// =========================================================
+// 6. CARGAR MENSAJES ANTERIORES
+function loadOlderMessages() {
+  if (hasMore && oldest && !loading) {
+    load(oldest, true);
+  }
+}
+
+box.addEventListener('scroll', () => {
+  if (box.scrollTop < 50) {
+    loadOlderMessages();
+  }
+});
+
+olderButton.addEventListener('click', loadOlderMessages);
+
+// =========================================================
+// 7. ENVIAR MENSAJES
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const body = input.value.trim();
+
+  if (!body || sendButton.disabled) return;
+  sendButton.disabled = true;
+  setStatus('Enviando mensaje…');
+
+  try {
+    const response = await fetch('/api/account/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ body }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error((data && data.error) || 'No se pudo enviar el mensaje.');
+    }
+
+    if (known.size === 0) {
+      box.innerHTML = '';
+    }
+
+    render(data && data.message);
+    input.value = '';
+    box.scrollTop = box.scrollHeight;
+    setStatus('Mensaje enviado.');
+  } catch (error) {
+    setStatus(
+      error instanceof Error ? error.message : 'Error al enviar el mensaje.',
+    );
+  } finally {
+    sendButton.disabled = false;
+    input.focus();
+  }
+});
+
+// =========================================================
+// 8. INICIALIZACIÓN
+load();
+
+window.setInterval(() => {
+  if (!loading) {
+    load();
+  }
+}, 12000);
+
+</script>

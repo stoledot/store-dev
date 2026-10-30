@@ -35,3 +35,10 @@ Están separados en tres archivos:
 4. Probar eventos de Stripe repetidos y eventos fuera de orden.
 5. Probar que un alumno sin suscripción vigente no pueda recibir contenido protegido.
 6. Hacer backup y validar restauración antes de migrar producción.
+
+## Ciclo académico del alumno (0055_school_student_journey.sql)
+
+Esta migración añade periodos mensuales, fechas importantes y avisos internos por alumno.
+Aplícala después de las migraciones escolares existentes. La administración registra el pago
+una vez verificado el pedido de MinShop; al registrar una mensualidad se crea el periodo y
+se genera un aviso. Las fechas se agregan desde Administración académica.

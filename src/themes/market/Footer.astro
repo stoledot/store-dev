@@ -1,5 +1,6 @@
 ---
 import type { StorefrontShellModel } from '../../features/storefront/models';
+import StoreLegalLinks from '../../components/StoreLegalLinks.astro';
 
 /**
  * Market — a compact footer strip.
@@ -30,5 +31,6 @@ const { model } = Astro.props;
         </nav>
       )
     }
+    <StoreLegalLinks />
   </div>
 </footer>

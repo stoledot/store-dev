@@ -18,7 +18,6 @@ import { zonesRequireWeight } from '../../../../features/shipping/calculator';
 import { formatWeightValue } from '../../../../features/shipping/weight';
 import { shippingFor } from '../../../../features/shipping/effective';
 import { listConferences, getConferenceForProduct } from '../../../../features/conferences/db';
-import { listMathTexts, getMathTextForProduct } from '../../../../features/mathTexts/db';
 
 // The route param is the prod_ public ID; numeric row ids are not accepted.
 const publicId = parsePublicId(Astro.params.id, 'product');
@@ -30,9 +29,9 @@ if (!product) {
 
 const categoryOptions = flattenTree(buildTree(await listCategories(env.DB)));
 const conferenceOptions = await listConferences(env.DB);
-const mathTextOptions = await listMathTexts(env.DB);
-const selectedMathText = await getMathTextForProduct(env.DB, product.id);
 const selectedConference = await getConferenceForProduct(env.DB, product.id);
+const schoolContentOptions = (await env.DB.prepare("SELECT id,title,status,content_kind,product_id FROM school_courses WHERE status<>'archived' AND (product_id IS NULL OR product_id=?) ORDER BY title COLLATE NOCASE").bind(product.id).all<{id:string;title:string;status:string;content_kind:string;product_id:number|null}>()).results ?? [];
+const selectedSchoolContent = schoolContentOptions.find((item) => item.product_id === product.id) ?? null;
 const selectedCategoryIds = (await categoriesForProduct(env.DB, product.id)).map((c) => c.id);
 const images = await listProductImages(env.DB, product.id);
 const error = Astro.url.searchParams.get('error');
@@ -91,8 +90,8 @@ const weightRequired = zonesRequireWeight(shippingFor(Astro.locals.settings).con
     weightRequired={weightRequired}
     conferenceOptions={conferenceOptions}
     selectedConferenceId={selectedConference?.id ?? null}
-    mathTextOptions={mathTextOptions}
-    selectedMathTextId={selectedMathText?.id ?? null}
+    schoolContentOptions={schoolContentOptions}
+    selectedSchoolContentId={selectedSchoolContent?.id ?? null}
   />
 
   <section id="gallery" class="mt-12 scroll-mt-20 border-t border-line pt-8">

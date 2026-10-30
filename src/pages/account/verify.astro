@@ -1,5 +1,6 @@
 ---
 export const prerender = false;
+import { env } from 'cloudflare:workers';
 import {
   accountsEnabled,
   verifyLoginToken,
@@ -13,7 +14,11 @@ if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 
 const email = await verifyLoginToken(Astro.url.searchParams.get('token'));
 if (!email) return Astro.redirect('/account/login?error=expired', 303);
+const moved = await env.DB.prepare('SELECT current_email FROM customer_email_aliases WHERE old_email=? COLLATE NOCASE').bind(email).first<{current_email:string}>().catch(()=>null);
+if (moved) return Astro.redirect('/account/login?error=email-moved',303);
 
 await setCustomerSession(Astro.cookies, email, Astro.url.protocol === 'https:');
-return Astro.redirect('/account', 303);
+const requestedNext = Astro.url.searchParams.get('next') ?? '';
+const returnTo = ['/account/profile', '/escuela/diagnostico'].includes(requestedNext) ? requestedNext : '/account';
+return Astro.redirect(returnTo, 303);
 ---

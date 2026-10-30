@@ -1,5 +1,6 @@
 ---
 import type { StorefrontShellModel } from '../../features/storefront/models';
+import StoreLegalLinks from '../../components/StoreLegalLinks.astro';
 
 /**
  * Studio — the colophon. Set small and quiet at the foot of the page, the way a
@@ -30,5 +31,6 @@ const { model } = Astro.props;
         </nav>
       )
     }
+    <StoreLegalLinks />
   </div>
 </footer>

@@ -38,7 +38,7 @@ import { parsePublicId } from '../../../../features/ids/publicId';
 import { CACHE_TAG } from '../../../../features/cache/tags';
 import { purgeCacheTags } from '../../../../features/cache/purge';
 import { setProductConference, getConference } from '../../../../features/conferences/db';
-import { getMathText, setProductMathText } from '../../../../features/mathTexts/db';
+import { setSchoolContentForProduct } from '../../../../features/school/texProducts';
 
 export const prerender = false;
 
@@ -137,6 +137,11 @@ export const POST: APIRoute = async ({ request, params, redirect, locals }) => {
     requireWeight: zonesRequireWeight(shippingFor(locals.settings).config),
   });
   if ('error' in parsed) return fail(parsed.error);
+  const schoolContentId = String(form.get('school_content_id') ?? '').trim() || null;
+  if (schoolContentId) {
+    const schoolContent = await env.DB.prepare("SELECT id FROM school_courses WHERE id=? AND status<>'archived' AND (product_id IS NULL OR product_id=?)").bind(schoolContentId,id).first();
+    if (!schoolContent) return fail('El curso o lectura no existe, está archivado o ya está vinculado a otro producto.');
+  }
 
   // Weights are checked before ANY write. applyVariantForm runs last, after the
   // image, product, and category mutations — reporting the error from there left
@@ -191,14 +196,7 @@ export const POST: APIRoute = async ({ request, params, redirect, locals }) => {
   }
 
   await updateProduct(env.DB, id, { ...parsed.data, image_key, slug });
-  const mathTextRaw = String(form.get('math_text_id') ?? '').trim();
-  if (!mathTextRaw) {
-    await setProductMathText(env.DB, id, null);
-  } else {
-    const mathTextId = Number(mathTextRaw);
-    if (!Number.isSafeInteger(mathTextId) || mathTextId <= 0 || !(await getMathText(env.DB, mathTextId))) return fail('El texto matemático seleccionado no existe.');
-    await setProductMathText(env.DB, id, mathTextId);
-  }
+  try { await setSchoolContentForProduct(env.DB, id, schoolContentId); } catch (err) { return fail(err instanceof Error ? err.message : 'No se pudo vincular el curso.'); }
   const conferenceRaw = String(form.get('conference_id') ?? '').trim();
   if (!conferenceRaw) {
     await setProductConference(env.DB, id, null);

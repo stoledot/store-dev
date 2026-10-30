@@ -1,0 +1,19 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+if (!(await accountsEnabled())) return Astro.redirect('/',303);
+const email=await getCustomerEmail(Astro.cookies); if(!email) return Astro.redirect('/account/login',303);
+if(Astro.request.method==='POST'){
+  const form=await Astro.request.formData(); const id=String(form.get('id')??'').trim();
+  if(id) await env.DB.prepare('UPDATE school_notifications SET read_at=strftime(\'%Y-%m-%dT%H:%M:%fZ\',\'now\') WHERE id=? AND student_email=? COLLATE NOCASE').bind(id,email).run();
+  return Astro.redirect('/account/notificaciones',303);
+}
+const notifications=(await env.DB.prepare(`SELECT n.id,n.title,n.message,n.read_at,n.created_at,c.title AS course_title,l.title AS lesson_title FROM school_notifications n LEFT JOIN school_courses c ON c.id=n.course_id LEFT JOIN school_lessons l ON l.id=n.lesson_id WHERE n.student_email=? COLLATE NOCASE ORDER BY n.created_at DESC LIMIT 100`).bind(email).all<{id:string;title:string;message:string;read_at:string|null;created_at:string;course_title:string|null;lesson_title:string|null}>()).results??[];
+---
+<Layout title="Mis notificaciones">
+  <main class="mx-auto max-w-3xl px-4 py-8 sm:px-6"><a href="/account" class="text-sm underline">← Mi cuenta</a><h1 class="mt-4 text-3xl font-semibold">Mis notificaciones</h1><p class="mt-2 text-sm text-muted">Aquí aparecen las calificaciones y respuestas del equipo docente.</p>
+    {notifications.length===0?<p class="mt-6 rounded-xl border border-line p-6 text-sm">Todavía no tienes notificaciones.</p>:<div class="mt-6 space-y-3">{notifications.map(n=><article class={`rounded-xl border p-5 ${n.read_at?'border-line bg-surface':'border-accent/40 bg-accent/5'}`}><div class="flex items-start justify-between gap-3"><div><h2 class="font-semibold">{n.title}</h2><p class="mt-1 text-xs text-muted">{n.course_title??'Escuela'}{n.lesson_title?` · ${n.lesson_title}`:''} · {n.created_at}</p></div>{!n.read_at&&<span class="rounded-full bg-accent px-2 py-1 text-xs text-white">Nueva</span>}</div><p class="mt-4 whitespace-pre-wrap text-sm leading-6">{n.message}</p>{!n.read_at&&<form method="POST" class="mt-4"><input type="hidden" name="id" value={n.id}/><button class="rounded-lg border border-line px-3 py-2 text-sm" type="submit">Marcar como leída</button></form>}</article>)}</div>}
+  </main>
+</Layout>

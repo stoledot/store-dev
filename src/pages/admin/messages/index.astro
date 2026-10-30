@@ -1,0 +1,15 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+const {results:threads=[]}=await env.DB.prepare(`
+ SELECT e.email,COALESCE(p.full_name,'') AS full_name,m.body AS last_message,m.created_at,
+        (SELECT COUNT(*) FROM customer_messages u WHERE u.customer_email=e.email COLLATE NOCASE AND u.sender_role='customer' AND u.read_at IS NULL) AS unread
+ FROM (SELECT customer_email AS email,MAX(created_at) AS last_at FROM customer_messages GROUP BY customer_email) t
+ JOIN customer_messages m ON m.customer_email=t.email COLLATE NOCASE AND m.created_at=t.last_at
+ LEFT JOIN customer_profiles p ON p.email=t.email COLLATE NOCASE
+ JOIN (SELECT customer_email AS email FROM customer_messages GROUP BY customer_email) e ON e.email=t.email
+ ORDER BY m.created_at DESC LIMIT 200`).all<any>();
+---
+<AdminLayout title="Buzón de alumnos" active="messages"><div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs uppercase tracking-[.2em] text-gray-400">Comunicación</p><h1 class="mt-2 font-serif text-3xl">Buzón de alumnos</h1><p class="mt-2 text-sm text-gray-500">Conversaciones persistentes; se muestran primero los mensajes recientes y se pueden cargar los anteriores.</p></div></div>
+<div class="overflow-hidden rounded-xl border border-line bg-white">{threads.length?threads.map((t:any)=><a href={`/admin/messages/${encodeURIComponent(t.email)}`} class="flex items-start gap-3 border-b border-line p-4 transition hover:bg-gray-50"><span class="grid size-10 shrink-0 place-items-center rounded-full bg-gray-100 font-semibold text-gray-600">{(t.full_name||t.email).slice(0,1).toUpperCase()}</span><span class="min-w-0 flex-1"><span class="flex flex-wrap items-center gap-2 font-semibold text-gray-900">{t.full_name||t.email}{t.unread>0&&<span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800">{t.unread} sin leer</span>}</span><span class="mt-1 block truncate text-sm text-gray-500">{t.last_message}</span><span class="mt-1 block text-xs text-gray-400">{t.email} · {new Date(t.created_at).toLocaleString('es-MX')}</span></span><span aria-hidden="true">→</span></a>):<p class="p-8 text-center text-sm text-gray-500">Todavía no hay conversaciones.</p>}</div></AdminLayout>

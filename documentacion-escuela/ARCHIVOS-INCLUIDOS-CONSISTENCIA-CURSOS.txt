@@ -1,0 +1,30 @@
+Implementación: consistencia de cursos TeX y rediseño de la experiencia del alumno
+
+Archivos incluidos (rutas relativas a la raíz del proyecto):
+- migrations/0054_school_content_revisions.sql
+- src/features/mathTexts/render.ts
+- src/features/mathTexts/render.test.ts
+- src/pages/admin/escuela/tex.astro
+- src/pages/account/courses.astro
+- src/pages/escuela/cursos/[curso]/[slug].astro
+- src/pages/escuela/mi-escuela/index.astro
+- documentacion-escuela/CONSISTENCIA-CURSOS-TEX.md
+
+Instalación resumida:
+1. Haz copia de seguridad de D1 y del bucket privado FILES.
+2. Extrae el ZIP sobre la raíz del proyecto y conserva las rutas.
+3. Ejecuta npm run db:migrate en local.
+4. Ejecuta npm run check, npm test y npm run build.
+5. Prueba con un curso y un alumno de prueba antes de aplicar npm run db:migrate:remote.
+
+Regla de contenido:
+- Conserva el mismo id TeX cuando sea la misma actividad lógica.
+- Usa un id nuevo para una actividad nueva o un reemplazo sustancial.
+- Las actividades retiradas se archivan; no se borran entregas ni avance.
+
+Validaciones realizadas en la preparación:
+- Las 56 migraciones SQL se aplicaron en SQLite en memoria, incluida 0054.
+- La consulta de listado de cursos del alumno se ejecutó en SQLite.
+- Se comprobó sintaxis TypeScript del frontmatter Astro y scripts incrustados.
+- render.ts pasó tsc --noEmit.
+- No se ejecutaron npm run check, npm test ni npm run build: el ZIP del proyecto no incluye node_modules.

@@ -27,7 +27,7 @@ const METHOD: Record<string, { label: string; hint: string; setupHint: string }>
   stripe: { label: 'Pay with card', hint: 'Visa, Mastercard, Apple Pay & more', setupHint: 'Set up card payments' },
   lightning: { label: 'Pay with Lightning ⚡', hint: 'Instant — from any Lightning wallet', setupHint: 'Set up Lightning' },
   opennode: { label: 'Pay with Bitcoin', hint: 'On-chain or Lightning (OpenNode)', setupHint: 'Set up OpenNode' },
-  demo: { label: 'Demo checkout', hint: 'Simulated — places a real test order, no charge', setupHint: '' },
+  demo: { label: 'Pago de demostración', hint: 'Simulado: registra un pedido de prueba sin cobrar', setupHint: '' },
 };
 
 const cart = readCart(Astro.cookies);
@@ -42,10 +42,10 @@ const error = Astro.url.searchParams.get('error');
 // Effective configuration, not `cfg.shipping` — a saved Admin document owns both
 // the zones and the on/off switch. An all-digital cart never needs a destination,
 // so the selector is also gated on some line actually requiring shipping.
-const effectiveShipping = shippingFor(settings).config;
+const effectiveEnvío = shippingFor(settings).config;
 const destination = stripeDestination(
   settings,
-  effectiveShipping,
+  effectiveEnvío,
   shipmentWeightFor(lines).shippingRequired,
   Astro.request.headers.get('cf-ipcountry'),
 );
@@ -53,8 +53,8 @@ const destination = stripeDestination(
 const shopHref = catalogPath(Astro.locals.settings?.homePage);
 ---
 
-<Layout title="Cart">
-  <h1 class="mb-10 font-serif text-4xl tracking-tight">Your cart</h1>
+<Layout title="Carrito">
+  <h1 class="mb-10 font-serif text-4xl tracking-tight">Tu carrito</h1>
 
   {
     error && (
@@ -67,9 +67,9 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
   {
     lines.length === 0 ? (
       <p class="text-muted">
-        Your cart is empty.{' '}
+        Tu carrito está vacío.{' '}
         <a href={shopHref} class="border-b border-brand text-brand">
-          Continue shopping
+          Seguir explorando
         </a>
         .
       </p>
@@ -101,15 +101,15 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
                     </span>
                   )}
                   <span class="block text-xs tabular-nums text-muted">
-                    {formatPrice(l.unitPriceCents)} each
+                    {formatPrice(l.unitPriceCents)} por unidad
                   </span>
                   {l.availableStock <= 0 ? (
                     <span class="mt-1 block text-xs uppercase tracking-widest text-red-600">
-                      Out of stock
+                      Agotado
                     </span>
                   ) : l.qty > l.availableStock ? (
                     <span class="mt-1 block text-xs text-amber-700">
-                      Only {l.availableStock} available
+                      Solo quedan {l.availableStock} disponibles
                     </span>
                   ) : null}
                 </span>
@@ -125,14 +125,14 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
                     min="0"
                     max="99"
                     value={l.qty}
-                    aria-label="Quantity"
+                    aria-label="Cantidad"
                     class="w-14 border-b border-line bg-transparent py-1 text-center tabular-nums focus:border-brand focus:outline-none"
                   />
                   <button
                     type="submit"
                     class="text-xs uppercase tracking-widest text-faint hover:text-brand"
                   >
-                    Update
+                    Actualizar
                   </button>
                 </form>
                 <span class="w-20 text-right tabular-nums">{formatPrice(l.lineTotalCents)}</span>
@@ -141,10 +141,10 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
                   <input type="hidden" name="key" value={l.key} />
                   <button
                     type="submit"
-                    aria-label="Remove"
+                    aria-label="Eliminar"
                     class="text-xs uppercase tracking-widest text-faint hover:text-red-600"
                   >
-                    Remove
+                    Eliminar
                   </button>
                 </form>
               </div>
@@ -152,7 +152,7 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
           ))}
         </ul>
 
-        {/* Checkout panel — full-width on mobile, right-aligned card on desktop.
+        {/* Finalizar compra panel — full-width on mobile, right-aligned card on desktop.
             Subtotal on top, payment methods stacked beneath it. */}
         <div class="mt-10 flex justify-end">
           <div class="w-full sm:max-w-sm">
@@ -163,14 +163,14 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
 
             {methods.length === 0 ? (
               <p class="mt-4 rounded-lg border border-dashed border-line px-5 py-4 text-center text-sm text-muted">
-                Checkout is currently unavailable.
+                El pago no está disponible por el momento.
               </p>
             ) : (
             <form method="POST" action="/api/checkout" class="mt-4 space-y-2">
               <input type="hidden" name="source" value="cart" />
               {destination.showSelect && (
                 <label class="mb-2 flex items-center justify-between gap-2 text-xs uppercase tracking-widest text-muted">
-                  Ship to
+                  Enviar a
                   <select
                     name="country"
                     class="rounded-md border border-line px-2 py-1.5 text-sm normal-case tracking-normal text-ink"

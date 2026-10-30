@@ -6,7 +6,7 @@ import { formatWeightValue, type WeightUnit } from '../shipping/weight';
 import { attachmentActive } from '../digitalDelivery/rollout.ts';
 
 interface ConferenceOption { id: number; title: string; status: string }
-interface MathTextOption { id: number; title: string; file_name: string }
+interface SchoolContentOption { id: string; title: string; status: string; content_kind: string; product_id: number | null }
 
 interface Props {
   action: string;
@@ -29,8 +29,8 @@ interface Props {
   weightRequired?: boolean;
   conferenceOptions?: ConferenceOption[];
   selectedConferenceId?: number | null;
-  mathTextOptions?: MathTextOption[];
-  selectedMathTextId?: number | null;
+  schoolContentOptions?: SchoolContentOption[];
+  selectedSchoolContentId?: string | null;
 }
 
 const {
@@ -46,8 +46,8 @@ const {
   weightRequired = false,
   conferenceOptions = [],
   selectedConferenceId = null,
-  mathTextOptions = [],
-  selectedMathTextId = null,
+  schoolContentOptions = [],
+  selectedSchoolContentId = null,
 } = Astro.props;
 const selected = new Set(selectedCategoryIds);
 // New products default to the store currency; edits keep their own.
@@ -159,13 +159,13 @@ const inputClass =
   </fieldset>
 
   <fieldset class="rounded-md border border-line p-4">
-    <legend class="px-1 text-sm font-medium">Texto matemático (.tex)</legend>
-    <label class="block text-sm font-medium" for="math_text_id">Vincular texto de lectura</label>
-    <select id="math_text_id" name="math_text_id" class={inputClass}>
-      <option value="">Sin texto matemático</option>
-      {mathTextOptions.map((text) => <option value={text.id} selected={selectedMathTextId === text.id}>{text.title} ({text.file_name})</option>)}
+    <legend class="px-1 text-sm font-medium">Curso o lectura matemática (opcional)</legend>
+    <label class="block text-sm font-medium" for="school_content_id">Contenido que se desbloquea al pagar</label>
+    <select id="school_content_id" name="school_content_id" class={inputClass}>
+      <option value="">Sin curso ni lectura vinculados</option>
+      {schoolContentOptions.map((item) => <option value={item.id} selected={selectedSchoolContentId === item.id}>{item.content_kind === 'reading' ? 'Lectura' : 'Curso'} · {item.title} ({item.status})</option>)}
     </select>
-    <p class="mt-1 text-xs text-muted">El comprador tendrá acceso a una versión de lectura desde su pedido cuando el pago se confirme. Administra los textos en <a href="/admin/textos-matematicos" class="underline">Biblioteca de textos matemáticos</a>.</p>
+    <p class="mt-1 text-xs text-muted">Crea primero el curso o la lectura en Admin → Escuela → Cursos y lecturas desde .tex. El acceso se activa al quedar pagado el pedido.</p>
   </fieldset>
 
   <fieldset class="rounded-md border border-line p-4">

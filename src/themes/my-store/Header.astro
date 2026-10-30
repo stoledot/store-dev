@@ -28,7 +28,7 @@ const { model } = Astro.props;
 {
   model.announcement && (
     <div class="bg-brand text-on-brand">
-      <div class="mx-auto max-w-6xl px-3 py-2 text-center text-[11px] leading-4 tracking-wide sm:px-6 sm:text-xs">
+      <div class="mx-auto max-w-6xl px-6 py-2 text-center text-xs tracking-wide">
         {model.announcement.href ? (
           <a href={model.announcement.href} class="underline-offset-2 hover:underline">
             {model.announcement.text}
@@ -42,14 +42,14 @@ const { model } = Astro.props;
 }
 
 <header class="sticky top-0 z-20 border-b border-line bg-paper/85 backdrop-blur">
-  <div class="mx-auto flex min-w-0 max-w-6xl items-center gap-2 px-3 py-3 sm:gap-4 sm:px-6 sm:py-4 lg:gap-6 lg:py-5">
-    <a href="/" aria-label={model.storeName} class="min-w-0 max-w-[42vw] shrink font-serif text-base leading-tight tracking-tight sm:max-w-none sm:text-2xl">
+  <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 sm:py-5">
+    <a href="/" aria-label={model.storeName} class="font-serif text-2xl tracking-tight">
       {
         model.logo ? (
           /* Not lazy: the header logo is above the fold on every page. The
              store name stays the alt text, so the header still reads the
              same to a screen reader or when the image fails. */
-          <img src={model.logo.src} alt={model.logo.alt} class="h-7 max-w-28 object-contain sm:h-10 sm:max-w-48" />
+          <img src={model.logo.src} alt={model.logo.alt} class="h-8 max-w-48 object-contain sm:h-10" />
         ) : (
           <span>{model.storeName}</span>
         )
@@ -67,12 +67,12 @@ const { model } = Astro.props;
         shrink stops at this level and the row grows past the viewport —
         putting min-w-0 only on the links themselves is not enough. */}
     <nav
-      aria-label="Primary"
-      class="ml-auto flex min-w-0 shrink-0 items-center gap-2 text-[10px] uppercase tracking-normal text-muted sm:gap-4 sm:text-xs sm:tracking-widest lg:gap-6"
+      aria-label="Navegación principal"
+      class="ml-auto flex min-w-0 items-center gap-4 text-xs uppercase tracking-widest text-muted sm:gap-6"
     >
       <StoreNav links={model.headerLinks} />
       {/* Search input is desktop-only; give mobile a link to the search page. */}
-      <a href={model.search.action} class="whitespace-nowrap hover:text-brand sm:hidden">Buscar</a>
+      <a href={model.search.action} class="hover:text-brand sm:hidden">Buscar</a>
       {model.cart.enabled && <StoreCartControl href={model.cart.href} />}
       {model.account.enabled && <StoreAccountControl href={model.account.href} />}
     </nav>

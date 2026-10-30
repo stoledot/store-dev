@@ -23,6 +23,8 @@
 
 @import "./base.css";
 
+/*@import 'bootstrap/dist/css/bootstrap.min.css';*/
+
 /* Entry marker read by scripts/check-built-css.mjs. It identifies which built
    stylesheet came from which entry INDEPENDENTLY of the content under test —
    classifying by sentinel utilities would let a leak reclassify the Admin
