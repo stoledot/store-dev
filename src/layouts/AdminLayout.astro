@@ -14,6 +14,7 @@ type Section =
   | 'products'
   | 'orders'
   | 'customers'
+  | 'messages'
   | 'categories'
   | 'media'
   | 'pages'
@@ -58,7 +59,8 @@ const nav: { key: Section; label: string; href: string }[] = [
   { key: 'school-avance', label: 'Avance de alumnos', href: '/admin/escuela/avance' },
   { key: 'school-editar', label: 'Edición de escuela', href: '/admin/escuela/editar' },
   { key: 'orders', label: 'Orders', href: '/admin/orders' },
-  { key: 'customers', label: 'Customers', href: '/admin/customers' },
+  { key: 'customers', label: 'Alumnos y clientes', href: '/admin/customers' },
+  { key: 'messages', label: 'Buzón de alumnos', href: '/admin/messages' },
   { key: 'categories', label: 'Categories', href: '/admin/categories' },
   { key: 'pages', label: 'Pages', href: '/admin/pages' },
   { key: 'navigation', label: 'Navigation', href: '/admin/navigation' },
@@ -71,7 +73,7 @@ const currentLabel = nav.find((n) => n.key === active)?.label ?? 'Menu';
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="es-MX">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

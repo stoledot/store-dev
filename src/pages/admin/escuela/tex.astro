@@ -1,0 +1,332 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { renderCourseTex } from '../../../features/mathTexts/render';
+
+const clean = (v: unknown, max = 500) => String(v ?? '').trim().slice(0, max);
+const slugify = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 100);
+const sha256 = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))).map((b) => b.toString(16).padStart(2, '0')).join('');
+const nodeSnapshot = (node: {id:string;title:string;kind:string;type:string;html:string;due:string|null;weight:number;required:boolean;options:{key:string;label:string}[];correct:string|null}) => JSON.stringify({stableNodeId:node.id,title:node.title,kind:node.kind,type:node.type,html:node.html,due:node.due,weight:node.weight,required:node.required,options:node.options,correct:node.correct});
+const notice = Astro.url.searchParams.get('ok');
+const error = Astro.url.searchParams.get('error');
+const editingId = clean(Astro.url.searchParams.get('id'), 100);
+const editing = editingId ? await env.DB.prepare('SELECT * FROM school_courses WHERE id=?').bind(editingId).first<any>() : null;
+let editingSource = '';
+if (editing?.tex_source_key && env.FILES) {
+  const obj = await env.FILES.get(editing.tex_source_key);
+  if (obj) editingSource = await obj.text();
+}
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  try {
+    const id = clean(form.get('id'), 100) || crypto.randomUUID();
+    const title = clean(form.get('title'), 160);
+    const slug = slugify(clean(form.get('slug'), 100) || title);
+    const summary = clean(form.get('summary'), 500);
+    const areaId = clean(form.get('area_id'), 100) || null;
+    const level = clean(form.get('level_code'), 5).toUpperCase() || 'N0';
+    const status = ['published','archived'].includes(String(form.get('status'))) ? String(form.get('status')) : 'draft';
+    const contentKind = String(form.get('content_kind')) === 'reading' ? 'reading' : 'course';
+    const productRaw = clean(form.get('product_id'), 20);
+    const productId = productRaw && /^\d+$/.test(productRaw) ? Number(productRaw) : null;
+    if (!title || !slug || !/^N\d{1,2}$/.test(level)) throw new Error('Indica un título, un slug válido y un nivel como N0 o N1.');
+    const file = form.get('tex_file');
+    let source = String(form.get('tex_source') ?? '');
+    let filename = clean(form.get('tex_filename'), 200) || 'contenido.tex';
+    if (file instanceof File && file.size > 0) {
+      if (file.size > 500_000) throw new Error('El archivo .tex no puede superar 500 KB.');
+      if (!file.name.toLowerCase().endsWith('.tex')) throw new Error('El archivo debe tener extensión .tex.');
+      source = await file.text(); filename = file.name.replace(/[\r\n"\\]/g, '_').slice(0, 200) || 'contenido.tex';
+    }
+    const existing = await env.DB.prepare('SELECT id,tex_source_key,tex_filename,content_version FROM school_courses WHERE id=?').bind(id).first<{id:string;tex_source_key:string|null;tex_filename:string;content_version:number}>();
+    let previousSource = '';
+    if (existing?.tex_source_key && env.FILES) {
+      const oldObject = await env.FILES.get(existing.tex_source_key);
+      if (oldObject) previousSource = await oldObject.text();
+    }
+    if (!source.trim() && previousSource) {
+      source = previousSource;
+      filename = existing?.tex_filename || filename;
+    }
+    if (!source.trim()) throw new Error('Carga un archivo .tex o pega el contenido en el editor.');
+    if (source.length > 500_000) throw new Error('El contenido supera el límite de 500 KB.');
+    const nodes = renderCourseTex(source);
+    if (!nodes.length) throw new Error('No se detectó contenido en el .tex. Revisa el formato.');
+    const duplicate = await env.DB.prepare('SELECT id FROM school_courses WHERE slug=? AND id<>?').bind(slug,id).first();
+    if (duplicate) throw new Error('Ya existe un curso o lectura con ese slug.');
+    if (productId !== null) {
+      const product = await env.DB.prepare('SELECT id FROM products WHERE id=?').bind(productId).first();
+      if (!product) throw new Error('El producto seleccionado no existe.');
+      const used = await env.DB.prepare('SELECT title FROM school_courses WHERE product_id=? AND id<>?').bind(productId,id).first<{title:string}>();
+      if (used) throw new Error(`El producto ya está vinculado a “${used.title}”.`);
+    }
+    if (!env.FILES) throw new Error('El almacenamiento privado FILES no está configurado.');
+    const now = new Date().toISOString();
+    const previousNodes = previousSource.trim() ? renderCourseTex(previousSource) : [];
+    const previousSourceHash = previousSource ? await sha256(previousSource) : '';
+    const sourceChanged = !existing || previousSource !== source;
+    const courseVersion = existing
+      ? Number(existing.content_version) + (sourceChanged ? 1 : 0)
+      : 1;
+    const key = sourceChanged || !existing?.tex_source_key
+      ? `school-tex/${id}/versions/${courseVersion}/source.tex`
+      : existing.tex_source_key;
+
+    if (!env.FILES) throw new Error('El almacenamiento privado FILES no está configurado.');
+
+    // Keep every TeX source immutable. The active course points to the current version.
+    if (sourceChanged || !existing?.tex_source_key) {
+      await env.FILES.put(key, source, {
+        httpMetadata: { contentType: 'text/plain; charset=utf-8' },
+        customMetadata: { courseId: id, contentKind, version: String(courseVersion) },
+      });
+    }
+
+    const sourceHash = await sha256(source);
+    const writes = [];
+    const activeStatus = status === 'published' ? 'published' : status === 'archived' ? 'archived' : 'draft';
+    const allOldLessons = (await env.DB.prepare(`SELECT id,slug,title,content_version,content_hash,tex_node_id,activity_kind,assessment_json,content_html,content_md,required_to_complete,due_at,grading_weight,status,sequence_no FROM school_lessons WHERE course_id=? ORDER BY sequence_no,id`).bind(id).all<any>()).results ?? [];
+
+    if (existing && previousSource && existing.tex_source_key) {
+      // Backfill the currently active revision before moving the course pointer.
+      writes.push(env.DB.prepare(`INSERT OR IGNORE INTO school_course_revisions
+        (id,course_id,version,source_key,source_filename,source_hash,change_summary,created_at)
+        VALUES (?,?,?,?,?,?,?,?)`)
+        .bind(crypto.randomUUID(), id, Number(existing.content_version), existing.tex_source_key,
+          existing.tex_filename || 'contenido.tex', previousSourceHash || await sha256(previousSource),
+          'Versión anterior conservada automáticamente', now));
+    }
+
+    if (existing) {
+      writes.push(env.DB.prepare(`UPDATE school_courses SET slug=?,title=?,summary=?,area_id=?,level_code=?,status=?,product_id=?,content_kind=?,tex_source_key=?,tex_filename=?,content_version=?,updated_at=? WHERE id=?`)
+        .bind(slug,title,summary,areaId,level,status,productId,contentKind,key,filename,courseVersion,now,id));
+    } else {
+      const seq = await env.DB.prepare('SELECT COALESCE(MAX(sequence_no),0)+1 AS n FROM school_courses').first<{n:number}>();
+      writes.push(env.DB.prepare(`INSERT INTO school_courses (id,slug,title,summary,description_md,sequence_no,status,area_id,level_code,product_id,content_kind,tex_source_key,tex_filename,content_version,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .bind(id,slug,title,summary,'',Number(seq?.n ?? 1),status,areaId,level,productId,contentKind,key,filename,courseVersion,now,now));
+    }
+
+    writes.push(env.DB.prepare(`INSERT OR IGNORE INTO school_course_revisions
+      (id,course_id,version,source_key,source_filename,source_hash,change_summary,created_at)
+      VALUES (?,?,?,?,?,?,?,?)`)
+      .bind(crypto.randomUUID(), id, courseVersion, key, filename, sourceHash,
+        sourceChanged ? 'Actualización del contenido TeX' : 'Guardado de metadatos; contenido TeX sin cambios', now));
+
+    if (productId !== null) {
+      writes.push(env.DB.prepare('UPDATE order_items SET school_course_id=? WHERE product_id=? AND school_course_id IS NULL').bind(id,productId));
+    }
+
+    // D1 executes the following writes as one batch. If a statement fails, the DB changes roll back together.
+    writes.push(env.DB.prepare('UPDATE school_lessons SET sequence_no=sequence_no+100000 WHERE course_id=?').bind(id));
+    const seenLessonIds = new Set<string>();
+    const claimedOldIds = new Set<string>();
+
+    const oldNodeForLesson = (lesson: any) => {
+      return previousNodes.find((candidate) => candidate.id === lesson.tex_node_id)
+        ?? previousNodes.find((candidate) => slugify(candidate.id) === lesson.slug)
+        ?? previousNodes.find((candidate) => candidate.title === lesson.title && candidate.type === lesson.activity_kind);
+    };
+
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      const nodeSlug = slugify(node.id) || `unidad-${i + 1}`;
+      const snapshot = nodeSnapshot(node);
+      const contentHash = await sha256(snapshot);
+
+      // Match by stable TeX ID first, then legacy slug, then title/type for legacy IDs.
+      // When an explicit ID changes, treat it as a new activity rather than reusing progress.
+      let old = allOldLessons.find((lesson: any) => !claimedOldIds.has(lesson.id) && lesson.tex_node_id === node.id);
+      if (!old) old = allOldLessons.find((lesson: any) => !claimedOldIds.has(lesson.id) && lesson.slug === nodeSlug);
+      if (!old && !node.explicitId) old = allOldLessons.find((lesson: any) => !claimedOldIds.has(lesson.id) && lesson.title === node.title && lesson.activity_kind === node.type);
+
+      const lessonType = node.type === 'reading' ? 'reading' : node.type === 'choice' ? 'quiz' : node.type === 'upload' || node.type === 'long' ? 'assignment' : 'exercise';
+      const qType = node.type === 'choice' ? 'multiple_choice' : node.type === 'upload' ? 'file_upload' : node.type === 'long' ? 'long_answer' : 'short_answer';
+      const questions = node.type === 'reading' ? [] : [{ id: 'respuesta', prompt: node.title, type: qType, options: node.options.map((o) => o.label), required: node.required }];
+      const assessment = JSON.stringify({ version: 1, questions });
+      const weight = Math.max(0.05, Math.min(1000, node.weight || 0.05));
+
+      if (old) {
+        claimedOldIds.add(old.id);
+        const oldNode = oldNodeForLesson(old);
+        const oldSnapshot = oldNode ? nodeSnapshot(oldNode) : JSON.stringify({
+          stableNodeId: old.tex_node_id ?? old.slug,
+          title: old.title,
+          kind: old.activity_kind,
+          content_html: old.content_html,
+          content_md: old.content_md,
+          assessment_json: old.assessment_json,
+          required_to_complete: old.required_to_complete,
+          due_at: old.due_at,
+          grading_weight: old.grading_weight,
+        });
+        const oldHash = old.content_hash || await sha256(oldSnapshot);
+        const changed = oldHash !== contentHash;
+        const lessonVersion = Number(old.content_version || 1) + (changed ? 1 : 0);
+
+        writes.push(env.DB.prepare(`INSERT OR IGNORE INTO school_lesson_revisions
+          (id,lesson_id,content_version,stable_node_id,content_hash,snapshot_json,created_at)
+          VALUES (?,?,?,?,?,?,?)`)
+          .bind(crypto.randomUUID(), old.id, Number(old.content_version || 1), old.tex_node_id || old.slug,
+            oldHash, oldSnapshot, now));
+
+        writes.push(env.DB.prepare(`UPDATE school_lessons SET title=?,summary=?,content_md=?,content_html=?,sequence_no=?,lesson_type=?,status=?,required_to_complete=?,content_version=?,assessment_json=?,grading_weight=?,tex_node_id=?,activity_kind=?,due_at=?,content_hash=?,updated_at=? WHERE id=?`)
+          .bind(node.title,node.kind,'','',i+1,lessonType,activeStatus,node.required?1:0,lessonVersion,assessment,weight,node.id,node.type,node.due,contentHash,now,old.id));
+
+        writes.push(env.DB.prepare(`INSERT OR IGNORE INTO school_lesson_revisions
+          (id,lesson_id,content_version,stable_node_id,content_hash,snapshot_json,created_at)
+          VALUES (?,?,?,?,?,?,?)`)
+          .bind(crypto.randomUUID(), old.id, lessonVersion, node.id, contentHash, snapshot, now));
+
+        seenLessonIds.add(old.id);
+      } else {
+        const lessonId = crypto.randomUUID();
+        writes.push(env.DB.prepare(`INSERT INTO school_lessons (id,course_id,slug,title,summary,content_md,content_html,sequence_no,lesson_type,status,required_to_complete,content_version,assessment_json,grading_weight,tex_node_id,activity_kind,due_at,content_hash,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+          .bind(lessonId,id,nodeSlug,node.title,node.kind,'','',i+1,lessonType,activeStatus,node.required?1:0,1,assessment,weight,node.id,node.type,node.due,contentHash,now,now));
+
+        writes.push(env.DB.prepare(`INSERT INTO school_lesson_revisions
+          (id,lesson_id,content_version,stable_node_id,content_hash,snapshot_json,created_at)
+          VALUES (?,?,?,?,?,?,?)`)
+          .bind(crypto.randomUUID(), lessonId, 1, node.id, contentHash, snapshot, now));
+
+        seenLessonIds.add(lessonId);
+      }
+    }
+
+    // Removed activities are archived, never deleted; submissions and progress remain attached.
+    for (let i = 0; i < allOldLessons.length; i++) {
+      const lesson = allOldLessons[i];
+      if (!seenLessonIds.has(lesson.id)) {
+        writes.push(env.DB.prepare("UPDATE school_lessons SET status='archived',sequence_no=?,updated_at=? WHERE id=?")
+          .bind(1000000 + i, now, lesson.id));
+      }
+    }
+
+    // Reconcile course-level completion without resetting any individual activity progress.
+    writes.push(env.DB.prepare(`UPDATE school_course_progress
+      SET status = CASE
+        WHEN EXISTS (
+          SELECT 1 FROM school_lessons required_lesson
+          WHERE required_lesson.course_id = school_course_progress.course_id
+            AND required_lesson.status = 'published'
+            AND required_lesson.required_to_complete = 1
+        ) AND NOT EXISTS (
+          SELECT 1 FROM school_lessons required_lesson
+          WHERE required_lesson.course_id = school_course_progress.course_id
+            AND required_lesson.status = 'published'
+            AND required_lesson.required_to_complete = 1
+            AND NOT EXISTS (
+              SELECT 1 FROM school_lesson_progress lesson_progress
+              WHERE lesson_progress.lesson_id = required_lesson.id
+                AND lower(lesson_progress.student_email) = lower(school_course_progress.student_email)
+                AND lesson_progress.status = 'completed'
+            )
+        ) THEN 'completed'
+        WHEN EXISTS (
+          SELECT 1 FROM school_lesson_progress lesson_progress
+          JOIN school_lessons lesson ON lesson.id = lesson_progress.lesson_id
+          WHERE lesson.course_id = school_course_progress.course_id
+            AND lower(lesson_progress.student_email) = lower(school_course_progress.student_email)
+            AND lesson_progress.status IN ('in_progress', 'completed')
+        ) THEN 'in_progress'
+        ELSE 'not_started'
+      END,
+      completed_at = CASE
+        WHEN EXISTS (
+          SELECT 1 FROM school_lessons required_lesson
+          WHERE required_lesson.course_id = school_course_progress.course_id
+            AND required_lesson.status = 'published'
+            AND required_lesson.required_to_complete = 1
+        ) AND NOT EXISTS (
+          SELECT 1 FROM school_lessons required_lesson
+          WHERE required_lesson.course_id = school_course_progress.course_id
+            AND required_lesson.status = 'published'
+            AND required_lesson.required_to_complete = 1
+            AND NOT EXISTS (
+              SELECT 1 FROM school_lesson_progress lesson_progress
+              WHERE lesson_progress.lesson_id = required_lesson.id
+                AND lower(lesson_progress.student_email) = lower(school_course_progress.student_email)
+                AND lesson_progress.status = 'completed'
+            )
+        ) THEN COALESCE(completed_at, ?)
+        ELSE NULL
+      END,
+      started_at = CASE
+        WHEN EXISTS (
+          SELECT 1 FROM school_lesson_progress lesson_progress
+          JOIN school_lessons lesson ON lesson.id = lesson_progress.lesson_id
+          WHERE lesson.course_id = school_course_progress.course_id
+            AND lower(lesson_progress.student_email) = lower(school_course_progress.student_email)
+            AND lesson_progress.status IN ('in_progress', 'completed')
+        ) THEN COALESCE(started_at, ?)
+        ELSE started_at
+      END,
+      content_version = ?, updated_at = ?
+      WHERE course_id = ?`)
+      .bind(now, now, courseVersion, now, id));
+
+    await env.DB.batch(writes);
+
+    return Astro.redirect(`/admin/escuela/tex?id=${encodeURIComponent(id)}&ok=guardado`, 303);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'No se pudo guardar el contenido.';
+    return Astro.redirect(`/admin/escuela/tex${editingId ? `?id=${encodeURIComponent(editingId)}&` : '?'}error=${encodeURIComponent(message.slice(0, 180))}`, 303);
+  }
+}
+
+const areas = (await env.DB.prepare("SELECT id,title FROM school_areas WHERE status='active' ORDER BY title").all<{id:string;title:string}>()).results ?? [];
+const products = (await env.DB.prepare('SELECT p.id,p.name,p.active FROM products p WHERE NOT EXISTS(SELECT 1 FROM school_courses c WHERE c.product_id=p.id AND c.id<>?) ORDER BY p.name COLLATE NOCASE LIMIT 500').bind(editingId).all<{id:number;name:string;active:number}>()).results ?? [];
+const courses = (await env.DB.prepare(`SELECT c.id,c.title,c.slug,c.status,c.content_kind,c.product_id,c.tex_filename,p.name AS product_name,(SELECT COUNT(*) FROM school_lessons l WHERE l.course_id=c.id AND l.status='published') AS lesson_count FROM school_courses c LEFT JOIN products p ON p.id=c.product_id ORDER BY c.updated_at DESC LIMIT 200`).all<{id:string;title:string;slug:string;status:string;content_kind:string;product_id:number|null;tex_filename:string;product_name:string|null;lesson_count:number}>()).results ?? [];
+---
+<AdminLayout title="Escuela TeX" active="school">
+  <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <header class="mb-7"><p class="text-xs uppercase tracking-widest text-gray-400">Contenido TeX · reutiliza las tablas escolares existentes</p><h1 class="mt-2 text-3xl font-semibold">Cursos y lecturas matemáticas</h1><p class="mt-2 max-w-3xl text-sm text-gray-500">El archivo fuente se guarda en R2 privado. D1 conserva metadatos, unidades, actividades y avance. Al guardar una corrección se actualizan las unidades existentes sin borrar entregas ni calificaciones.</p><nav class="mt-4 flex flex-wrap gap-3 text-sm"><a class="underline" href="/admin/escuela">Escuela existente</a><a class="underline" href="/admin/escuela/calificaciones">Entregas y calificaciones</a><a class="underline" href="/admin/escuela/avance">Avance de alumnos</a></nav></header>
+    {notice==='guardado'&&<p class="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">Contenido guardado y unidades sincronizadas. El avance y las calificaciones existentes se conservaron.</p>}
+    {error&&<p class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+    <section class="mb-8 rounded-xl border border-line p-5">
+      <h2 class="mb-4 text-xl font-semibold">{editing?'Editar curso o lectura':'Crear curso o lectura desde .tex'}</h2>
+      <form method="POST" enctype="multipart/form-data" class="grid gap-4 md:grid-cols-2">
+        <input type="hidden" name="id" value={editing?.id ?? ''}/>
+        <label class="block text-sm">Título<input name="title" required maxlength="160" value={editing?.title ?? ''} class="mt-1 block w-full rounded-md border border-line p-2" placeholder="Por ejemplo, Introducción al álgebra"/></label>
+        <label class="block text-sm">Slug de URL<input name="slug" maxlength="100" value={editing?.slug ?? ''} class="mt-1 block w-full rounded-md border border-line p-2" placeholder="se genera del título si queda vacío"/></label>
+        <label class="block text-sm md:col-span-2">Resumen<input name="summary" maxlength="500" value={editing?.summary ?? ''} class="mt-1 block w-full rounded-md border border-line p-2"/></label>
+        <label class="block text-sm">Tipo<select name="content_kind" class="mt-1 block w-full rounded-md border border-line p-2"><option value="course" selected={(editing?.content_kind ?? 'course')==='course'}>Curso secuencial</option><option value="reading" selected={editing?.content_kind==='reading'}>Lectura matemática</option></select></label>
+        <label class="block text-sm">Producto asociado<select name="product_id" class="mt-1 block w-full rounded-md border border-line p-2"><option value="">Sin producto asociado</option>{products.map(p=><option value={p.id} selected={editing?.product_id===p.id}>#{p.id} · {p.name}{p.active?'':' (inactivo)'}</option>)}</select><span class="mt-1 block text-xs text-gray-500">El comprador obtiene acceso cuando el pedido queda pagado.</span></label>
+        <label class="block text-sm">Área (opcional)<select name="area_id" class="mt-1 block w-full rounded-md border border-line p-2"><option value="">Sin área</option>{areas.map(a=><option value={a.id} selected={editing?.area_id===a.id}>{a.title}</option>)}</select></label>
+        <label class="block text-sm">Nivel<select name="level_code" class="mt-1 block w-full rounded-md border border-line p-2">{['N0','N1','N2','N3','N4','N5'].map(n=><option value={n} selected={(editing?.level_code??'N0')===n}>{n}</option>)}</select></label>
+        <label class="block text-sm">Estado<select name="status" class="mt-1 block w-full rounded-md border border-line p-2"><option value="draft" selected={(editing?.status??'draft')==='draft'}>Borrador</option><option value="published" selected={editing?.status==='published'}>Publicado</option><option value="archived" selected={editing?.status==='archived'}>Archivado</option></select></label>
+        <label class="block text-sm md:col-span-2">Reemplazar archivo .tex (opcional)<input type="file" name="tex_file" accept=".tex,text/plain" class="mt-1 block w-full rounded-md border border-line p-2"/><span class="mt-1 block text-xs text-gray-500">Máximo 500 KB. Si subes un archivo, se usa en lugar del texto del editor.</span></label>
+        <label class="block text-sm md:col-span-2">Nombre del archivo<input name="tex_filename" maxlength="200" value={editing?.tex_filename ?? 'contenido.tex'} class="mt-1 block w-full rounded-md border border-line p-2"/></label>
+        <label class="block text-sm md:col-span-2">Contenido TeX<textarea name="tex_source" rows="18" spellcheck="false" class="mt-1 block w-full rounded-md border border-line p-3 font-mono text-xs leading-5" placeholder="\\chapter{Introducción}\nTexto de la unidad...">{editingSource}</textarea></label>
+        <div class="md:col-span-2 flex flex-wrap gap-3"><button type="submit" class="rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white">Guardar y procesar TeX</button>{editing&&<a class="rounded-lg border border-line px-5 py-3 text-sm" href="/admin/escuela/tex">Crear otro</a>}</div>
+      </form>
+      <details class="mt-5 rounded-lg bg-gray-50 p-4"><summary class="cursor-pointer text-sm font-semibold">Formato TeX compatible y actividades</summary><pre class="mt-3 whitespace-pre-wrap text-xs leading-5">{String.raw`\chapter{Capítulo}
+\section{Tema}
+\begin{lesson}[id=lectura-1,weight=0]
+Texto y fórmula: \(x^2+1=0\).
+\end{lesson}
+\begin{activity}[id=pregunta-1,type=short,weight=1,due=2026-11-15]
+Explica tu razonamiento.
+\end{activity}
+\begin{activity}[id=opcion-multiple,type=choice,weight=2]
+Elige una respuesta.
+\option{A}{Primera opción}
+\option{B}{Segunda opción}
+\correct{B}
+\end{activity}
+\begin{deliverable}[id=archivo-final,weight=3]
+Entrega el archivo solicitado.
+\end{deliverable}
+\begin{definition}[Definición]
+Una definición con matemáticas \(a+b\).
+\end{definition}
+\begin{table}[header=blue]
+\row{Concepto}{Descripción}
+\row{Conjunto}{Colección de objetos}
+\end{table}
+\image{https://example.com/imagen.png}{Descripción}{Pie de imagen}`}</pre><p class="mt-2 text-xs text-gray-500">Usa un id= permanente por lectura o actividad. Si conserva el mismo ID, conserva su avance; si es una actividad nueva, usa un ID nuevo para que quede pendiente. Las unidades retiradas se archivan sin borrar el historial. Las respuestas correctas no se envían al navegador; las actividades quedan pendientes de revisión docente.</p></details>
+    </section>
+    <section class="rounded-xl border border-line p-5"><h2 class="mb-4 text-xl font-semibold">Contenido existente</h2><div class="overflow-x-auto"><table class="w-full min-w-[48rem] text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase text-gray-500"><th class="py-2 pr-3">Título</th><th class="py-2 pr-3">Tipo</th><th class="py-2 pr-3">Producto</th><th class="py-2 pr-3">Unidades</th><th class="py-2 pr-3">Estado</th><th class="py-2">Acción</th></tr></thead><tbody>{courses.map(c=><tr class="border-b border-line"><td class="py-3 pr-3"><strong>{c.title}</strong><div class="text-xs text-gray-500">/{c.slug}</div></td><td class="py-3 pr-3">{c.content_kind==='reading'?'Lectura':'Curso'}</td><td class="py-3 pr-3">{c.product_name??'—'}</td><td class="py-3 pr-3">{c.lesson_count}</td><td class="py-3 pr-3">{c.status}</td><td class="py-3"><a class="underline" href={`/admin/escuela/tex?id=${encodeURIComponent(c.id)}`}>Editar</a></td></tr>)}</tbody></table></div></section>
+  </main>
+</AdminLayout>

@@ -1,0 +1,14 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled,getCustomerEmail } from '../../features/auth/customer';
+import { guestOrderUrl } from '../../features/orders/guestAccess';
+if(!(await accountsEnabled()))return Astro.redirect('/',303);
+const email=await getCustomerEmail(Astro.cookies);if(!email)return Astro.redirect('/account/login',303);
+const {results=[]}=await env.DB.prepare(`SELECT oi.id,oi.public_id AS item_public_id,oi.name,oi.math_text_title,oi.math_text_source,o.public_id AS order_public_id,o.created_at,o.status FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.email=? COLLATE NOCASE AND oi.math_text_source IS NOT NULL AND o.status NOT IN ('pending','failed','cancelled','canceled','refunded') AND COALESCE(o.refunded_cents,0)<o.amount_total_cents ORDER BY o.created_at DESC`).bind(email).all<any>();
+const readings=await Promise.all(results.map(async (r:any)=>{const orderUrl=await guestOrderUrl(env.DB,r.order_public_id,'');return { ...r, href:orderUrl&&r.item_public_id ? `${orderUrl}/text/${r.item_public_id}` : null };}));
+---
+<Layout title="Mis lecturas">
+<main class="mx-auto max-w-4xl px-4 py-8 sm:px-6"><a href="/account" class="text-sm text-accent hover:underline">← Mi cuenta</a><header class="my-5"><p class="text-xs font-semibold uppercase tracking-[.2em] text-muted">Biblioteca personal</p><h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Mis lecturas matemáticas</h1><p class="mt-2 text-sm text-muted">Aquí aparecen los textos incluidos en tus compras. Tu acceso permanece ligado a la compra original.</p></header>{readings.length?<div class="grid gap-3 sm:grid-cols-2">{readings.map((r:any)=><article class="flex flex-col rounded-2xl border border-line bg-surface p-5"><span class="text-2xl">📘</span><h2 class="mt-3 text-lg font-semibold">{r.math_text_title||r.name}</h2><p class="mt-1 text-xs text-muted">Comprado el {new Date(r.created_at).toLocaleDateString('es-MX')}</p><div class="mt-5">{r.href?<a href={r.href} class="inline-flex rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white">Continuar lectura →</a>:<span class="text-xs text-muted">El enlace de lectura no está disponible; contacta a soporte.</span>}</div></article>)}</div>:<section class="rounded-2xl border border-dashed border-line p-8 text-center"><p class="text-3xl">📚</p><h2 class="mt-3 text-lg font-semibold">Tu biblioteca está vacía</h2><p class="mt-2 text-sm text-muted">Cuando compres una lectura matemática, aparecerá aquí.</p><a href="/" class="mt-4 inline-flex rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-white">Explorar la tienda</a></section>}</main>
+</Layout>

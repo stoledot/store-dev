@@ -1,0 +1,85 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import EnrollmentChecklist from '../../components/school/EnrollmentChecklist.astro';
+import { getEnrollmentChecklist } from '../../features/school/enrollmentChecklist';
+import { getCustomerEmail, accountsEnabled, isValidEmail } from '../../features/auth/customer';
+import { getProfile, ensureProfile, cleanText, normalizeEmail, emailAlreadyUsed } from '../../features/customers/profiles';
+import { getEmailProvider } from '../../features/email';
+import { signToken } from '../../features/auth/token';
+import { isForbiddenFormOrigin } from '../../features/auth/formOrigin';
+
+if (!(await accountsEnabled())) return Astro.redirect('/', 303);
+const email = await getCustomerEmail(Astro.cookies);
+if (!email) return Astro.redirect('/account/login?next=%2Faccount%2Fprofile', 303);
+await ensureProfile(env.DB, email);
+const enrollmentSteps = await getEnrollmentChecklist(env.DB, email);
+let profile = await getProfile(env.DB, email);
+let error = Astro.url.searchParams.get('error') === 'invalid-link' ? 'El enlace de confirmación no es válido o venció.' : Astro.url.searchParams.get('error') === 'wrong-session' ? 'Abre el enlace desde la sesión de la cuenta que solicitó el cambio.' : Astro.url.searchParams.get('error') === 'email-used' ? 'Ese correo ya está asociado a otra cuenta.' : Astro.url.searchParams.get('error') === 'update-failed' ? 'No pudimos actualizar el correo; no se cambiaron los datos. Contacta al administrador.' : '';
+let notice = Astro.url.searchParams.get('status') === 'email-sent' ? 'Enviamos un enlace de confirmación al nuevo correo. Tu correo actual sigue activo hasta que lo confirmes.' : Astro.url.searchParams.get('status') === 'saved' ? 'Tus datos se guardaron correctamente.' : Astro.url.searchParams.get('status') === 'email-changed' ? 'Tu correo se actualizó correctamente.' : '';
+if (Astro.request.method === 'POST') {
+  if (isForbiddenFormOrigin(Astro.request, Astro.url)) return new Response('Origen no permitido', { status: 403 });
+  const form = await Astro.request.formData();
+  const action = String(form.get('action') ?? 'save');
+  if (action === 'save') {
+    if (profile?.profile_locked) error = 'La edición de tus datos está bloqueada por la administración de la escuela. Contacta al administrador si necesitas corregir algo.';
+    else {
+      const rawAge = String(form.get('age') ?? '').trim();
+      const age = rawAge ? Number(rawAge) : null;
+      if (age !== null && (!Number.isInteger(age) || age < 5 || age > 120)) error = 'Introduce una edad válida entre 5 y 120 años.';
+      else {
+        await env.DB.prepare(`UPDATE customer_profiles SET full_name=?,age=?,education_level=?,institution=?,academic_interests=?,academic_goals=?,updated_at=datetime('now') WHERE email=? COLLATE NOCASE`)
+          .bind(cleanText(form.get('full_name'),120), age, cleanText(form.get('education_level'),100), cleanText(form.get('institution'),160), cleanText(form.get('academic_interests'),500), cleanText(form.get('academic_goals'),700), email).run();
+        return Astro.redirect('/account/profile?status=saved',303);
+      }
+    }
+  } else if (action === 'email') {
+    const newEmail = normalizeEmail(String(form.get('new_email') ?? ''));
+    if (!isValidEmail(newEmail)) error = 'Escribe un correo electrónico válido.';
+    else if (newEmail === normalizeEmail(email)) error = 'Ese ya es tu correo actual.';
+    else if (await emailAlreadyUsed(env.DB, newEmail, email)) error = 'Ese correo ya está asociado a otra cuenta o a datos existentes. Usa otro correo.';
+    else {
+      const mailer = await getEmailProvider(Astro.locals.settings);
+      if (!mailer) error = 'El envío de correo no está configurado. Contacta al administrador.';
+      else {
+        const token = await signToken(`email-change:${encodeURIComponent(email)}:${encodeURIComponent(newEmail)}`, env.AUTH_SECRET!, 24*60*60, Date.now()/1000);
+        const link = `${Astro.url.origin}/account/verify-email?token=${encodeURIComponent(token)}`;
+        try {
+          await mailer.send({to:newEmail,subject:'Confirma el cambio de correo',text:`Para cambiar el correo de tu cuenta, abre este enlace (válido por 24 horas):\n\n${link}\n\nSi no solicitaste el cambio, ignora este mensaje.`,html:`<p>Solicitaste cambiar el correo de tu cuenta de ${email}.</p><p><a href="${link}">Confirmar nuevo correo</a></p><p>El enlace vence en 24 horas. Si no solicitaste el cambio, ignora este mensaje.</p>`});
+          return Astro.redirect('/account/profile?status=email-sent',303);
+        } catch (err) {
+          console.error('Email change verification send failed', err);
+          error = 'No pudimos enviar el correo de confirmación. Inténtalo de nuevo más tarde.';
+        }
+      }
+    }
+  }
+  profile = await getProfile(env.DB,email);
+}
+---
+<Layout title="Mi perfil">
+  <main class="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+    <a href="/account" class="text-sm text-accent hover:underline">← Volver a Mi cuenta</a>
+    <header class="my-5"><p class="text-xs font-semibold uppercase tracking-[.2em] text-muted">Mi cuenta</p><h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Mi perfil</h1><p class="mt-2 text-sm text-muted">Administra tus datos académicos y las opciones de acceso.</p></header>
+    {notice && <p class="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</p>}
+    {error && <p class="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+    <div class="mb-6"><EnrollmentChecklist steps={enrollmentSteps} /></div>
+    <section class="rounded-2xl border border-line bg-surface p-5 sm:p-7">
+      <div class="mb-5 flex flex-wrap items-start justify-between gap-3"><div><h2 class="text-lg font-semibold">Datos personales y académicos</h2><p class="mt-1 text-sm text-muted">Solo pedimos información básica, útil para acompañar tu aprendizaje.</p></div>{profile?.profile_locked ? <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">Edición bloqueada</span> : <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-800">Editable</span>}</div>
+      {profile?.profile_locked && <p class="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">La administración bloqueó temporalmente la edición de estos datos. Puedes seguir consultándolos y usar el chat para solicitar una corrección.</p>}
+      <form method="POST" class="grid gap-4 sm:grid-cols-2">
+        <input type="hidden" name="action" value="save" />
+        <label class="grid gap-1 text-sm font-medium">Nombre completo<input name="full_name" maxlength="120" value={profile?.full_name ?? ''} disabled={!!profile?.profile_locked} class="rounded-lg border border-line bg-background px-3 py-2.5 font-normal disabled:opacity-60" autocomplete="name" /></label>
+        <label class="grid gap-1 text-sm font-medium">Edad<input name="age" type="number" min="5" max="120" value={profile?.age ?? ''} disabled={!!profile?.profile_locked} class="rounded-lg border border-line bg-background px-3 py-2.5 font-normal disabled:opacity-60" /></label>
+        <label class="grid gap-1 text-sm font-medium">Nivel académico actual<input name="education_level" maxlength="100" value={profile?.education_level ?? ''} disabled={!!profile?.profile_locked} placeholder="Ej. secundaria, universidad" class="rounded-lg border border-line bg-background px-3 py-2.5 font-normal disabled:opacity-60" /></label>
+        <label class="grid gap-1 text-sm font-medium">Escuela o institución (opcional)<input name="institution" maxlength="160" value={profile?.institution ?? ''} disabled={!!profile?.profile_locked} class="rounded-lg border border-line bg-background px-3 py-2.5 font-normal disabled:opacity-60" /></label>
+        <label class="grid gap-1 text-sm font-medium sm:col-span-2">Intereses académicos<textarea name="academic_interests" rows="2" maxlength="500" disabled={!!profile?.profile_locked} class="rounded-lg border border-line bg-background px-3 py-2.5 font-normal disabled:opacity-60">{profile?.academic_interests ?? ''}</textarea></label>
+        <label class="grid gap-1 text-sm font-medium sm:col-span-2">Objetivos de aprendizaje<textarea name="academic_goals" rows="3" maxlength="700" disabled={!!profile?.profile_locked} class="rounded-lg border border-line bg-background px-3 py-2.5 font-normal disabled:opacity-60">{profile?.academic_goals ?? ''}</textarea></label>
+        <div class="sm:col-span-2"><button disabled={!!profile?.profile_locked} class="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">Guardar perfil</button></div>
+      </form>
+    </section>
+    <section class="mt-5 rounded-2xl border border-line bg-surface p-5 sm:p-7"><h2 class="text-lg font-semibold">Correo y acceso</h2><p class="mt-1 text-sm text-muted">Tu sesión funciona con enlaces de acceso enviados por correo; no necesitas contraseña.</p><div class="mt-4 rounded-xl bg-background p-4"><p class="text-xs uppercase tracking-wide text-muted">Correo actual asociado</p><p class="mt-1 break-all font-semibold">{email}</p></div><form method="POST" class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"><input type="hidden" name="action" value="email"/><label class="grid flex-1 gap-1 text-sm font-medium">Nuevo correo<input type="email" name="new_email" required maxlength="254" autocomplete="email" placeholder="nuevo@correo.com" class="rounded-lg border border-line bg-background px-3 py-2.5 font-normal" /></label><button class="rounded-xl border border-line px-4 py-3 text-sm font-semibold hover:bg-background">Verificar cambio</button></form><p class="mt-3 text-xs text-muted">El correo actual seguirá funcionando hasta que confirmes el enlace enviado al nuevo. No se puede usar un correo que ya pertenezca a otra cuenta.</p></section>
+    <div class="mt-5 flex flex-wrap gap-3"><a href="/account/messages" class="rounded-xl border border-line px-4 py-3 text-sm font-semibold hover:bg-surface">Abrir buzón</a><a href="/account/logout" class="rounded-xl border border-line px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-50">Cerrar sesión</a></div>
+  </main>
+</Layout>

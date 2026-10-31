@@ -40,24 +40,24 @@ const small =
 }
 
 <header class="border-b border-line">
-  <div class="mx-auto flex max-w-[96rem] flex-wrap items-baseline gap-x-10 gap-y-4 px-12 pb-6 pt-8">
+  <div class="mx-auto flex max-w-[96rem] flex-wrap items-baseline gap-x-10 gap-y-4 px-4 pb-4 pt-4 sm:px-8 sm:pb-6 sm:pt-6 lg:px-12">
     <a href="/" aria-label={model.storeName} class="shrink-0">
       {
         model.logo ? (
           <img src={model.logo.src} alt={model.logo.alt} class="h-9 max-w-52 object-contain" />
         ) : (
-          <span class="font-serif text-3xl tracking-[-0.02em]">{model.storeName}</span>
+          <span class="font-serif text-xl tracking-[-0.02em] sm:text-3xl">{model.storeName}</span>
         )
       }
     </a>
 
-    <nav aria-label="Store" class="ml-auto flex min-w-0 items-center gap-6">
+    <nav aria-label="Tienda" class="ml-auto flex min-w-0 items-center gap-6">
       <StoreNav
         links={model.headerLinks}
         class={`hidden min-w-0 items-center gap-6 xl:flex ${small}`}
         disclosureClass={`relative order-last xl:hidden ${small}`}
       />
-      <a href={model.search.action} class={`${small} sm:hidden`}>Search</a>
+      <a href={model.search.action} class={`${small} sm:hidden`}>Buscar</a>
       {model.account.enabled && <StoreAccountControl href={model.account.href} class={small} />}
       {
         model.cart.enabled && (

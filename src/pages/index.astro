@@ -1,21 +1,104 @@
 ---
 import { env } from 'cloudflare:workers';
 import Layout from '../layouts/Layout.astro';
+import EnrollmentChecklist from '../components/school/EnrollmentChecklist.astro';
+import { getCustomerEmail } from '../features/auth/customer';
+import { getEnrollmentChecklist } from '../features/school/enrollmentChecklist';
 import ProductList from '../features/products/ProductList.astro';
-import { resolveHomePath } from '../features/settings/home';
-import SchoolHomeBanner from '../features/school/SchoolHomeBanner.astro';
+import { getConfig } from '../config';
 
-// A store can point `/` at a page or a single product instead of the catalog.
-// Rewriting rather than duplicating those templates keeps one implementation of
-// each, and it makes the canonical URL resolve to the real page — so the same
-// content served at `/` and at `/pages/<slug>` is not two indexable copies.
-// Anything unresolvable (never set, unpublished, deleted, deactivated) falls
-// through to the catalog: a 404 homepage would be edge-cached for everyone.
-const homePath = await resolveHomePath(env.DB, Astro.locals.settings?.homePage);
-if (homePath) return Astro.rewrite(homePath);
+const config = getConfig();
+const configuredName = Astro.locals.settings?.storeName ?? config.storeName;
+const schoolName = !configuredName || configuredName === 'My Shop' ? 'Escuela de Matemáticas' : configuredName;
+const studentEmail = await getCustomerEmail(Astro.cookies);
+const enrollmentSteps = await getEnrollmentChecklist(env.DB, studentEmail);
 ---
 
-<Layout>
-  {/*<SchoolHomeBanner />*/}
-  <ProductList />
+<Layout title="Aprende matemáticas y lectura" description="Programas de matemáticas y lectura con una ruta clara, contenidos accesibles y acompañamiento para aprender a tu ritmo.">
+  <section aria-labelledby="home-hero-title" 
+    class="relative isolate my-5 overflow-hidden rounded-[2rem] border border-line bg-brand sm:my-8">
+    <!--<div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-brand/15 via-paper to-surface"></div>-->
+    <div aria-hidden="true" class="pointer-events-none absolute -right-16 -top-20 -z-10 h-64 w-64 rounded-full border-[32px] border-brand/10 sm:h-80 sm:w-80"></div>
+    <div class="mx-auto grid max-w-7xl gap-8 px-5 py-12 sm:px-10 sm:py-16 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-14 lg:py-20">
+      <div class="max-w-3xl">
+        <h1 id="home-hero-title" class="mt-3 max-w-3xl text-white font-serif text-4xl leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">Escuela de Matemáticas</h1>
+        <!--<p class="inline-flex items-center gap-2 rounded-full border border-line bg-paper/80 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-muted"><span class="h-2 w-2 rounded-full bg-brand"></span> Escuela de Matemáticas</p>-->
+        <p class="mt-6 text-sm font-semibold tracking-wide text-white sm:text-base">{schoolName}</p>
+        <h3  class="mt-3 max-w-2xl text-white font-serif text-3xl leading-[1.08] tracking-tight sm:text-4xl lg:text-5xl">Las matemáticas y la lectura, a tu ritmo y con sentido.</h3>
+        <p class="mt-5 max-w-2xl leading-7 text-white sm:text-lg sm:leading-8">Aprende paso a paso, comprende las ideas de fondo y construye confianza con programas pensados para acompañarte desde donde estás.</p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <a href="/account/profile"
+            class="inline-flex min-h-14 items-center justify-center rounded-full bg-red-600 px-8 py-4 text-lg font-bold text-white shadow-md transition-all duration-200 hover:bg-red-700 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+              Iniciar proceso de Inscripción
+              <span aria-hidden="true" class="ml-2">↗</span>
+          </a>
+          <a href="#programas" 
+            class="inline-flex min-h-12 
+              items-center justify-center 
+              rounded-full border border-line 
+              bg-azul-cielo-eri px-6 py-3 text-sm font-semibold transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Conocer los programas</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 sm:gap-4 ">
+        <a href="/programas/matematicas" 
+            class="group flex min-h-44 flex-col justify-between 
+            rounded-2xl border 
+            border-line bg-azul-cielo-eri p-5 shadow-sm transition 
+            hover:-translate-y-1 hover:border-brand sm:min-h-52 sm:p-6">
+          <span 
+            class="flex h-11 w-11 items-center 
+              justify-center rounded-xl 
+              bg-brand/10 
+              text-xl text-black" aria-hidden="true">
+            ∑
+          </span>
+          <span>
+            <span class="block text-lg text-black font-semibold tracking-tight">Matemáticas</span>
+            <span class="mt-1 block text-sm leading-5 text-black text-muted">Comprende conceptos y resuelve problemas.</span>
+            <span class="mt-4 inline-flex text-sm font-semibold text-black text-brand">Ver programa →</span>
+          </span>
+        </a>
+        <a href="/programas/lectura" class="group mt-7 flex min-h-44 flex-col justify-between rounded-2xl border border-line bg-azul-cielo-eri p-5 shadow-sm transition hover:-translate-y-1 hover:border-brand sm:mt-10 sm:min-h-52 sm:p-6">
+          <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-xl text-black" aria-hidden="true">Aa</span>
+          <span><span class="block text-lg text-black font-semibold tracking-tight">Lectura</span><span class="mt-1 block text-sm leading-5 text-black text-muted">Lee con atención, interpreta y comunica.</span><span class="mt-4 inline-flex text-sm font-semibold text-black text-brand">Ver programa →</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="my-8"><EnrollmentChecklist steps={enrollmentSteps} /></div>
+
+  <section class="my-8 rounded-2xl border border-line bg-surface p-5 sm:my-10 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7">
+    <div class="max-w-2xl"><p class="text-xs font-bold uppercase tracking-[.16em] text-brand">Escuela en línea</p><h2 class="mt-2 font-serif text-2xl tracking-tight sm:text-3xl">Estudia con una ruta hecha para ti</h2><p class="mt-2 text-sm leading-6 text-muted">Inscríbete, realiza un diagnóstico y recibe un curso de acuerdo con tu nivel. Consulta tus actividades y fechas desde tu espacio académico.</p></div>
+    <div class="mt-4 flex shrink-0 flex-col gap-2 sm:mt-0 sm:min-w-44"><a href="/escuela" class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-on-brand">Conocer la escuela →</a><a href="/escuela/mi-escuela" class="text-center text-sm font-medium text-brand underline underline-offset-4">Ya soy alumno</a></div>
+  </section>
+
+  <section id="programas" class="my-12 sm:my-16">
+    <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div><p class="text-xs font-bold uppercase tracking-[0.18em] text-muted">Explora y aprende</p><h2 class="mt-2 font-serif text-3xl tracking-tight sm:text-4xl">Encuentra tu siguiente paso</h2></div>
+      <a href="/preguntas-frecuentes" class="text-sm font-semibold text-brand hover:underline">¿Tienes dudas? Consulta las preguntas frecuentes →</a>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <a href="/programas/matematicas" 
+        class="rounded-2xl border border-line 
+        bg-azul-cielo-eri p-6 transition 
+        hover:border-brand">
+        <h3 class="text-xl text-black font-semibold">
+          Programa de matemáticas</h3><p class="mt-2 text-sm leading-6 text-muted">Una ruta para desarrollar comprensión, razonamiento y seguridad al resolver problemas.</p></a>
+      <a href="/programas/lectura" 
+        class="rounded-2xl border 
+          border-line bg-azul-cielo-eri p-6 
+          transition hover:border-brand">
+          <h3 class="text-xl text-black font-semibold">Programa de lectura</h3><p class="mt-2 text-sm leading-6 text-muted">Estrategias para comprender textos, identificar ideas y expresarte con claridad.</p></a>
+    </div>
+  </section>
+
+  <section class="my-12 rounded-2xl border border-line px-6 py-8 text-center sm:my-16 sm:px-10 sm:py-10">
+    <h2 class="font-serif text-2xl tracking-tight sm:text-3xl">Da el primer paso para inscribirte</h2>
+    <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base">Sigue la ruta de inscripción y completa cada paso a tu ritmo.</p>
+    <a href="/account/profile" class="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-on-brand transition hover:opacity-90">Iniciar proceso de Inscripción</a>
+  </section>
+
+  <div class="mb-8"><h2 class="mb-5 font-serif text-3xl tracking-tight">Materiales y recursos</h2><ProductList /></div>
 </Layout>

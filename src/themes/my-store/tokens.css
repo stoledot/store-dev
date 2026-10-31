@@ -8,6 +8,8 @@
  * and uses --font-sans / --radius-* as global defaults. See README → Theming.
  */
 @theme {
+  --color-turquesa: #0e7490;
+  --color-azul-cielo-eri:#79F5FC; 
   /* Primary brand — solid buttons, primary actions, focus ring */
   --color-brand: #111827;        /* swap for your brand color */
   --color-brand-hover: #374151;  /* hover shade of the above */

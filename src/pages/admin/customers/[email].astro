@@ -1,74 +1,49 @@
 ---
+export const prerender = false;
 import { env } from 'cloudflare:workers';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { formatPrice, formatDate, getConfig } from '../../../config';
 import { getCustomerOrders, getCustomerSummary } from '../../../features/customers/db';
+import { getProfile, ensureProfile, cleanText } from '../../../features/customers/profiles';
 import { orderReference } from '../../../features/orders/number';
 import { paginate, queryHref } from '../../../pagination';
 import Pagination from '../../../components/Pagination.astro';
-
-const email = Astro.params.email ? decodeURIComponent(Astro.params.email) : '';
-const summary = email ? await getCustomerSummary(env.DB, email) : null;
-
-// Unknown email (no orders) → 404, so the page can't be used to probe addresses.
-if (!summary) {
-  return new Response('Not found', { status: 404 });
+import { isForbiddenFormOrigin } from '../../../features/auth/formOrigin';
+const email = decodeURIComponent(Astro.params.email ?? '').trim().toLowerCase();
+if (!email || email.length>254) return new Response('Correo inválido',{status:400});
+await ensureProfile(env.DB,email);
+let notice='';let error='';
+if(Astro.request.method==='POST'){
+ if(isForbiddenFormOrigin(Astro.request,Astro.url))return new Response('Origen no permitido',{status:403});
+ const f=await Astro.request.formData();
+ const name=cleanText(f.get('full_name'),120),ageRaw=String(f.get('age')??'').trim(),age=ageRaw?Number(ageRaw):null;
+ const status=String(f.get('payment_status')??'unknown');
+ const nextPayment=cleanText(f.get('next_payment_at'),10);
+ if(age!==null&&(!Number.isInteger(age)||age<5||age>120))error='La edad debe estar entre 5 y 120.';
+ else if(nextPayment && !/^\d{4}-\d{2}-\d{2}$/.test(nextPayment))error='La fecha del próximo pago no es válida.';
+ else if(!['unknown','pending','confirmed','overdue','waived'].includes(status))error='Estado de pago inválido.';
+ else{
+  await env.DB.prepare(`UPDATE customer_profiles SET full_name=?,age=?,education_level=?,institution=?,academic_interests=?,academic_goals=?,profile_locked=?,payment_status=?,next_payment_at=?,payment_notes=?,admin_notes=?,updated_at=datetime('now') WHERE email=? COLLATE NOCASE`)
+   .bind(name,age,cleanText(f.get('education_level'),100),cleanText(f.get('institution'),160),cleanText(f.get('academic_interests'),500),cleanText(f.get('academic_goals'),700),f.get('profile_locked')==='on'?1:0,status,nextPayment||null,cleanText(f.get('payment_notes'),1000),cleanText(f.get('admin_notes'),1500),email).run();
+  notice='Perfil y control administrativo guardados.';
+ }
 }
-
-const PAGE_SIZE = 50;
-const { page, offset, totalPages } = paginate(
-  Astro.url.searchParams,
-  summary.orders,
-  PAGE_SIZE,
-);
-const orders = await getCustomerOrders(env.DB, email, PAGE_SIZE, offset);
-const base = `/admin/customers/${encodeURIComponent(email)}`;
-const hrefFor = (p: number) => queryHref(base, { page: p > 1 ? p : undefined });
-const onCfg = getConfig().orderNumber;
-const timeZone = Astro.locals.settings?.timeZone ?? getConfig().timeZone;
+const profile=await getProfile(env.DB,email);const summary=await getCustomerSummary(env.DB,email);
+if(!summary)return new Response('No se encontró el cliente.',{status:404});
+const PAGE_SIZE=50;const {page,offset,totalPages}=paginate(Astro.url.searchParams,summary.orders,PAGE_SIZE);const orders=await getCustomerOrders(env.DB,email,PAGE_SIZE,offset);const base=`/admin/customers/${encodeURIComponent(email)}`;const hrefFor=(p:number)=>queryHref(base,{page:p>1?p:undefined});const onCfg=getConfig().orderNumber;const timeZone=Astro.locals.settings?.timeZone??getConfig().timeZone;
+const unread=await env.DB.prepare("SELECT COUNT(*) AS n FROM customer_messages WHERE customer_email=? COLLATE NOCASE AND sender_role='customer' AND read_at IS NULL").bind(email).first<{n:number}>();
 ---
-
 <AdminLayout title={email} active="customers">
-  <a
-    href="/admin/customers"
-    class="text-xs uppercase tracking-widest text-gray-400 hover:text-brand"
-  >
-    &larr; Back to customers
-  </a>
-  <h1 class="mt-4 mb-2 font-serif text-3xl tracking-tight break-all">{email}</h1>
-  <p class="mb-8 text-sm text-gray-500">
-    {summary.orders} order{summary.orders === 1 ? '' : 's'} · {formatPrice(summary.lifetime_cents)} lifetime
-  </p>
-
-  <table class="admin-table w-full text-left text-sm">
-    <thead>
-      <tr class="border-b border-line text-xs uppercase tracking-widest text-gray-400">
-        <th class="py-3 pr-4 font-normal">Order</th>
-        <th class="py-3 pr-4 font-normal">Total</th>
-        <th class="py-3 pr-4 font-normal">Status</th>
-        <th class="py-3 font-normal">When</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        orders.map((o) => (
-          <tr class="border-b border-line">
-            <td class="py-3 pr-4">
-              <a
-                href={`/admin/orders/${o.public_id}`}
-                class="text-accent tabular-nums hover:underline"
-              >
-                #{orderReference(o.public_id, o.id, onCfg)}
-              </a>
-            </td>
-            <td data-label="Total" class="py-3 pr-4 tabular-nums">{formatPrice(o.amount_total_cents, o.currency)}</td>
-            <td data-label="Status" class="py-3 pr-4">{o.status}</td>
-            <td data-label="When" class="py-3 text-gray-500">{formatDate(o.created_at, undefined, timeZone)}</td>
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
-
-  <Pagination page={page} totalPages={totalPages} hrefFor={hrefFor} />
+<a href="/admin/customers" class="text-xs uppercase tracking-widest text-gray-400 hover:text-brand">← Volver a clientes</a>
+<div class="mt-4 mb-6 flex flex-wrap items-start justify-between gap-3"><div><h1 class="font-serif text-3xl tracking-tight break-all">{profile?.full_name||email}</h1><p class="mt-1 break-all text-sm text-gray-500">{email}</p><p class="mt-2 text-sm text-gray-500">{summary.orders} pedidos · {formatPrice(summary.lifetime_cents)} total neto</p></div><a href={`/admin/messages/${encodeURIComponent(email)}`} class="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white">Abrir chat {unread?.n?`(${unread.n} nuevos)`:''}</a></div>
+{notice&&<p class="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">{notice}</p>}{error&&<p class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+<form method="POST" class="mb-8 rounded-xl border border-line bg-white p-4 sm:p-6"><div class="mb-5"><h2 class="text-lg font-semibold">Perfil del alumno</h2><p class="mt-1 text-sm text-gray-500">Puedes corregir los datos y bloquear la edición por parte del alumno.</p></div><div class="grid gap-4 sm:grid-cols-2">
+<label class="grid gap-1 text-sm font-medium">Nombre completo<input name="full_name" maxlength="120" value={profile?.full_name??''} class="rounded-lg border border-line px-3 py-2.5 font-normal"/></label><label class="grid gap-1 text-sm font-medium">Edad<input name="age" type="number" min="5" max="120" value={profile?.age??''} class="rounded-lg border border-line px-3 py-2.5 font-normal"/></label>
+<label class="grid gap-1 text-sm font-medium">Nivel académico<input name="education_level" maxlength="100" value={profile?.education_level??''} class="rounded-lg border border-line px-3 py-2.5 font-normal"/></label><label class="grid gap-1 text-sm font-medium">Escuela/institución<input name="institution" maxlength="160" value={profile?.institution??''} class="rounded-lg border border-line px-3 py-2.5 font-normal"/></label>
+<label class="grid gap-1 text-sm font-medium sm:col-span-2">Intereses académicos<textarea name="academic_interests" rows="2" maxlength="500" class="rounded-lg border border-line px-3 py-2.5 font-normal">{profile?.academic_interests??''}</textarea></label><label class="grid gap-1 text-sm font-medium sm:col-span-2">Objetivos académicos<textarea name="academic_goals" rows="2" maxlength="700" class="rounded-lg border border-line px-3 py-2.5 font-normal">{profile?.academic_goals??''}</textarea></label>
+<label class="grid gap-1 text-sm font-medium">Estado de pago escolar<select name="payment_status" class="rounded-lg border border-line px-3 py-2.5 font-normal"><option value="unknown" selected={profile?.payment_status==='unknown'}>Sin registrar</option><option value="pending" selected={profile?.payment_status==='pending'}>Pendiente</option><option value="confirmed" selected={profile?.payment_status==='confirmed'}>Confirmado</option><option value="overdue" selected={profile?.payment_status==='overdue'}>Vencido</option><option value="waived" selected={profile?.payment_status==='waived'}>Exento</option></select></label><label class="grid gap-1 text-sm font-medium">Próximo pago<input name="next_payment_at" type="date" value={profile?.next_payment_at??''} class="rounded-lg border border-line px-3 py-2.5 font-normal"/></label>
+<label class="grid gap-1 text-sm font-medium sm:col-span-2">Notas de pago<textarea name="payment_notes" rows="2" maxlength="1000" class="rounded-lg border border-line px-3 py-2.5 font-normal">{profile?.payment_notes??''}</textarea></label><label class="grid gap-1 text-sm font-medium sm:col-span-2">Notas internas (solo administración)<textarea name="admin_notes" rows="3" maxlength="1500" class="rounded-lg border border-line px-3 py-2.5 font-normal">{profile?.admin_notes??''}</textarea></label>
+<label class="flex items-start gap-3 rounded-lg bg-amber-50 p-3 text-sm sm:col-span-2"><input type="checkbox" name="profile_locked" checked={profile?.profile_locked===1} class="mt-1"/><span><strong>Bloquear edición al alumno</strong><span class="mt-1 block text-amber-900">El alumno podrá ver sus datos, pero no editarlos.</span></span></label>
+</div><button class="mt-5 rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white">Guardar datos</button><p class="mt-3 text-xs text-gray-500">El estado de pago de esta pantalla es un control administrativo escolar; no ejecuta cobros ni modifica el estado del proveedor de pagos.</p></form>
+<section><h2 class="mb-3 text-lg font-semibold">Historial de pedidos</h2><div class="overflow-x-auto rounded-xl border border-line bg-white"><table class="admin-table w-full min-w-[34rem] text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase tracking-widest text-gray-400"><th class="py-3 pr-4 font-normal">Pedido</th><th class="py-3 pr-4 font-normal">Total</th><th class="py-3 pr-4 font-normal">Estado</th><th class="py-3 font-normal">Fecha</th></tr></thead><tbody>{orders.map(o=><tr class="border-b border-line"><td class="py-3 pr-4"><a href={`/admin/orders/${o.public_id}`} class="text-accent hover:underline">#{orderReference(o.public_id,o.id,onCfg)}</a></td><td class="py-3 pr-4">{formatPrice(o.amount_total_cents,o.currency)}</td><td class="py-3 pr-4">{o.status}</td><td class="py-3">{formatDate(o.created_at,undefined,timeZone)}</td></tr>)}{!orders.length&&<tr><td colspan="4" class="py-8 text-center text-gray-500">Este usuario todavía no tiene pedidos.</td></tr>}</tbody></table></div><Pagination page={page} totalPages={totalPages} hrefFor={hrefFor}/></section>
 </AdminLayout>

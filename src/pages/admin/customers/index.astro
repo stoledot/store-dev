@@ -29,50 +29,41 @@ const sortHref = (col: string) =>
 const arrow = (col: string) => (sort === col ? (dir === 'asc' ? ' ↑' : ' ↓') : '');
 ---
 
-<AdminLayout title="Customers" active="customers">
-  <h1 class="mb-8 font-serif text-3xl tracking-tight">Customers</h1>
+<AdminLayout title="Alumnos y clientes" active="customers">
+  <h1 class="mb-8 font-serif text-3xl tracking-tight">Alumnos y clientes</h1>
 
   <div class="sm:overflow-x-auto">
     <table class="admin-table w-full text-left text-sm sm:min-w-[40rem]">
     <thead>
       <tr class="border-b border-line text-xs uppercase tracking-widest text-gray-400">
+        <th class="py-3 pr-4 font-normal">Alumno</th>
+        <th class="py-3 pr-4 font-normal">Correo</th>
+        <th class="py-3 pr-4 font-normal"><a href={sortHref('orders')} class="hover:text-brand">Pedidos{arrow('orders')}</a></th>
+        <th class="py-3 pr-4 font-normal">Pago escolar</th>
         <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('email')} class="hover:text-brand">Email{arrow('email')}</a>
+          <a href={sortHref('lifetime')} class="hover:text-brand">Total neto{arrow('lifetime')}</a>
         </th>
-        <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('orders')} class="hover:text-brand">Orders{arrow('orders')}</a>
-        </th>
-        <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('lifetime')} class="hover:text-brand">Lifetime value{arrow('lifetime')}</a>
-        </th>
-        <th class="py-3 font-normal">
-          <a href={sortHref('last')} class="hover:text-brand">Last order{arrow('last')}</a>
-        </th>
+        <th class="py-3 font-normal">Último pedido</th>
       </tr>
     </thead>
     <tbody>
       {
         customers.map((c) => (
           <tr class="border-b border-line">
-            <td class="py-3 pr-4">
-              <a
-                href={`/admin/customers/${encodeURIComponent(c.email)}`}
-                class="text-accent hover:underline"
-              >
-                {c.email}
-              </a>
-            </td>
-            <td data-label="Orders" class="py-3 pr-4 tabular-nums">{c.orders}</td>
+            <td class="py-3 pr-4"><a href={`/admin/customers/${encodeURIComponent(c.email)}`} class="text-accent hover:underline">{c.full_name || 'Sin nombre'}</a>{c.profile_locked ? <span class="ml-2 text-xs text-amber-700">Bloqueado</span> : null}</td>
+            <td class="py-3 pr-4 break-all"><a href={`/admin/customers/${encodeURIComponent(c.email)}`} class="text-accent hover:underline">{c.email}</a></td>
+            <td data-label="Pedidos" class="py-3 pr-4 tabular-nums">{c.orders}</td>
+            <td data-label="Pago escolar" class="py-3 pr-4">{c.payment_status === 'confirmed' ? 'Confirmado' : c.payment_status === 'pending' ? 'Pendiente' : c.payment_status === 'overdue' ? 'Vencido' : c.payment_status === 'waived' ? 'Exento' : 'Sin registrar'}</td>
             <td data-label="Lifetime value" class="py-3 pr-4 tabular-nums">{formatPrice(c.lifetime_cents)}</td>
-            <td data-label="Last order" class="py-3 text-gray-500">{formatDate(c.last_order, { dateStyle: 'medium' }, timeZone)}</td>
+            <td data-label="Last order" class="py-3 text-gray-500">{c.last_order ? formatDate(c.last_order, { dateStyle: 'medium' }, timeZone) : '—'}</td>
           </tr>
         ))
       }
       {
         customers.length === 0 && (
           <tr>
-            <td colspan="4" class="py-8 text-center text-gray-400">
-              No customers yet.
+            <td colspan="6" class="py-8 text-center text-gray-400">
+              Todavía no hay alumnos ni clientes registrados.
             </td>
           </tr>
         )

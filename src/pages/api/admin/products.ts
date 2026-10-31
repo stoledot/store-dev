@@ -24,6 +24,7 @@ import { attachmentActive } from '../../../features/digitalDelivery/rollout.ts';
 import { CACHE_TAG } from '../../../features/cache/tags';
 import { purgeCacheTags } from '../../../features/cache/purge';
 import { setProductConference, getConference } from '../../../features/conferences/db';
+import { setSchoolContentForProduct } from '../../../features/school/texProducts';
 
 export const prerender = false;
 
@@ -41,6 +42,11 @@ export const POST: APIRoute = async ({ request, redirect, locals }) => {
     requireWeight: zonesRequireWeight(shippingFor(locals.settings).config),
   });
   if ('error' in parsed) return redirect(fail(parsed.error), 303);
+  const schoolContentId = String(form.get('school_content_id') ?? '').trim() || null;
+  if (schoolContentId) {
+    const schoolContent = await env.DB.prepare("SELECT id FROM school_courses WHERE id=? AND status<>'archived' AND product_id IS NULL").bind(schoolContentId).first();
+    if (!schoolContent) return redirect(fail('El curso o lectura no existe, está archivado o ya está vinculado a otro producto.'),303);
+  }
 
   let mediaId: number | null = null;
   const file = form.get('image');
@@ -67,6 +73,8 @@ export const POST: APIRoute = async ({ request, redirect, locals }) => {
   // media row is unreferenced until the attach lands, so a concurrent library
   // delete could leave the product pointing at an object that no longer exists.
   const productId = await createProduct(env.DB, { ...parsed.data, image_key: null, slug });
+  try { await setSchoolContentForProduct(env.DB, productId, schoolContentId); } catch (err) { await deleteProduct(env.DB, productId); return redirect(fail(err instanceof Error ? err.message : 'No se pudo vincular el curso.'),303); }
+
   const conferenceRaw = String(form.get('conference_id') ?? '').trim();
   if (conferenceRaw) {
     const conferenceId = Number(conferenceRaw);

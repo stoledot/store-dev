@@ -1,0 +1,12 @@
+Correcciones de errores Astro/TypeScript
+
+Archivos incluidos:
+- src/pages/checkout.astro
+  Corrige el import y las referencias a isPaísCode usando el nombre real exportado: isCountryCode.
+- src/pages/account/courses.astro
+  Restaura el delimitador de apertura del frontmatter Astro y ordena el archivo con tipado explícito para los cursos.
+- src/pages/account/messages.astro
+  Convierte el script del chat a TypeScript explícito, tipa la respuesta de la API y los mensajes, y comprueba los elementos del DOM.
+
+No se incluyen node_modules, .git, archivos .dev.vars ni credenciales.
+No se modificaron migraciones ni datos de la base de datos.

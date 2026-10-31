@@ -9,6 +9,7 @@ import { listConferences, getConferenceForProduct } from '../../../features/conf
 
 const categoryOptions = flattenTree(buildTree(await listCategories(env.DB)));
 const conferenceOptions = await listConferences(env.DB);
+const schoolContentOptions = (await env.DB.prepare("SELECT id,title,status,content_kind,product_id FROM school_courses WHERE status<>'archived' AND product_id IS NULL ORDER BY title COLLATE NOCASE").all<{id:string;title:string;status:string;content_kind:string;product_id:number|null}>()).results ?? [];
 const error = Astro.url.searchParams.get('error');
 const weightUnit = Astro.locals.settings?.weightUnit ?? 'g';
 const weightRequired = zonesRequireWeight(shippingFor(Astro.locals.settings).config);
@@ -25,5 +26,6 @@ const weightRequired = zonesRequireWeight(shippingFor(Astro.locals.settings).con
     weightUnit={weightUnit}
     weightRequired={weightRequired}
     conferenceOptions={conferenceOptions}
+    schoolContentOptions={schoolContentOptions}
   />
 </AdminLayout>

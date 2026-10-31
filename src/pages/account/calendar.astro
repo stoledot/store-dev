@@ -1,0 +1,46 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+if (!(await accountsEnabled())) return Astro.redirect('/',303);
+const email = await getCustomerEmail(Astro.cookies);
+if (!email) return Astro.redirect('/account/login',303);
+const requested = Astro.url.searchParams.get('month') ?? new Date().toISOString().slice(0,7);
+const monthParts = /^(\d{4})-(\d{2})$/.exec(requested);
+const month = monthParts && Number(monthParts[2]) >= 1 && Number(monthParts[2]) <= 12 ? requested : new Date().toISOString().slice(0,7);
+const [year, monthNo] = month.split('-').map(Number);
+const first = new Date(Date.UTC(year,monthNo-1,1));
+const start = new Date(Date.UTC(year,monthNo-1,1-first.getUTCDay()));
+const end = new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),start.getUTCDate()+42));
+const iso = (d:Date)=>d.toISOString().slice(0,10);
+const from=iso(start), to=iso(end);
+const events:Array<{date:string;title:string;type:string;detail?:string}> = [];
+const {results: payments=[]}=await env.DB.prepare(`SELECT title_snapshot,due_at,paid_at,status,amount_cents,currency FROM school_payment_obligations WHERE student_email=? COLLATE NOCASE AND ((substr(due_at,1,10)>=? AND substr(due_at,1,10)<?) OR (paid_at IS NOT NULL AND substr(paid_at,1,10)>=? AND substr(paid_at,1,10)<?))`).bind(email,from,to,from,to).all<{title_snapshot:string;due_at:string;paid_at:string|null;status:string;amount_cents:number;currency:string}>();
+for(const p of payments){events.push({date:p.due_at.slice(0,10),title:`Vence: ${p.title_snapshot}`,type:p.status==='paid'?'payment-paid':'payment-due',detail:new Intl.NumberFormat('es-MX',{style:'currency',currency:p.currency.toUpperCase()}).format(p.amount_cents/100)});if(p.paid_at)events.push({date:p.paid_at.slice(0,10),title:`Pago realizado: ${p.title_snapshot}`,type:'payment-paid'});}
+const {results: assignments=[]}=await env.DB.prepare(`SELECT c.title,a.start_date,a.end_date FROM school_course_assignments a JOIN school_courses c ON c.id=a.course_id WHERE a.student_email=? COLLATE NOCASE AND ((a.start_date>=? AND a.start_date<?) OR (a.end_date>=? AND a.end_date<?))`).bind(email,from,to,from,to).all<{title:string;start_date:string|null;end_date:string|null}>();
+const {results: legacyFees=[]}=await env.DB.prepare(`SELECT fee_type,paid_at,valid_until FROM school_fee_payments WHERE student_email=? COLLATE NOCASE AND obligation_id IS NULL AND ((substr(paid_at,1,10)>=? AND substr(paid_at,1,10)<?) OR (valid_until>=? AND valid_until<?))`).bind(email,from,to,from,to).all<{fee_type:string;paid_at:string;valid_until:string}>();
+for(const f of legacyFees){events.push({date:f.paid_at.slice(0,10),title:`Pago registrado: ${f.fee_type==='enrollment'?'Inscripción':'Mensualidad'}`,type:'payment-paid'});events.push({date:f.valid_until.slice(0,10),title:`Fin de vigencia: ${f.fee_type==='enrollment'?'Inscripción':'Mensualidad'}`,type:'period-end'});}
+for(const a of assignments){if(a.start_date)events.push({date:a.start_date.slice(0,10),title:`Inicio de curso: ${a.title}`,type:'course-start'});if(a.end_date)events.push({date:a.end_date.slice(0,10),title:`Término de curso: ${a.title}`,type:'course-end'});}
+const {results: schoolEvents=[]}=await env.DB.prepare(`SELECT title,description,event_date,event_type FROM school_calendar_events WHERE student_email=? COLLATE NOCASE AND event_date>=? AND event_date<?`).bind(email,from,to).all<{title:string;description:string;event_date:string;event_type:string}>();
+for(const e of schoolEvents)events.push({date:e.event_date.slice(0,10),title:e.title,type:e.event_type,detail:e.description});
+const byDate=new Map<string,typeof events>();for(const e of events){const a=byDate.get(e.date)??[];a.push(e);byDate.set(e.date,a);}
+const days=Array.from({length:42},(_,i)=>{const d=new Date(start);d.setUTCDate(start.getUTCDate()+i);const key=iso(d);return {key,day:d.getUTCDate(),inMonth:d.getUTCMonth()===monthNo-1,events:byDate.get(key)??[]};});
+const prevDate=new Date(Date.UTC(year,monthNo-2,1));const nextDate=new Date(Date.UTC(year,monthNo,1));
+const prev=iso(prevDate).slice(0,7),next=iso(nextDate).slice(0,7);
+const monthLabel=new Intl.DateTimeFormat('es-MX',{month:'long',year:'numeric',timeZone:'UTC'}).format(first);
+const color=(t:string)=>t.includes('payment')?'bg-red-100 text-red-800':(t==='course-start'||t==='start')?'bg-teal-100 text-teal-800':(t==='course-end'||t==='end')?'bg-violet-100 text-violet-800':(t==='period-end'||t==='evaluation')?'bg-amber-100 text-amber-800':'bg-sky-100 text-sky-800';
+---
+<Layout title="Calendario escolar" description="Tus cursos, pagos y fechas importantes.">
+  <main class="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
+    <a href="/account" class="text-sm font-medium text-muted hover:text-ink">← Mi cuenta</a>
+    <header class="mt-5 mb-6 flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Organiza tu aprendizaje</p><h1 class="mt-2 text-3xl font-semibold tracking-tight">Calendario escolar</h1><p class="mt-2 text-sm text-muted">Consulta fechas de cursos, pagos y actividades.</p></div><div class="flex gap-2"><a href={`/account/calendar?month=${prev}`} class="rounded-full border border-line px-4 py-2 text-sm">← Anterior</a><a href={`/account/calendar?month=${next}`} class="rounded-full border border-line px-4 py-2 text-sm">Siguiente →</a></div></header>
+    <section class="overflow-hidden rounded-2xl border border-line bg-surface">
+      <div class="border-b border-line px-5 py-4"><h2 class="text-lg font-semibold capitalize">{monthLabel}</h2></div>
+      <div class="grid grid-cols-7 border-b border-line bg-background text-center text-xs font-semibold text-muted">{['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'].map(d=><div class="py-3">{d}</div>)}</div>
+      <div class="grid grid-cols-7">{days.map(day=><div class={`min-h-28 border-b border-r border-line p-1.5 sm:min-h-36 sm:p-2 ${day.inMonth?'':'bg-background/60'}`}><div class={`mb-1 text-xs font-semibold ${day.inMonth?'text-ink':'text-muted/50'}`}>{day.day}</div><div class="space-y-1">{day.events.map(ev=><div class={`rounded-md px-1.5 py-1 text-[10px] leading-tight sm:text-xs ${color(ev.type)}`} title={ev.detail??ev.title}><span class="block font-semibold">{ev.title}</span>{ev.detail&&<span class="hidden sm:block">{ev.detail}</span>}</div>)}</div></div>)}</div>
+    </section>
+    <div class="mt-4 flex flex-wrap gap-3 text-xs text-muted"><span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-red-500"></i>Pagos</span><span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-teal-500"></i>Inicio de curso</span><span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-violet-500"></i>Término de curso</span><span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-amber-500"></i>Fin de vigencia</span><span><i class="mr-1 inline-block h-2.5 w-2.5 rounded-sm bg-sky-500"></i>Actividades</span></div>
+    <div class="mt-6 flex gap-3"><a href="/account/payments" class="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand">Ver mis pagos</a><a href="/account/courses" class="rounded-full border border-line px-5 py-2.5 text-sm font-semibold">Ver mis cursos</a></div>
+  </main>
+</Layout>

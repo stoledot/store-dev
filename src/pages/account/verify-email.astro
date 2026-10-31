@@ -1,0 +1,42 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import { accountsEnabled, getCustomerEmail, setCustomerSession } from '../../features/auth/customer';
+import { verifyToken } from '../../features/auth/token';
+import { emailAlreadyUsed, normalizeEmail } from '../../features/customers/profiles';
+if (!(await accountsEnabled())) return Astro.redirect('/',303);
+const current = await getCustomerEmail(Astro.cookies);
+const payload = await verifyToken(Astro.url.searchParams.get('token'), env.AUTH_SECRET!, Date.now()/1000);
+if (!payload || !payload.startsWith('email-change:')) return Astro.redirect('/account/profile?error=invalid-link',303);
+const parts = payload.slice('email-change:'.length).split(':');
+if (parts.length !== 2) return Astro.redirect('/account/profile?error=invalid-link',303);
+let oldEmail = '', newEmail = '';
+try { 
+  oldEmail = decodeURIComponent(parts[0]); 
+  newEmail = normalizeEmail(decodeURIComponent(parts[1])); 
+} 
+catch { 
+  return Astro.redirect('/account/profile?error=invalid-link',303); 
+}
+if (current && normalizeEmail(current) !== normalizeEmail(oldEmail)) return Astro.redirect('/account/profile?error=wrong-session',303);
+if (await emailAlreadyUsed(env.DB,newEmail,oldEmail)) return Astro.redirect('/account/profile?error=email-used',303);
+const now = new Date().toISOString();
+// Move account-linked records only after proof of control of the new address.
+const statements = [
+  env.DB.prepare('UPDATE customer_profiles SET email=?,updated_at=datetime(\'now\') WHERE email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('INSERT INTO customer_profiles(email) VALUES (?) ON CONFLICT(email) DO NOTHING').bind(newEmail),
+  env.DB.prepare('UPDATE customer_email_aliases SET current_email=? WHERE current_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('INSERT INTO customer_email_aliases(old_email,current_email,verified_at) VALUES (?,?,?) ON CONFLICT(old_email) DO UPDATE SET current_email=excluded.current_email,verified_at=excluded.verified_at').bind(oldEmail,newEmail,now),
+  env.DB.prepare('UPDATE orders SET email=? WHERE email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE customer_messages SET customer_email=? WHERE customer_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_course_progress SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_lesson_progress SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_course_assignments SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_student_intake SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_fee_payments SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_subscriptions SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+];
+try { await env.DB.batch(statements); } catch (err) { console.error('Email change failed',err); return Astro.redirect('/account/profile?error=update-failed',303); }
+await setCustomerSession(Astro.cookies,newEmail,Astro.url.protocol==='https:');
+return Astro.redirect('/account/profile?status=email-changed',303);
+---

@@ -53,6 +53,7 @@ export function createStripeProvider(
     async createCheckout(params: CreateCheckoutParams): Promise<CheckoutResult> {
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        ...(params.customerEmail && { customer_email: params.customerEmail }),
         // Keep the hosted session within the inventory reservation window.
         expires_at: Math.floor(Date.now() / 1000) + STRIPE_CHECKOUT_TTL_SECONDS,
         line_items: params.lineItems.map((li) => ({
@@ -110,7 +111,7 @@ export function createStripeProvider(
       if (!session.url) {
         throw new Error('Stripe did not return a checkout URL');
       }
-      return { url: session.url };
+      return { url: session.url, providerSessionId: session.id };
     },
 
     async verifyWebhook(payload: string, headers: Headers): Promise<WebhookResult> {
@@ -128,9 +129,12 @@ export function createStripeProvider(
         event.type === 'checkout.session.expired' ||
         event.type === 'checkout.session.async_payment_failed'
       ) {
+        const expired = event.data.object;
         return {
           type: event.type,
-          releaseReservationId: event.data.object.metadata?.reservation_id ?? undefined,
+          releaseReservationId: expired.metadata?.reservation_id ?? undefined,
+          schoolObligationId: expired.metadata?.school_obligation_id ?? undefined,
+          schoolCheckoutSessionId: expired.id,
         };
       }
 
@@ -160,7 +164,7 @@ export function createStripeProvider(
         if (raw) {
           try {
             const parsed = JSON.parse(raw) as Array<{
-              id: number;
+              id: number | null;
               q: number;
               n: string;
               p: number;
@@ -248,7 +252,8 @@ export function createStripeProvider(
             providerPaymentId: paymentIntentId,
             publicId: session.metadata?.public_id ?? undefined,
             reservationId: session.metadata?.reservation_id ?? undefined,
-            email: session.customer_details?.email ?? null,
+            schoolPaymentObligationId: session.metadata?.school_obligation_id ?? undefined,
+            email: session.metadata?.school_student_email ?? session.customer_details?.email ?? null,
             amountTotalCents: session.amount_total ?? 0,
             shippingCents,
             shippingLabel,

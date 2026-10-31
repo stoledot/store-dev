@@ -1,0 +1,10 @@
+---
+const links = [
+  { href: '/terminos-y-condiciones', label: 'Términos y condiciones' },
+  { href: '/privacidad', label: 'Aviso de privacidad' },
+  { href: '/cookies', label: 'Política de cookies' },
+];
+---
+<nav aria-label="Información legal" class="flex flex-wrap items-center gap-x-5 gap-y-3">
+  {links.map((link) => <a href={link.href} class="transition hover:text-brand">{link.label}</a>)}
+</nav>

@@ -1,0 +1,19 @@
+---
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { getCustomerEmail } from '../../features/auth/customer';
+const studentEmail = await getCustomerEmail(Astro.cookies);
+if (studentEmail) await env.DB.prepare(`INSERT INTO school_program_views (student_email,program_slug) VALUES (?,?) ON CONFLICT(student_email,program_slug) DO UPDATE SET last_viewed_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')`).bind(studentEmail, 'matematicas').run();
+---
+<Layout title="Programa de matemáticas" description="Programa de matemáticas para desarrollar comprensión, razonamiento y confianza al resolver problemas.">
+  <article class="mx-auto max-w-4xl py-8 sm:py-12">
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand">Nuestros programas</p>
+    <h1 class="mt-3 font-serif text-4xl tracking-tight sm:text-5xl">Programa de matemáticas</h1>
+    <p class="mt-5 max-w-3xl text-lg leading-8 text-muted">Aprende a comprender las ideas matemáticas, no solo a memorizar procedimientos. Avanza desde tus conocimientos actuales con explicaciones claras, práctica y actividades que fortalecen tu razonamiento.</p>
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      <section class="rounded-2xl border border-line bg-surface p-5"><h2 class="text-lg font-semibold">¿Qué puedes desarrollar?</h2><ul class="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-muted"><li>Comprensión de conceptos y lenguaje matemático.</li><li>Estrategias para resolver problemas paso a paso.</li><li>Confianza para explicar cómo llegaste a una respuesta.</li><li>Hábitos de estudio y práctica autónoma.</li></ul></section>
+      <section class="rounded-2xl border border-line bg-surface p-5"><h2 class="text-lg font-semibold">¿Cómo se aprende?</h2><ul class="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-muted"><li>Lecturas y ejemplos explicados.</li><li>Ejercicios con dificultad progresiva.</li><li>Actividades secuenciales con seguimiento.</li><li>Retroalimentación cuando el programa la incluye.</li></ul></section>
+    </div>
+    <section class="mt-8 rounded-2xl border border-line p-6 sm:p-8"><h2 class="font-serif text-2xl">Empieza desde donde estás</h2><p class="mt-2 text-sm leading-6 text-muted">Revisa el programa y, cuando estés listo, inicia tu proceso de inscripción para elegir una ruta adecuada.</p><div class="mt-5 flex flex-col gap-3 sm:flex-row"><a href="/account/profile" class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-on-brand">Iniciar proceso de Inscripción</a><a href="/escuela/diagnostico" class="inline-flex min-h-11 items-center justify-center rounded-full border border-line px-5 py-3 text-sm font-semibold hover:border-brand">Explorar diagnóstico</a></div></section>
+  </article>
+</Layout>

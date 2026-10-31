@@ -42,7 +42,7 @@ const { model } = Astro.props;
 }
 
 <header class="sticky top-0 z-20 border-b border-line bg-paper/85 backdrop-blur">
-  <div class="mx-auto flex max-w-6xl items-center gap-6 px-6 py-5">
+  <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 sm:py-5">
     <a href="/" aria-label={model.storeName} class="font-serif text-2xl tracking-tight">
       {
         model.logo ? (
@@ -67,12 +67,12 @@ const { model } = Astro.props;
         shrink stops at this level and the row grows past the viewport —
         putting min-w-0 only on the links themselves is not enough. */}
     <nav
-      aria-label="Primary"
+      aria-label="Navegación principal"
       class="ml-auto flex min-w-0 items-center gap-4 text-xs uppercase tracking-widest text-muted sm:gap-6"
     >
       <StoreNav links={model.headerLinks} />
       {/* Search input is desktop-only; give mobile a link to the search page. */}
-      <a href={model.search.action} class="hover:text-brand sm:hidden">Search</a>
+      <a href={model.search.action} class="hover:text-brand sm:hidden">Buscar</a>
       {model.cart.enabled && <StoreCartControl href={model.cart.href} />}
       {model.account.enabled && <StoreAccountControl href={model.account.href} />}
     </nav>

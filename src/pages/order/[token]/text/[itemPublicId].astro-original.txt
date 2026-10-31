@@ -1,0 +1,43 @@
+---
+import { env } from 'cloudflare:workers';
+import Layout from '../../../../layouts/Layout.astro';
+import { getOrderByPublicId, listOrderItems } from '../../../../features/orders/db';
+import { isLegacyPublicId } from '../../../../features/ids/publicId.ts';
+import { isAccessToken } from '../../../../features/ids/token.ts';
+import { resolveAccessToken } from '../../../../features/orders/guestAccess.ts';
+import { renderMathText } from '../../../../features/mathTexts/render.ts';
+
+const { token, itemPublicId } = Astro.params;
+let order = null;
+if (token && isAccessToken(token)) {
+  const access = await resolveAccessToken(env.DB, token);
+  order = access ? await getOrderByPublicId(env.DB, access.order_public_id) : null;
+} else if (token && isLegacyPublicId(token)) {
+  order = await getOrderByPublicId(env.DB, token);
+}
+Astro.response.headers.set('cache-control', 'private, no-store');
+Astro.response.headers.set('referrer-policy', 'no-referrer');
+if (!order || order.status !== 'paid' || order.refunded_cents >= order.amount_total_cents) return new Response('Not found', { status: 404 });
+const items = await listOrderItems(env.DB, order.id);
+const item = items.find((it) => it.public_id === itemPublicId && it.math_text_source && it.math_text_title);
+if (!item) return new Response('Not found', { status: 404 });
+const sections = renderMathText(item.math_text_source!);
+---
+<Layout title={item.math_text_title ?? 'Lectura matemática'}>
+  <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <a href={`/order/${token}`} class="text-sm text-muted underline">← Volver a mi pedido</a>
+    <header class="my-7 border-b border-line pb-5"><p class="text-xs uppercase tracking-widest text-muted">Biblioteca de lectura</p><h1 class="mt-2 font-serif text-3xl tracking-tight">{item.math_text_title}</h1><p class="mt-2 text-sm text-muted">Contenido adquirido en el pedido. Esta copia permanece disponible aunque el producto cambie.</p></header>
+    <div class="grid gap-8 md:grid-cols-[220px_minmax(0,1fr)]">
+      <nav class="h-fit rounded-lg border border-line p-4 md:sticky md:top-6"><h2 class="mb-3 text-sm font-semibold">Contenido</h2><ol class="space-y-2 text-sm">{sections.map(s => <li style={`padding-left:${Math.max(0,s.level-1)*8}px`}><a class="text-brand hover:underline" href={`#${s.id}`}>{s.title}</a></li>)}</ol></nav>
+      <article class="min-w-0 space-y-8" id="math-reader">{sections.map(s => <section id={s.id} class="scroll-mt-6"><h2 class="mb-4 font-serif text-2xl">{s.title}</h2><div class="math-content" set:html={s.html}></div></section>)}</article>
+    </div>
+  </main>
+  <style>
+    .math-content { line-height: 1.85; overflow-wrap: anywhere; }
+    .math-content :global(p) { margin: 0 0 1rem; }
+    .math-content :global(ul), .math-content :global(ol) { margin: .8rem 0 1.2rem 1.5rem; list-style: revert; }
+    .math-content :global(.math-display) { overflow-x: auto; margin: 1.2rem 0; padding: .7rem; text-align: center; }
+    .math-content :global(strong) { font-weight: 650; }
+  </style>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</Layout>

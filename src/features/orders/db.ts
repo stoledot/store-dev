@@ -30,6 +30,7 @@ export interface Order {
   status: string; // payment status (e.g. 'paid' | 'refunded')
   payment_method: string | null; // 'stripe' | 'lightning' | 'opennode' (NULL = legacy/default)
   provider_payment_id: string | null; // Stripe PaymentIntent (NULL = pre-0025 order)
+  school_payment_obligation_id?: string | null;
   provider_refunded_cents: number; // absolute total confirmed by the provider
   external_refunded_cents: number; // additive total recorded by hand
   refund_review_reason: string | null; // active review = reason set, reviewed_at NULL
@@ -59,6 +60,7 @@ export interface OrderItemInput {
   fileName?: string | null;
   fileMime?: string | null;
   fileSizeBytes?: number | null;
+  mathTextId?: number | null;
 }
 
 /** A persisted order_items row. */
@@ -76,6 +78,9 @@ export interface OrderItem {
   file_mime: string | null;
   file_size_bytes: number | null;
   downloads: number;
+  math_text_id: number | null;
+  math_text_title: string | null;
+  math_text_source: string | null;
 }
 
 export interface InventoryException {
@@ -176,6 +181,8 @@ export interface PaidOrderInput {
    * session — so without this a charge.refunded can't find its order.
    */
   providerPaymentId?: string | null;
+  /** Private school payment obligation carried by a signed provider webhook. */
+  schoolPaymentObligationId?: string | null;
   items?: OrderItemInput[];
   /**
    * pending_payments row to mark settled in the same batch as the order insert
@@ -487,13 +494,14 @@ export async function recordPaidOrder(
     // Stripe PaymentIntent. Refund webhooks identify the charge and its payment
     // but not the session, so this is what charge.refunded resolves an order by.
     o.providerPaymentId ?? null,
+    o.schoolPaymentObligationId ?? null,
   ] as const;
   const settlementStatuses = "('active', 'payment_pending', 'expired', 'failed')";
   const insertOrder = o.reservationId
     ? db
         .prepare(
-          `INSERT INTO orders (provider_session_id, public_id, email, amount_total_cents, shipping_cents, shipping_label, shipping_weight_grams, delivery_method, discount_cents, tax_cents, currency, ship_address, status, payment_method, settlement_token, provider_payment_id)
-           SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?, NULL, ?
+          `INSERT INTO orders (provider_session_id, public_id, email, amount_total_cents, shipping_cents, shipping_label, shipping_weight_grams, delivery_method, discount_cents, tax_cents, currency, ship_address, status, payment_method, settlement_token, provider_payment_id, school_payment_obligation_id)
+           SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?, NULL, ?, ?
             WHERE EXISTS (
               SELECT 1 FROM checkout_reservations
                WHERE public_id = ? AND status IN ${settlementStatuses}
@@ -504,8 +512,8 @@ export async function recordPaidOrder(
         .bind(...orderValues, o.reservationId)
     : db
         .prepare(
-          `INSERT INTO orders (provider_session_id, public_id, email, amount_total_cents, shipping_cents, shipping_label, shipping_weight_grams, delivery_method, discount_cents, tax_cents, currency, ship_address, status, payment_method, settlement_token, provider_payment_id)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?, NULL, ?)
+          `INSERT INTO orders (provider_session_id, public_id, email, amount_total_cents, shipping_cents, shipping_label, shipping_weight_grams, delivery_method, discount_cents, tax_cents, currency, ship_address, status, payment_method, settlement_token, provider_payment_id, school_payment_obligation_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'paid', ?, NULL, ?, ?)
            ON CONFLICT(provider_session_id) DO NOTHING
            RETURNING id`,
         )
@@ -581,9 +589,14 @@ export async function recordPaidOrder(
         .prepare(
           `INSERT INTO order_items
              (order_id, product_id, variant_id, name, price_cents, quantity,
-              public_id, file_key, file_name, file_mime, file_size_bytes)
-           SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? FROM orders
-            WHERE provider_session_id = ? AND settlement_token = ?`,
+              public_id, file_key, file_name, file_mime, file_size_bytes,
+              math_text_id, math_text_title, math_text_source)
+           SELECT o.id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                  mt.id, mt.title, mt.source_tex
+             FROM orders o
+             LEFT JOIN products p ON p.id = ?
+             LEFT JOIN math_texts mt ON mt.id = p.math_text_id
+            WHERE o.provider_session_id = ? AND o.settlement_token = ?`,
         )
         .bind(
           it.productId,
@@ -596,6 +609,7 @@ export async function recordPaidOrder(
           it.fileName ?? null,
           it.fileMime ?? null,
           it.fileSizeBytes ?? null,
+          it.productId,
           o.providerSessionId,
           settlementToken,
         ),

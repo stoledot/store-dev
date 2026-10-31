@@ -1,5 +1,6 @@
 ---
 import type { StorefrontShellModel } from '../../features/storefront/models';
+import StoreLegalLinks from '../../components/StoreLegalLinks.astro';
 
 /**
  * STORE-OWNED. Edit freely — this file belongs to your store.
@@ -31,5 +32,6 @@ const { model } = Astro.props;
         </nav>
       )
     }
+    <StoreLegalLinks />
   </div>
 </footer>

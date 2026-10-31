@@ -42,12 +42,13 @@ export function isValidEmail(email: string): boolean {
  * record to enumerate). In dev the link is also logged so you can test without
  * email delivery.
  */
-export async function requestLogin(email: string, origin: string): Promise<void> {
+export async function requestLogin(email: string, origin: string, returnTo = '/account'): Promise<void> {
   const secret = env.AUTH_SECRET;
   if (!secret) return;
   const addr = normalize(email);
   const token = await signToken(addr, secret, MAGIC_TTL, now());
-  const link = `${origin}/account/verify?token=${encodeURIComponent(token)}`;
+  const safeReturnTo = ['/account/profile', '/escuela/diagnostico'].includes(returnTo) ? returnTo : '/account';
+  const link = `${origin}/account/verify?token=${encodeURIComponent(token)}&next=${encodeURIComponent(safeReturnTo)}`;
 
   if (import.meta.env.DEV) console.log(`[magic-link] ${addr} → ${link}`);
 

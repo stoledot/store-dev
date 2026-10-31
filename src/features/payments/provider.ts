@@ -34,6 +34,8 @@ export interface CreateCheckoutParams {
   cancelUrl: string;
   /** Small opaque values echoed back on the webhook (provider limits apply). */
   metadata?: Record<string, string>;
+  /** Prefill the hosted checkout with the authenticated student email. */
+  customerEmail?: string;
   /**
    * Guest access token for this checkout's /pay and /order capability URLs.
    * Allowlisted URL positions ONLY (self-rendered pay pages, hosted success_url)
@@ -75,6 +77,8 @@ export interface CreateCheckoutParams {
 }
 
 export interface CheckoutResult {
+  /** Provider-side session identifier, when the adapter exposes one. */
+  providerSessionId?: string;
   /** Hosted checkout URL to redirect the customer to (or, for Lightning, the
    *  self-rendered /pay page). Always present — the human fallback. */
   url: string;
@@ -103,6 +107,9 @@ export interface WebhookResult {
   pendingReservationId?: string;
   /** Pending-payment row to mark settled only after the paid order commits. */
   settlePendingPaymentId?: string;
+  /** School obligation checkout expired/failed; used to release its checkout lock. */
+  schoolObligationId?: string;
+  schoolCheckoutSessionId?: string;
   /** Present only when the event represents a completed, paid checkout. */
   order?: PaidOrderInput;
   /** Present only when the event reports a refund made at the provider. */

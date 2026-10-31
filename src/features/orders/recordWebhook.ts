@@ -34,6 +34,70 @@ import { purgeStockProductCache } from '../cache/purge';
  * answer (the provider webhook routes, whose retries are the safety net) simply
  * don't pass it.
  */
+async function settleSchoolObligation(
+  paidOrder: NonNullable<WebhookResult['order']>,
+  orderId: number,
+): Promise<void> {
+  const obligationId = paidOrder.schoolPaymentObligationId;
+  if (!obligationId) return;
+  const updated = await env.DB.prepare(`
+    UPDATE school_payment_obligations
+       SET status='paid', order_id=?, paid_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+           checkout_lock_token=NULL, checkout_locked_at=NULL, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+     WHERE id=? AND student_email=? COLLATE NOCASE AND status='pending'
+       AND amount_cents=? AND lower(currency)=lower(?) AND checkout_session_id=?
+  `).bind(orderId, obligationId, paidOrder.email ?? '', paidOrder.amountTotalCents, paidOrder.currency, paidOrder.providerSessionId).run();
+  if ((updated.meta?.changes ?? 0) === 0) {
+    const existing = await env.DB.prepare(`SELECT status,order_id FROM school_payment_obligations WHERE id=?`).bind(obligationId).first<{status:string;order_id:number|null}>();
+    if (!(existing?.status === 'paid' && existing.order_id === orderId)) {
+      // Do not silently attach a mismatched, cancelled, or stale checkout.
+      console.error(`Paid school obligation ${obligationId} could not be matched to order ${orderId}; manual reconciliation required.`);
+      return;
+    }
+  }
+
+  // Mirror enrollment/monthly payments into the existing school access ledger.
+  // This keeps the enrollment checklist and period-based access rules in sync.
+  const obligation = await env.DB.prepare(`
+    SELECT student_email,fee_type,validity_months,amount_cents,currency,title_snapshot
+      FROM school_payment_obligations WHERE id=? AND status='paid' AND order_id=?
+  `).bind(obligationId, orderId).first<{
+    student_email:string;fee_type:string;validity_months:number;amount_cents:number;currency:string;title_snapshot:string;
+  }>();
+  if (!obligation || !['enrollment','monthly'].includes(obligation.fee_type)) return;
+  const feeId = crypto.randomUUID();
+  const validMonths = Math.max(1, Math.min(36, Number(obligation.validity_months) || 1));
+  const statements = [env.DB.prepare(`
+    INSERT INTO school_fee_payments
+      (id,student_email,fee_type,amount_cents,currency,order_id,paid_at,valid_until,recorded_by,note,obligation_id)
+    VALUES (?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),date('now','+' || ? || ' months'),'stripe',?,?)
+    ON CONFLICT(obligation_id) DO NOTHING
+  `).bind(feeId,obligation.student_email,obligation.fee_type,obligation.amount_cents,obligation.currency,orderId,validMonths,`Pago en línea: ${obligation.title_snapshot}`,obligationId)];
+  if (obligation.fee_type === 'monthly') {
+    // This condition is true only until the period for THIS fee row is created.
+    // On webhook retries the period already exists, so the active period is not
+    // incorrectly marked completed a second time.
+    statements.push(env.DB.prepare(`
+      UPDATE school_periods SET status='completed'
+       WHERE student_email=? COLLATE NOCASE AND status='active'
+         AND EXISTS (SELECT 1 FROM school_fee_payments fp WHERE fp.obligation_id=?
+                      AND NOT EXISTS (SELECT 1 FROM school_periods sp WHERE sp.fee_payment_id=fp.id))
+    `).bind(obligation.student_email,obligationId));
+    statements.push(env.DB.prepare(`
+      INSERT INTO school_periods(id,student_email,period_no,fee_payment_id,status,starts_on,ends_on)
+      SELECT ?,fp.student_email,(SELECT COALESCE(MAX(period_no),0)+1 FROM school_periods WHERE student_email=fp.student_email COLLATE NOCASE),fp.id,'active',date('now'),fp.valid_until
+        FROM school_fee_payments fp
+       WHERE fp.obligation_id=? AND NOT EXISTS (SELECT 1 FROM school_periods sp WHERE sp.fee_payment_id=fp.id)
+    `).bind(crypto.randomUUID(),obligationId));
+  }
+  statements.push(env.DB.prepare(`
+    INSERT INTO school_notifications(id,student_email,title,body,href)
+    SELECT ?,?,?,?,'/account/payments'
+     WHERE NOT EXISTS (SELECT 1 FROM school_notifications WHERE student_email=? COLLATE NOCASE AND title='Pago confirmado' AND body=?)
+  `).bind(crypto.randomUUID(),obligation.student_email,'Pago confirmado',`${obligation.title_snapshot} fue pagado correctamente.`,obligation.student_email,`${obligation.title_snapshot} fue pagado correctamente.`));
+  await env.DB.batch(statements);
+}
+
 export async function recordPaidWebhookOrder(
   result: WebhookResult,
   origin: string,
@@ -56,6 +120,15 @@ export async function recordPaidWebhookOrder(
   }
   if (result.pendingReservationId) {
     await markInventoryReservationPaymentPending(env.DB, result.pendingReservationId);
+  }
+
+  // A signed Stripe expiry/failure event releases the private school checkout lock.
+  if (result.schoolObligationId && result.schoolCheckoutSessionId && !result.order) {
+    await env.DB.prepare(`UPDATE school_payment_obligations
+      SET checkout_lock_token=NULL, checkout_locked_at=NULL, checkout_session_id=NULL,
+          updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
+      WHERE id=? AND checkout_session_id=? AND status='pending'`)
+      .bind(result.schoolObligationId, result.schoolCheckoutSessionId).run();
   }
 
   // A refund reported by the provider. persistRefundEvent is deliberately NOT
@@ -127,6 +200,7 @@ export async function recordPaidWebhookOrder(
   if (!orderId) {
     const existing = await getOrderByProviderSessionId(env.DB, paidOrder.providerSessionId);
     if (existing) {
+      await settleSchoolObligation(paidOrder, existing.id);
       await markPending();
       // The redelivery IS the safety net: if the first delivery recorded the
       // order but died before its emails went out, this retry finishes them.
@@ -136,6 +210,8 @@ export async function recordPaidWebhookOrder(
     }
     throw new Error(`Could not settle inventory reservation ${paidOrder.reservationId ?? 'legacy'}.`);
   }
+  await settleSchoolObligation(paidOrder, orderId);
+
   // Orders built from a pending payment settle it inside the batch above
   // (settlePaymentHash); the separate round trip is only for results that
   // carry a settle id without one (none today — belt and braces).

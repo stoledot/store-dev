@@ -6,6 +6,7 @@ import { formatWeightValue, type WeightUnit } from '../shipping/weight';
 import { attachmentActive } from '../digitalDelivery/rollout.ts';
 
 interface ConferenceOption { id: number; title: string; status: string }
+interface SchoolContentOption { id: string; title: string; status: string; content_kind: string; product_id: number | null }
 
 interface Props {
   action: string;
@@ -28,6 +29,8 @@ interface Props {
   weightRequired?: boolean;
   conferenceOptions?: ConferenceOption[];
   selectedConferenceId?: number | null;
+  schoolContentOptions?: SchoolContentOption[];
+  selectedSchoolContentId?: string | null;
 }
 
 const {
@@ -43,6 +46,8 @@ const {
   weightRequired = false,
   conferenceOptions = [],
   selectedConferenceId = null,
+  schoolContentOptions = [],
+  selectedSchoolContentId = null,
 } = Astro.props;
 const selected = new Set(selectedCategoryIds);
 // New products default to the store currency; edits keep their own.
@@ -151,6 +156,16 @@ const inputClass =
       {conferenceOptions.map((conference) => <option value={conference.id} selected={selectedConferenceId === conference.id}>{conference.title} ({conference.status})</option>)}
     </select>
     <p class="mt-1 text-xs text-muted">Cuando el pago se confirme, el comprador se inscribirá en esta conferencia y recibirá un correo con su clave personal y los enlaces, horarios y claves de cada sesión. Crea y publica la conferencia primero en Admin → Conferencias Zoom.</p>
+  </fieldset>
+
+  <fieldset class="rounded-md border border-line p-4">
+    <legend class="px-1 text-sm font-medium">Curso o lectura matemática (opcional)</legend>
+    <label class="block text-sm font-medium" for="school_content_id">Contenido que se desbloquea al pagar</label>
+    <select id="school_content_id" name="school_content_id" class={inputClass}>
+      <option value="">Sin curso ni lectura vinculados</option>
+      {schoolContentOptions.map((item) => <option value={item.id} selected={selectedSchoolContentId === item.id}>{item.content_kind === 'reading' ? 'Lectura' : 'Curso'} · {item.title} ({item.status})</option>)}
+    </select>
+    <p class="mt-1 text-xs text-muted">Crea primero el curso o la lectura en Admin → Escuela → Cursos y lecturas desde .tex. El acceso se activa al quedar pagado el pedido.</p>
   </fieldset>
 
   <fieldset class="rounded-md border border-line p-4">

@@ -1,0 +1,92 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+
+if (!(await accountsEnabled())) return Astro.redirect('/', 303);
+const email = await getCustomerEmail(Astro.cookies);
+if (!email) return Astro.redirect('/account/login', 303);
+
+const { results: rows = [] } = await env.DB.prepare(`
+  SELECT id, title_snapshot, description_snapshot, amount_cents, currency,
+         due_at, available_at, status, paid_at, order_id, notes, checkout_locked_at
+    FROM school_payment_obligations
+   WHERE student_email = ? COLLATE NOCASE
+   ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'paid' THEN 1 ELSE 2 END,
+            due_at ASC, created_at DESC
+`).bind(email).all<{
+  id:string; title_snapshot:string; description_snapshot:string; amount_cents:number; currency:string;
+  due_at:string; available_at:string|null; status:string; paid_at:string|null; order_id:number|null;
+  notes:string; checkout_locked_at:string|null;
+}>();
+
+const { results: legacyHistory = [] } = await env.DB.prepare(`
+  SELECT id, fee_type, amount_cents, currency, order_id, paid_at, valid_until, note
+    FROM school_fee_payments
+   WHERE student_email = ? COLLATE NOCASE AND obligation_id IS NULL
+   ORDER BY paid_at DESC LIMIT 100
+`).bind(email).all<{id:string;fee_type:string;amount_cents:number;currency:string;order_id:number|null;paid_at:string;valid_until:string;note:string}>();
+const now = new Date();
+const dateOnly = (v:string|null) => v ? v.slice(0,10) : '';
+const money = (cents:number,currency:string) => new Intl.NumberFormat('es-MX',{style:'currency',currency:(currency||'MXN').toUpperCase()}).format(cents/100);
+const date = (v:string|null) => v ? new Intl.DateTimeFormat('es-MX',{dateStyle:'medium'}).format(new Date(`${v.slice(0,10)}T12:00:00`)) : '—';
+const items = rows.map(r => {
+  const due = dateOnly(r.due_at);
+  const availableDate = dateOnly(r.available_at);
+  const isAvailable = !availableDate || availableDate <= now.toISOString().slice(0,10);
+  const state = r.status === 'paid' ? 'paid' : r.status === 'cancelled' ? 'cancelled' : (!isAvailable ? 'upcoming' : (due && due < now.toISOString().slice(0,10) ? 'overdue' : 'pending'));
+  return {...r, state, canPay: state === 'pending' || state === 'overdue'};
+});
+const pending = items.filter(x => x.state === 'pending' || x.state === 'overdue');
+const paid = items.filter(x => x.state === 'paid');
+const upcoming = items.filter(x => x.state === 'upcoming');
+const paidDates = paid.map(x=>x.paid_at).filter((x): x is string => Boolean(x)).sort();
+const allPaidDates = [...paidDates, ...legacyHistory.map(x=>x.paid_at)].sort();
+const lastPayment = allPaidDates.length ? allPaidDates[allPaidDates.length-1] : null;
+const nextPayment = pending.map(x=>x.due_at).sort()[0] ?? upcoming.map(x=>x.due_at).sort()[0] ?? null;
+const error = Astro.url.searchParams.get('error');
+const success = Astro.url.searchParams.get('success');
+---
+<Layout title="Mis pagos" description="Consulta tus pagos escolares y sus fechas.">
+  <main class="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
+    <a href="/account" class="text-sm font-medium text-muted hover:text-ink">← Mi cuenta</a>
+    <header class="mt-5 mb-7">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Administración escolar</p>
+      <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Mis pagos</h1>
+      <p class="mt-2 max-w-2xl text-sm leading-6 text-muted">Aquí aparecen únicamente los pagos que la escuela te ha asignado. Puedes consultar su fecha y pagar desde tu cuenta.</p>
+    </header>
+    {success && <p class="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">Regresaste del proceso de pago. El estado se actualizará cuando Stripe confirme el pago.</p>}
+    {error && <p class="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+    <section class="mb-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Por cubrir</p><p class="mt-1 text-2xl font-semibold">{pending.length}</p></div>
+      <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Pagados</p><p class="mt-1 text-2xl font-semibold">{paid.length}</p></div>
+      <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Último pago</p><p class="mt-1 text-base font-semibold">{date(lastPayment)}</p></div>
+      <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Próximo vencimiento</p><p class="mt-1 text-base font-semibold">{date(nextPayment)}</p></div>
+    </section>
+    <div class="mb-5 flex flex-wrap gap-2"><a href="/account/calendar" class="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-brand">Ver calendario →</a><a href="/account/courses" class="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-brand">Mis cursos →</a></div>
+    <section class="space-y-3">
+      <h2 class="text-xl font-semibold">Pagos asignados</h2>
+      {items.length === 0 && <div class="rounded-2xl border border-dashed border-line p-8 text-center"><p class="font-semibold">Todavía no tienes pagos asignados.</p><p class="mt-2 text-sm text-muted">Cuando la escuela programe un pago, aparecerá aquí.</p></div>}
+      {items.map(item => <article class="rounded-2xl border border-line bg-surface p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2"><h3 class="font-semibold">{item.title_snapshot}</h3>
+            {item.state==='paid' && <span class="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-800">Pagado</span>}
+            {item.state==='pending' && <span class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">Pendiente</span>}
+            {item.state==='overdue' && <span class="rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-800">Vencido</span>}
+            {item.state==='upcoming' && <span class="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-800">Programado</span>}
+            {item.state==='cancelled' && <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600">Cancelado</span>}
+          </div>
+          {item.description_snapshot && <p class="mt-1 text-sm text-muted">{item.description_snapshot}</p>}
+          <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted"><span>Vence: <strong class="text-ink">{date(item.due_at)}</strong></span>{item.paid_at && <span>Pagado: <strong class="text-ink">{date(item.paid_at)}</strong></span>}{item.order_id && <span>Pedido: #{item.order_id}</span>}</div>
+          {item.notes && <p class="mt-2 text-xs text-muted">{item.notes}</p>}
+        </div>
+        <div class="mt-4 flex shrink-0 items-center justify-between gap-4 sm:mt-0 sm:flex-col sm:items-end"><p class="text-xl font-semibold tabular-nums">{money(item.amount_cents,item.currency)}</p>
+          {item.canPay && <form method="POST" action="/api/escuela/pagos/checkout"><input type="hidden" name="obligation_id" value={item.id}/><button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand shadow-sm transition hover:opacity-90">Pagar ahora ↗</button></form>}
+          {item.state==='upcoming' && <span class="text-xs text-muted">Disponible {date(item.available_at)}</span>}
+        </div>
+      </article>)}
+    </section>
+    {legacyHistory.length > 0 && <section class="mt-9"><h2 class="mb-3 text-xl font-semibold">Historial anterior</h2><div class="overflow-x-auto rounded-2xl border border-line"><table class="w-full min-w-[620px] text-left text-sm"><thead class="bg-surface text-xs uppercase tracking-wider text-muted"><tr><th class="px-4 py-3">Concepto</th><th class="px-4 py-3">Fecha de pago</th><th class="px-4 py-3">Vigencia hasta</th><th class="px-4 py-3">Importe</th></tr></thead><tbody>{legacyHistory.map(h=><tr class="border-t border-line"><td class="px-4 py-3">{h.fee_type==='enrollment'?'Inscripción':h.fee_type==='monthly'?'Mensualidad':'Pago escolar'}{h.note&&<p class="text-xs text-muted">{h.note}</p>}</td><td class="px-4 py-3">{date(h.paid_at)}</td><td class="px-4 py-3">{date(h.valid_until)}</td><td class="px-4 py-3 font-semibold">{money(h.amount_cents,h.currency)}</td></tr>)}</tbody></table></div></section>}
+  </main>
+</Layout>

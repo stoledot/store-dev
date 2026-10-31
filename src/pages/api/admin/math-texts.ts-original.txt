@@ -1,0 +1,37 @@
+import type { APIRoute } from 'astro';
+import { env } from 'cloudflare:workers';
+import { deleteMathText, getMathText, saveMathText } from '../../../features/mathTexts/db';
+export const prerender = false;
+const back = (error?: string) => `/admin/textos-matematicos${error ? `?error=${encodeURIComponent(error)}` : ''}`;
+export const POST: APIRoute = async ({ request, redirect }) => {
+  const form = await request.formData();
+  const action = String(form.get('_action') ?? 'save');
+  const id = Number(form.get('id') ?? 0);
+  if (action === 'delete') {
+    if (!Number.isSafeInteger(id) || id <= 0) return redirect(back('Identificador inválido.'), 303);
+    await deleteMathText(env.DB, id);
+    return redirect(back(), 303);
+  }
+  const title = String(form.get('title') ?? '').trim();
+  const description = String(form.get('description') ?? '').trim();
+  if (!title || title.length > 180) return redirect(back('Escribe un título de hasta 180 caracteres.'), 303);
+  const upload = form.get('source');
+  const typedSource = String(form.get('source_text') ?? '').trim();
+  let source = typedSource;
+  let fileName = 'texto.tex';
+  if (id) {
+    const current = await getMathText(env.DB, id);
+    if (!current) return redirect(back('El texto ya no existe.'), 303);
+    source ||= current.source_tex;
+    fileName = current.file_name;
+  }
+  if (upload instanceof File && upload.size > 0) {
+    if (!upload.name.toLowerCase().endsWith('.tex')) return redirect(back('El archivo debe tener extensión .tex.'), 303);
+    if (upload.size > 512 * 1024) return redirect(back('El archivo no puede superar 500 KB.'), 303);
+    source = await upload.text();
+    fileName = upload.name.slice(0, 180);
+  }
+  if (!source || source.length > 512 * 1024) return redirect(back('Selecciona un archivo .tex o pega su contenido (máximo 500 KB).'), 303);
+  await saveMathText(env.DB, { id: id || undefined, title, description, source, fileName });
+  return redirect(back(), 303);
+};

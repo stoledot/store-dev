@@ -14,10 +14,11 @@ import Turnstile from '../../features/auth/Turnstile.astro';
 
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 // Already signed in → account.
-if (await getCustomerEmail(Astro.cookies)) return Astro.redirect('/account', 303);
+const returnTo = ['/account/profile', '/escuela/diagnostico'].includes(Astro.url.searchParams.get('next') ?? '') ? Astro.url.searchParams.get('next')! : '/account';
+if (await getCustomerEmail(Astro.cookies)) return Astro.redirect(returnTo, 303);
 
 let sent = false;
-let error = Astro.url.searchParams.get('error') === 'expired' ? 'That link expired — request a new one.' : '';
+let error = Astro.url.searchParams.get('error') === 'expired' ? 'Ese enlace ha caducado. Solicita uno nuevo.' : Astro.url.searchParams.get('error') === 'email-moved' ? 'Este correo ya no es el principal de la cuenta. Inicia sesión con el correo nuevo.' : '';
 
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
@@ -38,26 +39,26 @@ if (Astro.request.method === 'POST') {
   } else if (!isValidEmail(email)) {
     error = 'Enter a valid email address.';
   } else {
-    await requestLogin(email, Astro.url.origin);
+    await requestLogin(email, Astro.url.origin, returnTo);
     sent = true;
   }
 }
 ---
 
-<Layout title="Sign in">
+<Layout title="Iniciar sesión">
   <div class="mx-auto max-w-sm py-10">
-    <h1 class="mb-2 font-serif text-3xl tracking-tight sm:text-4xl">Sign in</h1>
+    <h1 class="mb-2 font-serif text-3xl tracking-tight sm:text-4xl">Iniciar sesión</h1>
 
     {
       sent ? (
         <p class="rounded-md border border-line bg-surface px-4 py-3 text-sm text-muted">
-          Check your email — we sent a one-time sign-in link. It expires in 15 minutes.
+          Revisa tu correo: te enviamos un enlace de acceso de un solo uso. Caduca en 15 minutos.
         </p>
       ) : (
         <Fragment>
           <p class="mb-5 text-sm text-muted">
-            Enter your email and we'll send a sign-in link — no password needed. Use the address
-            from your orders to see your order history.
+            Introduce tu correo y te enviaremos un enlace de acceso; no necesitas contraseña. Utiliza la dirección
+            que usaste al comprar para consultar tu historial de pedidos.
           </p>
           {error && (
             <p class="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -65,13 +66,14 @@ if (Astro.request.method === 'POST') {
             </p>
           )}
           <form method="POST" class="space-y-3">
+            <input type="hidden" name="next" value={returnTo} />
             <input
               type="email"
               name="email"
               required
               autofocus
               autocomplete="email"
-              placeholder="you@example.com"
+              placeholder="tu@correo.com"
               class="w-full rounded-md border border-line px-3 py-2"
             />
             <div class="flex justify-center">
@@ -81,7 +83,7 @@ if (Astro.request.method === 'POST') {
               type="submit"
               class="w-full rounded-md bg-brand px-4 py-2.5 font-medium text-on-brand hover:bg-brand-hover"
             >
-              Send sign-in link
+              Enviar enlace de acceso
             </button>
           </form>
         </Fragment>

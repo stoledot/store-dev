@@ -8,17 +8,28 @@
  * and uses --font-sans / --radius-* as global defaults. See README → Theming.
  */
 @theme {
-  /* Primary brand — solid buttons, primary actions, focus ring */
-  --color-brand: #111827;        /* swap for your brand color */
-  --color-brand-hover: #374151;  /* hover shade of the above */
+  /* ── COLORES DE LA ESCUELA: EDITA ESTA SECCIÓN ───────────────────────
+     Rojo = acciones principales y botones de inscripción.
+     Turquesa = acentos, enlaces y elementos secundarios.
+     Puedes cambiar estos HEX sin tocar los componentes Astro.
+  */
+  --color-turquesa: #0e7490;     
+  
+
+  --color-brand: #dc2626;        /* ROJO principal (Tailwind red-600) */
+  --color-brand-hover: #b91c1c;  /* ROJO al pasar el cursor (red-700) */
+  --color-brand-soft: #fef2f2;   /* Fondo rojo muy suave (red-50) */
+
+  --color-accent: #0e7490;       /* TURQUESA oscuro: enlaces y acentos */
+  --color-accent-hover: #155e75; /* TURQUESA al pasar el cursor */
+  --color-accent-soft: #ecfeff;  /* Fondo turquesa muy suave */
+  --color-secondary: #0891b2;    /* TURQUESA vivo para detalles */
+  --color-on-accent: #ffffff;    /* Texto sobre fondo turquesa */
 
   /* Body text. Tokenized alongside --color-paper: a theme that changes the page
      colour must be able to change the text colour with it, and a hardcoded
      utility on <body> beats anything a theme declares in the base layer. */
   --color-ink: #111827;
-
-  /* Accent — text links */
-  --color-accent: #2563eb;
 
   /* Surfaces — warm paper background + hairline rules (editorial minimal) */
   --color-paper: #faf8f4;

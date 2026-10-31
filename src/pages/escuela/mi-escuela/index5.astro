@@ -22,7 +22,56 @@ const canStudy = Boolean(enrollment?.valid_until && monthly?.valid_until && assi
       <div class="rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">Inscripción semestral</h2><p class="mt-2 text-sm text-kumo-muted">{enrollment?.valid_until ? `Vigente hasta ${enrollment.valid_until}` : 'No hay una inscripción vigente registrada.'}</p><p class="mt-2 text-xs text-kumo-muted">La inscripción se renueva cada seis meses. Si ya pagaste, espera a que administración confirme el pago.</p></div>
       <div class="rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">Mensualidad</h2><p class="mt-2 text-sm text-kumo-muted">{monthly?.valid_until ? `Vigente hasta ${monthly.valid_until}` : 'No hay una mensualidad vigente registrada.'}</p><p class="mt-2 text-xs text-kumo-muted">La mensualidad incluye un solo curso asignado.</p></div>
     </section>
-    {!enrollment?.valid_until || !monthly?.valid_until ? <section class="mb-6 rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">Acceso académico pendiente</h2><p class="mt-2 text-sm text-kumo-muted">Para habilitar las lecciones necesitas inscripción semestral y mensualidad vigentes. Los pagos se verifican en la tienda y administración los registra en tu expediente.</p><a href="/escuela/planes" class="mt-3 inline-block text-sm underline">Consultar pagos de la escuela</a></section> : !assignment ? <section class="mb-6 rounded-xl border border-kumo-line p-5"><h2 class="font-semibold">Todavía no tienes un curso asignado</h2><p class="mt-2 text-sm text-kumo-muted">Cuando tu diagnóstico esté aprobado, la administración te asignará el nivel que corresponda a tu área.</p></section> : <section class="rounded-xl border border-kumo-line p-5"><p class="text-xs uppercase tracking-widest text-kumo-muted">Tu curso asignado</p><h2 class="mt-2 text-2xl font-semibold">{assignment.title}</h2><p class="mt-2 text-sm text-kumo-muted">{assignment.area_title} · {assignment.level_code}</p>{assignment.summary && <p class="mt-3 text-sm">{assignment.summary}</p>}<div class="mt-6"><h3 class="font-semibold">Lecciones</h3>{lessons.length ? <ol class="mt-3 divide-y divide-kumo-line">{lessons.map(l=><li class="py-3"><a class="font-medium underline" href={`/escuela/cursos/${assignment.slug}/${l.slug}`}>{l.sequence_no}. {l.title}</a>{l.summary && <p class="mt-1 text-sm text-kumo-muted">{l.summary}</p>}</li>)}</ol> : <p class="mt-3 text-sm text-kumo-muted">El curso todavía no tiene lecciones publicadas.</p>}</div></section>}
+    {!enrollment?.valid_until || !monthly?.valid_until ? 
+      <section class="mb-6 rounded-xl border border-kumo-line p-5">
+        <h2 class="font-semibold">Acceso académico pendiente</h2>
+        <p class="mt-2 text-sm text-kumo-muted">
+          Para habilitar las lecciones necesitas inscripción semestral y mensualidad vigentes. Los pagos se verifican en la tienda y administración los registra en tu expediente.
+        </p>
+        <a href="/escuela/planes" class="mt-3 inline-block text-sm underline">
+          Consultar pagos de la escuela
+        </a>
+      </section> 
+      : 
+      !assignment ? 
+      <section class="mb-6 rounded-xl border border-kumo-line p-5">
+        <h2 class="font-semibold">Todavía no tienes un curso asignado</h2>
+        <p class="mt-2 text-sm text-kumo-muted">
+          Cuando tu diagnóstico esté aprobado, la administración te asignará el nivel que corresponda a tu área.
+        </p>
+      </section> 
+      : 
+      <section class="rounded-xl border border-kumo-line p-5">
+        <p class="text-xs uppercase tracking-widest text-kumo-muted">
+          Tu curso asignado
+        </p>
+        <h2 class="mt-2 text-2xl font-semibold">
+          {assignment.title}
+        </h2>
+        <p class="mt-2 text-sm text-kumo-muted">
+          {assignment.area_title} · {assignment.level_code}
+        </p>
+
+        {assignment.summary && <p class="mt-3 text-sm">{assignment.summary}</p>}
+        
+        <div class="mt-6">
+          <h3 class="font-semibold">
+            Lecciones
+          </h3>
+          
+          {lessons.length ?
+             <ol class="mt-3 divide-y divide-kumo-line">
+                {lessons.map(l=>
+                  <li class="py-3">
+                    <a class="font-medium underline" href={`/escuela/cursos/${assignment.slug}/${l.slug}`}>
+                      {l.sequence_no}. {l.title}
+                    </a>
+                    {l.summary && 
+                      <p class="mt-1 text-sm text-kumo-muted">
+                        {l.summary}</p>}
+                        </li>)}
+              </ol> : 
+              <p class="mt-3 text-sm text-kumo-muted">El curso todavía no tiene lecciones publicadas.</p>}</div></section>}
     <p class="mt-8 text-sm"><a class="underline" href="/account">Mi cuenta</a></p>
   </main>
 </Layout>

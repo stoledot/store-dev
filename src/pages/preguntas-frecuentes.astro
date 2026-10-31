@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+const faqs = [
+  { q: '¿Necesito conocimientos previos?', a: 'Depende del programa. Las rutas se describen en sus páginas y, cuando está disponible, puedes comenzar con un diagnóstico para identificar el punto de partida.' },
+  { q: '¿Cómo accedo a un curso o una lectura que compré?', a: 'Inicia sesión en Cuenta con el mismo correo usado al comprar. El contenido asociado a tus compras aparecerá en tu área de cuenta cuando el pago esté confirmado.' },
+  { q: '¿Puedo avanzar a mi propio ritmo?', a: 'El contenido de lectura se puede consultar a tu ritmo. En los cursos que incluyen actividades secuenciales, algunas unidades se desbloquean al completar la actividad anterior.' },
+  { q: '¿Cómo se califican las actividades?', a: 'Las actividades pueden calificarse automáticamente o requerir revisión de la escuela. Cuando una actividad requiere revisión, podrás consultar la calificación y la retroalimentación desde tu cuenta.' },
+  { q: '¿Qué hago si no puedo entrar a mi cuenta?', a: 'Comprueba que estás usando el correo de compra y sigue el proceso de acceso que aparece en la página Cuenta. Revisa también la carpeta de correo no deseado.' },
+  { q: '¿Cómo inicio mi inscripción?', a: 'Inicia sesión y sigue el checklist de tu perfil. Ahí verás qué pasos has completado y cuáles te faltan.' },
+];
+---
+<Layout title="Preguntas frecuentes" description="Respuestas a dudas comunes sobre programas, compras, cursos y acceso a la escuela.">
+  <section class="mx-auto max-w-4xl py-8 sm:py-12"><p class="text-xs font-bold uppercase tracking-[0.18em] text-brand">Ayuda</p><h1 class="mt-3 font-serif text-4xl tracking-tight sm:text-5xl">Preguntas frecuentes</h1><p class="mt-4 max-w-2xl leading-7 text-muted">Respuestas rápidas sobre los programas, las compras y el acceso a los materiales.</p><div class="mt-8 space-y-3">{faqs.map((faq) => <details class="group rounded-2xl border border-line bg-paper p-5 open:bg-surface"><summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden"><span>{faq.q}</span><span aria-hidden="true" class="text-xl text-brand transition group-open:rotate-45">+</span></summary><p class="mt-3 max-w-3xl text-sm leading-6 text-muted">{faq.a}</p></details>)}</div><p class="mt-8 text-sm text-muted">¿No encuentras tu respuesta? <a href="/account/profile" class="font-semibold text-brand underline-offset-4 hover:underline">Inicia tu proceso de inscripción</a>.</p></section>
+</Layout>
