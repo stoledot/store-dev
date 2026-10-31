@@ -19,13 +19,22 @@ Están separados en tres archivos:
 
 ## Suposiciones importantes
 
-- El login de cliente de MinShop es passwordless y asocia pedidos por correo verificado; por eso las tablas educativas usan `student_email` como clave de enlace, en vez de asumir una tabla de usuarios que quizá no existe en tu versión.
-- El email debe obtenerse de la sesión verificada del servidor, nunca del formulario/navegador como prueba de identidad.
-- El esquema no crea sesiones, login, checkout recurrente, webhooks ni páginas. Esas partes requieren cambios TypeScript/Astro.
-- El esquema registra estado de suscripción, pero la política de acceso debe implementarse en el servidor y debe reconciliarse con Stripe.
-- La secuencia de cursos/lecciones debe validarse en el servidor; SQL por sí solo no evita que una ruta/API entregue contenido bloqueado.
-- El campo `unit_amount_minor` guarda el importe en unidades menores de moneda (por ejemplo, centavos para MXN), no en pesos enteros.
-- No hay foreign key hacia una tabla de clientes porque el repositorio describe cuentas de cliente passwordless basadas en email verificado y no requiere una tabla independiente de usuarios para el historial de pedidos.
+- El login de cliente de MinShop es passwordless y asocia pedidos por correo verificado; 
+    por eso las tablas educativas usan `student_email` como clave de enlace, 
+    en vez de asumir una tabla de usuarios que quizá no existe en tu versión.
+- El email debe obtenerse de la sesión verificada del servidor, 
+  nunca del formulario/navegador como prueba de identidad.
+- El esquema no crea sesiones, login, checkout recurrente, webhooks ni páginas. 
+    Esas partes requieren cambios TypeScript/Astro.
+- El esquema registra estado de suscripción, pero la política de acceso debe 
+    implementarse en el servidor y debe reconciliarse con Stripe.
+- La secuencia de cursos/lecciones debe validarse en el servidor; 
+    SQL por sí solo no evita que una ruta/API entregue contenido bloqueado.
+- El campo `unit_amount_minor` guarda el importe en unidades menores de moneda 
+  (por ejemplo, centavos para MXN), no en pesos enteros.
+- No hay foreign key hacia una tabla de clientes porque el repositorio describe 
+    cuentas de cliente passwordless basadas en email verificado 
+    y no requiere una tabla independiente de usuarios para el historial de pedidos.
 
 ## Pruebas recomendadas
 
@@ -35,10 +44,3 @@ Están separados en tres archivos:
 4. Probar eventos de Stripe repetidos y eventos fuera de orden.
 5. Probar que un alumno sin suscripción vigente no pueda recibir contenido protegido.
 6. Hacer backup y validar restauración antes de migrar producción.
-
-## Ciclo académico del alumno (0055_school_student_journey.sql)
-
-Esta migración añade periodos mensuales, fechas importantes y avisos internos por alumno.
-Aplícala después de las migraciones escolares existentes. La administración registra el pago
-una vez verificado el pedido de MinShop; al registrar una mensualidad se crea el periodo y
-se genera un aviso. Las fechas se agregan desde Administración académica.
