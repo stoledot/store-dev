@@ -3,6 +3,7 @@ export const prerender = false;
 import { env } from 'cloudflare:workers';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { renderCourseTex } from '../../../features/mathTexts/render';
+import { validateCourseTex } from '../../../features/mathTexts/validate';
 
 const clean = (v: unknown, max = 500) => String(v ?? '').trim().slice(0, max);
 const slugify = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 100);
@@ -12,6 +13,7 @@ const notice = Astro.url.searchParams.get('ok');
 const error = Astro.url.searchParams.get('error');
 const editingId = clean(Astro.url.searchParams.get('id'), 100);
 const editing = editingId ? await env.DB.prepare('SELECT * FROM school_courses WHERE id=?').bind(editingId).first<any>() : null;
+if(editing?.source_format==='xml')return Astro.redirect(`/admin/escuela/xml?id=${encodeURIComponent(editingId)}`,303);
 let editingSource = '';
 if (editing?.tex_source_key && env.FILES) {
   const obj = await env.FILES.get(editing.tex_source_key);
@@ -27,11 +29,12 @@ if (Astro.request.method === 'POST') {
     const summary = clean(form.get('summary'), 500);
     const areaId = clean(form.get('area_id'), 100) || null;
     const level = clean(form.get('level_code'), 5).toUpperCase() || 'N0';
+    const omittedActivitiesAllowed = Number(form.get('omitted_activities_allowed') ?? 0);
     const status = ['published','archived'].includes(String(form.get('status'))) ? String(form.get('status')) : 'draft';
     const contentKind = String(form.get('content_kind')) === 'reading' ? 'reading' : 'course';
     const productRaw = clean(form.get('product_id'), 20);
     const productId = productRaw && /^\d+$/.test(productRaw) ? Number(productRaw) : null;
-    if (!title || !slug || !/^N\d{1,2}$/.test(level)) throw new Error('Indica un título, un slug válido y un nivel como N0 o N1.');
+    if (!title || !slug || !/^N\d{1,2}$/.test(level) || !Number.isSafeInteger(omittedActivitiesAllowed) || omittedActivitiesAllowed < 0 || omittedActivitiesAllowed > 1000) throw new Error('Indica un título, un slug y nivel válidos, y un límite de omisiones entre 0 y 1000.');
     const file = form.get('tex_file');
     let source = String(form.get('tex_source') ?? '');
     let filename = clean(form.get('tex_filename'), 200) || 'contenido.tex';
@@ -52,6 +55,12 @@ if (Astro.request.method === 'POST') {
     }
     if (!source.trim()) throw new Error('Carga un archivo .tex o pega el contenido en el editor.');
     if (source.length > 500_000) throw new Error('El contenido supera el límite de 500 KB.');
+    // Validate the source before parsing or writing it to the private bucket or D1.
+    const syntaxIssues = validateCourseTex(source);
+    if (syntaxIssues.length) {
+      const detail = syntaxIssues.slice(0, 3).map((issue) => `Línea ${issue.line}, columna ${issue.column}: ${issue.message} ${issue.suggestion}`).join(' ');
+      throw new Error(`${detail}${syntaxIssues.length > 3 ? ` Se encontraron ${syntaxIssues.length - 3} errores más.` : ''}`);
+    }
     const nodes = renderCourseTex(source);
     if (!nodes.length) throw new Error('No se detectó contenido en el .tex. Revisa el formato.');
     const duplicate = await env.DB.prepare('SELECT id FROM school_courses WHERE slug=? AND id<>?').bind(slug,id).first();
@@ -100,12 +109,12 @@ if (Astro.request.method === 'POST') {
     }
 
     if (existing) {
-      writes.push(env.DB.prepare(`UPDATE school_courses SET slug=?,title=?,summary=?,area_id=?,level_code=?,status=?,product_id=?,content_kind=?,tex_source_key=?,tex_filename=?,content_version=?,updated_at=? WHERE id=?`)
-        .bind(slug,title,summary,areaId,level,status,productId,contentKind,key,filename,courseVersion,now,id));
+      writes.push(env.DB.prepare(`UPDATE school_courses SET slug=?,title=?,summary=?,area_id=?,level_code=?,status=?,omitted_activities_allowed=?,product_id=?,content_kind=?,tex_source_key=?,tex_filename=?,content_version=?,updated_at=? WHERE id=?`)
+        .bind(slug,title,summary,areaId,level,status,omittedActivitiesAllowed,productId,contentKind,key,filename,courseVersion,now,id));
     } else {
       const seq = await env.DB.prepare('SELECT COALESCE(MAX(sequence_no),0)+1 AS n FROM school_courses').first<{n:number}>();
-      writes.push(env.DB.prepare(`INSERT INTO school_courses (id,slug,title,summary,description_md,sequence_no,status,area_id,level_code,product_id,content_kind,tex_source_key,tex_filename,content_version,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-        .bind(id,slug,title,summary,'',Number(seq?.n ?? 1),status,areaId,level,productId,contentKind,key,filename,courseVersion,now,now));
+      writes.push(env.DB.prepare(`INSERT INTO school_courses (id,slug,title,summary,description_md,sequence_no,status,area_id,level_code,omitted_activities_allowed,product_id,content_kind,tex_source_key,tex_filename,content_version,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .bind(id,slug,title,summary,'',Number(seq?.n ?? 1),status,areaId,level,omittedActivitiesAllowed,productId,contentKind,key,filename,courseVersion,now,now));
     }
 
     writes.push(env.DB.prepare(`INSERT OR IGNORE INTO school_course_revisions
@@ -143,8 +152,10 @@ if (Astro.request.method === 'POST') {
 
       const lessonType = node.type === 'reading' ? 'reading' : node.type === 'choice' ? 'quiz' : node.type === 'upload' || node.type === 'long' ? 'assignment' : 'exercise';
       const qType = node.type === 'choice' ? 'multiple_choice' : node.type === 'upload' ? 'file_upload' : node.type === 'long' ? 'long_answer' : 'short_answer';
-      const questions = node.type === 'reading' ? [] : [{ id: 'respuesta', prompt: node.title, type: qType, options: node.options.map((o) => o.label), required: node.required }];
-      const assessment = JSON.stringify({ version: 1, questions });
+      const questions = node.type === 'reading' ? [] : [{ id: 'respuesta', prompt: node.title, type: qType, options: node.options.map((o) => o.label), required: node.required, correct: node.correct }];
+      // Persist the visible option labels and map the TeX key to its label so the student form can submit a comparable value.
+      const correctAnswer = node.correct ? node.options.find((option) => option.key === node.correct)?.label ?? null : null;
+      const assessment = JSON.stringify({ version: 1, questions: questions.map((question) => ({ ...question, correct: question.type === 'multiple_choice' ? correctAnswer : null })) });
       const weight = Math.max(0.05, Math.min(1000, node.weight || 0.05));
 
       if (old) {
@@ -172,7 +183,7 @@ if (Astro.request.method === 'POST') {
             oldHash, oldSnapshot, now));
 
         writes.push(env.DB.prepare(`UPDATE school_lessons SET title=?,summary=?,content_md=?,content_html=?,sequence_no=?,lesson_type=?,status=?,required_to_complete=?,content_version=?,assessment_json=?,grading_weight=?,tex_node_id=?,activity_kind=?,due_at=?,content_hash=?,updated_at=? WHERE id=?`)
-          .bind(node.title,node.kind,'','',i+1,lessonType,activeStatus,node.required?1:0,lessonVersion,assessment,weight,node.id,node.type,node.due,contentHash,now,old.id));
+          .bind(node.title,node.kind,'',node.html,i+1,lessonType,activeStatus,node.required?1:0,lessonVersion,assessment,weight,node.id,node.type,node.due,contentHash,now,old.id));
 
         writes.push(env.DB.prepare(`INSERT OR IGNORE INTO school_lesson_revisions
           (id,lesson_id,content_version,stable_node_id,content_hash,snapshot_json,created_at)
@@ -183,7 +194,7 @@ if (Astro.request.method === 'POST') {
       } else {
         const lessonId = crypto.randomUUID();
         writes.push(env.DB.prepare(`INSERT INTO school_lessons (id,course_id,slug,title,summary,content_md,content_html,sequence_no,lesson_type,status,required_to_complete,content_version,assessment_json,grading_weight,tex_node_id,activity_kind,due_at,content_hash,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
-          .bind(lessonId,id,nodeSlug,node.title,node.kind,'','',i+1,lessonType,activeStatus,node.required?1:0,1,assessment,weight,node.id,node.type,node.due,contentHash,now,now));
+          .bind(lessonId,id,nodeSlug,node.title,node.kind,'',node.html,i+1,lessonType,activeStatus,node.required?1:0,1,assessment,weight,node.id,node.type,node.due,contentHash,now,now));
 
         writes.push(env.DB.prepare(`INSERT INTO school_lesson_revisions
           (id,lesson_id,content_version,stable_node_id,content_hash,snapshot_json,created_at)
@@ -271,17 +282,17 @@ if (Astro.request.method === 'POST') {
     return Astro.redirect(`/admin/escuela/tex?id=${encodeURIComponent(id)}&ok=guardado`, 303);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'No se pudo guardar el contenido.';
-    return Astro.redirect(`/admin/escuela/tex${editingId ? `?id=${encodeURIComponent(editingId)}&` : '?'}error=${encodeURIComponent(message.slice(0, 180))}`, 303);
+    return Astro.redirect(`/admin/escuela/tex${editingId ? `?id=${encodeURIComponent(editingId)}&` : '?'}error=${encodeURIComponent(message.slice(0, 900))}`, 303);
   }
 }
 
-const areas = (await env.DB.prepare("SELECT id,title FROM school_areas WHERE status='active' ORDER BY title").all<{id:string;title:string}>()).results ?? [];
+const areas = (await env.DB.prepare("SELECT a.id,a.title,a.program_slug,p.title AS program_title FROM school_areas a JOIN school_programs p ON p.slug=a.program_slug WHERE a.status='active' AND p.status='active' ORDER BY p.title,a.title").all<{id:string;title:string;program_slug:string;program_title:string}>()).results ?? [];
 const products = (await env.DB.prepare('SELECT p.id,p.name,p.active FROM products p WHERE NOT EXISTS(SELECT 1 FROM school_courses c WHERE c.product_id=p.id AND c.id<>?) ORDER BY p.name COLLATE NOCASE LIMIT 500').bind(editingId).all<{id:number;name:string;active:number}>()).results ?? [];
-const courses = (await env.DB.prepare(`SELECT c.id,c.title,c.slug,c.status,c.content_kind,c.product_id,c.tex_filename,p.name AS product_name,(SELECT COUNT(*) FROM school_lessons l WHERE l.course_id=c.id AND l.status='published') AS lesson_count FROM school_courses c LEFT JOIN products p ON p.id=c.product_id ORDER BY c.updated_at DESC LIMIT 200`).all<{id:string;title:string;slug:string;status:string;content_kind:string;product_id:number|null;tex_filename:string;product_name:string|null;lesson_count:number}>()).results ?? [];
+const courses = (await env.DB.prepare(`SELECT c.id,c.title,c.slug,c.status,c.content_kind,c.product_id,c.tex_filename,p.name AS product_name,(SELECT COUNT(*) FROM school_lessons l WHERE l.course_id=c.id AND l.status='published') AS lesson_count FROM school_courses c LEFT JOIN products p ON p.id=c.product_id WHERE c.source_format='tex' ORDER BY c.updated_at DESC LIMIT 200`).all<{id:string;title:string;slug:string;status:string;content_kind:string;product_id:number|null;tex_filename:string;product_name:string|null;lesson_count:number}>()).results ?? [];
 ---
 <AdminLayout title="Escuela TeX" active="school">
   <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <header class="mb-7"><p class="text-xs uppercase tracking-widest text-gray-400">Contenido TeX · reutiliza las tablas escolares existentes</p><h1 class="mt-2 text-3xl font-semibold">Cursos y lecturas matemáticas</h1><p class="mt-2 max-w-3xl text-sm text-gray-500">El archivo fuente se guarda en R2 privado. D1 conserva metadatos, unidades, actividades y avance. Al guardar una corrección se actualizan las unidades existentes sin borrar entregas ni calificaciones.</p><nav class="mt-4 flex flex-wrap gap-3 text-sm"><a class="underline" href="/admin/escuela">Escuela existente</a><a class="underline" href="/admin/escuela/calificaciones">Entregas y calificaciones</a><a class="underline" href="/admin/escuela/avance">Avance de alumnos</a></nav></header>
+    <header class="mb-7"><p class="text-xs uppercase tracking-widest text-gray-400">Contenido TeX · reutiliza las tablas escolares existentes</p><h1 class="mt-2 text-3xl font-semibold">Cursos y lecturas matemáticas</h1><p class="mt-2 max-w-3xl text-sm text-gray-500">El archivo fuente se guarda en R2 privado. D1 conserva metadatos, unidades, actividades y avance. Al guardar una corrección se actualizan las unidades existentes sin borrar entregas ni calificaciones.</p><nav class="mt-4 flex flex-wrap gap-3 text-sm"><a class="font-semibold underline" href="/admin/escuela/xml">Editor de cursos XML</a><a class="underline" href="/admin/escuela">Escuela existente</a><a class="underline" href="/admin/escuela/calificaciones">Entregas y calificaciones</a><a class="underline" href="/admin/escuela/avance">Avance de alumnos</a></nav></header>
     {notice==='guardado'&&<p class="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800">Contenido guardado y unidades sincronizadas. El avance y las calificaciones existentes se conservaron.</p>}
     {error&&<p class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
     <section class="mb-8 rounded-xl border border-line p-5">
@@ -293,15 +304,17 @@ const courses = (await env.DB.prepare(`SELECT c.id,c.title,c.slug,c.status,c.con
         <label class="block text-sm md:col-span-2">Resumen<input name="summary" maxlength="500" value={editing?.summary ?? ''} class="mt-1 block w-full rounded-md border border-line p-2"/></label>
         <label class="block text-sm">Tipo<select name="content_kind" class="mt-1 block w-full rounded-md border border-line p-2"><option value="course" selected={(editing?.content_kind ?? 'course')==='course'}>Curso secuencial</option><option value="reading" selected={editing?.content_kind==='reading'}>Lectura matemática</option></select></label>
         <label class="block text-sm">Producto asociado<select name="product_id" class="mt-1 block w-full rounded-md border border-line p-2"><option value="">Sin producto asociado</option>{products.map(p=><option value={p.id} selected={editing?.product_id===p.id}>#{p.id} · {p.name}{p.active?'':' (inactivo)'}</option>)}</select><span class="mt-1 block text-xs text-gray-500">El comprador obtiene acceso cuando el pedido queda pagado.</span></label>
-        <label class="block text-sm">Área (opcional)<select name="area_id" class="mt-1 block w-full rounded-md border border-line p-2"><option value="">Sin área</option>{areas.map(a=><option value={a.id} selected={editing?.area_id===a.id}>{a.title}</option>)}</select></label>
+        <label class="block text-sm">Área (opcional)<select name="area_id" class="mt-1 block w-full rounded-md border border-line p-2"><option value="">Sin área</option>{areas.map(a=><option value={a.id} selected={editing?.area_id===a.id}>{a.program_title} · {a.title}</option>)}</select></label>
         <label class="block text-sm">Nivel<select name="level_code" class="mt-1 block w-full rounded-md border border-line p-2">{['N0','N1','N2','N3','N4','N5'].map(n=><option value={n} selected={(editing?.level_code??'N0')===n}>{n}</option>)}</select></label>
-        <label class="block text-sm">Estado<select name="status" class="mt-1 block w-full rounded-md border border-line p-2"><option value="draft" selected={(editing?.status??'draft')==='draft'}>Borrador</option><option value="published" selected={editing?.status==='published'}>Publicado</option><option value="archived" selected={editing?.status==='archived'}>Archivado</option></select></label>
+        <label class="block text-sm">Actividades obligatorias que se pueden omitir<input type="number" min="0" max="1000" step="1" name="omitted_activities_allowed" value={editing?.omitted_activities_allowed ?? 0} class="mt-1 block w-full rounded-md border border-line p-2"/></label>
+        <label class="block text-sm">Estado<select name="status" class="mt-1 block w-full rounded-md border border-line p-2">
+          <option value="draft" selected={(editing?.status??'draft')==='draft'}>Borrador</option><option value="published" selected={editing?.status==='published'}>Publicado</option><option value="archived" selected={editing?.status==='archived'}>Archivado</option></select></label>
         <label class="block text-sm md:col-span-2">Reemplazar archivo .tex (opcional)<input type="file" name="tex_file" accept=".tex,text/plain" class="mt-1 block w-full rounded-md border border-line p-2"/><span class="mt-1 block text-xs text-gray-500">Máximo 500 KB. Si subes un archivo, se usa en lugar del texto del editor.</span></label>
         <label class="block text-sm md:col-span-2">Nombre del archivo<input name="tex_filename" maxlength="200" value={editing?.tex_filename ?? 'contenido.tex'} class="mt-1 block w-full rounded-md border border-line p-2"/></label>
         <label class="block text-sm md:col-span-2">Contenido TeX<textarea name="tex_source" rows="18" spellcheck="false" class="mt-1 block w-full rounded-md border border-line p-3 font-mono text-xs leading-5" placeholder="\\chapter{Introducción}\nTexto de la unidad...">{editingSource}</textarea></label>
         <div class="md:col-span-2 flex flex-wrap gap-3"><button type="submit" class="rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white">Guardar y procesar TeX</button>{editing&&<a class="rounded-lg border border-line px-5 py-3 text-sm" href="/admin/escuela/tex">Crear otro</a>}</div>
       </form>
-      <details class="mt-5 rounded-lg bg-gray-50 p-4"><summary class="cursor-pointer text-sm font-semibold">Formato TeX compatible y actividades</summary><pre class="mt-3 whitespace-pre-wrap text-xs leading-5">{String.raw`\chapter{Capítulo}
+    <details class="mt-5 rounded-lg bg-gray-50 p-4"><summary class="cursor-pointer text-sm font-semibold">Formato TeX compatible y actividades</summary><pre class="mt-3 whitespace-pre-wrap text-xs leading-5">{String.raw`\chapter{Capítulo}
 \section{Tema}
 \begin{lesson}[id=lectura-1,weight=0]
 Texto y fórmula: \(x^2+1=0\).
@@ -309,19 +322,19 @@ Texto y fórmula: \(x^2+1=0\).
 \begin{activity}[id=pregunta-1,type=short,weight=1,due=2026-11-15]
 Explica tu razonamiento.
 \end{activity}
-\begin{activity}[id=opcion-multiple,type=choice,weight=2]
+\\begin{activity}[id=opcion-multiple,type=choice,weight=2]
 Elige una respuesta.
 \option{A}{Primera opción}
 \option{B}{Segunda opción}
-\correct{B}
+\\correct{B}
 \end{activity}
 \begin{deliverable}[id=archivo-final,weight=3]
 Entrega el archivo solicitado.
 \end{deliverable}
-\begin{definition}[Definición]
+\begin{definition}[id=definicion-ejemplo,title={Definición}]
 Una definición con matemáticas \(a+b\).
 \end{definition}
-\begin{table}[header=blue]
+\begin{table}[id=tabla-ejemplo,header=blue]
 \row{Concepto}{Descripción}
 \row{Conjunto}{Colección de objetos}
 \end{table}

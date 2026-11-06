@@ -53,6 +53,10 @@ export type SettingKey =
   | 'lnbits_url' // LNbits node URL (the invoice/read key is in the vault)
   | 'phoenixd_url' // phoenixd node URL (the password is in the vault)
   | 'opennode_api_url' // OpenNode API base override (testnet); absent = live default
+  | 'doman_github_owner' // GitHub owner for privately proxied Doman audio
+  | 'doman_github_repo' // GitHub repository for Doman audio
+  | 'doman_github_branch' // branch used when saving Doman audio
+  | 'doman_github_path' // folder inside that repository
   | `enc:${string}`; // AES-GCM-encrypted secret (see features/secrets/store.ts), e.g. 'enc:stripe_secret_key'. Never loaded as plaintext into locals.
 
 /** The storefront features that can be flipped at runtime (default on). */

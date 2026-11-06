@@ -23,7 +23,8 @@ export type SecretName =
   | 'phoenixd_password'
   | 'zoom_account_id'
   | 'zoom_client_id'
-  | 'zoom_client_secret';
+  | 'zoom_client_secret'
+  | 'github_audio_token';
 
 export const SECRET_NAMES: readonly SecretName[] = [
   'stripe_secret_key',
@@ -37,6 +38,7 @@ export const SECRET_NAMES: readonly SecretName[] = [
   'zoom_account_id',
   'zoom_client_id',
   'zoom_client_secret',
+  'github_audio_token',
 ];
 
 /** D1 settings-row key holding the encrypted blob for a secret. */

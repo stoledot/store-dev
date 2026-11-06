@@ -7,14 +7,16 @@ import {
   requestLogin,
   isValidEmail,
   getCustomerEmail,
+  setCustomerSession,
 } from '../../features/auth/customer';
+import { verifyClientPassword } from '../../features/auth/customerIdentity';
 import { verifyConfiguredTurnstile, TURNSTILE_FIELD } from '../../features/auth/turnstile';
 import { getSecret } from '../../features/secrets/store';
 import Turnstile from '../../features/auth/Turnstile.astro';
 
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 // Already signed in → account.
-const returnTo = ['/account/profile', '/escuela/diagnostico'].includes(Astro.url.searchParams.get('next') ?? '') ? Astro.url.searchParams.get('next')! : '/account';
+const returnTo = ['/account/profile', '/escuela/diagnostico', '/escuela/inscripcion', '/escuela/alumno', '/escuela/docente'].includes(Astro.url.searchParams.get('next') ?? '') ? Astro.url.searchParams.get('next')! : '/account';
 if (await getCustomerEmail(Astro.cookies)) return Astro.redirect(returnTo, 303);
 
 let sent = false;
@@ -22,7 +24,7 @@ let error = Astro.url.searchParams.get('error') === 'expired' ? 'Ese enlace ha c
 
 if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
-  const email = String(form.get('email') ?? '');
+  const action=String(form.get('action')??'magic');
   // Bot challenge (if enabled in Settings → Bot protection): verify with the vault secret.
   const turnstileEnabled = Astro.locals.settings?.turnstileEnabled === true;
   const tsSecret = turnstileEnabled
@@ -34,13 +36,16 @@ if (Astro.request.method === 'POST') {
     tsSecret,
     Astro.request.headers.get('CF-Connecting-IP'),
   );
-  if (!tsOk) {
-    error = 'Verification failed — please try again.';
-  } else if (!isValidEmail(email)) {
-    error = 'Enter a valid email address.';
-  } else {
-    await requestLogin(email, Astro.url.origin, returnTo);
-    sent = true;
+  if (!tsOk) error='No se pudo validar el formulario. Inténtalo de nuevo.';
+  else if(action==='password'){
+    const clientNumber=String(form.get('client_number')??'').trim(),password=String(form.get('password')??'');
+    const email=await verifyClientPassword(env.DB,clientNumber,password);
+    if(!email)error='Número de cliente o contraseña incorrectos.';
+    else{await setCustomerSession(Astro.cookies,email,Astro.url.protocol==='https:');return Astro.redirect(returnTo,303);}
+  }else{
+    const email=String(form.get('email')??'');
+    if(!isValidEmail(email))error='Escribe un correo electrónico válido.';
+    else{await requestLogin(email,Astro.url.origin,returnTo);sent=true;}
   }
 }
 ---
@@ -56,16 +61,23 @@ if (Astro.request.method === 'POST') {
         </p>
       ) : (
         <Fragment>
-          <p class="mb-5 text-sm text-muted">
-            Introduce tu correo y te enviaremos un enlace de acceso; no necesitas contraseña. Utiliza la dirección
-            que usaste al comprar para consultar tu historial de pedidos.
-          </p>
+          <p class="mb-5 text-sm text-muted">Entra con tu número de cliente y contraseña, o solicita un enlace de acceso a tu correo.</p>
           {error && (
             <p class="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
             </p>
           )}
-          <form method="POST" class="space-y-3">
+          <form method="POST" class="space-y-3 rounded-2xl border border-line p-4">
+            <input type="hidden" name="action" value="password" />
+            <input type="hidden" name="next" value={returnTo} />
+            <label class="grid gap-1 text-sm font-medium">Número de cliente<input name="client_number" type="text" inputmode="numeric" pattern="[0-9]{10}" minlength="10" maxlength="10" required placeholder="10 dígitos" autocomplete="username" class="rounded-lg border border-line px-3 py-2 font-normal" /></label>
+            <label class="grid gap-1 text-sm font-medium">Contraseña<input name="password" type="password" required maxlength="200" autocomplete="current-password" class="rounded-lg border border-line px-3 py-2 font-normal" /></label>
+            <div class="flex justify-center"><Turnstile /></div>
+            <button type="submit" class="w-full rounded-md bg-brand px-4 py-2.5 font-medium text-on-brand">Entrar con contraseña</button>
+          </form>
+          <div class="my-5 text-center text-xs uppercase tracking-widest text-muted">o usa un enlace seguro</div>
+          <form method="POST" class="space-y-3 rounded-2xl border border-line p-4">
+            <input type="hidden" name="action" value="magic" />
             <input type="hidden" name="next" value={returnTo} />
             <input
               type="email"
@@ -83,7 +95,7 @@ if (Astro.request.method === 'POST') {
               type="submit"
               class="w-full rounded-md bg-brand px-4 py-2.5 font-medium text-on-brand hover:bg-brand-hover"
             >
-              Enviar enlace de acceso
+              Enviarme enlace de acceso
             </button>
           </form>
         </Fragment>

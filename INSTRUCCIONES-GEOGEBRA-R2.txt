@@ -1,0 +1,56 @@
+IMPLEMENTACIÓN: CONSTRUCCIONES GEOGEBRA EN LECCIONES XML
+
+Este ZIP es un complemento diferencial de la implementación de descargas R2.
+Copia los archivos conservando las rutas. Incluye migración 0065; las tablas de
+la implementación previa, incluyendo los cursos XML, deben estar instaladas.
+
+1. Aplica la migración nueva:
+   - Local: npm run db:migrate
+   - Producción: npm run db:migrate:remote
+
+2. Comprueba que el binding privado FILES siga conectado al bucket R2 existente.
+
+3. Abre /admin/escuela/geogebra, selecciona un curso XML y carga su XML de
+   construcción de GeoGebra. Escribe una referencia única dentro del curso y
+   selecciona Gráfica 2D o Gráfica 3D. Se acepta XML crudo con raíz <geogebra>;
+   no se acepta el archivo contenedor .ggb. El XML debe pesar máximo 2 MB.
+
+4. Declara la construcción dentro de la lección con la misma referencia:
+
+   <content><p>Explora la gráfica interactiva.</p></content>
+   <geogebragraphics ref="grafica-conjuntos" title="Diagrama de conjuntos">
+     Mueve los puntos para explorar la intersección.
+   </geogebragraphics>
+
+   El atributo title es obligatorio y se muestra arriba de la construcción. El
+   texto interno es una instrucción opcional. El bloque conserva su posición con
+   respecto a los demás <content>, <activity>, <inputlatex> y <download>.
+
+5. Valida y guarda el XML del curso. Al alumno con acceso le aparece el applet
+   interactivo de GeoGebra en ese punto de la lección. La descarga del XML se
+   entrega por una ruta privada que comprueba sesión, acceso al curso, unidad y
+   orden de avance. El panel permite reemplazar el XML en la misma ref; impide
+   retirar una construcción que aún está referenciada por una lección activa.
+
+SEGURIDAD Y ALCANCE
+- Las construcciones se guardan en R2 privado; no se publica la clave R2.
+- El validador comprueba estructura XML básica, raíz <geogebra>, tamaño y rechaza
+  declaraciones externas, URLs JavaScript y bloques <ggbscript>/<script>. No es
+  un validador semántico completo de todos los comandos GeoGebra.
+- Para representar la construcción se carga deployggb.js desde GeoGebra. Por eso
+  los dispositivos de los alumnos necesitan conexión a internet y acceso al
+  dominio geogebra.org. Este ZIP no incluye la distribución de GeoGebra.
+- La opción del panel define la aplicación 2D (`graphing`) o 3D (`3d`); selecciona
+  el modo adecuado a los objetos del XML.
+
+RUTAS NUEVAS O MODIFICADAS
+- migrations/0065_school_course_geogebra_assets.sql
+- src/features/mathTexts/geogebraXml.ts
+- src/features/mathTexts/geogebraClient.ts
+- src/features/mathTexts/xmlCourse.ts
+- src/pages/admin/escuela/geogebra.astro
+- src/pages/admin/escuela/xml.astro
+- src/pages/admin/escuela/descargas.astro
+- src/pages/api/admin/escuela/geogebra.ts
+- src/pages/api/escuela/cursos/[curso]/[slug]/geogebra/[ref].ts
+- src/pages/escuela/cursos/[curso]/[slug].astro

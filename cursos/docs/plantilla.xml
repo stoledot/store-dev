@@ -1,0 +1,333 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- =========================================
+     CURSO: Lógica Matemática
+========================================== -->
+
+<curso>
+
+    <!-- METADATOS -->
+
+    <meta>
+        <title>Lógica Matemática</title>
+
+        <summary>
+            Este curso proporciona una introducción a la lógica matemática, cubriendo proposiciones, conectivos lógicos, 
+            tablas de verdad y reglas de inferencia.
+        </summary>
+
+        <author>Brillinury y Samuel</author>
+
+    </meta>
+
+    <section id="introduccion" title="Introducción">
+        <lesson id="intro" 
+                title="Introducción al curso" weight=1>
+
+            <content>
+                Este es un curso de introducción a la lógica matemática. 
+                Aprenderás sobre proposiciones, conectivos lógicos, tablas de verdad y reglas de inferencia.
+
+                Estos son los objetivos del curso:
+
+                <ul>
+                    <li>Identificar proposiciones y conectivos lógicos.</li>
+                    <li>Construir tablas de verdad para proposiciones compuestas.</li>
+                    <li>Aplicar reglas de inferencia para llegar a conclusiones válidas.</li>
+                    <li>Analizar argumentos y determinar su validez.</li>
+                    <li>Desarrollar habilidades de razonamiento lógico y pensamiento crítico.</li>
+                </ul>
+
+            </content>
+
+        </lesson>
+    </section>
+
+    <section id="parte-1" title="Parte 1">
+        <lesson id="conceptos-basicos" title="Conceptos básicos" weight=1>
+            <content>
+                
+                \begin{definition} 
+                    \textbf{Proposición}. Una proposición es una declaración que puede ser verdadera o falsa, pero no ambas.
+                \end{definition}
+                
+                Ejemplos:
+
+                \begin{itemize}
+                    \item "El cielo es azul." (Verdadera)
+                    \item "2 + 2 = 5." (Falsa)
+                    \item "¿Qué hora es?" (No es una proposición)
+                \end{itemize}
+
+                
+            </content>
+        </lesson>
+
+        <activity id="actividad-1" type="multiple-choice" weight=1>
+            <question>
+                ¿Cuál de las siguientes es una proposición?
+            </question>
+            <options>
+                <option id="a" correct>"El cielo es azul."</option>
+                <option id="b" correct>"¿Qué hora es?"</option>
+                <option id="c">"2 + 2 = 5."</option>
+            </options>
+            <explanation>
+                La opción "El cielo es azul." es una proposición porque puede ser verdadera o falsa. 
+                La opción "¿Qué hora es?" no es una proposición porque es una pregunta. 
+                La opción "2 + 2 = 5." es una proposición, pero es falsa.
+            </explanation>
+        </activity>
+
+        <activity id="actividad-2" type="long" weight=2>
+            <question>
+                Explica la diferencia entre una proposición y una pregunta cotidiana.
+            </question>
+            <instructions>
+                Escribe tu respuesta en el espacio proporcionado.
+            </instructions>
+        </activity>
+
+        <activity id="actividad-3" type="multiple-choice" weight=1>
+            <question>
+                ¿Cuál de las siguientes afirmaciones es verdadera?
+            </question>
+            <options>
+                <option id="a">"El sol es un planeta."</option>
+                <option id="b" correct>"El agua hierve a 100°C."</option>
+                <option id="c">"La tierra es plana."</option>
+            </options>
+            <explanation>
+                La afirmación "El agua hierve a 100°C." es verdadera. 
+                Las otras afirmaciones son falsas.
+            </explanation>
+        </activity>
+
+    </section>
+
+
+    <seccion id="numeros" titulo="Los números">
+
+        <descripcion>
+            Estudiaremos los diferentes conjuntos numéricos.
+        </descripcion>
+
+
+        <!-- LECCIÓN 1.1 -->
+
+        <leccion id="numeros-naturales"
+                 titulo="Números naturales">
+
+
+            <contenido>
+                Los números naturales son aquellos que
+                utilizamos habitualmente para contar.
+
+                Podemos representarlos mediante:
+
+                $$\mathbb{N}=\{1,2,3,4,5,\ldots\}$$
+            </contenido>
+
+
+            <!-- DEFINICIÓN -->
+
+            <definicion id="def-natural"
+                        titulo="Números naturales">
+
+                El conjunto de los números naturales
+                se representa mediante:
+
+                $$\mathbb{N}=\{1,2,3,\ldots\}$$
+
+            </definicion>
+
+
+            <!-- EJEMPLO -->
+
+            <ejemplo id="ejemplo-natural-01"
+                     titulo="Un número natural">
+
+                El número $5$ pertenece al conjunto
+                de los números naturales.
+
+                $$5\in\mathbb{N}$$
+
+            </ejemplo>
+
+
+            <!-- TEOREMA -->
+
+            <teorema id="teorema-suma"
+                     titulo="Cerradura de la suma">
+
+                La suma de dos números naturales
+                es otro número natural.
+
+                $$a,b\in\mathbb{N}
+                \implies a+b\in\mathbb{N}$$
+
+            </teorema>
+
+
+            <!-- DEMOSTRACIÓN -->
+
+            <demostracion id="demostracion-suma">
+
+                Sean $a$ y $b$ dos números naturales.
+
+                Por las propiedades de los números naturales,
+                su suma también pertenece a este conjunto.
+
+                $$a+b\in\mathbb{N}$$
+
+            </demostracion>
+
+
+            <!-- NOTA -->
+
+            <nota id="nota-cero">
+
+                Dependiendo de la convención utilizada,
+                el cero también puede incluirse en
+                los números naturales.
+
+            </nota>
+
+
+            <!-- EJERCICIO -->
+
+            <ejercicio id="ejercicio-natural-01"
+                       puntos="2"
+                       tipo="respuesta-abierta">
+
+                <pregunta>
+                    Escribe tres números naturales mayores que $10$.
+                </pregunta>
+
+                <instrucciones>
+                    Escribe tu respuesta en el espacio correspondiente.
+                </instrucciones>
+
+            </ejercicio>
+
+
+            <!-- ACTIVIDAD DE OPCIÓN MÚLTIPLE -->
+
+            <actividad id="actividad-natural-01"
+                       tipo="opcion-multiple"
+                       puntos="2">
+
+                <pregunta>
+                    ¿Cuál de los siguientes números es natural?
+                </pregunta>
+
+                <opciones>
+
+                    <opcion id="a">
+                        $-3$
+                    </opcion>
+
+                    <opcion id="b">
+                        $5$
+                    </opcion>
+
+                    <opcion id="c">
+                        $0.5$
+                    </opcion>
+
+                </opciones>
+
+                <respuesta correcta="b"/>
+
+                <explicacion>
+                    El número $5$ pertenece al conjunto
+                    de los números naturales.
+
+                    $$5\in\mathbb{N}$$
+                </explicacion>
+
+            </actividad>
+
+        </leccion>
+
+
+        <!-- LECCIÓN 1.2 -->
+
+        <leccion id="operaciones"
+                 titulo="Operaciones con números naturales">
+
+            <contenido>
+                Podemos realizar diferentes operaciones
+                con los números naturales.
+
+                ## La suma
+
+                La suma permite reunir cantidades.
+
+                $$3+4=7$$
+
+                ## La multiplicación
+
+                La multiplicación puede interpretarse
+                como una suma repetida.
+
+                $$3\times4=12$$
+            </contenido>
+
+        </leccion>
+
+    </seccion>
+
+
+    <!-- =====================================
+         SECCIÓN 2
+    ====================================== -->
+
+    <seccion id="algebra"
+             titulo="Operaciones algebraicas">
+
+        <leccion id="expresiones"
+                 titulo="Expresiones algebraicas">
+
+            <contenido>
+                Una expresión algebraica combina números,
+                variables y operaciones.
+
+                $$3x+5$$
+            </contenido>
+
+        </leccion>
+
+    </seccion>
+
+
+    <!-- =====================================
+         EVALUACIÓN FINAL
+    ====================================== -->
+
+    <evaluacion id="evaluacion-final"
+                titulo="Evaluación final"
+                calificacion-minima="70">
+
+        <actividad id="pregunta-final-01"
+                   tipo="opcion-multiple"
+                   puntos="5">
+
+            <pregunta>
+                ¿Cuánto es $4+6$?
+            </pregunta>
+
+            <opciones>
+                <opcion id="a">8</opcion>
+                <opcion id="b">10</opcion>
+                <opcion id="c">12</opcion>
+            </opciones>
+
+            <respuesta correcta="b"/>
+
+        </actividad>
+
+    </evaluacion>
+
+</curso>

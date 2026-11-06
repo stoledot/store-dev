@@ -91,10 +91,17 @@ async function settleSchoolObligation(
     `).bind(crypto.randomUUID(),obligationId));
   }
   statements.push(env.DB.prepare(`
-    INSERT INTO school_notifications(id,student_email,title,body,href)
-    SELECT ?,?,?,?,'/account/payments'
-     WHERE NOT EXISTS (SELECT 1 FROM school_notifications WHERE student_email=? COLLATE NOCASE AND title='Pago confirmado' AND body=?)
-  `).bind(crypto.randomUUID(),obligation.student_email,'Pago confirmado',`${obligation.title_snapshot} fue pagado correctamente.`,obligation.student_email,`${obligation.title_snapshot} fue pagado correctamente.`));
+    INSERT INTO school_notifications(id,student_email,title,body,message,href)
+    SELECT ?,?,?,?,?,'/account/payments'
+     WHERE NOT EXISTS (SELECT 1 FROM school_notifications 
+      WHERE student_email=? COLLATE NOCASE AND title='Pago confirmado' AND body=?)
+  `).bind(crypto.randomUUID(),
+    obligation.student_email,
+    'Pago confirmado',
+    `${obligation.title_snapshot} fue pagado correctamente.`,
+    ``,
+    obligation.student_email,
+    `${obligation.title_snapshot} fue pagado correctamente.`,''));
   await env.DB.batch(statements);
 }
 

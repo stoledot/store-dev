@@ -30,7 +30,7 @@ if(Astro.request.method==='POST'){
       if(available){const av=await env.DB.prepare('SELECT date(?) AS d').bind(available).first<{d:string|null}>();if(av?.d!==available)throw new Error('La fecha de disponibilidad no es válida.');}
       const id=crypto.randomUUID();
       await env.DB.prepare(`INSERT INTO school_payment_obligations(id,payment_product_id,student_email,title_snapshot,description_snapshot,amount_cents,currency,fee_type,validity_months,due_at,available_at,notes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).bind(id,product.id,email,product.title,product.description,product.amount_cents,product.currency,product.fee_type,product.validity_months,due,available?available:null,notes).run();
-      try{await env.DB.prepare(`INSERT INTO school_notifications(id,student_email,title,body,href) VALUES(?,?,?,?,?)`).bind(crypto.randomUUID(),email,'Tienes un pago escolar asignado',`${product.title} · vence ${due}`,'/account/payments').run();}catch{}
+      try{await env.DB.prepare(`INSERT INTO school_notifications(id,student_email,title,body,message,href) VALUES(?,?,?,?,?,?)`).bind(crypto.randomUUID(),email,'Tienes un pago escolar asignado',`${product.title} · vence ${due}`,'','/account/payments').run();}catch{}
       return Astro.redirect('/admin/escuela/pagos?ok=asignacion',303);
     }
     if(action==='cancel'){

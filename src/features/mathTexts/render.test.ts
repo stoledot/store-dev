@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { renderCourseTex, renderMathText, renderTexBody } from './render.ts';
 
 describe('renderMathText', () => {
-  it('creates section navigation and keeps formula commands for MathJax', () => {
+  it('creates section navigation and keeps formula commands for the LaTeX.js renderer', () => {
     const result = renderMathText('\\begin{document}\n\\section{Números}\nUn ejemplo es $\\frac{1}{2}$.\n\\subsection{Suma}\n\\[a+b=c\\]\n\\end{document}');
     expect(result).toHaveLength(2);
     expect(result[0].title).toBe('Números');

@@ -1,0 +1,48 @@
+IMPLEMENTACIÓN DE AUDIOS Y SLIDES DOMAN
+
+Archivos e instalación
+1. Copia los archivos del ZIP respetando las rutas.
+2. Aplica la migración nueva incluida: `0067_school_doman_audio_r2.sql`, con `npm run db:migrate` (local) o `npm run db:migrate:remote` (producción). No vuelvas a ejecutar 0066.
+3. Verifica que el binding R2 `FILES` esté disponible para el Worker (este proyecto ya lo usa para archivos privados) y despliega la aplicación. Las nuevas grabaciones se guardan en `school-doman-audio/` dentro de ese bucket.
+4. Para transferir la biblioteca existente, abre Admin > Escuela > Audios Doman. Configura temporalmente el repositorio/rama/carpeta de GitHub y un token con acceso de lectura; el token se cifra con `SECRETS_KEK`. Usa “Transferir todos a R2”. El reproductor sigue funcionando durante la transferencia.
+5. Cuando todos estén en R2, puedes retirar la credencial de GitHub desde el panel. También puedes retirar la copia activa de cada archivo en GitHub; eliminarla de la rama actual no borra commits anteriores del historial. Las copias no se borran automáticamente.
+6. Crea categorías, tipos y niveles. Graba y guarda los audios. El formulario conserva los selectores entre grabaciones.
+7. En XML, coloca <domanlabels><domanslides ...>...</domanslides></domanlabels> dentro de una <lesson>, guarda el curso y publica la lección.
+
+Ejemplo
+<lesson id="vocabulario" title="Vocabulario">
+  <content><p>Escucha y lee las palabras.</p></content>
+  <domanlabels>
+    <domanslides category="frutas" type="words" level="nivel-1" max-time-length="60s" velocity="x1" automatic-sliding="true" allow-pause="true">
+      <domanslides category="frutas" level="nivel-1" cantity="3" random-selection="false" initial-time-margin="0s" final-time-margin="1s" />
+    </domanslides>
+  </domanlabels>
+</lesson>
+
+También se admite <domanslides .../> directamente dentro de <lesson>. Los bloques Doman quedan en el orden XML junto con content, activity, inputlatex y los otros bloques de la lección.
+
+Atributos aceptados en <domanslides>
+- regex: expresión regular JavaScript aplicada al texto guardado del audio (máximo 120 caracteres).
+- category, type, level: valores separados por espacios. Los valores deben coincidir con las etiquetas guardadas en la biblioteca.
+- max-time-length: duración máxima del grupo, por ejemplo 60s. Valor predeterminado: 60s.
+- cantity: número máximo de audios del grupo. Si se define, tiene prioridad sobre max-time-length.
+- random-selection: true/false; predeterminado true.
+- velocity: x1, x2, x0.5, etc.; predeterminado x1 (límite práctico x0.25 a x4).
+- initial-time-margin, final-time-margin: segundos como 2s, 0s o duración del audio más/menos segundos como =+2s y =-1s.
+- automatic-sliding: true/false; predeterminado true. Después de iniciar, las diapositivas avanzan automáticamente. En false, cada diapositiva requiere pulsar Siguiente.
+- mute, random-mute: true/false; predeterminados false.
+- allow-pause: true/false; predeterminado true.
+
+Los slides anidados se seleccionan primero; el grupo padre completa luego con audios que todavía no fueron seleccionados. Las etiquetas XML deben coincidir con las categorías/tipos/niveles de los audios. Para comentarios XML usa la sintaxis válida <!-- comentario -->.
+
+Reproductor y estilos
+El alumno obtiene la lista después de verificar su sesión y el acceso al curso y a la lección. El navegador muestra diapositivas blancas, ajusta el tamaño del texto, y ofrece reproducir/pausar/repetir/pantalla completa. Los estilos editables están en public/css/doman-slides.css; cambia allí las variables --doman-slide-background, --doman-slide-color, --doman-slide-border, --doman-slide-min-height y --doman-slide-padding.
+
+Límites
+- Cada audio admite hasta 20 MB. Se aceptan WebM, OGG, MP4/M4A, MP3 y WAV.
+- La grabación requiere HTTPS (o localhost) y permiso de micrófono; el formato grabado depende del navegador.
+- R2 `FILES` guarda los bytes de audio de forma privada. D1 conserva atributos y la clave del objeto. El Worker sirve el audio solo después de validar la sesión y el acceso del alumno a la lección; el bucket no se expone públicamente.
+- GitHub solo se necesita temporalmente para transferir audios que ya estaban en la biblioteca. Si no hay archivos antiguos, no configures GitHub.
+- No se carga una secuencia si no hay audios que coincidan con sus filtros.
+- La duración se mide desde el tiempo de grabación en el navegador o se usa el valor reportado por MediaRecorder; al elegir un archivo compatible, el panel intenta leer su duración antes de guardarlo.
+- El navegador puede bloquear reproducción de audio automática hasta que el alumno pulse Reproducir. Los márgenes y la pausa se aplican después de iniciar la secuencia.
