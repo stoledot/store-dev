@@ -106,10 +106,12 @@ export function renderTexBody(input: string): string {
   source = source.replace(/\\begin\{htmlblock\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{htmlblock\}/g, (_m, _attrs, body) => keep(safeHtmlBlock(body)));
   source = source.replace(/\\begin\{table\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{table\}/g, (_m, attrs, body) => keep(formatTable(body, attrs ?? '')));
   source = source.replace(/\\image\s*\{([^{}]*)\}\s*\{([^{}]*)\}(?:\s*\{([^{}]*)\})?/g, (_m, url, alt, caption) => { const safe = safeUrl(url); return keep(safe ? `<figure class="tex-figure"><img src="${escapeHtml(safe)}" alt="${escapeHtml(alt)}" loading="lazy" class="max-w-full rounded-xl"/>${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ''}</figure>` : `<p>[Imagen no disponible: ${escapeHtml(alt)}]</p>`); });
-  // Convert lists before escaping. Items are recursively formatted as ordinary TeX text.
-  source = source.replace(/\\begin\{(itemize|enumerate)\}([\s\S]*?)\\end\{\1\}/g, (_m, kind, inner) => { const items = inner.split(/\\item\s*/).slice(1).map((x: string) => `<li>${renderTexBody(x.trim())}</li>`).join(''); return keep(`<${kind === 'itemize' ? 'ul' : 'ol'} class="tex-list">${items}</${kind === 'itemize' ? 'ul' : 'ol'}>`); });
+  // Let LaTeX.js parse list environments as LaTeX so nested items and their formatting survive.
+  const listStarts = /\\begin\{(itemize|enumerate)\}/g; const listFragments: Array<[number,number,string]> = []; let listMatch: RegExpExecArray | null;
+  while ((listMatch = listStarts.exec(source))) { const endAt = findEnvironmentEnd(source, listMatch[1], listStarts.lastIndex); if (endAt < 0) continue; const end = endAt + `\\end{${listMatch[1]}}`.length; listFragments.push([listMatch.index,end,source.slice(listMatch.index,end)]); listStarts.lastIndex = end; }
+  for (const [start,end,fragment] of listFragments.reverse()) source = source.slice(0,start) + keep(`<latex-js baseURL="https://cdn.jsdelivr.net/npm/latex.js@0.12.6/dist/" hyphenate="false" class="latex-js-block">${escapeHtml(fragment)}</latex-js>`) + source.slice(end);
   source = source.replace(/\\begin\{(definition|theorem|lemma|proposition|corollary|proof|example|remark|note|warning|solution|axiom|conjecture|problem)\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{\1\}/g, (_m, kind, title, body) => { const labels: Record<string,string> = {definition:'Definición',theorem:'Teorema',lemma:'Lema',proposition:'Proposición',corollary:'Corolario',proof:'Demostración',example:'Ejemplo',remark:'Observación',note:'Nota',warning:'Atención',solution:'Solución',axiom:'Axioma',conjecture:'Conjetura',problem:'Problema'}; const style = kind === 'warning' ? 'warning' : ['definition','theorem','lemma','proposition','corollary'].includes(kind) ? 'math' : 'example'; return keep(`<aside class="tex-callout tex-${style}"><h3>${labels[kind]}${title ? `: ${escapeHtml(title)}` : ''}</h3><div>${renderTexBody(body)}</div></aside>`); });
-  // Preserve MathJax source while escaping all ordinary content.
+  // Preserve supported math source for the shared LaTeX.js browser renderer while escaping ordinary content.
   const math = renderMathProtected(source); let html = escapeHtml(math.text);
   html = html.replace(/\\textbf\{([^{}]*)\}/g, '<strong>$1</strong>').replace(/\\textit\{([^{}]*)\}/g, '<em>$1</em>').replace(/\\emph\{([^{}]*)\}/g, '<em>$1</em>').replace(/\\underline\{([^{}]*)\}/g, '<u>$1</u>').replace(/\\texttt\{([^{}]*)\}/g, '<code>$1</code>');
   html = html.replace(/\\(?:par|newline|\\)\s*/g, '\n\n').replace(/\\item\s*/g, '• ').replace(/\\(?:label|ref|cite|index)\{[^{}]*\}/g, '').replace(/\\[a-zA-Z]+\*?(?:\[[^\]]*\])?/g, '').replace(/[{}]/g, '');
@@ -125,6 +127,7 @@ function findEnvironmentEnd(source: string, env: string, from: number): number {
   return -1;
 }
 const BLOCK_ENVS = new Set(['activity','lesson','exercise','task','assignment','deliverable','definition','theorem','lemma','proposition','corollary','proof','example','remark','note','warning','solution','axiom','conjecture','problem','itemize','enumerate','equation','equation*','align','align*','gather','gather*','multline','multline*','table','htmlblock']);
+
 function parseOptions(body: string): { body: string; options: AcademyOption[]; correct: string | null } {
   const options: AcademyOption[] = []; let correct: string | null = null;
   const optionRe = /\\option\b/g; const removals: Array<[number,number]> = []; let match: RegExpExecArray | null;
@@ -141,27 +144,58 @@ function parseOptions(body: string): { body: string; options: AcademyOption[]; c
   for (const [start,end,key] of correctMatches.reverse()) { correct = key.trim().slice(0,40); body = body.slice(0,start) + body.slice(end); }
   return { body, options, correct };
 }
+
 /** Parse structural headings and top-level environments into sequential, gateable nodes. */
 export function renderCourseTex(raw: string): AcademyNode[] {
-  const source = cleanSource(raw); const nodes: AcademyNode[] = []; let cursor = 0; let serial = 0; let pendingHasContent = false; let headingPath: string[] = [];
-  const push = (title: string, body: string, level: number, kind: string, attrs: Record<string,string> = {}) => {
-    const parsed = parseOptions(body); const requested = (attrs.type ?? '').toLowerCase();
-    let type: AcademyNodeType = 'reading';
-    if (['short','long','choice','upload'].includes(requested)) type = requested as AcademyNodeType;
-    else if (kind === 'activity') type = 'short';
-    else if (kind === 'exercise' || kind === 'problem' || kind === 'task' || kind === 'assignment' || kind === 'deliverable') type = kind === 'deliverable' || attrs.type === 'upload' ? 'upload' : kind === 'assignment' || kind === 'task' ? 'long' : 'short';
-    if (parsed.options.length) type = 'choice';
-    const defaultWeight = ['activity','lesson','exercise','problem','task','assignment','deliverable'].includes(kind) ? 1 : 0; const weightRaw = Number(attrs.weight ?? String(defaultWeight)); const weight = Number.isFinite(weightRaw) ? (weightRaw <= 0 ? 0 : Math.max(0.05, Math.min(20, weightRaw))) : defaultWeight;
-    let cleanTitle = title.trim().replace(/[{}]/g, '').slice(0, 200) || `Contenido ${serial + 1}`;
-    if (kind === 'lesson' && headingPath.length && cleanTitle === headingPath[headingPath.length - 1]) cleanTitle = headingPath.join(' / ').slice(0, 200);
-    else if (kind !== 'reading' && headingPath.length && cleanTitle !== headingPath[headingPath.length - 1]) cleanTitle = `${headingPath.join(' / ')} — ${cleanTitle}`.slice(0, 200);
-    const id = slug(attrs.id ?? `${serial + 1}-${cleanTitle}`);
-    let renderSource = parsed.body;
-    if (kind === 'table') renderSource = `\\begin{table}[header=${attrs.header ?? 'blue'}]${parsed.body}\\end{table}`;
-    else if (kind === 'htmlblock') renderSource = `\\begin{htmlblock}${parsed.body}\\end{htmlblock}`;
-    else if (kind === 'itemize' || kind === 'enumerate' || ['definition','theorem','lemma','proposition','corollary','proof','example','remark','note','warning','solution','axiom','conjecture','problem','equation','equation*','align','align*','gather','gather*','multline','multline*'].includes(kind)) renderSource = `\\begin{${kind}}${title ? `[${title}]` : ''}${parsed.body}\\end{${kind}}`;
-    nodes.push({ id, explicitId: Boolean(attrs.id), title: cleanTitle, level, type, kind, html: renderTexBody(renderSource), due: /^\d{4}-\d{2}-\d{2}$/.test(attrs.due ?? '') ? attrs.due! : null, weight, required: attrs.required !== 'false', options: parsed.options, correct: parsed.correct }); serial++;
-  };
+  const source = cleanSource(raw); 
+  const nodes: AcademyNode[] = []; 
+  let cursor = 0; 
+  let serial = 0; 
+  let pendingHasContent = false; 
+  let headingPath: string[] = [];
+  const push = (
+    title: string, 
+    body: string, 
+    level: number, 
+    kind: string, 
+    attrs: Record<string,string> = {}) => 
+    {
+      const parsed = parseOptions(body); 
+      const requested = (attrs.type ?? '').toLowerCase();
+      let type: AcademyNodeType = 'reading';
+      if (['short','long','choice','upload'].includes(requested)) type = requested as AcademyNodeType;
+      else if (kind === 'activity') type = 'short';
+      else if (kind === 'exercise' || kind === 'problem' || kind === 'task' || kind === 'assignment' || kind === 'deliverable') type = kind === 'deliverable' || attrs.type === 'upload' ? 'upload' : kind === 'assignment' || kind === 'task' ? 'long' : 'short';
+      if (parsed.options.length) type = 'choice';
+      const defaultWeight = ['activity','lesson','exercise','problem','task','assignment','deliverable'].includes(kind) ? 1 : 0; 
+      const weightRaw = Number(attrs.weight ?? String(defaultWeight)); 
+      const weight = Number.isFinite(weightRaw) ? (weightRaw <= 0 ? 0 : Math.max(0.05, Math.min(20, weightRaw))) : defaultWeight;
+      let cleanTitle = title.trim().replace(/[{}]/g, '').slice(0, 200) || `Contenido ${serial + 1}`;
+      if (kind === 'lesson' && headingPath.length && cleanTitle === headingPath[headingPath.length - 1]) 
+        cleanTitle = headingPath.join(' / ').slice(0, 200);
+      else if (kind !== 'reading' && headingPath.length && cleanTitle !== headingPath[headingPath.length - 1]) cleanTitle = `${headingPath.join(' / ')} — ${cleanTitle}`.slice(0, 200);
+      const id = slug(attrs.id ?? `${serial + 1}-${cleanTitle}`);
+      let renderSource = parsed.body;
+      if (kind === 'table') renderSource = `\\begin{table}[header=${attrs.header ?? 'blue'}]${parsed.body}\\end{table}`;
+      else if (kind === 'htmlblock') renderSource = `\\begin{htmlblock}${parsed.body}\\end{htmlblock}`;
+      else if (kind === 'itemize' || kind === 'enumerate' || ['definition','theorem','lemma','proposition','corollary','proof','example','remark','note','warning','solution','axiom','conjecture','problem','equation','equation*','align','align*','gather','gather*','multline','multline*'].includes(kind)) 
+        renderSource = `\\begin{${kind}}${title ? `[${title}]` : ''}${parsed.body}\\end{${kind}}`;
+      nodes.push(
+        { 
+          id, 
+          explicitId: Boolean(attrs.id), 
+          title: cleanTitle, 
+          level, 
+          type, 
+          kind, 
+          html: renderTexBody(renderSource), 
+          due: /^\d{4}-\d{2}-\d{2}$/.test(attrs.due ?? '') ? attrs.due! : null, 
+          weight, 
+          required: attrs.required !== 'false', 
+          options: parsed.options, 
+          correct: parsed.correct }); 
+          serial++;
+    };
   const tokenRe = /\\(chapter|section|subsection|subsubsection)\*?\s*\{([^{}]*)\}|\\begin\{([a-zA-Z*]+)\}/g;
   let m: RegExpExecArray | null; let sectionLevel = 1; let pendingTitle = 'Introducción'; let pendingLevel = 1; let hadHeading = false;
   while ((m = tokenRe.exec(source))) {

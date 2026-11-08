@@ -1,0 +1,15 @@
+MEJORA DEL GRABADOR DOMAN
+
+Instalación
+1. Descomprime este ZIP en la raíz del proyecto y conserva las rutas.
+2. No requiere migraciones ni cambios en R2: continúa usando el formulario y el endpoint existentes.
+3. En Admin > Escuela > Audios Doman, el panel mostrará la cuenta regresiva, el indicador de grabación y las herramientas de recorte.
+
+Uso
+- Pulsa “Grabar”: después de permitir el micrófono verás 3, 2, 1 y comenzará la captura.
+- Pulsa “Detener” para terminar. “Repetir grabación” descarta la toma y permite empezar de nuevo.
+- También puedes cargar un archivo existente. En ambos casos puedes escuchar el fragmento completo o la selección recortada.
+- Ajusta cuánto quitar al inicio y al final, escucha la selección y pulsa “Aplicar recorte”. El archivo recortado se codifica como WAV y se guarda mediante el flujo actual en R2.
+- El recorte debe quedar dentro del límite existente de 20 MB. Si el WAV resultante excede ese límite, reduce la selección antes de aplicarlo.
+
+El recorte se procesa en el navegador con Web Audio. No se envía audio al servidor hasta guardar el formulario.

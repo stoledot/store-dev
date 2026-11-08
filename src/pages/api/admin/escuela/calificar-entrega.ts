@@ -19,6 +19,6 @@ export const POST: APIRoute = async ({request,url,cookies,locals}) => {
   const now=new Date().toISOString();
   await env.DB.prepare('UPDATE school_lesson_progress SET grade=?,feedback=?,graded_at=?,graded_by=\'admin\',updated_at=? WHERE id=?').bind(storedGrade,feedback,now,now,progressId).run();
   const shownGrade=row.tex_node_id?`${(storedGrade/10).toFixed(1)}/10`:`${storedGrade}/100`;
-  await env.DB.prepare('INSERT INTO school_notifications (id,student_email,course_id,lesson_id,title,message,created_at) VALUES (?,?,?,?,?,?,?)').bind(crypto.randomUUID(),row.student_email,row.course_id,row.lesson_id,`Nueva retroalimentación: ${row.lesson_title}`,`Se calificó “${row.lesson_title}” de ${row.course_title}: ${shownGrade}.\n\n${feedback || 'El administrador guardó tu calificación.'}`,now).run();
+  await env.DB.prepare('INSERT INTO school_notifications (id,student_email,course_id,lesson_id,title,message,body,created_at) VALUES (?,?,?,?,?,?,?,?)').bind(crypto.randomUUID(),row.student_email,row.course_id,row.lesson_id,`Nueva retroalimentación: ${row.lesson_title}`,`Se calificó “${row.lesson_title}” de ${row.course_title}: ${shownGrade}.\n\n${feedback || 'El administrador guardó tu calificación.'}`,`Se calificó “${row.lesson_title}” de ${row.course_title}: ${shownGrade}.\n\n${feedback || 'El administrador guardó tu calificación.'}`,now).run();
   return json({ok:true,grade,gradedAt:now});
 };

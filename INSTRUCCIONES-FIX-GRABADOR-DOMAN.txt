@@ -1,0 +1,5 @@
+CORRECCIÓN DEL ENVÍO DEL AUDIO
+
+Descomprime el ZIP en la raíz del proyecto, sobrescribiendo `src/pages/admin/escuela/audio-doman.astro`.
+
+La causa era un conflicto entre el campo oculto `name="action"` y la propiedad `form.action` del navegador. El envío ahora toma la ruta del atributo HTML explícitamente y apunta a `/api/admin/escuela/doman-audio`. No requiere migración ni cambios en R2.

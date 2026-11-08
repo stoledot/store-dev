@@ -1,0 +1,46 @@
+IMPLEMENTACIÓN: DESCARGAS DE CURSOS XML DESDE R2
+
+INCLUIR EN EL PROYECTO
+Este ZIP es diferencial para la versión que ya incorpora LaTeX.js. Copia sus
+carpetas src/ y migrations/ sobre la raíz del proyecto, conservando las rutas.
+
+1. Aplica la migración nueva 0064_school_course_downloads.sql:
+   - Local: npm run db:migrate
+   - Producción: npm run db:migrate:remote
+   No ejecutes la migración de producción antes de revisar el entorno objetivo.
+
+2. Confirma que wrangler.jsonc mantiene la binding FILES con el bucket privado R2
+   que ya usa la aplicación. Esta implementación no necesita un bucket público.
+
+3. En administración abre /admin/escuela/xml y guarda el curso que contendrá la
+   descarga. Ve a “Archivos descargables en R2”, elige ese curso, escribe una
+   referencia (por ejemplo guia-unidad-1) y carga un PDF/TXT/ZIP/PNG/JPG/WEBP/
+   DOCX/XLSX/PPTX de hasta 25 MB. Volver a cargar la misma referencia reemplaza
+   el archivo conservando los enlaces existentes.
+
+4. En el XML de la lección escribe el mismo ref:
+
+   <content><p>Revisa el material de apoyo.</p></content>
+   <download ref="guia-unidad-1" title="Descargar guía">PDF con ejercicios</download>
+
+   `title` aparece como texto del enlace; el texto interno es una descripción
+   opcional. El bloque puede estar entre los demás bloques de la lección. Valida
+   y guarda el XML después de editarlo.
+
+5. La retirada de un archivo se bloquea mientras alguna lección publicada use el
+   ref. Primero elimina el bloque del XML y guarda el curso; luego retíralo en el
+   panel.
+
+RUTAS AÑADIDAS O MODIFICADAS
+- migrations/0064_school_course_downloads.sql
+- src/features/mathTexts/xmlCourse.ts
+- src/pages/admin/escuela/descargas.astro
+- src/pages/admin/escuela/xml.astro
+- src/pages/api/admin/escuela/descargas.ts
+- src/pages/api/escuela/cursos/[curso]/[slug]/descargas/[ref].ts
+- src/pages/escuela/cursos/[curso]/[slug].astro
+
+La descarga requiere sesión y acceso vigente al curso, verifica la referencia
+guardada en la lección y respeta el orden de avance. La ruta no expone la clave
+R2. Solo se aceptan los formatos indicados arriba; amplía deliberadamente la
+lista de extensiones/MIME en la ruta administrativa si el curso necesita otros.

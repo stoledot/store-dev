@@ -1,0 +1,683 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<curso>
+
+    <meta>
+        <title>Curso de LaTeX</title>
+
+        <summary>
+            Este curso proporciona una introducción al lenguaje de marcado LaTeX, cubriendo la sintaxis básica, 
+            la creación de documentos y la inclusión de elementos matemáticos.
+        </summary>
+
+        <author>Brillinury y Samuel</author>
+
+    </meta>
+
+    <!--
+    CONTENIDO DEL CURSO
+    ********************
+    - Latex como programa de procesamiento de texto
+        - Cómo funciona laTeX
+        - Diferencias entre LaTeX y otros procesadores de texto
+        - Qué es un compilador
+        - Compilación de documentos LaTeX
+        - Ventajas y desventajas de LaTeX
+        
+    - Instalación y configuración de LaTeX
+    - Estructura básica de un documento LaTeX
+        - Ejemplo de documento LaTeX
+        - Declaración del tipo de documento y paquetes
+        - Entornos y declaración de entornos
+        - Entorno document
+
+
+    - Formateo de texto en LaTeX
+        - Tipos de letra y tamaños
+        - Alineación y sangría
+        - Estilos de texto (negrita, cursiva, subrayado)
+
+    - Listas y tablas en LaTeX
+        - Listas numeradas y con viñetas
+        - Tablas y su formato
+
+    - Comandos y entornos en LaTeX
+        - Comandos básicos
+        - Entornos comunes
+
+    - Secciones y subsecciones en LaTeX
+        - Creación de secciones y subsecciones
+        - Numeración automática de secciones
+
+    - Entornos personalizados en LaTeX
+        - Creación de entornos personalizados
+        - Uso de paquetes para entornos adicionales
+
+    - Numeración y referencias en LaTeX
+        - Numeración de ecuaciones, figuras y tablas
+        - Referencias cruzadas y etiquetas
+
+    - Creación automática de índices y tablas de contenido en LaTeX
+        - Generación de índices
+        - Creación de tablas de contenido
+
+    - Estilos y plantillas en LaTeX
+        - Uso de estilos predefinidos
+        - Creación de plantillas personalizadas
+
+    - Presentaciones con LaTeX
+        - Creación de presentaciones con Beamer
+
+    - Diagramas y gráficos en LaTeX
+        - Creación de diagramas con TikZ
+
+    - Bibliografía y citas en LaTeX
+        - Gestión de bibliografía con BibTeX
+
+    - Personalización de documentos en LaTeX
+        - Modificación de estilos y formatos
+
+    - Imágenes y gráficos en LaTeX
+        - Inclusión de imágenes
+        - Creación de gráficos con paquetes
+
+    - Ecuaciones y símbolos matemáticos en LaTeX
+        - Símbolos matemáticos básicos
+        - Ecuaciones y fórmulas
+
+    - Entornos matemáticos en LaTeX
+        - Entornos para ecuaciones alineadas
+        - Entornos para matrices y sistemas de ecuaciones
+
+    - Referencias y bibliografía en LaTeX
+        - Citas y referencias cruzadas
+        - Creación de bibliografía
+
+    - Conclusión del curso
+    -->
+
+    <section id="introduccion" title="Introducción">
+        <lesson id="intro" title="Introducción al curso" weight="1">
+
+            <content>
+                <p>Este es un curso de introducción a LaTeX. 
+                Aprenderás sobre la sintaxis básica, la creación de documentos y la inclusión de elementos matemáticos.</p>
+
+                <p>Estos son los objetivos del curso:</p>
+
+                <ul>
+                <li>Comprender la estructura básica de un documento LaTeX</li>
+                <li>Aprender a utilizar comandos y entornos en LaTeX</li>
+                <li>Crear documentos con secciones, listas y tablas</li>
+                <li>Incluir imágenes, gráficos y ecuaciones matemáticas</li>
+                <li>Generar referencias y bibliografía en LaTeX</li>
+
+                </ul>
+
+            </content>
+
+        </lesson>
+
+        <lesson id="indice" title="Índice del curso" weight="1">
+            <content>
+                <h1>Índice del curso</h1>
+                <p>El curso está organizado en las siguientes secciones y lecciones:</p>
+                <ul>
+                </ul>
+            </content>
+        </lesson>
+
+    </section>
+
+    <section id="section-1" title="Sección 1: Latex como programa de procesamiento de texto">
+        <lesson id="section-1-lesson-1" title="Lección 1: Introducción a LaTeX" weight="1">
+            <content>
+                <p>LaTeX es un sistema de preparación de documentos que permite crear documentos de alta calidad tipográfica. 
+                Es especialmente útil para la creación de documentos científicos y técnicos.</p>
+                <p>LaTeX se basa en el lenguaje de marcado TeX, desarrollado por Donald Knuth.
+                LaTeX proporciona una serie de comandos y entornos que facilitan la creación de 
+                documentos complejos, incluyendo matemáticas, tablas, figuras y referencias bibliográficas.</p>
+                <p>LaTeX es ampliamente utilizado en la comunidad académica y científica debido a su capacidad 
+                para manejar documentos complejos y su enfoque en la calidad tipográfica.</p>
+
+                <p>Algunas características de LaTeX incluyen:</p>
+                <ul>
+                    <li>Separación del contenido y el formato</li>
+                    <li>Soporte para matemáticas y símbolos</li>
+                    <li>Generación automática de índices, tablas de contenido y bibliografía</li>
+                    <li>Compatibilidad con múltiples idiomas</li>
+                </ul>
+
+            </content>
+        </lesson>
+
+        <lesson id="section-1-lesson-2" title="Lección 2: Cómo funciona LaTeX" weight="1">
+            <content>
+                <p>LaTeX funciona mediante la compilación de archivos de texto plano que contienen el contenido del documento 
+                y los comandos de formato. 
+                El proceso de compilación genera un archivo de salida en formato PDF u otros formatos.</p>
+
+                <p>El flujo de trabajo típico en LaTeX incluye los siguientes pasos:</p>
+                <ol>
+                    <li>Escribir el contenido del documento en un archivo de texto plano con extensión .tex con código LaTeX</li>
+                    <li>Incluir comandos y entornos para dar formato al documento</li>
+                    <li>Compilar el archivo .tex utilizando un compilador LaTeX (como pdflatex o xelatex)</li>
+                    <li>Revisar el archivo de salida generado (por ejemplo, un archivo PDF)</li>
+                </ol>
+
+                <p>Es importante tener en cuenta que LaTeX no es un procesador de texto WYSIWYG (What You See Is What You Get), 
+                sino un sistema de preparación de documentos basado en texto. 
+                Esto significa que el usuario escribe el contenido y los comandos en un archivo de texto, 
+                y luego compila ese archivo para generar el documento final.</p>
+            </content>
+
+        </lesson>
+
+        <lesson id="section-1-lesson-3" title="Lección 3: Diferencias entre LaTeX y otros procesadores de texto" weight="1">
+            <content>
+                <p>LaTeX se diferencia de otros procesadores de texto, como Microsoft Word o Google Docs, en varios aspectos:</p>
+                <ul>
+                    <li>LaTeX utiliza un enfoque basado en texto y comandos, 
+                    mientras que otros procesadores de texto utilizan una interfaz gráfica que te muestra el resultado en tiempo real.</li>
+                    <li>LaTeX permite un control preciso sobre el formato y la presentación del documento, 
+                    mientras que otros procesadores de texto pueden ser más limitados en este aspecto.</li>
+                    <li>LaTeX es especialmente adecuado para documentos científicos y técnicos, 
+                    mientras que otros procesadores de texto pueden ser más adecuados para documentos generales.</li>
+                </ul>
+
+                <p>En resumen, LaTeX es una herramienta poderosa para la creación de documentos complejos y de alta 
+                calidad tipográfica, 
+                especialmente en entornos académicos y científicos, matemáticos, químicos, etc.</p>
+
+                <p> Si necesitas escribirir documentos con fórmulas matemáticas, 
+                referencias bibliográficas y un formato profesional, LaTeX es la mejor opción.</p>
+
+                
+            </content>
+        </lesson>
+
+        <lesson id="section-1-lesson-4" title="Lección 4: ¿Qué es un compilador?" weight="1">
+            <content>
+                <p>Un compilador es un programa que traduce el código fuente escrito en un lenguaje de programación o 
+                marcado (como LaTeX) a un formato ejecutable o legible por la máquina. 
+                En el caso de LaTeX, el compilador toma el archivo .tex y genera un archivo de salida, 
+                como PDF.</p>
+
+                <p>Algunos compiladores populares para LaTeX incluyen:</p>
+                <ul>
+                    <li>pdflatex: Compila archivos .tex directamente a PDF</li>
+                    <li>xelatex: Compila archivos .tex a PDF con soporte para fuentes del sistema</li>
+                    <li>lualatex: Compila archivos .tex a PDF utilizando el motor LuaTeX</li>
+                </ul>
+
+                <p>El proceso de compilación puede generar mensajes de error o advertencias 
+                si hay problemas en el código LaTeX. 
+                Es importante revisar estos mensajes para corregir cualquier error antes de 
+                generar el documento final.</p>
+
+            </content>
+        </lesson>
+
+        <lesson id="section-1-lesson-5" title="Lección 5: Compilación de documentos LaTeX" weight="1">
+            <content>
+                <p>Para compilar un documento LaTeX, sigue estos pasos:</p>
+                <ol>
+                    <li>Abre tu editor de texto o entorno de desarrollo LaTeX.</li>
+                    <li>Crea un nuevo archivo con extensión .tex y escribe tu contenido y comandos LaTeX.</li>
+                    <li>Guarda el archivo.</li>
+                    <li>Selecciona el compilador que deseas utilizar (por ejemplo, pdflatex, xelatex o lualatex).</li>
+                    <li>Ejecuta el compilador para generar el archivo de salida (por ejemplo, PDF).</li>
+                    <li>Revisa el archivo de salida y corrige cualquier error si es necesario.</li>
+                </ol>
+
+                <p>Es importante tener en cuenta que algunos documentos pueden requerir múltiples compilaciones 
+                para resolver referencias cruzadas y generar índices correctamente.</p>
+
+            </content>
+        </lesson>
+
+        <lesson id="section-1-lesson-6" title="Lección 6: Ventajas y desventajas de LaTeX" weight="1">
+            <content>
+                <p>LaTeX ofrece varias ventajas y desventajas en comparación con otros procesadores de texto:</p>
+
+                <h3>Ventajas:</h3>
+                <ul>
+                    <li>Alta calidad tipográfica</li>
+                    <li>Excelente manejo de matemáticas y símbolos</li>
+                    <li>Generación automática de índices, tablas de contenido y bibliografía</li>
+                    <li>Separación del contenido y el formato</li>
+                    <li>Compatibilidad con múltiples idiomas</li>
+                </ul>
+
+                <h3>Desventajas:</h3>
+                <ul>
+                    <li>Curva de aprendizaje más pronunciada que otros procesadores de texto</li>
+                    <li>No es WYSIWYG (What You See Is What You Get)</li>
+                    <li>Requiere compilación para generar el documento final</li>
+                    <li>Puede ser menos intuitivo para usuarios acostumbrados a interfaces gráficas</li>
+                </ul>
+
+                <p> Puede ser una desventaja tener que aprender un nuevo lenguaje de marcado y acostumbrarse a la sintaxis de LaTeX,
+                pero una vez que domines LaTeX, podrás crear documentos de alta calidad con facilidad.</p>
+            </content>
+        </lesson>
+
+    </section>
+
+    <section id="instalacion-configuracion" title="Instalación y configuración de LaTeX">
+        <lesson id="instalacion-configuracion-lesson-1" title="Lección 7: Instalación de LaTeX" weight="1">
+            <content>
+                <p>Para instalar LaTeX en tu sistema, sigue estos pasos:</p>
+                <ol>
+                    <li>Descarga e instala una distribución de LaTeX adecuada para tu sistema operativo. 
+                        Algunas distribuciones populares incluyen TeX Live o MikTeX (para Linux y Windows) y MacTeX (para macOS).
+                    </li>
+                    <li>Instala un editor de texto o entorno de desarrollo LaTeX. 
+                        Algunos editores populares incluyen TeXstudio, Overleaf (basado en la web) 
+                        y Visual Studio Code con extensiones LaTeX.
+                    </li>
+                    <li>Configura el editor para utilizar la distribución de LaTeX instalada.</li>
+                </ol>
+
+                <p>Una vez que hayas instalado y configurado LaTeX, podrás comenzar a crear documentos utilizando el lenguaje de marcado.</p>
+
+                <p> Te explicaremos más detalladamente cómo instalar LaTeX en diferentes sistemas operativos, incluyendo Windows, macOS y Linux.</p>
+            </content>
+
+            <content>
+                <h2>Instalación en Windows</h2>
+                <p>Para instalar LaTeX en Windows, sigue estos pasos:</p>
+                <h3>1. Descargar e instalar MikTeX</h3>
+                <p>Visita el sitio web oficial de MikTeX 
+                (<a href="https://miktex.org/download">https://miktex.org/download</a>) 
+                y descarga el instalador para Windows.
+                Ejecuta el instalador y sigue las instrucciones en pantalla para completar la instalación.
+                </p>
+                <img src="https://manualdelatex.com/images/miktex1.png" alt="Instalación de MikTeX" width="600"></img>
+                <p>Durante la instalación, asegúrate de seleccionar la opción "Install missing packages on-the-fly" para que MikTeX pueda descargar automáticamente los paquetes necesarios cuando los necesites.</p>
+                <img src="https://manualdelatex.com/images/miktex2.png" alt="Configuración de MikTeX" width="600"></img>
+                <p>Una vez completada la instalación, abre el "MikTeX Console" para verificar que la instalación se haya realizado correctamente y que todos los paquetes estén actualizados.</p>
+                <img src="https://manualdelatex.com/images/miktex3.png" alt="MikTeX Console" width="600"></img>
+
+                <h3>2. Descargar e instalar un editor de LaTeX</h3>
+                <p>Descarga e instala un editor de LaTeX, como TeXstudio (<a href="https://www.texstudio.org/">https://www.texstudio.org/</a>) o Visual Studio Code con la extensión LaTeX Workshop.</p>
+                <img src="https://manualdelatex.com/images/texstudio.png" alt="Instalación de TeXstudio" width="600"></img>
+                <p>Una vez instalado el editor, ábrelo y verifica que esté configurado para utilizar la distribución de LaTeX (MikTeX) que instalaste previamente.</p>
+                <h3>3. Configurar el editor</h3>
+                <p>Abre el editor de LaTeX y configura la ruta de la distribución de LaTeX (MikTeX) en la configuración del editor.</p>
+
+                <p>Con estos pasos, habrás instalado y configurado LaTeX en tu sistema Windows, y estarás listo para comenzar a crear documentos LaTeX.</p>
+
+                <h2>Instalación en macOS</h2>
+                <p>Para instalar LaTeX en macOS, sigue estos pasos:</p>
+                <h3>1. Descargar e instalar MacTeX</h3>
+                <p>Visita el sitio web oficial de MacTeX (<a href="https://tug.org/mactex/">https://tug.org/mactex/</a>) y descarga el instalador de MacTeX.
+                Ejecuta el instalador y sigue las instrucciones en pantalla para completar la instalación.
+                </p>
+                <img src="https://manualdelatex.com/images/mactex1.png" alt="Instalación de MacTeX" width="600"></img>
+                <p>Una vez completada la instalación, abre la aplicación "TeX Live Utility" para verificar que la instalación se haya realizado correctamente y que todos los paquetes estén actualizados.</p>
+                <img src="https://manualdelatex.com/images/mactex2.png" alt="TeX Live Utility" width="600"></img>
+                <p>Finalmente, configura el editor de LaTeX para utilizar la distribución de MacTeX instalada.</p>
+
+                <h2>Instalación en Linux</h2>
+                <p>Para instalar LaTeX en Linux, sigue estos pasos:</p>
+                <h3>1. Instalar TeX Live</h3>
+                <p>Abre una terminal y ejecuta el siguiente comando para instalar TeX Live:</p>
+                <pre>
+                    <code>
+                        sudo apt-get install texlive-full
+                    </code>
+                </pre>
+                <p>Este comando instalará la distribución completa de TeX Live, incluyendo todos los paquetes necesarios para trabajar con LaTeX.</p>
+                <h3>2. Instalar un editor de LaTeX</h3>
+                <p>Instala un editor de LaTeX, como TeXstudio o Gummi, utilizando el gestor de paquetes de tu distribución de Linux.</p>
+                <p>Por ejemplo, para instalar TeXstudio, ejecuta el siguiente comando:</p>
+                <pre>
+                    <code>
+                        sudo apt-get install texstudio
+                    </code>
+                </pre>
+                <p>Una vez instalado el editor, ábrelo y verifica que esté configurado para utilizar la distribución de LaTeX (TeX Live) que instalaste previamente.</p>
+
+                <p>Con estos pasos, habrás instalado y configurado LaTeX en tu sistema Linux, y estarás listo para comenzar a crear documentos LaTeX.</p>
+
+            </content>
+
+        </lesson>
+    </section>
+
+    <section id="estructura-basica" title="Estructura básica de un documento LaTeX">
+        <lesson id="estructura-basica-lesson-1" title="Lección 8: Estructura básica de un documento LaTeX" weight="1">
+            <content>
+                <p>Un documento LaTeX comienza con la declaración del tipo de documento y la inclusión de paquetes necesarios. 
+                Luego, se define el contenido del documento dentro del entorno <code>\begin{document} ... \end{document}</code>.</p>
+
+                <pre>
+                    <code>
+                        \documentclass{article}
+                        
+                        \begin{document}
+                        \end{document}
+                    </code>
+                </pre>
+
+                <p>Dentro del entorno <code>document</code>, puedes agregar secciones, subsecciones, párrafos y otros elementos de contenido.</p>
+
+                <p>Otro ejemplo de estructura básica de un documento LaTeX es el siguiente:</p>
+                <pre>
+                    <code>
+                        \documentclass{report}
+                        \usepackage[utf8]{inputenc}
+                        
+                        \title{Mi primer documento LaTeX}
+                        \author{Autor del documento}
+                        \date{\today}
+                        
+                        \begin{document}
+                        
+                        \maketitle
+                        
+                        \section{Introducción}
+                        Este es un ejemplo de un documento LaTeX.
+                        
+                        \end{document}
+                    </code>
+                </pre>
+
+
+                <p>En este ejemplo, se utiliza la clase de documento <code>report</code>, se incluyen paquetes adicionales y se definen el título, autor y fecha del documento.</p>
+
+                <p>Recuerda que LaTeX es un lenguaje de marcado, por lo que el contenido se escribe en un archivo de texto plano y luego se compila para generar un documento final en formato PDF u otros formatos.</p>
+            </content>
+
+            <download ref="estructura-basica-latex.tex" title="Descargar archivo de ejemplo" >
+                Descarga el archivo de ejemplo que contiene la estructura básica de un documento LaTeX.
+                Pégalo en tu editor de LaTeX y compílalo para ver el resultado.
+            </download>
+        </lesson>
+
+        <lesson id="estructura-basica-lesson-2" title="Lección 9: Declaración del tipo de documento y paquetes" weight="2">
+            <content>
+                <p>La declaración del tipo de documento se realiza mediante el comando <code>\documentclass{tipo}</code>, 
+                donde <code>tipo</code> puede ser <code>article</code>, <code>report</code>, <code>book</code>, entre otros.</p>
+
+                <p>La inclusión de paquetes se realiza mediante el comando <code>\usepackage{paquete}</code>, 
+                donde <code>paquete</code> es el nombre del paquete que deseas incluir en tu documento.</p>
+
+                <p> Los paquetes proporcionan funcionalidades adicionales y permiten personalizar el formato y la apariencia del documento.</p>
+
+                <p>Algunos paquetes comunes incluyen:</p>
+                <ul>
+                    <li><code>amsmath</code>: Proporciona entornos y comandos para escribir matemáticas avanzadas.</li>
+                    <li><code>graphicx</code>: Permite la inclusión de imágenes en el documento.</li>
+                    <li><code>geometry</code>: Permite ajustar los márgenes y la disposición de la página.</li>
+                    <li><code>hyperref</code>: Permite crear enlaces y referencias dentro del documento.</li>
+                    <li><code>babel</code>: Permite la adaptación del documento a diferentes idiomas.</li>
+                    <li><code>fontenc</code>: Permite seleccionar la codificación de fuentes para el documento.</li>
+                </ul>
+
+                <p> Los tipos de documentos más comunes son:</p>
+                <ul>
+                    <li><code>article</code>: Para artículos y documentos cortos.</li>
+                    <li><code>report</code>: Para informes y documentos más largos.</li>
+                    <li><code>book</code>: Para libros y documentos extensos.</li>
+                    <li><code>letter</code>: Para cartas y correspondencia.</li>
+                    <li><code>beamer</code>: Para presentaciones y diapositivas.</li>
+                    <li><code>memoir</code>: Para documentos con un estilo más flexible y personalizado.</li>
+                    <li><code>scrartcl</code>, <code>scrreprt</code>, <code>scrbook</code>: Clases de documentos de la familia KOMA-Script, que ofrecen un estilo más moderno y opciones de personalización.</li>
+                </ul>
+
+                <p> Ejemplo de declaración del tipo de documento y paquetes: </p>
+                
+                <pre>
+                    <code>
+\documentclass{article}
+\usepackage[utf8]{inputenc} % Permite tildes y caracteres en español
+\usepackage{listings}       % Paquete principal para formatear código
+\usepackage{xcolor}         % Paquete para darle color a la sintaxis
+
+% Configuración del estilo de código personalizado
+\lstset{
+    backgroundcolor=\color{gray!10},   % Fondo gris claro
+    basicstyle=\ttfamily\small,        % Tipografía monoespaciada para el código
+    breaklines=true,                   % Ajuste automático de líneas largas
+    keywordstyle=\color{blue},         % Palabras clave en azul
+    commentstyle=\color{green!60!black}, % Comentarios en verde oscuro
+    stringstyle=\color{orange},        % Cadenas de texto en naranja
+    numbers=left,                      % Números de línea a la izquierda
+    numberstyle=\tiny\color{gray},     % Formato de los números de línea
+    frame=single,                      % Cuadro alrededor del bloque de código
+    captionpos=b                       % Posición del título (abajo)
+}
+
+\begin{document}
+
+\title{Ejemplo de Código en \LaTeX}
+\author{Tu Nombre}
+\date{\today}
+\maketitle
+
+A continuación se muestra un bloque de código de ejemplo en Python:
+
+% Bloque de declaración de código
+\begin{lstlisting}[language=Python, caption={Script básico en Python}]
+def saludar(nombre):
+    # Esto es un comentario en Python
+    mensaje = f"Hola, {nombre}, bienvenido a LaTeX."
+    print(mensaje)
+
+# Llamada a la función
+saludar("Mundo")
+\end{lstlisting}
+
+\end{document}
+
+                    </code>
+                </pre>
+
+                <p>Dentro del código LaTex, puedes comentarios, que es texto que 
+                no se verá en el documento final, los comentarios se indican 
+                poniendo un % seguido del texto que quieres comentar.</p>
+
+            </content>
+        </lesson>
+
+        <lesson id="estructura-basica-lesson-3" title="Lección 10: Entornos y declaración de entornos">
+
+            <content>
+                <p>
+                    Un entorno en LaTex es una sección de tu código en la que puedes 
+                    definir ciertas estructuras de texto y dar un formato específico, 
+                    por ejemplo, puedes definir un entorno que contiene a un teorema 
+                    o una demostración, una fórmula, una tabla o una matriz.
+                </p>
+
+                <p>La forma de definir un entorno en latex es la siguiente</p>
+                <pre>
+                    <code>
+                        \begin{Nombre del entorno}
+
+                        ... (contenido del entorno)
+
+                        \end{Nombre del entorno}
+                    </code>
+                </pre>
+
+                <p>Un ejemplo de cómo usar un entorno es el siguiente:</p>
+
+                <pre>
+                    <code>
+                    \begin{enumerate}
+                        \item Contenido de la lista enumerada
+                        \item Siguiente contenido de la lista enumerada
+                    \end{enumerate}
+                    </code>
+                </pre>
+
+                <p>Este es el código que escribirás en el editor de LaTex, y la
+                salida de ese código se verá así:</p>
+
+                <div class="card">
+                <div class="card-body">
+                    \begin{enumerate}
+                        \item Contenido de la lista enumerada
+                        \item Siguiente contenido de la lista enumerada
+                    \end{enumerate}
+                </div>
+                
+                </div>
+                
+            </content>
+
+            <inputlatex title="Práctica de LaTex: Crea un entorno de una lista.">
+            <p>Escribe el código de una lista, utilizando lo aprendido en la lección y observa el resultado.</p>
+            </inputlatex>
+        </lesson>
+
+        <lesson id="estructura-basica-lesson-4" title="Lección 11: El entorno document">
+            <content>
+            <p>
+            El entorno <code>document</code> es el entorno donde se escribe todo el 
+            contenido del documento. Todo documento de LaTex debe escribirse este entorno.
+            </p>
+
+            <p>La sintaxis del entorno document es la siguiente: </p>
+
+            <pre>
+                <code>
+                \begin{document}
+                ... (todo el contenido del documento)
+                \end{document}
+                </code>
+            </pre>    
+            </content>
+        </lesson>
+
+    </section>
+
+    <section id="formateo-de-texto-section" title="Formateo de texto en LaTex">
+        <lesson id="formateo-de-texto-lesson-1" title="Tipos de letra y tamaños">
+            <content>
+                <p>El formateo de texto es lo que comunmente aparece en las barras 
+                superiores de los editores de texto convencionales que incluyen, 
+                hacer el texto en negritas, subrayado, tipo italic, tamaño, y fuentes.
+                </p>
+
+                <p>
+                    Los formatos más comunes que hay en LaTex son los siguientes:
+                </p>
+                
+                \begin{itemize}
+                    \item \textbf{Negritas.} Usa el comando \verb|\textbf{texto}|
+                    \item \textit{Cursiva/ itálica.} Usa el comando \verb|\textit{texto}|
+                    \item \emph{Énfasis.} Usa el comando \verb|\emph{texto}|
+                    \item 
+                \end{itemize}
+                
+                
+                
+            </content>
+
+
+
+        </lesson>
+    </section>
+
+
+
+    <section id="conceptos-basicos" title="Conceptos básicos">
+        <lesson id="conceptos-basicos-contenido" title="Contenido de la sección" 
+                weight="1">
+            <content>
+            
+                <p>En esta sección, aprenderás los conceptos básicos de LaTeX, incluyendo la estructura de un documento, 
+                comandos y entornos.</p>
+
+                <ul>
+                    <li>Estructura básica de un documento LaTeX</li>
+                    <li>Comandos y entornos</li>
+                    <li>Formateo de texto</li>
+                    <li>Creación de listas y tablas</li>
+                </ul>
+
+            </content>
+
+        </lesson>   
+
+        <lesson id="conceptos-basicos-lesson-1" title="Lección 1: Estructura básica de un documento LaTeX" weight="2">
+            <content>
+                <p>Un documento LaTeX comienza con la declaración del tipo de documento y la inclusión de paquetes necesarios. 
+                Luego, se define el contenido del documento dentro del entorno <code>\begin{document} ... \end{document}</code>.</p>
+
+                <pre>
+                    <code>
+                        \documentclass{article}
+                        
+                        \begin{document}
+                        \end{document}
+                    </code>
+                </pre>
+
+                <p>Dentro del entorno <code>document</code>, puedes agregar secciones, subsecciones, párrafos y otros elementos de contenido.</p>
+
+                <p>Otro ejemplo de estructura básica de un documento LaTeX es el siguiente:</p>
+                <pre>
+                    <code>
+                        \documentclass{report}
+                        \usepackage[utf8]{inputenc}
+                        
+                        \title{Mi primer documento LaTeX}
+                        \author{Autor del documento}
+                        \date{\today}
+                        
+                        \begin{document}
+                        
+                        \maketitle
+                        
+                        \section{Introducción}
+                        Este es un ejemplo de un documento LaTeX.
+                        
+                        \end{document}
+                    </code>
+                </pre>
+
+                <p>En este ejemplo, se utiliza la clase de documento <code>report</code>, se incluyen paquetes adicionales y se definen el título, autor y fecha del documento.</p>
+
+                <p>Recuerda que LaTeX es un lenguaje de marcado, por lo que el contenido se escribe en un archivo de texto plano y luego se compila para generar un documento final en formato PDF u otros formatos.</p>
+            </content>
+        </lesson>
+
+        <lesson id="conceptos-basicos-lesson-2" 
+            title="Lección 2: Comandos y entornos" weight="3">
+            <content>
+                <p>Los comandos en LaTeX comienzan con una barra invertida (\) y pueden tener argumentos opcionales o requeridos. 
+                Los entornos se utilizan para agrupar contenido y aplicar formato específico.</p>
+
+                <p>Algunos ejemplos de comandos y entornos en LaTeX son:</p>
+                <p>Ejemplo de cómo se ve una lista en LaTeX:</p>
+                <p>
+                \begin{itemize}
+                    \item Elemento 1
+                    \item Elemento 2
+                    \item Elemento 3
+                \end{itemize}
+                </p>
+
+
+                <pre>
+                    <code>
+                        \textbf{Texto en negrita}
+                        
+                        \begin{itemize}
+                            \item Elemento 1
+                            \item Elemento 2
+                        \end{itemize}
+                    </code>
+                </pre>
+            </content>
+            <inputlatex>
+                <p>Escribe un comando para crear un título de sección llamado "Conclusión".</p>
+                <p>Escribe un entorno para crear una lista numerada con tres elementos.</p>
+            </inputlatex>
+        </lesson>
+    </section>
+</curso>

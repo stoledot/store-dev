@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<curso>
+    <meta>
+    <title>Curso Doman Nivel 0</title>
+    <summary>
+    Este es un curso dirigido a niños para aprender a leer.
+    </summary>
+    <author>Brillinury y Samuel</author>
+
+    </meta>
+    <section id="seccion-1" title="Cocina">
+        <lesson id="seccion-1-lesson-1" title="Cocina - Lección 1">
+            <content>
+            <h2>Reproduce la sesión.</h2>
+            </content>
+
+            <domanslides category="Cocina" cantity="9">
+
+            </domanslides>
+        </lesson>
+    </section>
+
+</curso>

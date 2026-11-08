@@ -1,0 +1,27 @@
+/* Simple, safe slide styling. Adjust these variables to customize Doman slides. */
+.doman-player {
+  --doman-slide-background: #ffffff;
+  --doman-slide-color: #111827;
+  --doman-slide-border: #dbeafe;
+  --doman-slide-min-height: 62vh;
+  --doman-slide-padding: clamp(1rem, 4vw, 3rem);
+}
+.doman-player [data-doman-stage] {
+  min-height: var(--doman-slide-min-height);
+  padding: var(--doman-slide-padding);
+  background: var(--doman-slide-background);
+  border-color: var(--doman-slide-border);
+  transition: none !important;
+}
+.doman-player [data-doman-word] {
+  color: var(--doman-slide-color);
+  transition: none !important;
+}
+.doman-player:fullscreen {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  background: var(--doman-slide-background);
+}
+.doman-player:fullscreen [data-doman-stage] { min-height: 0; height: 100%; }

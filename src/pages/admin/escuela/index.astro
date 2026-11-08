@@ -45,7 +45,7 @@ if (Astro.request.method === 'POST') {
       if (duplicate) throw new Error('Ya existe una lección con ese slug en este curso.');
       const next = await env.DB.prepare('SELECT COALESCE(MAX(sequence_no), 0) + 1 AS n FROM school_lessons WHERE course_id = ?').bind(courseId).first<{ n: number }>();
       // html:false in renderMarkdown escapes raw HTML. We store both the editable
-      // Markdown source and safe, server-rendered HTML; LaTeX delimiters survive for MathJax.
+      // Markdown source and safe, server-rendered HTML; LaTeX fragments are completed by the shared LaTeX.js renderer.
       const html = renderMarkdown(source);
       await env.DB.prepare(`INSERT INTO school_lessons (id, course_id, slug, title, summary, content_md, content_html, sequence_no, lesson_type, status, required_to_complete) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
         .bind(crypto.randomUUID(), courseId, slug, title, summary, source, html, Number(next?.n ?? 1), lessonType, status, required).run();
@@ -75,6 +75,10 @@ const lessons = lessonsResult.results ?? [];
       <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/evaluaciones">Evaluaciones y pesos</a>
       <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/orden-lecciones">Ordenar lecciones</a>
       <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/calificaciones">Revisar entregas y calificar</a>
+      <a class="rounded border border-brand px-3 py-2 text-sm font-semibold" href="/admin/escuela/xml">Cargar o actualizar curso XML</a>
+      <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/videos">Videos para lecciones XML</a>
+      <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/audio-doman">Audios y slides Doman</a>
+      <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/universidad">Administración universitaria</a>
       <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/tex">Cursos y lecturas desde .tex</a>
       <a class="rounded border border-line px-3 py-2 text-sm" href="/admin/escuela/tex-alumnos">Alumnos de cursos vendidos</a>
     </div>
@@ -148,15 +152,11 @@ const lessons = lessonsResult.results ?? [];
           if (!response.ok) throw new Error('No se pudo generar la vista previa.');
           preview.innerHTML = await response.text();
           wrap.classList.remove('hidden');
-          if (window.MathJax && window.MathJax.typesetPromise) { await window.MathJax.typesetPromise([preview]); }
+          window.renderLatexContent?.(preview);
           wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } catch (e) { alert(e instanceof Error ? e.message : 'Error en la vista previa.'); }
         finally { button.disabled = false; button.textContent = 'Vista previa'; }
       });
     })();
   </script>
-  <script is:inline>
-    window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }, options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] } };
-  </script>
-  <script is:inline async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </AdminLayout>

@@ -1,0 +1,49 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+const courseId = String(Astro.url.searchParams.get('course') ?? '').trim();
+const courses = (await env.DB.prepare("SELECT id,title,slug,status FROM school_courses WHERE source_format='xml' ORDER BY title COLLATE NOCASE").all<{id:string;title:string;slug:string;status:string}>()).results ?? [];
+const selected = courses.find((course) => course.id === courseId);
+const assets = selected ? ((await env.DB.prepare('SELECT asset_ref,file_name,app_name,byte_size,updated_at FROM school_course_geogebra_assets WHERE course_id=? ORDER BY asset_ref').bind(courseId).all<{asset_ref:string;file_name:string;app_name:string;byte_size:number;updated_at:string}>()).results ?? []) : [];
+const ok = Astro.url.searchParams.get('ok');
+---
+
+<AdminLayout title="Construcciones GeoGebra" active="school">
+  <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <header class="mb-6">
+      <p class="text-xs uppercase tracking-widest text-gray-400">GeoGebra privado en R2</p>
+      <h1 class="mt-2 text-3xl font-semibold">Construcciones de GeoGebra</h1>
+      <p class="mt-2 max-w-3xl text-sm text-gray-600">Carga XML de construcciones de GeoGebra, elige si se abrirán como gráfica 2D o 3D y relaciónalas con un curso mediante una referencia.</p>
+      <nav class="mt-3 flex gap-4 text-sm"><a class="underline" href="/admin/escuela">Escuela</a><a class="underline" href="/admin/escuela/xml">Cursos XML</a><a class="underline" href="/admin/escuela/descargas">Archivos descargables</a></nav>
+    </header>
+    {Astro.url.searchParams.get('error') && <p class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{Astro.url.searchParams.get('error')}</p>}
+    {ok === 'subido' && <p class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">Construcción guardada o reemplazada.</p>}
+    {ok === 'retirado' && <p class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">Construcción retirada.</p>}
+    <section class="rounded-xl border border-line p-5">
+      <form method="GET" class="flex flex-wrap items-end gap-3">
+        <label class="min-w-64 flex-1 text-sm">Curso XML<select name="course" required class="mt-1 block w-full rounded border p-2"><option value="">Selecciona un curso</option>{courses.map((course)=><option value={course.id} selected={course.id===courseId}>{course.title} · {course.status}</option>)}</select></label>
+        <button class="rounded-lg border px-4 py-2">Ver construcciones</button>
+      </form>
+    </section>
+    {selected && <>
+      <section class="mt-5 rounded-xl border border-line p-5">
+        <h2 class="text-lg font-semibold">Cargar o reemplazar una construcción</h2>
+        <form method="POST" action="/api/admin/escuela/geogebra" enctype="multipart/form-data" class="mt-4 grid gap-4 md:grid-cols-2">
+          <input type="hidden" name="course_id" value={selected.id}/><input type="hidden" name="action" value="upload"/>
+          <label class="text-sm">Referencia (<code>ref</code>)<input required name="ref" maxlength="80" pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,79}" class="mt-1 block w-full rounded border p-2" placeholder="grafica-conjuntos"/></label>
+          <label class="text-sm">Vista de GeoGebra<select name="app_name" required class="mt-1 block w-full rounded border p-2"><option value="graphing">Gráfica 2D</option><option value="3d">Gráfica 3D</option></select></label>
+          <label class="text-sm md:col-span-2">Archivo de construcción XML (máximo 2 MB)<input required type="file" name="file" accept=".xml,application/xml,text/xml" class="mt-1 block w-full rounded border p-2"/></label>
+          <div class="md:col-span-2"><button class="rounded-lg bg-brand px-5 py-3 font-semibold text-white">Guardar construcción en R2</button></div>
+        </form>
+        <p class="mt-3 text-xs text-gray-500">Sube el XML de construcción exportado por GeoGebra, no el archivo ZIP <code>.ggb</code>. Reutilizar una referencia reemplaza su construcción y conserva los enlaces XML.</p>
+      </section>
+      <section class="mt-5 rounded-xl border border-line p-5">
+        <h2 class="text-lg font-semibold">Construcciones de {selected.title}</h2>
+        {assets.length ? <div class="mt-3 divide-y">{assets.map((asset)=><article class="flex flex-wrap items-center justify-between gap-4 py-4"><div><p class="font-semibold">{asset.asset_ref}</p><p class="text-sm text-gray-600">{asset.file_name} · {asset.app_name === '3d' ? 'Vista 3D' : 'Vista 2D'} · {(asset.byte_size/1024).toFixed(1)} KB</p><p class="text-xs text-gray-500">Actualizada {asset.updated_at}</p></div><form method="POST" action="/api/admin/escuela/geogebra"><input type="hidden" name="course_id" value={selected.id}/><input type="hidden" name="action" value="delete"/><input type="hidden" name="ref" value={asset.asset_ref}/><button class="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-700">Retirar</button></form></article>)}</div> : <p class="mt-3 text-sm text-gray-600">Todavía no hay construcciones para este curso.</p>}
+      </section>
+      <section class="mt-5 rounded-xl bg-gray-50 p-5"><h2 class="font-semibold">Ejemplo para el XML del curso</h2><pre class="mt-2 overflow-x-auto text-sm">{`<geogebragraphics ref="grafica-conjuntos" title="Diagrama de conjuntos">Mueve los puntos para explorar la intersección.</geogebragraphics>`}</pre></section>
+    </>}
+  </main>
+</AdminLayout>

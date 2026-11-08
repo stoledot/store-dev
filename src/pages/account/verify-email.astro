@@ -23,6 +23,7 @@ if (await emailAlreadyUsed(env.DB,newEmail,oldEmail)) return Astro.redirect('/ac
 const now = new Date().toISOString();
 // Move account-linked records only after proof of control of the new address.
 const statements = [
+  env.DB.prepare('UPDATE customer_accounts SET email=?,updated_at=datetime(\'now\') WHERE email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE customer_profiles SET email=?,updated_at=datetime(\'now\') WHERE email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('INSERT INTO customer_profiles(email) VALUES (?) ON CONFLICT(email) DO NOTHING').bind(newEmail),
   env.DB.prepare('UPDATE customer_email_aliases SET current_email=? WHERE current_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
@@ -30,6 +31,8 @@ const statements = [
   env.DB.prepare('UPDATE orders SET email=? WHERE email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE customer_messages SET customer_email=? WHERE customer_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE school_course_progress SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  // Keep saved LaTeX practice attached to the verified account when its login email changes.
+  env.DB.prepare('UPDATE school_latex_drafts SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE school_lesson_progress SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE school_course_assignments SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE school_student_intake SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),

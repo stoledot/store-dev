@@ -1,0 +1,24 @@
+---
+export const prerender=false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../../layouts/Layout.astro';
+import { accountsEnabled,getCustomerEmail } from '../../../features/auth/customer';
+import { ensureCustomerAccount } from '../../../features/auth/customerIdentity';
+import { cleanText } from '../../../features/customers/profiles';
+import { isForbiddenFormOrigin } from '../../../features/auth/formOrigin';
+
+if(!(await accountsEnabled()))return Astro.redirect('/',303);const email=await getCustomerEmail(Astro.cookies);if(!email)return Astro.redirect('/account/login',303);const client=await ensureCustomerAccount(env.DB,email);const classroomId=Astro.params.id??'';
+const student=await env.DB.prepare("SELECT student_number FROM school_students WHERE client_number=? AND status='active'").bind(client).first<{student_number:string}>();
+const teacher=await env.DB.prepare("SELECT teacher_number,display_name FROM school_teachers WHERE client_number=? AND status='active'").bind(client).first<{teacher_number:string;display_name:string}>();
+const studentMember=student?await env.DB.prepare("SELECT 1 AS ok FROM school_classroom_students WHERE classroom_id=? AND student_number=? AND status='active'").bind(classroomId,student.student_number).first():null;
+const teacherMember=teacher?await env.DB.prepare("SELECT 1 AS ok FROM school_classroom_teachers WHERE classroom_id=? AND teacher_number=? AND status='active'").bind(classroomId,teacher.teacher_number).first():null;
+if(!studentMember&&!teacherMember)return Astro.redirect(student?'/escuela/alumno':teacher?'/escuela/docente':'/account/profile',303);
+const classroom=await env.DB.prepare(`SELECT r.id,r.classroom_code,r.name,r.starts_on,r.ends_on,r.status,c.title AS course_title,y.name AS cycle_name FROM school_classrooms r JOIN school_courses c ON c.id=r.course_id JOIN school_academic_cycles y ON y.id=r.cycle_id WHERE r.id=?`).bind(classroomId).first<any>();
+if(!classroom)return Astro.redirect('/escuela/alumno',303);
+if(Astro.request.method==='POST'){
+  if(isForbiddenFormOrigin(Astro.request,Astro.url))return new Response('Origen no permitido',{status:403});if(classroom.status!=='active')return new Response('El aula no está activa y no acepta mensajes.',{status:403});const form=await Astro.request.formData(),body=cleanText(form.get('body'),5000);if(!body)return Astro.redirect(`/escuela/aulas/${encodeURIComponent(classroomId)}`,303);
+  const role=teacherMember?'teacher':'student';await env.DB.prepare('INSERT INTO school_classroom_messages(id,classroom_id,sender_client_number,sender_role,body) VALUES(?,?,?,?,?)').bind(crypto.randomUUID(),classroomId,client,role,body).run();return Astro.redirect(`/escuela/aulas/${encodeURIComponent(classroomId)}`,303);
+}
+const messages=(await env.DB.prepare(`SELECT m.id,m.sender_client_number,m.sender_role,m.body,m.created_at,COALESCE(t.display_name,s.student_number,m.sender_client_number) AS sender_name FROM school_classroom_messages m LEFT JOIN school_teachers t ON t.client_number=m.sender_client_number LEFT JOIN school_students s ON s.client_number=m.sender_client_number WHERE m.classroom_id=? ORDER BY m.created_at DESC,m.id DESC LIMIT 100`).bind(classroomId).all<any>()).results??[];
+---
+<Layout title={`Mensajes · ${classroom.course_title}`}><main class="mx-auto max-w-3xl px-4 py-8 sm:px-6"><a href={teacherMember?'/escuela/docente':'/escuela/alumno'} class="text-sm underline">← Mis aulas</a><header class="my-5"><p class="text-xs uppercase tracking-widest text-muted">{classroom.cycle_name} · {classroom.classroom_code}</p><h1 class="mt-1 text-2xl font-semibold">{classroom.course_title} · {classroom.name}</h1><p class="mt-1 text-sm text-muted">Mensajes del grupo. Solo los alumnos y maestros asignados pueden leer o escribir.</p></header><form method="POST" class="rounded-2xl border border-line bg-surface p-4"><label class="grid gap-2 text-sm font-medium">Escribe al grupo<textarea name="body" required maxlength="5000" rows="4" class="rounded-xl border border-line bg-background p-3 font-normal" placeholder="Escribe una pregunta o aviso"></textarea></label><button class="mt-3 rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white">Enviar mensaje</button></form><section class="mt-5 space-y-3">{messages.length?messages.map((m:any)=><article class={`rounded-2xl border border-line p-4 ${m.sender_client_number===client?'bg-surface':'bg-white'}`}><div class="flex justify-between gap-2"><strong class="text-sm">{m.sender_name} <span class="font-normal text-muted">· {m.sender_role==='teacher'?'Maestro':'Alumno'}</span></strong><time class="text-xs text-muted">{m.created_at}</time></div><p class="mt-2 whitespace-pre-wrap text-sm leading-6">{m.body}</p></article>):<p class="rounded-xl bg-surface p-4 text-sm text-muted">Aún no hay mensajes en este grupo.</p>}</section></main></Layout>

@@ -36,14 +36,17 @@ export async function emailAlreadyUsed(db: D1Database, email: string, exceptEmai
   const target = normalizeEmail(email), except = normalizeEmail(exceptEmail);
   const row = await db.prepare(`
     SELECT 1 AS found FROM customer_profiles WHERE email=? COLLATE NOCASE AND email<>? COLLATE NOCASE
+    UNION ALL SELECT 1 FROM customer_accounts WHERE email=? COLLATE NOCASE AND email<>? COLLATE NOCASE
     UNION ALL SELECT 1 FROM customer_email_aliases WHERE old_email=? COLLATE NOCASE OR current_email=? COLLATE NOCASE
     UNION ALL SELECT 1 FROM orders WHERE email=? COLLATE NOCASE AND email<>? COLLATE NOCASE
     UNION ALL SELECT 1 FROM school_course_progress WHERE student_email=? COLLATE NOCASE
+    -- A new email cannot be claimed by another account that already owns course LaTeX drafts.
+    UNION ALL SELECT 1 FROM school_latex_drafts WHERE student_email=? COLLATE NOCASE
     UNION ALL SELECT 1 FROM school_student_intake WHERE student_email=? COLLATE NOCASE
     UNION ALL SELECT 1 FROM school_course_assignments WHERE student_email=? COLLATE NOCASE
     UNION ALL SELECT 1 FROM school_fee_payments WHERE student_email=? COLLATE NOCASE
     UNION ALL SELECT 1 FROM school_subscriptions WHERE student_email=? COLLATE NOCASE
     LIMIT 1
-  `).bind(target, except, target, target, target, except, target, target, target, target, target).first<{found:number}>();
+  `).bind(target, except, target, except, target, target, target, except, target, target, target, target, target, target).first<{found:number}>();
   return !!row;
 }

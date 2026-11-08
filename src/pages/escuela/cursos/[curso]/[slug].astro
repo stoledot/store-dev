@@ -5,25 +5,35 @@ import Layout from '../../../../layouts/Layout.astro';
 import { accountsEnabled, getCustomerEmail } from '../../../../features/auth/customer';
 import { renderMarkdown } from '../../../../features/pages/markdown';
 import { renderCourseTex } from '../../../../features/mathTexts/render';
+import { ensureCustomerAccount } from '../../../../features/auth/customerIdentity';
 if (!(await accountsEnabled())) return Astro.redirect('/',303);
 const email=await getCustomerEmail(Astro.cookies); if(!email) return Astro.redirect('/account/login',303);
+const clientNumber=await ensureCustomerAccount(env.DB,email);
 const courseSlug=Astro.params.curso??''; const lessonSlug=Astro.params.slug??'';
-const access=await env.DB.prepare(`SELECT c.id AS course_id,c.title AS course_title,c.slug AS course_slug,c.level_code,c.tex_source_key,a.title AS area_title FROM school_courses c LEFT JOIN school_areas a ON a.id=c.area_id WHERE c.slug=? AND c.status='published' AND c.content_kind='course' AND (EXISTS(SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE oi.school_course_id=c.id AND lower(trim(o.email))=lower(trim(?)) AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents) OR EXISTS(SELECT 1 FROM school_course_assignments x JOIN school_student_intake i ON i.student_email=x.student_email COLLATE NOCASE AND i.status='approved' AND i.selected_area_id=c.area_id AND i.approved_level=c.level_code WHERE x.course_id=c.id AND x.student_email=? COLLATE NOCASE AND x.status='active' AND EXISTS(SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='enrollment' AND p.valid_until>=date('now')) AND EXISTS(SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='monthly' AND p.valid_until>=date('now')))) LIMIT 1`).bind(courseSlug,email,email).first<{course_id:string;course_title:string;course_slug:string;level_code:string;tex_source_key:string|null;area_title:string|null}>();
+const access=await env.DB.prepare(`SELECT c.id AS course_id,c.title AS course_title,c.slug AS course_slug,c.level_code,c.tex_source_key,c.source_format,c.omitted_activities_allowed,a.title AS area_title,p.title AS program_title FROM school_courses c LEFT JOIN school_areas a ON a.id=c.area_id LEFT JOIN school_programs p ON p.slug=a.program_slug WHERE c.slug=? AND c.status='published' AND c.content_kind IN ('course','reading') AND NOT EXISTS(SELECT 1 FROM school_course_access_overrides ov WHERE ov.course_id=c.id AND ov.student_email=? COLLATE NOCASE AND ov.expires_at<date('now')) AND (EXISTS(SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE oi.school_course_id=c.id AND lower(trim(o.email))=lower(trim(?)) AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents) OR EXISTS(SELECT 1 FROM school_course_assignments x WHERE x.course_id=c.id AND x.student_email=? COLLATE NOCASE AND x.status='active' AND EXISTS(SELECT 1 FROM school_area_diagnostics d WHERE d.student_email=x.student_email COLLATE NOCASE AND d.area_id=c.area_id AND d.status='approved' AND d.approved_level=c.level_code AND d.attempt_no=(SELECT MAX(d2.attempt_no) FROM school_area_diagnostics d2 WHERE d2.student_email=d.student_email COLLATE NOCASE AND d2.area_id=d.area_id)) AND EXISTS(SELECT 1 FROM school_fee_payments fp WHERE fp.student_email=x.student_email COLLATE NOCASE AND fp.fee_type='enrollment' AND fp.valid_until>=date('now')) AND EXISTS(SELECT 1 FROM school_fee_payments fp WHERE fp.student_email=x.student_email COLLATE NOCASE AND fp.fee_type='monthly' AND fp.valid_until>=date('now'))) OR EXISTS(SELECT 1 FROM school_classroom_students rs JOIN school_students st ON st.student_number=rs.student_number JOIN school_classrooms cr ON cr.id=rs.classroom_id JOIN school_academic_cycles cy ON cy.id=cr.cycle_id WHERE cr.course_id=c.id AND st.client_number=? AND st.status='active' AND rs.status='active' AND cr.status='active' AND date('now') BETWEEN cr.starts_on AND cr.ends_on AND cy.status='active')) LIMIT 1`).bind(courseSlug,email,email,email,clientNumber).first<{course_id:string;course_title:string;course_slug:string;level_code:string;tex_source_key:string|null;source_format:string;omitted_activities_allowed:number;area_title:string|null;program_title:string|null}>();
 if(!access) return Astro.redirect('/escuela/mi-escuela',303);
-const lesson=await env.DB.prepare(`SELECT id,slug,title,summary,content_md,content_html,sequence_no,lesson_type,content_version,assessment_json,grading_weight,tex_node_id,due_at,activity_kind FROM school_lessons WHERE course_id=? AND slug=? AND status='published' LIMIT 1`).bind(access.course_id,lessonSlug).first<{id:string;slug:string;title:string;summary:string;content_md:string;content_html:string|null;sequence_no:number;lesson_type:'reading'|'quiz'|'exercise'|'assignment';content_version:number;assessment_json:string;grading_weight:number;tex_node_id:string|null;due_at:string|null;activity_kind:string}>();
+const lesson=await env.DB.prepare(`SELECT id,slug,title,summary,content_md,content_html,sequence_no,lesson_type,content_version,assessment_json,grading_weight,tex_node_id,due_at,activity_kind,xml_lesson_id,inputlatex_instruction FROM school_lessons WHERE course_id=? AND slug=? AND status='published' LIMIT 1`).bind(access.course_id,lessonSlug).first<{id:string;slug:string;title:string;summary:string;content_md:string;content_html:string|null;sequence_no:number;lesson_type:'reading'|'quiz'|'exercise'|'assignment';content_version:number;assessment_json:string;grading_weight:number;tex_node_id:string|null;due_at:string|null;activity_kind:string;xml_lesson_id:string|null;inputlatex_instruction:string}>();
 if(!lesson) return Astro.redirect('/escuela/mi-escuela',303);
 let lessonHtml=lesson.content_html||renderMarkdown(lesson.content_md);
-if(lesson.tex_node_id && access.tex_source_key && env.FILES){const texObject=await env.FILES.get(access.tex_source_key);if(texObject){const nodes=renderCourseTex(await texObject.text());const current=nodes.find(n=>n.id===lesson.tex_node_id);if(current)lessonHtml=current.html;}}
-let questions:{id:string;type:'multiple_choice'|'short_answer'|'long_answer'|'file_upload';prompt:string;options?:string[];required?:boolean}[]=[];
-try { const parsed=JSON.parse(lesson.assessment_json||'{}'); questions=Array.isArray(parsed.questions)?parsed.questions:[]; } catch {}
-const nav=(await env.DB.prepare(`SELECT l.slug,l.title,l.sequence_no,COALESCE(p.status,'not_started') AS progress_status FROM school_lessons l LEFT JOIN school_lesson_progress p ON p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE WHERE l.course_id=? AND l.status='published' ORDER BY l.sequence_no`).bind(email,access.course_id).all<{slug:string;title:string;sequence_no:number;progress_status:string}>()).results??[];
-const index=nav.findIndex((item)=>item.slug===lessonSlug); const firstIncompleteIndex=nav.findIndex((item)=>item.progress_status!=='completed'); const lastUnlockedIndex=firstIncompleteIndex<0?nav.length-1:firstIncompleteIndex; const previous=index>0?nav[index-1]:null; const next=index>=0&&index<nav.length-1?nav[index+1]:null;
-if(index>0){const blocked=await env.DB.prepare(`SELECT l.slug FROM school_lessons l WHERE l.course_id=? AND l.status='published' AND l.sequence_no<(SELECT sequence_no FROM school_lessons WHERE course_id=? AND slug=? AND status='published') AND NOT EXISTS(SELECT 1 FROM school_lesson_progress p WHERE p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE AND p.status='completed') ORDER BY l.sequence_no LIMIT 1`).bind(access.course_id,access.course_id,lessonSlug,email).first<{slug:string}>();if(blocked)return Astro.redirect(`/escuela/cursos/${courseSlug}/${blocked.slug}`,303);}
+// New TeX lessons render from the HTML snapshot saved in D1; use R2 only for older rows without snapshots.
+if(!lesson.content_html && lesson.tex_node_id && access.tex_source_key && env.FILES){const texObject=await env.FILES.get(access.tex_source_key);if(texObject){const nodes=renderCourseTex(await texObject.text());const current=nodes.find(n=>n.id===lesson.tex_node_id);if(current)lessonHtml=current.html;}}
+let questions:{id:string;type:'multiple_choice'|'multiple_choice_multi'|'short_answer'|'long_answer'|'file_upload';prompt:string;options?:Array<string|{id:string;label:string}>;required?:boolean;maxSelections?:number}[]=[];
+let lessonBlocks:{type:'content'|'activity'|'inputlatex'|'download'|'geogebragraphics'|'video'|'videoyoutube'|'domanslides';html?:string;question?:typeof questions[number];ref?:string;title?:string;description?:string;videoId?:string;start?:number;aspectRatio?:string;privacyEnhanced?:boolean;slides?:Array<{filters:Record<string,string>;children:Array<unknown>}>}[]=[];
+try { const parsed=JSON.parse(lesson.assessment_json||'{}'); questions=Array.isArray(parsed.questions)?parsed.questions:[]; lessonBlocks=Array.isArray(parsed.blocks)?parsed.blocks:[]; } catch {}
+// Las lecciones antiguas siguen usando sus columnas HTML e indicación LaTeX; los XML nuevos usan el flujo ordenado persistido.
+if(!lessonBlocks.length){if(lessonHtml.trim())lessonBlocks.push({type:'content',html:lessonHtml});if(lesson.inputlatex_instruction?.trim())lessonBlocks.push({type:'inputlatex',html:lesson.inputlatex_instruction});for(const question of questions)lessonBlocks.push({type:'activity',question});}
+const nav=(await env.DB.prepare(`SELECT l.slug,l.title,l.sequence_no,l.lesson_type,l.required_to_complete,COALESCE(p.status,'not_started') AS progress_status FROM school_lessons l LEFT JOIN school_lesson_progress p ON p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE WHERE l.course_id=? AND l.status='published' ORDER BY l.sequence_no`).bind(email,access.course_id).all<{slug:string;title:string;sequence_no:number;lesson_type:string;required_to_complete:number;progress_status:string}>()).results??[];
+const latexDraft=lesson.xml_lesson_id&&lesson.inputlatex_instruction?.trim()?await env.DB.prepare('SELECT source,updated_at FROM school_latex_drafts WHERE student_email=? COLLATE NOCASE AND course_id=? AND xml_lesson_id=?').bind(email,access.course_id,lesson.xml_lesson_id).first<{source:string;updated_at:string}>():null;
+const courseHasLatexPractice=Boolean(await env.DB.prepare("SELECT 1 AS yes FROM school_lessons WHERE course_id=? AND status='published' AND inputlatex_instruction<>'' LIMIT 1").bind(access.course_id).first());
+const index=nav.findIndex((item)=>item.slug===lessonSlug); let skippedActivities=0; let lastUnlockedIndex=nav.length-1; for(let i=0;i<nav.length;i++){const item=nav[i];if(item.progress_status==='completed'||item.required_to_complete!==1)continue;if(item.lesson_type!=='reading'&&skippedActivities<access.omitted_activities_allowed){skippedActivities++;continue;}lastUnlockedIndex=i;break;} const previous=index>0?nav[index-1]:null; const next=index>=0&&index<nav.length-1?nav[index+1]:null;
+if(index>0){const blocked=await env.DB.prepare(`SELECT l.slug FROM school_lessons l LEFT JOIN school_lesson_progress p ON p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE WHERE l.course_id=? AND l.status='published' AND l.sequence_no<(SELECT sequence_no FROM school_lessons WHERE course_id=? AND slug=? AND status='published') AND l.required_to_complete=1 AND COALESCE(p.status,'not_started')<>'completed' AND (l.lesson_type='reading' OR (SELECT COUNT(*) FROM school_lessons prior LEFT JOIN school_lesson_progress pp ON pp.lesson_id=prior.id AND pp.student_email=? COLLATE NOCASE WHERE prior.course_id=? AND prior.status='published' AND prior.required_to_complete=1 AND prior.lesson_type<>'reading' AND prior.sequence_no<(SELECT sequence_no FROM school_lessons WHERE course_id=? AND slug=? AND status='published') AND COALESCE(pp.status,'not_started')<>'completed')>?) ORDER BY l.sequence_no LIMIT 1`).bind(email,access.course_id,access.course_id,lessonSlug,email,access.course_id,access.course_id,lessonSlug,access.omitted_activities_allowed).first<{slug:string}>();if(blocked)return Astro.redirect(`/escuela/cursos/${courseSlug}/${blocked.slug}`,303);}
 // Registrar el inicio al abrir una lección autorizada del curso asignado.
 const courseProgressId = `scp_${crypto.randomUUID()}`;
 const startedAt = new Date().toISOString();
 await env.DB.prepare(`INSERT INTO school_course_progress (id,student_email,course_id,status,started_at,content_version,updated_at) VALUES (?,?,?,'in_progress',?,1,?) ON CONFLICT(student_email,course_id) DO UPDATE SET status=CASE WHEN school_course_progress.status='completed' THEN 'completed' ELSE 'in_progress' END,started_at=COALESCE(school_course_progress.started_at,excluded.started_at),updated_at=excluded.updated_at`).bind(courseProgressId,email,access.course_id,startedAt,startedAt).run();
 const progress=await env.DB.prepare(`SELECT status,completed_at,submission_at,grade,feedback,student_response,graded_at FROM school_lesson_progress WHERE student_email=? COLLATE NOCASE AND lesson_id=? LIMIT 1`).bind(email,lesson.id).first<{status:string;completed_at:string|null;submission_at:string|null;grade:number|null;feedback:string;student_response:string;graded_at:string|null}>();
+const retryControl=await env.DB.prepare(`SELECT locked FROM school_lesson_resubmission_controls WHERE student_email=? COLLATE NOCASE AND lesson_id=?`).bind(email,lesson.id).first<{locked:number}>();
+const isRetryBlocked=retryControl?.locked===1&&Boolean(progress?.submission_at);
 const gradeSummary=await env.DB.prepare(`SELECT ROUND(SUM((CASE WHEN p.grade IS NOT NULL THEN p.grade WHEN l.lesson_type='reading' AND p.status='completed' THEN 100 ELSE 0 END)*l.grading_weight*CASE WHEN l.tex_node_id IS NOT NULL AND l.activity_kind='reading' THEN 0 ELSE 1 END)/NULLIF(SUM(l.grading_weight*CASE WHEN l.tex_node_id IS NOT NULL AND l.activity_kind='reading' THEN 0 ELSE 1 END),0)/10,2) AS grade10, ROUND(SUM((CASE WHEN p.grade IS NOT NULL THEN p.grade WHEN l.lesson_type='reading' AND p.status='completed' THEN 100 ELSE 0 END)*l.grading_weight*CASE WHEN l.tex_node_id IS NOT NULL AND l.activity_kind='reading' THEN 0 ELSE 1 END)/NULLIF(SUM(l.grading_weight*CASE WHEN l.tex_node_id IS NOT NULL AND l.activity_kind='reading' THEN 0 ELSE 1 END),0),2) AS grade100, SUM(CASE WHEN p.status='completed' THEN 1 ELSE 0 END) AS completed, COUNT(l.id) AS total FROM school_lessons l LEFT JOIN school_lesson_progress p ON p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE WHERE l.course_id=? AND l.status='published'`).bind(email,access.course_id).first<{grade10:number|null;grade100:number|null;completed:number|null;total:number}>();
 const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.status==='completed'; const apiUrl=`/api/escuela/cursos/${encodeURIComponent(courseSlug)}/${encodeURIComponent(lessonSlug)}`;
 ---
@@ -31,13 +41,13 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
 <Layout title={lesson.title} description={lesson.summary || lesson.title}>
   <main
     id="school-lesson"
-    class="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8"
+    class="mx-auto w-full max-w-4xl px-4 py-4 sm:px-6 sm:py-6"
     data-course={courseSlug}
     data-slug={lessonSlug}
     data-api={apiUrl}
     data-type={lesson.lesson_type}
   >
-    <nav aria-label="Ruta de navegación" class="mb-5 flex flex-wrap items-center gap-2 text-sm text-kumo-muted">
+    <nav aria-label="Ruta de navegación" class="mb-3 flex flex-wrap items-center gap-2 text-xs text-kumo-muted">
       <a href="/account/courses" class="transition hover:text-kumo-strong">Mis cursos</a>
       <span aria-hidden="true">/</span>
       <a href="/escuela/mi-escuela" class="transition hover:text-kumo-strong">Mi escuela</a>
@@ -45,21 +55,23 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
       <span class="max-w-full truncate font-medium text-kumo-strong">{access.course_title}</span>
     </nav>
 
-    <header class="mb-6 rounded-3xl border border-kumo-line bg-white p-5 shadow-sm sm:p-7">
+    <header class="mb-4 rounded-2xl border border-kumo-line bg-white p-4 sm:p-5">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="min-w-0 flex-1">
           <p class="text-xs font-semibold uppercase tracking-[0.16em] text-kumo-muted">
             {access.area_title || 'Área de estudio'} · {access.level_code}
           </p>
-          <h1 class="mt-2 break-words text-2xl font-bold tracking-tight sm:text-3xl">{lesson.title}</h1>
-          {lesson.summary && <p class="mt-3 max-w-3xl text-sm leading-6 text-kumo-muted sm:text-base">{lesson.summary}</p>}
+          <h1 class="mt-1 break-words text-xl font-bold tracking-tight sm:text-2xl">{lesson.title}</h1>
+          {lesson.summary && <p class="mt-2 max-w-3xl text-sm leading-5 text-kumo-muted">{lesson.summary}</p>}
         </div>
         <span class={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold ${isComplete ? 'bg-emerald-50 text-emerald-800' : 'bg-sky-50 text-sky-800'}`}>
           {isComplete ? '✓ Completada' : isReading ? 'Lectura' : 'Actividad'}
         </span>
       </div>
 
-      <div class="mt-6 border-t border-kumo-line pt-5">
+      <details class="mt-3 border-t border-kumo-line pt-3">
+        <summary class="cursor-pointer text-xs font-semibold text-kumo-muted">Ver avance y calificación del curso</summary>
+      <div class="mt-3">
         <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
           <span class="text-kumo-muted">Tu avance en este curso</span>
           <strong class="tabular-nums">{gradeSummary?.completed ?? 0} de {gradeSummary?.total ?? nav.length} unidades</strong>
@@ -75,16 +87,17 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
           <div class="h-full rounded-full bg-kumo-inverted transition-all" style={`width: ${gradeSummary?.total ? Math.round(100 * (gradeSummary.completed ?? 0) / gradeSummary.total) : 0}%`}></div>
         </div>
         <p class="mt-2 text-xs leading-5 text-kumo-muted">
-          {access.tex_source_key
+          {access.tex_source_key || access.source_format==='xml'
             ? (gradeSummary?.grade10 != null ? `Calificación provisional: ${gradeSummary.grade10.toFixed(2)} / 10` : 'Las actividades calificables aparecerán en tu resumen cuando corresponda.')
             : (gradeSummary?.grade100 != null ? `Calificación provisional: ${gradeSummary.grade100.toFixed(2)} / 100` : 'Tu avance se guarda conforme completas las unidades.')}
         </p>
       </div>
+      </details>
     </header>
 
-    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
+    <div class="grid items-start gap-4">
       <div class="min-w-0">
-        <section class="rounded-3xl border border-kumo-line bg-white p-5 shadow-sm sm:p-7" aria-labelledby="lesson-content-title">
+        <section class="rounded-2xl border border-kumo-line bg-white p-4 sm:p-6" aria-labelledby="lesson-content-title">
           <div class="flex items-center gap-3 border-b border-kumo-line pb-4">
             <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-gray-50 text-lg" aria-hidden="true">{isReading ? '📖' : '✎'}</span>
             <div>
@@ -102,7 +115,17 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
             </p>
           </div>
 
-          <article id="lesson-content" class="prose mt-7 max-w-none" set:html={lessonHtml}></article>
+          {lessonBlocks.map((block,blockIndex)=>block.type==='content'?<article id={blockIndex===0?'lesson-content':undefined} class="prose mt-4 max-w-none" set:html={block.html??''}></article>:block.type==='download'?<section class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-emerald-800">Material descargable</p>{block.description&&<p class="mt-2 text-sm text-gray-700">{block.description}</p>}<a class="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800" href={`/api/escuela/cursos/${encodeURIComponent(courseSlug)}/${encodeURIComponent(lessonSlug)}/descargas/${encodeURIComponent(block.ref??'')}`} download>↓ {block.title??'Descargar archivo'}</a></section>:block.type==='video'?<section class="mt-5 rounded-2xl border border-indigo-100 bg-white p-4"><h3 class="mb-3 text-sm font-semibold">{block.title}</h3><video class="w-full rounded-xl bg-black" controls playsinline preload="metadata" src={`${apiUrl}/videos/${encodeURIComponent(block.ref??'')}`} aria-label={block.title}></video></section>:block.type==='videoyoutube'?<section class="mt-5 rounded-2xl border border-red-100 bg-white p-4"><h3 class="mb-3 text-sm font-semibold">{block.title}</h3><div class="w-full overflow-hidden rounded-xl bg-black" style={`aspect-ratio:${(block.aspectRatio??'16:9').replace(':',' / ')}`}><iframe class="h-full w-full" src={`https://${block.privacyEnhanced?'www.youtube-nocookie.com':'www.youtube.com'}/embed/${block.videoId}?start=${block.start??0}&rel=0`} title={block.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></section>:block.type==='activity'&&block.question?<fieldset data-latex-render class="mt-5 rounded-2xl border border-sky-100 bg-sky-50/40 p-4" form="lesson-submission"><legend class="max-w-full px-1 font-medium leading-6"><span class="mr-2 text-xs font-semibold uppercase tracking-wide text-sky-800">Actividad</span><span set:html={block.question.prompt}></span>{block.question.required!==false?' *':''}</legend>{block.question.type==='multiple_choice_multi'?<div class="mt-3 space-y-2" data-max-selections={block.question.maxSelections??block.question.options?.length??0}>{(block.question.options??[]).map((option)=>{const optionId=typeof option==='string'?option:option.id,label=typeof option==='string'?option:option.label;return <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-kumo-line bg-white p-3 text-sm"><input type="checkbox" name={`answer_${block.question!.id}`} value={optionId} form="lesson-submission" class="mt-0.5"/><span set:html={label}></span></label>;})}<p class="text-xs text-kumo-muted">Selecciona hasta {block.question.maxSelections??block.question.options?.length??0} respuestas.</p></div>:block.question.type==='multiple_choice'?<div class="mt-3 space-y-2">{(block.question.options??[]).map((option)=>{const optionId=typeof option==='string'?option:option.id,label=typeof option==='string'?option:option.label;return <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-kumo-line bg-white p-3 text-sm"><input type="radio" name={`answer_${block.question!.id}`} value={optionId} form="lesson-submission" required={block.question!.required!==false} class="mt-0.5"/><span set:html={label}></span></label>;})}</div>:block.question.type==='short_answer'?<input name={`answer_${block.question.id}`} form="lesson-submission" maxlength="20000" required={block.question.required!==false} class="mt-3 block min-h-11 w-full rounded-xl border border-kumo-line bg-white p-3" placeholder="Escribe tu respuesta"/>:block.question.type==='long_answer'?<textarea name={`answer_${block.question.id}`} form="lesson-submission" rows="6" maxlength="20000" required={block.question.required!==false} class="mt-3 block w-full rounded-xl border border-kumo-line bg-white p-3 leading-6" placeholder="Desarrolla tu respuesta"></textarea>:<div class="mt-3"><input type="file" name="submission_file" form="lesson-submission" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.docx" required={block.question.required!==false&&!progress?.submission_at} class="block w-full text-sm"/><p class="mt-2 text-xs text-kumo-muted">PDF, PNG, JPG, WEBP, TXT o DOCX; máximo 10 MB.</p></div>}</fieldset>:block.type==='inputlatex'?<section class="mt-5 rounded-2xl border border-violet-200 bg-violet-50/50 p-4"><p class="text-xs font-semibold uppercase tracking-wide text-violet-700">Práctica de LaTeX</p><div class="prose mt-2 max-w-none text-sm" set:html={block.html??''}></div></section>:block.type==='geogebragraphics'?<section class="mt-5 overflow-hidden rounded-2xl border border-indigo-200 bg-white p-4" data-geogebra-widget data-endpoint={`/api/escuela/cursos/${encodeURIComponent(courseSlug)}/${encodeURIComponent(lessonSlug)}/geogebra/${encodeURIComponent(block.ref??'')}`}><div class="mb-3"><p class="text-xs font-semibold uppercase tracking-wide text-indigo-700">Exploración interactiva</p><h3 class="mt-1 text-lg font-semibold">{block.title}</h3>{block.description&&<p class="mt-1 text-sm text-gray-600">{block.description}</p>}</div><div id={`geogebra-${lesson.id}-${blockIndex}`} data-geogebra-target class="min-h-72 w-full overflow-hidden rounded-xl bg-gray-50"></div><p data-geogebra-status class="mt-2 text-sm text-gray-600" role="status">Cargando construcción de GeoGebra…</p></section>:block.type==='domanslides'?<section class="doman-player mt-5 rounded-2xl border border-sky-200 bg-white p-4" data-doman-player data-config={JSON.stringify(block.slides??[])} data-endpoint={`/api/escuela/cursos/${encodeURIComponent(courseSlug)}/${encodeURIComponent(lessonSlug)}/doman-audio`}><div class="mb-3"><p class="text-xs font-semibold uppercase tracking-wide text-sky-700">Slides Doman</p><p class="text-sm text-gray-600">Palabras y frases con audio</p></div><div data-doman-stage class="relative grid place-items-center overflow-hidden rounded-xl border bg-white p-5" style="height:min(65vh,calc(100svh - 14rem));max-height:calc(100svh - 14rem);"><p data-doman-word class="m-0 max-w-full break-words text-center font-semibold leading-tight text-gray-900" style="font-size:clamp(3rem,12vw,10rem)">Preparando palabras…</p><p data-doman-count class="absolute bottom-3 right-4 text-xs text-gray-500"></p></div><audio data-doman-audio preload="none"></audio><div class="mt-3 flex flex-wrap items-center gap-2"><button type="button" data-doman-play class="rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white">▶ Reproducir</button><button type="button" data-doman-pause class="rounded-lg border px-4 py-2 text-sm" hidden>Ⅱ Pausar</button><button type="button" data-doman-replay class="rounded-lg border px-4 py-2 text-sm" disabled>↻ Repetir</button><button type="button" data-doman-fullscreen class="rounded-lg border px-4 py-2 text-sm">⛶ Pantalla completa</button><p data-doman-status class="ml-auto text-sm text-gray-600" role="status">Cargando palabras…</p></div></section>:null)}
+
+          {lesson.inputlatex_instruction?.trim() && lesson.xml_lesson_id && (
+            <section id="latex-practice" class="mt-6 rounded-2xl border border-violet-200 bg-violet-50/50 p-4 sm:p-5" data-api={apiUrl} data-course={courseSlug} data-lesson={lesson.xml_lesson_id}>
+              <div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-xs font-semibold uppercase tracking-wider text-violet-700">Práctica de LaTeX</p><h2 class="mt-1 text-lg font-semibold">Escribe y prueba tu código</h2></div><span class="rounded-full bg-white px-3 py-1 text-xs text-violet-800">Se guarda en tu curso</span></div>
+              <label for="latex-source" class="mt-4 block text-sm font-semibold">Tu código LaTeX</label>
+              <textarea id="latex-source" rows="10" maxlength="20000" spellcheck="false" autocomplete="off" autocapitalize="off" class="mt-2 block min-h-64 w-full resize-y rounded-xl border border-violet-200 bg-white p-4 font-mono text-sm leading-6 text-gray-900 shadow-inner focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200" placeholder="Escribe aquí, por ejemplo: $x^2 + y^2 = z^2$">{latexDraft?.source??''}</textarea>
+              <div class="mt-3 grid gap-4 lg:grid-cols-2"><section class="rounded-xl border border-violet-100 bg-white p-3"><h3 class="text-sm font-semibold">Vista previa</h3><div id="latex-preview" class="mt-2 min-h-20 overflow-x-auto whitespace-pre-wrap break-words text-sm" aria-live="polite">{latexDraft?.source??''}</div></section><section class="rounded-xl border border-violet-100 bg-white p-3"><h3 class="text-sm font-semibold">Revisión</h3><p id="latex-diagnostics-summary" class="mt-2 text-sm text-gray-600" aria-live="polite">Revisando el código…</p><ul id="latex-diagnostics" class="mt-2 space-y-2 text-sm" aria-label="Errores y sugerencias"></ul></section></div>
+              <div class="mt-4 flex flex-wrap items-center gap-3"><button id="latex-save" type="button" class="rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-violet-800">Guardar borrador</button><span id="latex-save-status" class="text-xs text-gray-600" role="status">{latexDraft?`Guardado ${latexDraft.updated_at}`:'Aún no guardado'}</span></div>
+            </section>
+          )}
 
           {(lesson.due_at || lesson.activity_kind !== 'reading') && (
             <div class="mt-6 flex flex-wrap gap-3 text-sm">
@@ -121,8 +144,8 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
             {next && <a class="inline-flex min-h-11 items-center justify-center rounded-xl bg-kumo-inverted px-4 py-2.5 text-sm font-semibold text-kumo-base" href={`/escuela/cursos/${courseSlug}/${next.slug}`}>Siguiente unidad →</a>}
           </section>
         ) : (
-          <details class="mt-5 overflow-hidden rounded-3xl border border-kumo-line bg-white shadow-sm" open={!isComplete}>
-            <summary class="cursor-pointer list-none p-5 sm:p-6">
+          <details class="mt-4 overflow-hidden rounded-2xl border border-kumo-line bg-white" open={!isComplete}>
+            <summary class="cursor-pointer list-none p-4">
               <div class="flex items-center justify-between gap-4">
                 <div>
                   <p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Tu trabajo</p>
@@ -133,32 +156,10 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
               </div>
             </summary>
 
-            <div class="border-t border-kumo-line p-5 sm:p-6">
-              <form id="lesson-submission" class="space-y-5" enctype="multipart/form-data">
-                {questions.length ? questions.map((q, i) => (
-                  <fieldset class="rounded-2xl border border-kumo-line p-4 sm:p-5">
-                    <legend class="max-w-full px-1 font-medium leading-6">{i + 1}. {q.prompt}{q.required !== false ? ' *' : ''}</legend>
-                    {q.type === 'multiple_choice' ? (
-                      <div class="mt-3 space-y-2">
-                        {(q.options ?? []).map((option) => (
-                          <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-kumo-line p-3 text-sm transition hover:bg-gray-50">
-                            <input type="radio" name={`answer_${q.id}`} value={option} required={q.required !== false} class="mt-0.5" />
-                            <span>{option}</span>
-                          </label>
-                        ))}
-                      </div>
-                    ) : q.type === 'short_answer' ? (
-                      <input name={`answer_${q.id}`} maxlength="20000" required={q.required !== false} class="mt-3 block min-h-11 w-full rounded-xl border border-kumo-line p-3" placeholder="Escribe tu respuesta" />
-                    ) : q.type === 'long_answer' ? (
-                      <textarea name={`answer_${q.id}`} rows="6" maxlength="20000" required={q.required !== false} class="mt-3 block w-full rounded-xl border border-kumo-line p-3 leading-6" placeholder="Desarrolla tu respuesta"></textarea>
-                    ) : (
-                      <div class="mt-3 rounded-xl bg-gray-50 p-3">
-                        <input type="file" name="submission_file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.docx" required={q.required !== false && !progress?.submission_at} class="block w-full text-sm" />
-                        <p class="mt-2 text-xs leading-5 text-kumo-muted">PDF, PNG, JPG, WEBP, TXT o DOCX; máximo 10 MB.</p>
-                      </div>
-                    )}
-                  </fieldset>
-                )) : (
+            <div class="border-t border-kumo-line p-4">
+              {isRetryBlocked&&<p class="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">La administración bloqueó los reenvíos de esta actividad.</p>}
+              <form id="lesson-submission" class="space-y-4" enctype="multipart/form-data">
+                {questions.length ? <p class="text-sm text-kumo-muted">Responde las actividades en los bloques anteriores.</p> : (
                   <label class="block text-sm font-medium">Tu respuesta
                     <textarea name="answer_general" rows="6" required minlength="5" maxlength="20000" class="mt-2 block w-full rounded-xl border border-kumo-line p-3 font-normal leading-6" placeholder="Escribe aquí tu procedimiento o respuesta"></textarea>
                   </label>
@@ -175,7 +176,7 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
 
                 <div class="flex flex-col gap-3 border-t border-kumo-line pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <p class="max-w-lg text-xs leading-5 text-kumo-muted">Enviar tu respuesta no significa que ya esté aprobada. Podrás consultar aquí la calificación y la retroalimentación.</p>
-                  <button type="submit" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-kumo-inverted px-5 py-3 text-sm font-semibold text-kumo-base">Enviar respuesta</button>
+                  <button type="submit" disabled={isRetryBlocked} class={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold ${isRetryBlocked?'cursor-not-allowed bg-gray-200 text-gray-500':'bg-kumo-inverted text-kumo-base'}`}>{isRetryBlocked?'Reenvíos bloqueados':isComplete?'Enviar de nuevo':'Enviar respuesta'}</button>
                 </div>
                 <p id="submission-message" class="text-sm" aria-live="polite"></p>
               </form>
@@ -211,9 +212,12 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
             </a>
           )}
         </nav>
+      {courseHasLatexPractice&&<div class="mt-4 flex justify-end"><a id="latex-download" class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-violet-800 hover:bg-violet-100" href={`/api/escuela/cursos/${encodeURIComponent(courseSlug)}/latex`}>Descargar todo mi código LaTeX (.tex)</a></div>}
       </div>
 
-      <aside class="min-w-0 space-y-4 lg:sticky lg:top-6">
+      <details class="min-w-0 rounded-2xl border border-kumo-line bg-white">
+        <summary class="cursor-pointer p-4 text-sm font-semibold">Información del curso y recorrido · {Math.max(0,index+1)}/{nav.length}</summary>
+        <div class="space-y-3 border-t border-kumo-line p-3">
         <section class="rounded-3xl border border-kumo-line bg-white p-5">
           <p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Estás estudiando</p>
           <h2 class="mt-2 text-lg font-semibold leading-snug">{access.course_title}</h2>
@@ -245,7 +249,8 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
           <span class="font-semibold">¿Necesitas ayuda?</span>
           <span class="mt-1 block text-kumo-muted">Escribe a la administración →</span>
         </a>
-      </aside>
+        </div>
+      </details>
     </div>
   </main>
 
@@ -268,6 +273,14 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
     }
 
     const form = document.getElementById('lesson-submission');
+    document.querySelectorAll('[data-max-selections]').forEach((group) => {
+      const max = Number(group.dataset.maxSelections || 0);
+      group.addEventListener('change', () => {
+        const boxes = Array.from(group.querySelectorAll('input[type="checkbox"]'));
+        const selected = boxes.filter((box) => box.checked).length;
+        boxes.forEach((box) => { box.disabled = !box.checked && selected >= max; });
+      });
+    });
     form?.addEventListener('submit', async (event) => {
       event.preventDefault();
       const message = document.getElementById('submission-message');
@@ -288,7 +301,9 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
         const statusText = status?.querySelector('p');
         if (statusText) statusText.textContent = 'Entrega registrada';
         const detail = document.getElementById('lesson-status-detail');
-        if (detail) detail.textContent = 'Tu entrega está pendiente de revisión por la administración.';
+        if (detail) detail.textContent = result.grade !== null && result.grade !== undefined
+          ? `Calificación automática: ${result.grade}/${result.gradeScale}.`
+          : 'Tu entrega está pendiente de revisión por la administración.';
       } catch (error) {
         if (message) message.textContent = error instanceof Error ? error.message : 'No se pudo registrar la entrega.';
       } finally {
@@ -296,5 +311,5 @@ const isReading=lesson.lesson_type==='reading'; const isComplete=progress?.statu
       }
     });
   </script>
-  <script is:inline src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script>import '../../../../features/mathTexts/latexPracticeClient'; import '../../../../features/mathTexts/geogebraClient'; import '../../../../features/mathTexts/domanSlidesClient';</script>
 </Layout>

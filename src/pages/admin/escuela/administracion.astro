@@ -18,9 +18,11 @@ if (Astro.request.method === 'POST') {
       const title = String(form.get('title') ?? '').trim().slice(0, 120);
       const slug = slugify(String(form.get('slug') ?? '').trim() || title);
       const description = String(form.get('description') ?? '').trim().slice(0, 500);
+      const programSlug = String(form.get('program_slug') ?? 'matematicas');
       if (!title || !slug) throw new Error('Escribe un nombre válido para el área.');
-      await env.DB.prepare('INSERT INTO school_areas (id, slug, title, description) VALUES (?, ?, ?, ?)')
-        .bind(crypto.randomUUID(), slug, title, description).run();
+      if (!['matematicas','lectura'].includes(programSlug)) throw new Error('Selecciona Matemáticas o Lectura como programa.');
+      await env.DB.prepare('INSERT INTO school_areas (id, slug, title, description, program_slug) VALUES (?, ?, ?, ?, ?)')
+        .bind(crypto.randomUUID(), slug, title, description, programSlug).run();
       return Astro.redirect('/admin/escuela/administracion?ok=area', 303);
     }
     if (action === 'create-course') {
@@ -29,11 +31,12 @@ if (Astro.request.method === 'POST') {
       const summary = String(form.get('summary') ?? '').trim().slice(0, 500);
       const areaId = String(form.get('area_id') ?? '').trim();
       const level = String(form.get('level_code') ?? 'N0').trim().toUpperCase();
+      const omittedActivitiesAllowed = Number(form.get('omitted_activities_allowed') ?? 0);
       const status = String(form.get('status') ?? 'draft') === 'published' ? 'published' : 'draft';
-      if (!title || !slug || !areaId || !levelPattern.test(level)) throw new Error('Completa título, área y nivel válido (N0, N1, N2…).');
+      if (!title || !slug || !areaId || !levelPattern.test(level) || !Number.isSafeInteger(omittedActivitiesAllowed) || omittedActivitiesAllowed < 0 || omittedActivitiesAllowed > 1000) throw new Error('Completa título, área, nivel válido y omisiones permitidas (0–1000).');
       const next = await env.DB.prepare('SELECT COALESCE(MAX(sequence_no),0)+1 AS n FROM school_courses').first<{n:number}>();
-      await env.DB.prepare(`INSERT INTO school_courses (id, slug, title, summary, description_md, sequence_no, status, area_id, level_code) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?)`)
-        .bind(crypto.randomUUID(), slug, title, summary, Number(next?.n ?? 1), status, areaId, level).run();
+      await env.DB.prepare(`INSERT INTO school_courses (id, slug, title, summary, description_md, sequence_no, status, area_id, level_code, omitted_activities_allowed) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?)`)
+        .bind(crypto.randomUUID(), slug, title, summary, Number(next?.n ?? 1), status, areaId, level, omittedActivitiesAllowed).run();
       return Astro.redirect('/admin/escuela/administracion?ok=curso', 303);
     }
     if (action === 'review-intake') {
@@ -46,6 +49,36 @@ if (Astro.request.method === 'POST') {
         .bind(status, status === 'approved' ? level : null, notes, email).run();
       return Astro.redirect('/admin/escuela/administracion?ok=diagnostico', 303);
     }
+    if (action === 'review-area-diagnostic') {
+      const diagnosticId = String(form.get('diagnostic_id') ?? '').trim();
+      const status = String(form.get('status') ?? 'pending');
+      const level = String(form.get('approved_level') ?? '').trim().toUpperCase();
+      const notes = String(form.get('admin_notes') ?? '').trim().slice(0, 2000);
+      const diagnostic = await env.DB.prepare(`SELECT student_email,area_id FROM school_area_diagnostics WHERE id=?`).bind(diagnosticId).first<{student_email:string;area_id:string}>();
+      if (!diagnostic || !['approved','rejected','pending'].includes(status) || (status === 'approved' && !levelPattern.test(level))) throw new Error('Revisa el diagnóstico, el estado y el nivel aprobado.');
+      const now = new Date().toISOString();
+      await env.DB.batch([
+        env.DB.prepare(`UPDATE school_area_diagnostics SET status=?,approved_level=?,admin_notes=?,reviewed_at=? WHERE id=?`).bind(status,status==='approved'?level:null,notes,now,diagnosticId),
+        env.DB.prepare(`UPDATE school_student_interests SET diagnostic_unlocked=?,updated_at=? WHERE student_email=? COLLATE NOCASE AND area_id=?`).bind(status==='rejected'?1:0,now,diagnostic.student_email,diagnostic.area_id),
+        env.DB.prepare(`UPDATE school_student_intake SET status=?,approved_level=?,admin_notes=?,reviewed_at=? WHERE student_email=? COLLATE NOCASE AND selected_area_id=?`).bind(status,status==='approved'?level:null,notes,now,diagnostic.student_email,diagnostic.area_id),
+      ]);
+      return Astro.redirect('/admin/escuela/administracion?ok=diagnostico',303);
+    }
+    if (action === 'set-diagnostic-resubmission') {
+      const email = cleanEmail(form.get('student_email'));
+      const areaId = String(form.get('area_id') ?? '').trim();
+      const unlocked = String(form.get('unlocked') ?? '') === '1' ? 1 : 0;
+      const changed = await env.DB.prepare(`UPDATE school_student_interests SET diagnostic_unlocked=?,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE student_email=? COLLATE NOCASE AND area_id=?`).bind(unlocked,email,areaId).run();
+      if ((changed.meta?.changes ?? 0) === 0) throw new Error('No se encontró el interés del alumno para esa área.');
+      return Astro.redirect('/admin/escuela/administracion?ok=control-diagnostico',303);
+    }
+    if (action === 'update-course-duration') {
+      const email=cleanEmail(form.get('student_email')); const courseId=String(form.get('course_id')??'').trim(); const expires=String(form.get('expires_at')??'').trim();
+      if(!email||!courseId||!/^\d{4}-\d{2}-\d{2}$/.test(expires)) throw new Error('Indica alumno, curso y fecha de vencimiento válida.');
+      await env.DB.prepare(`INSERT INTO school_course_access_overrides(student_email,course_id,expires_at,updated_at,updated_by) VALUES(?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),?) ON CONFLICT(student_email,course_id) DO UPDATE SET expires_at=excluded.expires_at,updated_at=excluded.updated_at,updated_by=excluded.updated_by`).bind(email,courseId,expires,Astro.locals.adminEmail??null).run();
+      return Astro.redirect('/admin/escuela/administracion?ok=duracion-personalizada',303);
+    }
+    if (action === 'clear-course-duration') { const email=cleanEmail(form.get('student_email'));const courseId=String(form.get('course_id')??'').trim();await env.DB.prepare('DELETE FROM school_course_access_overrides WHERE student_email=? COLLATE NOCASE AND course_id=?').bind(email,courseId).run();return Astro.redirect('/admin/escuela/administracion?ok=duracion-restablecida',303); }
     if (action === 'update-course-dates') {
       const assignmentId = String(form.get('assignment_id') ?? '').trim();
       const startDate = String(form.get('start_date') ?? '').trim();
@@ -60,25 +93,50 @@ if (Astro.request.method === 'POST') {
     }
     if (action === 'assign-course') {
       const email = cleanEmail(form.get('student_email'));
+
       const courseId = String(form.get('course_id') ?? '').trim();
+
       const startDate = String(form.get('start_date') ?? '').trim();
+
       const endDate = String(form.get('end_date') ?? '').trim();
+
       const previousScoreRaw = String(form.get('previous_course_score') ?? '').trim();
+
       const previousScore = previousScoreRaw === '' ? null : Number(previousScoreRaw);
+
       if (startDate && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) throw new Error('La fecha de inicio no es válida.');
+
       if (endDate && !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) throw new Error('La fecha de término no es válida.');
-      if (startDate && endDate && endDate < startDate) throw new Error('La fecha de término no puede ser anterior al inicio.');
-      if (previousScore !== null && (!Number.isFinite(previousScore) || previousScore < 0 || previousScore > 100)) throw new Error('La calificación anterior debe estar entre 0 y 100.');
-      const intake = await env.DB.prepare(`SELECT selected_area_id, approved_level, status FROM school_student_intake WHERE student_email=? COLLATE NOCASE`).bind(email).first<{selected_area_id:string;approved_level:string|null;status:string}>();
-      const course = await env.DB.prepare(`SELECT id, title, area_id, level_code, status FROM school_courses WHERE id=?`).bind(courseId).first<{id:string;title:string;area_id:string|null;level_code:string;status:string}>();
-      if (!intake || intake.status !== 'approved' || !intake.approved_level) throw new Error('Primero aprueba el diagnóstico del alumno.');
-      if (!course || course.status !== 'published') throw new Error('El curso debe existir y estar publicado.');
-      if (course.area_id !== intake.selected_area_id || course.level_code.toUpperCase() !== intake.approved_level.toUpperCase()) throw new Error('El curso debe corresponder al área elegida y al nivel aprobado.');
+
+      if (startDate && endDate && endDate < startDate) 
+        throw new Error('La fecha de término no puede ser anterior al inicio.');
+
+      if (previousScore !== null && (!Number.isFinite(previousScore) || previousScore < 0 || previousScore > 100)) 
+        throw new Error('La calificación anterior debe estar entre 0 y 100.');
+
+      const course = await env.DB.prepare(
+        `SELECT id, title, area_id, level_code, status FROM school_courses WHERE id=?`)
+        .bind(courseId)
+        .first<{id:string;title:string;area_id:string|null;level_code:string;status:string}>();
+      if (!course || course.status !== 'published') 
+        throw new Error('El curso debe existir y estar publicado.');
+      const diagnosis = course?.area_id ? await env.DB.prepare(`SELECT approved_level FROM school_area_diagnostics WHERE student_email=? COLLATE NOCASE AND area_id=? AND status='approved' ORDER BY attempt_no DESC LIMIT 1`).bind(email,course.area_id).first<{approved_level:string|null}>() : null;
+      if (!diagnosis?.approved_level || course.level_code.toUpperCase() !== diagnosis.approved_level.toUpperCase())
+        throw new Error('Debe existir un diagnóstico aprobado del área del curso y su nivel debe coincidir.');
+      const duplicate = await env.DB.prepare(`SELECT id FROM school_course_assignments WHERE student_email=? COLLATE NOCASE AND course_id=? AND status='active'`).bind(email,course.id).first();
+      if (duplicate) throw new Error('Este curso ya está asignado activamente al alumno.');
+      
       const assignmentId = crypto.randomUUID();
+
       await env.DB.batch([
-        env.DB.prepare(`UPDATE school_course_assignments SET status='completed', ended_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE student_email=? COLLATE NOCASE AND status='active'`).bind(email),
-        env.DB.prepare(`INSERT INTO school_course_assignments (id, student_email, course_id, status, assigned_by, previous_course_score, period_id, start_date, end_date) VALUES (?, ?, ?, 'active', 'admin', ?, (SELECT id FROM school_periods WHERE student_email=? COLLATE NOCASE AND status='active' ORDER BY period_no DESC LIMIT 1), ?, ?)`).bind(assignmentId, email, courseId, previousScore, email, startDate || null, endDate || null),
-        env.DB.prepare(`INSERT INTO school_notifications (id,student_email,title,body,href) VALUES (?,?,?,?,?)`).bind(crypto.randomUUID(),email,'Tu nuevo curso está listo',`Te asignamos ${course.title}. Entra a Mi espacio académico para comenzar.`,'/escuela/mi-escuela')
+        env.DB.prepare(
+          `INSERT INTO school_course_assignments (id, student_email, course_id, status, assigned_by, previous_course_score, period_id, start_date, end_date) 
+            VALUES (?, ?, ?, 'active', 'admin', ?, (SELECT id FROM school_periods WHERE student_email=? COLLATE NOCASE AND status='active' ORDER BY period_no DESC LIMIT 1), ?, ?)`)
+            .bind(assignmentId, email, courseId, previousScore, email, startDate || null, endDate || null),
+        env.DB.prepare(
+          `INSERT INTO school_notifications (id,student_email,title,body,message,href) 
+            VALUES (?,?,?,?,?,?)`)
+          .bind(crypto.randomUUID(),email,'Tu nuevo curso está listo',`Te asignamos ${course.title}. Entra a Mi espacio académico para comenzar.`,'','/escuela/mi-escuela')
       ]);
       return Astro.redirect('/admin/escuela/administracion?ok=asignacion', 303);
     }
@@ -94,7 +152,7 @@ if (Astro.request.method === 'POST') {
       const id = crypto.randomUUID();
       await env.DB.batch([
         env.DB.prepare('INSERT INTO school_calendar_events (id,student_email,title,description,event_date,event_type) VALUES (?,?,?,?,?,?)').bind(id,email,title,description,eventDate,eventType),
-        env.DB.prepare('INSERT INTO school_notifications (id,student_email,title,body,href) VALUES (?,?,?,?,?)').bind(crypto.randomUUID(),email,'Nueva fecha importante',`${title} · ${eventDate}${description ? ` — ${description}` : ''}`,'/escuela/mi-escuela')
+        env.DB.prepare('INSERT INTO school_notifications (id,student_email,title,body,message,href) VALUES (?,?,?,?,?,?)').bind(crypto.randomUUID(),email,'Nueva fecha importante',`${title} · ${eventDate}${description ? ` — ${description}` : ''}`,'','/escuela/mi-escuela')
       ]);
       return Astro.redirect('/admin/escuela/administracion?ok=fecha', 303);
     }
@@ -122,7 +180,7 @@ if (Astro.request.method === 'POST') {
           env.DB.prepare(`UPDATE school_periods SET status='completed' WHERE student_email=? COLLATE NOCASE AND status='active'`).bind(email),
           env.DB.prepare(`INSERT INTO school_fee_payments (id, student_email, fee_type, amount_cents, currency, order_id, valid_until, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(paymentId, email, feeType, amount, currency, orderId, validUntil, note),
           env.DB.prepare(`INSERT INTO school_periods (id,student_email,period_no,fee_payment_id,status,starts_on,ends_on) VALUES (?,?,(SELECT COALESCE(MAX(period_no),0)+1 FROM school_periods WHERE student_email=? COLLATE NOCASE),?,'active',date('now'),?)`).bind(periodId,email,email,paymentId,validUntil),
-          env.DB.prepare(`INSERT INTO school_notifications (id,student_email,title,body,href) VALUES (?,?,?,?,?)`).bind(crypto.randomUUID(),email,'Tu pago fue registrado','Tu periodo académico está vigente. Consulta tu curso y tus fechas en Mi escuela.','/escuela/mi-escuela')
+          env.DB.prepare(`INSERT INTO school_notifications (id,student_email,title,body,message,href) VALUES (?,?,?,?,?,?)`).bind(crypto.randomUUID(),email,'Tu pago fue registrado','Tu periodo académico está vigente. Consulta tu curso y tus fechas en Mi escuela.','','/escuela/mi-escuela')
         ]);
       } else {
         await env.DB.prepare(`INSERT INTO school_fee_payments (id, student_email, fee_type, amount_cents, currency, order_id, valid_until, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).bind(paymentId, email, feeType, amount, currency, orderId, validUntil, note).run();
@@ -136,10 +194,11 @@ if (Astro.request.method === 'POST') {
   }
 }
 
-const areas = (await env.DB.prepare(`SELECT id, title, slug FROM school_areas WHERE status='active' ORDER BY title`).all<{id:string;title:string;slug:string}>()).results ?? [];
-const courses = (await env.DB.prepare(`SELECT c.id,c.title,c.slug,c.level_code,c.status,a.title AS area_title FROM school_courses c LEFT JOIN school_areas a ON a.id=c.area_id ORDER BY a.title,c.level_code,c.sequence_no`).all<{id:string;title:string;slug:string;level_code:string;status:string;area_title:string|null}>()).results ?? [];
-const intakes = (await env.DB.prepare(`SELECT i.student_email,i.status,i.selected_area_id,i.suggested_level,i.approved_level,i.diagnostic_answers,i.admin_notes,i.submitted_at,a.title AS area_title FROM school_student_intake i JOIN school_areas a ON a.id=i.selected_area_id ORDER BY CASE i.status WHEN 'pending' THEN 0 ELSE 1 END, i.submitted_at DESC LIMIT 100`).all<{student_email:string;status:string;selected_area_id:string;suggested_level:string|null;approved_level:string|null;diagnostic_answers:string;admin_notes:string;submitted_at:string;area_title:string}>()).results ?? [];
-const assignments = (await env.DB.prepare(`SELECT x.id,x.student_email,x.status,x.assigned_at,x.previous_course_score,x.start_date,x.end_date,c.title AS course_title,c.level_code,a.title AS area_title,cp.status AS progress_status FROM school_course_assignments x JOIN school_courses c ON c.id=x.course_id LEFT JOIN school_areas a ON a.id=c.area_id LEFT JOIN school_course_progress cp ON cp.course_id=c.id AND cp.student_email=x.student_email COLLATE NOCASE WHERE x.status='active' ORDER BY x.assigned_at DESC LIMIT 100`).all<{id:string;student_email:string;status:string;assigned_at:string;previous_course_score:number|null;start_date:string|null;end_date:string|null;course_title:string;level_code:string;area_title:string|null;progress_status:string|null}>()).results ?? [];
+const programs = (await env.DB.prepare(`SELECT slug,title FROM school_programs WHERE status='active' ORDER BY title`).all<{slug:string;title:string}>()).results ?? [];
+const areas = (await env.DB.prepare(`SELECT id, title, slug, program_slug FROM school_areas WHERE status='active' ORDER BY program_slug,title`).all<{id:string;title:string;slug:string;program_slug:string}>()).results ?? [];
+const courses = (await env.DB.prepare(`SELECT c.id,c.title,c.slug,c.level_code,c.status,a.title AS area_title,p.title AS program_title FROM school_courses c LEFT JOIN school_areas a ON a.id=c.area_id LEFT JOIN school_programs p ON p.slug=a.program_slug ORDER BY p.title,a.title,c.level_code,c.sequence_no`).all<{id:string;title:string;slug:string;level_code:string;status:string;area_title:string|null;program_title:string|null}>()).results ?? [];
+const intakes = (await env.DB.prepare(`SELECT d.id,d.student_email,d.status,d.area_id,d.suggested_level,d.approved_level,d.diagnostic_answers,d.admin_notes,d.submitted_at,d.attempt_no,i.diagnostic_unlocked,a.title AS area_title,p.title AS program_title FROM school_area_diagnostics d JOIN school_areas a ON a.id=d.area_id JOIN school_programs p ON p.slug=a.program_slug LEFT JOIN school_student_interests i ON i.student_email=d.student_email COLLATE NOCASE AND i.area_id=d.area_id ORDER BY CASE d.status WHEN 'pending' THEN 0 ELSE 1 END,d.submitted_at DESC LIMIT 150`).all<{id:string;student_email:string;status:string;area_id:string;suggested_level:string|null;approved_level:string|null;diagnostic_answers:string;admin_notes:string;submitted_at:string;attempt_no:number;diagnostic_unlocked:number|null;area_title:string;program_title:string}>()).results ?? [];
+const assignments = (await env.DB.prepare(`SELECT x.id,x.student_email,x.status,x.assigned_at,x.previous_course_score,x.start_date,x.end_date,c.id AS course_id,o.expires_at AS override_expires_at,c.title AS course_title,c.level_code,a.title AS area_title,cp.status AS progress_status FROM school_course_assignments x JOIN school_courses c ON c.id=x.course_id LEFT JOIN school_areas a ON a.id=c.area_id LEFT JOIN school_course_access_overrides o ON o.course_id=c.id AND o.student_email=x.student_email COLLATE NOCASE LEFT JOIN school_course_progress cp ON cp.course_id=c.id AND cp.student_email=x.student_email COLLATE NOCASE WHERE x.status='active' ORDER BY x.assigned_at DESC LIMIT 100`).all<{id:string;student_email:string;status:string;assigned_at:string;previous_course_score:number|null;start_date:string|null;end_date:string|null;course_id:string;override_expires_at:string|null;course_title:string;level_code:string;area_title:string|null;progress_status:string|null}>()).results ?? [];
 const payments = (await env.DB.prepare(`SELECT student_email,fee_type,amount_cents,currency,paid_at,valid_until,order_id FROM school_fee_payments ORDER BY paid_at DESC LIMIT 50`).all<{student_email:string;fee_type:string;amount_cents:number;currency:string;paid_at:string;valid_until:string;order_id:number|null}>()).results ?? [];
 const pendingDiagnostics = intakes.filter((i) => i.status === 'pending').length;
 const upcomingEvents = (await env.DB.prepare(`SELECT student_email,title,event_date,event_type FROM school_calendar_events WHERE event_date>=date('now') ORDER BY event_date LIMIT 12`).all<{student_email:string;title:string;event_date:string;event_type:string}>()).results ?? [];
@@ -155,14 +214,52 @@ const upcomingEvents = (await env.DB.prepare(`SELECT student_email,title,event_d
   {notice && <p class="mb-4 rounded border border-green-200 bg-green-50 p-3 text-sm text-green-800">Cambio guardado: {notice}.</p>}
   {error && <p class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
   <div class="grid gap-6 lg:grid-cols-2">
-    <section class="rounded-lg border border-line p-5"><h2 class="mb-4 font-serif text-xl">Crear área de interés</h2><form method="POST" class="space-y-3"><input type="hidden" name="action" value="create-area"/><label class="block text-sm">Nombre <input required name="title" class="mt-1 block w-full rounded border border-line p-2" placeholder="Cálculo"/></label><label class="block text-sm">Slug opcional <input name="slug" class="mt-1 block w-full rounded border border-line p-2" placeholder="calculo"/></label><label class="block text-sm">Descripción <input name="description" class="mt-1 block w-full rounded border border-line p-2"/></label><button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">Crear área</button></form></section>
-    <section class="rounded-lg border border-line p-5"><h2 class="mb-4 font-serif text-xl">Crear curso / nivel</h2><form method="POST" class="space-y-3"><input type="hidden" name="action" value="create-course"/><label class="block text-sm">Nombre del curso <input required name="title" class="mt-1 block w-full rounded border border-line p-2" placeholder="Cálculo diferencial N0"/></label><label class="block text-sm">Slug opcional <input name="slug" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="block text-sm">Área <select required name="area_id" class="mt-1 block w-full rounded border border-line p-2">{areas.map(a=><option value={a.id}>{a.title}</option>)}</select></label><label class="block text-sm">Nivel <select name="level_code" class="mt-1 block w-full rounded border border-line p-2">{['N0','N1','N2','N3','N4','N5'].map(n=><option value={n}>{n}</option>)}</select></label><label class="block text-sm">Resumen <input name="summary" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="block text-sm">Estado <select name="status" class="mt-1 block w-full rounded border border-line p-2"><option value="draft">Borrador</option><option value="published">Publicado</option></select></label><button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">Crear curso</button></form></section>
+    <section class="rounded-lg border border-line p-5"><h2 class="mb-4 font-serif text-xl">Crear área de interés</h2><form method="POST" class="space-y-3"><input type="hidden" name="action" value="create-area"/><label class="block text-sm">Programa superior<select name="program_slug" class="mt-1 block w-full rounded border border-line p-2">{programs.map(p=><option value={p.slug}>{p.title}</option>)}</select></label><label class="block text-sm">Nombre <input required name="title" class="mt-1 block w-full rounded border border-line p-2" placeholder="Cálculo"/></label><label class="block text-sm">Slug opcional <input name="slug" class="mt-1 block w-full rounded border border-line p-2" placeholder="calculo"/></label><label class="block text-sm">Descripción <input name="description" class="mt-1 block w-full rounded border border-line p-2"/></label><button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">Crear área</button></form></section>
+    <section class="rounded-lg border border-line p-5"><h2 class="mb-4 font-serif text-xl">Crear curso / nivel</h2><form method="POST" class="space-y-3"><input type="hidden" name="action" value="create-course"/><label class="block text-sm">Nombre del curso <input required name="title" class="mt-1 block w-full rounded border border-line p-2" placeholder="Cálculo diferencial N0"/></label><label class="block text-sm">Slug opcional <input name="slug" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="block text-sm">Área <select required name="area_id" class="mt-1 block w-full rounded border border-line p-2">{areas.map(a=><option value={a.id}>{programs.find(p=>p.slug===a.program_slug)?.title} · {a.title}</option>)}</select></label><label class="block text-sm">Nivel <select name="level_code" class="mt-1 block w-full rounded border border-line p-2">{['N0','N1','N2','N3','N4','N5'].map(n=><option value={n}>{n}</option>)}</select></label><label class="block text-sm">Actividades obligatorias que se pueden omitir<input type="number" min="0" step="1" name="omitted_activities_allowed" value="0" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="block text-sm">Resumen <input name="summary" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="block text-sm">Estado <select name="status" class="mt-1 block w-full rounded border border-line p-2"><option value="draft">Borrador</option><option value="published">Publicado</option></select></label><button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">Crear curso</button></form></section>
   </div>
   <section class="mt-8 rounded-lg border border-line p-5"><h2 class="mb-4 font-serif text-xl">Cursos existentes</h2><div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase text-gray-400"><th class="py-2 pr-3">Curso</th><th class="py-2 pr-3">Área</th><th class="py-2 pr-3">Nivel</th><th class="py-2">Estado</th></tr></thead><tbody>{courses.map(c=><tr class="border-b border-line"><td class="py-2 pr-3">{c.title}<div class="text-xs text-gray-500">{c.slug}</div></td><td class="py-2 pr-3">{c.area_title ?? 'Sin área'}</td><td class="py-2 pr-3">{c.level_code}</td><td class="py-2">{c.status}</td></tr>)}</tbody></table></div><p class="mt-3 text-xs text-gray-500">Para agregar lecciones, utiliza el editor anterior en /admin/escuela. Los cursos nuevos también aparecen allí.</p></section>
-  <section id="diagnosticos" class="mt-8 rounded-2xl border border-line bg-surface p-5"><h2 class="mb-4 text-xl font-semibold">1. Diagnósticos</h2>{intakes.length===0?<p class="text-sm text-gray-500">Aún no hay solicitudes de diagnóstico.</p>:<div class="space-y-5">{intakes.map(i=><div class="rounded border border-line p-4"><div class="flex flex-wrap justify-between gap-2"><strong>{i.student_email}</strong><span class="text-sm text-gray-500">{i.area_title} · {i.status}</span></div><p class="mt-2 whitespace-pre-wrap text-sm">{i.diagnostic_answers}</p><form method="POST" class="mt-3 grid gap-3 sm:grid-cols-4"><input type="hidden" name="action" value="review-intake"/><input type="hidden" name="student_email" value={i.student_email}/><label class="text-sm">Resultado<select name="status" class="mt-1 block w-full rounded border border-line p-2"><option value="pending" selected={i.status==='pending'}>Pendiente</option><option value="approved" selected={i.status==='approved'}>Aprobado</option><option value="rejected" selected={i.status==='rejected'}>Rechazado</option></select></label><label class="text-sm">Nivel aprobado<input name="approved_level" value={i.approved_level ?? i.suggested_level ?? 'N0'} class="mt-1 block w-full rounded border border-line p-2" placeholder="N0"/></label><label class="text-sm sm:col-span-2">Notas administrativas<input name="admin_notes" value={i.admin_notes} class="mt-1 block w-full rounded border border-line p-2"/></label><div class="sm:col-span-4"><button class="rounded bg-brand px-3 py-2 text-sm text-white" type="submit">Guardar evaluación</button></div></form></div>)}</div>}</section>
-  <section id="asignar" class="mt-8 rounded-2xl border border-line bg-surface p-5"><h2 class="mb-4 text-xl font-semibold">2. Asignar curso</h2><form method="POST" class="grid gap-3 md:grid-cols-3"><input type="hidden" name="action" value="assign-course"/><label class="text-sm">Correo del alumno<input required type="email" name="student_email" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Curso publicado<select required name="course_id" class="mt-1 block w-full rounded border border-line p-2">{courses.filter(c=>c.status==='published').map(c=><option value={c.id}>{c.area_title} · {c.level_code} · {c.title}</option>)}</select></label><label class="text-sm">Calificación del curso anterior (0–100, opcional)<input type="number" min="0" max="100" step="0.01" name="previous_course_score" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Inicio del curso<input type="date" name="start_date" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Término del curso<input type="date" name="end_date" class="mt-1 block w-full rounded border border-line p-2"/></label><div class="flex items-end"><button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">Asignar curso</button></div></form><p class="mt-2 text-xs text-gray-500">Solo se permite asignar un curso del área elegida y del nivel aprobado. La asignación activa anterior se suspende.</p></section>
+  <section id="diagnosticos" class="mt-8 rounded-2xl border border-line bg-surface p-5"><h2 class="mb-4 text-xl font-semibold">1. Diagnósticos por programa y área</h2>{intakes.length===0?<p class="text-sm text-gray-500">Aún no hay solicitudes de diagnóstico.</p>:<div class="space-y-5">{intakes.map(i=><div class="rounded border border-line p-4"><div class="flex flex-wrap justify-between gap-2"><strong>{i.student_email}</strong><span class="text-sm text-gray-500">{i.program_title} · {i.area_title} · Intento {i.attempt_no} · {i.status}</span></div><p class="mt-2 whitespace-pre-wrap text-sm">{i.diagnostic_answers}</p><form method="POST" class="mt-3 grid gap-3 sm:grid-cols-4"><input type="hidden" name="action" value="review-area-diagnostic"/><input type="hidden" name="diagnostic_id" value={i.id}/><label class="text-sm">Resultado<select name="status" class="mt-1 block w-full rounded border border-line p-2"><option value="pending" selected={i.status==='pending'}>Pendiente</option><option value="approved" selected={i.status==='approved'}>Aprobado</option><option value="rejected" selected={i.status==='rejected'}>Rechazado</option></select></label><label class="text-sm">Nivel aprobado<input name="approved_level" value={i.approved_level ?? i.suggested_level ?? 'N0'} class="mt-1 block w-full rounded border border-line p-2" placeholder="N0"/></label><label class="text-sm sm:col-span-2">Notas administrativas<input name="admin_notes" value={i.admin_notes} class="mt-1 block w-full rounded border border-line p-2"/></label><div class="sm:col-span-4 flex flex-wrap items-center gap-3"><button class="rounded bg-brand px-3 py-2 text-sm text-white" type="submit">Guardar evaluación</button><span class="text-xs text-gray-500">Reenvío {i.diagnostic_unlocked===1?'habilitado':'bloqueado'}</span></div></form><form method="POST" class="mt-2"><input type="hidden" name="action" value="set-diagnostic-resubmission"/><input type="hidden" name="student_email" value={i.student_email}/><input type="hidden" name="area_id" value={i.area_id}/><input type="hidden" name="unlocked" value={i.diagnostic_unlocked===1?'0':'1'}/><button class="text-sm underline">{i.diagnostic_unlocked===1?'Bloquear reenvío':'Habilitar reenvío'}</button></form></div>)}</div>}</section>
+  
+  <section id="asignar" class="mt-8 rounded-2xl border border-line bg-surface p-5">
+    <h2 class="mb-4 text-xl font-semibold">
+      2. Asignar curso
+    </h2>
+    <form method="POST" class="grid gap-3 md:grid-cols-3">
+      <input type="hidden" name="action" value="assign-course"/>
+      <label class="text-sm">
+        Correo del alumno
+        <input required type="email" name="student_email" class="mt-1 block w-full rounded border border-line p-2"/>
+      </label>
+      <label class="text-sm">
+        Curso publicado
+        <select required name="course_id" class="mt-1 block w-full rounded border border-line p-2">
+          {courses.filter(c=>c.status==='published')
+            .map(c=>
+              <option value={c.id}>{c.area_title} · {c.level_code} · {c.title}</option>)}
+        </select>
+      </label>
+      <label class="text-sm">
+        Calificación del curso anterior (0–100, opcional)
+        <input type="number" min="0" max="100" step="0.01" name="previous_course_score" class="mt-1 block w-full rounded border border-line p-2"/>
+      </label>
+      <label class="text-sm">
+        Inicio del curso
+        <input type="date" name="start_date" class="mt-1 block w-full rounded border border-line p-2"/>
+      </label>
+      <label class="text-sm">
+        Término del curso
+        <input type="date" name="end_date" class="mt-1 block w-full rounded border border-line p-2"/>
+      </label>
+      <div class="flex items-end">
+        <button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">
+          Asignar curso
+        </button>
+      </div>
+    </form>
+    <p class="mt-2 text-xs text-gray-500">El alumno puede tener varios cursos activos, siempre que exista un diagnóstico aprobado para el área y nivel de cada curso.</p>
+  </section>
   <section id="pagos" class="mt-8 rounded-2xl border border-line bg-surface p-5"><h2 class="mb-4 text-xl font-semibold">3. Confirmar pago</h2><form method="POST" class="grid gap-3 md:grid-cols-3"><input type="hidden" name="action" value="record-payment"/><label class="text-sm">Correo del alumno<input required type="email" name="student_email" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Tipo<select name="fee_type" class="mt-1 block w-full rounded border border-line p-2"><option value="enrollment">Inscripción (vigencia 6 meses)</option><option value="monthly">Mensualidad (vigencia 1 mes)</option></select></label><label class="text-sm">Monto en centavos<input required type="number" min="0" step="1" name="amount_cents" class="mt-1 block w-full rounded border border-line p-2" placeholder="Ej. 25000 = $250.00 MXN"/></label><label class="text-sm">Vigente hasta<input required type="date" name="valid_until" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">ID del pedido MinShop (opcional)<input type="number" min="1" name="order_id" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm">Moneda<input name="currency" value="mxn" maxlength="3" class="mt-1 block w-full rounded border border-line p-2"/></label><label class="text-sm md:col-span-2">Nota<input name="note" class="mt-1 block w-full rounded border border-line p-2" placeholder="Comprobante / observación"/></label><div class="flex items-end"><button class="rounded bg-brand px-4 py-2 text-sm text-white" type="submit">Registrar pago</button></div></form><p class="mt-2 text-xs text-gray-500">Verifica primero el pedido en MinShop. Inscripción: fecha de vigencia seis meses después del pago. Mensualidad: un mes. Este panel no cobra dinero ni sustituye el checkout.</p></section>
-  <section class="mt-8 rounded-2xl border border-line bg-surface p-5"><h2 class="mb-4 text-xl font-semibold">Cursos activos y calendario</h2><div class="overflow-x-auto"><table class="w-full min-w-[900px] text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase text-gray-400"><th class="py-2 pr-3">Alumno</th><th class="py-2 pr-3">Área</th><th class="py-2 pr-3">Curso</th><th class="py-2 pr-3">Nivel</th><th class="py-2 pr-3">Avance</th><th class="py-2">Fechas del curso</th></tr></thead><tbody>{assignments.map(a=><tr class="border-b border-line align-top"><td class="py-3 pr-3">{a.student_email}</td><td class="py-3 pr-3">{a.area_title}</td><td class="py-3 pr-3">{a.course_title}</td><td class="py-3 pr-3">{a.level_code}</td><td class="py-3 pr-3">{a.progress_status === 'completed' ? 'Completado · renovar' : a.progress_status === 'in_progress' ? 'En curso' : 'Por comenzar'}</td><td class="py-3"><form method="POST" class="flex flex-wrap items-end gap-2"><input type="hidden" name="action" value="update-course-dates"/><input type="hidden" name="assignment_id" value={a.id}/><label class="text-xs">Inicio<input type="date" name="start_date" value={a.start_date ?? ''} class="mt-1 block rounded border border-line bg-background px-2 py-1"/></label><label class="text-xs">Término<input type="date" name="end_date" value={a.end_date ?? ''} class="mt-1 block rounded border border-line bg-background px-2 py-1"/></label><button class="rounded bg-brand px-3 py-1.5 text-xs font-semibold text-on-brand">Guardar</button></form></td></tr>)}</tbody></table></div></section>
+  <section class="mt-8 rounded-2xl border border-line bg-surface p-5"><h2 class="mb-4 text-xl font-semibold">Cursos activos y calendario</h2><div class="overflow-x-auto"><table class="w-full min-w-[900px] text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase text-gray-400"><th class="py-2 pr-3">Alumno</th><th class="py-2 pr-3">Área</th><th class="py-2 pr-3">Curso</th><th class="py-2 pr-3">Nivel</th><th class="py-2 pr-3">Avance</th><th class="py-2">Fechas y duración individual</th></tr></thead><tbody>{assignments.map(a=><tr class="border-b border-line align-top"><td class="py-3 pr-3">{a.student_email}</td><td class="py-3 pr-3">{a.area_title}</td><td class="py-3 pr-3">{a.course_title}</td><td class="py-3 pr-3">{a.level_code}</td><td class="py-3 pr-3">{a.progress_status === 'completed' ? 'Completado · renovar' : a.progress_status === 'in_progress' ? 'En curso' : 'Por comenzar'}</td><td class="py-3"><form method="POST" class="flex flex-wrap items-end gap-2"><input type="hidden" name="action" value="update-course-dates"/><input type="hidden" name="assignment_id" value={a.id}/><label class="text-xs">Inicio<input type="date" name="start_date" value={a.start_date ?? ''} class="mt-1 block rounded border border-line bg-background px-2 py-1"/></label><label class="text-xs">Término<input type="date" name="end_date" value={a.end_date ?? ''} class="mt-1 block rounded border border-line bg-background px-2 py-1"/></label><button class="rounded bg-brand px-3 py-1.5 text-xs font-semibold text-on-brand">Guardar</button></form><form method="POST" class="mt-2 flex flex-wrap items-end gap-2"><input type="hidden" name="action" value="update-course-duration"/><input type="hidden" name="student_email" value={a.student_email}/><input type="hidden" name="course_id" value={a.course_id}/><label class="text-xs">Vigencia personalizada (anula XML)<input type="date" name="expires_at" value={a.override_expires_at??''} required class="mt-1 block rounded border border-line bg-background px-2 py-1"/></label><button class="rounded border px-3 py-1.5 text-xs">Guardar excepción</button>{a.override_expires_at&&<button form={`clear-duration-${a.course_id}`} class="rounded border px-3 py-1.5 text-xs">Restablecer XML</button>}</form>{a.override_expires_at&&<form id={`clear-duration-${a.course_id}`} method="POST"><input type="hidden" name="action" value="clear-course-duration"/><input type="hidden" name="student_email" value={a.student_email}/><input type="hidden" name="course_id" value={a.course_id}/></form>}</td></tr>)}</tbody></table></div></section>
   <section class="mt-8 rounded-2xl border border-line bg-surface p-5"><h2 class="mb-4 text-xl font-semibold">Historial de pagos</h2><div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-line text-xs uppercase text-gray-400"><th class="py-2 pr-3">Alumno</th><th class="py-2 pr-3">Concepto</th><th class="py-2 pr-3">Monto</th><th class="py-2 pr-3">Vigencia</th><th class="py-2">Pedido</th></tr></thead><tbody>{payments.map(p=><tr class="border-b border-line"><td class="py-2 pr-3">{p.student_email}</td><td class="py-2 pr-3">{p.fee_type==='enrollment'?'Inscripción':'Mensualidad'}</td><td class="py-2 pr-3">{(p.amount_cents/100).toLocaleString('es-MX',{style:'currency',currency:p.currency.toUpperCase()})}</td><td class="py-2 pr-3">{p.valid_until}</td><td class="py-2">{p.order_id ?? '—'}</td></tr>)}</tbody></table></div></section>
 <section id="fechas" class="mt-8 rounded-2xl border border-line bg-surface p-5">
     <h2 class="mb-2 text-xl font-semibold">4. Fechas importantes</h2>

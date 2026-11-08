@@ -1,0 +1,2737 @@
+\chapter{Lógica matemática y teoría elemental de conjuntos}
+
+\section{Curso de un mes}
+
+\begin{lesson}[id=curso-guia-general,weight=0]
+
+Duración: 30 días. Cada día contiene diez actividades: seis de respuesta corta, dos de desarrollo y dos de opción múltiple. Las entregas indicadas se realizan en los días señalados. Trabaja en orden y conserva la notación utilizada en cada ejercicio.
+
+\end{lesson}
+
+\begin{lesson}[id=convenciones-notacion,weight=0]
+
+Convenciones: \(V\) significa verdadero y \(F\) falso; \(\neg\) negación; \(\land\) conjunción; \(\lor\) disyunción; \(\to\) condicional; \(\in\) pertenencia; \(\subseteq\) inclusión; \(\varnothing\) conjunto vacío; \(P(A)\) conjunto potencia. En los ejercicios de conjuntos, el universo se indicará cuando sea necesario. Para los naturales, se adopta aquí \(\mathbb{N}=\{0,1,2,\ldots\}\).
+
+\end{lesson}
+
+\section{Día 1: Enunciados y proposiciones}
+
+\begin{lesson}[id=dia-01-lectura,weight=0]
+
+Distinguir enunciados declarativos de preguntas, órdenes y expresiones abiertas.
+
+\end{lesson}
+
+\begin{activity}[id=dia-01-corta-01,type=choice,weight=1]
+
+Clasifica como proposición o no proposición: «7 es primo». Justifica en una frase.
+\option{a}{Es proposición}
+\option{b}{No es proposición}
+\correct{b}
+
+
+\end{activity}
+
+
+\begin{activity}[id=dia-01-corta-02,type=short,weight=1]
+
+Clasifica: «¿Cuánto vale x?»
+
+\end{activity}
+
+\begin{activity}[id=dia-01-corta-03,type=short,weight=1]
+
+Clasifica: «Cierra la puerta».
+
+\end{activity}
+
+\begin{activity}[id=dia-01-corta-04,type=short,weight=1]
+
+Indica si «La Tierra gira alrededor del Sol» tiene valor de verdad.
+
+\end{activity}
+
+\begin{activity}[id=dia-01-corta-05,type=short,weight=1]
+
+Escribe dos proposiciones verdaderas y dos falsas.
+
+\end{activity}
+
+\begin{activity}[id=dia-01-corta-06,type=short,weight=1]
+
+Convierte la frase «Hay un número natural mayor que 10» en una proposición simbólica o precisa.
+
+\end{activity}
+
+\begin{activity}[id=dia-01-desarrollo-01,type=long,weight=2]
+
+Explica por qué una pregunta no es una proposición en lógica clásica. Incluye dos ejemplos y contrasta con dos proposiciones.
+
+\end{activity}
+
+\begin{activity}[id=dia-01-desarrollo-02,type=long,weight=2]
+
+Escribe cinco enunciados cotidianos y analiza cuáles tienen un valor de verdad definido. Corrige los que no sean proposiciones para convertirlos en proposiciones.
+
+\end{activity}
+
+\begin{activity}[id=dia-01-opcion-01,type=choice,weight=1]
+
+¿Cuál es una proposición?
+
+\option{a}{Una pregunta}
+
+\option{b}{5 es impar}
+
+\option{c}{¡Ven aquí!}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-01-opcion-02,type=choice,weight=1]
+
+¿Cuál de estos enunciados tiene valor de verdad?
+
+\option{a}{¿Qué hora es?}
+
+\option{b}{\(x+2=5\), sin fijar \(x\)}
+
+\option{c}{11 es mayor que 4}
+
+\correct{c}
+
+\end{activity}
+
+\section{Día 2: Proposiciones simples y compuestas}
+
+\begin{lesson}[id=dia-02-lectura,weight=0]
+
+Identificar proposiciones simples y reconocer conectivos lógicos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-02-corta-01,type=short,weight=1]
+
+Separa las proposiciones simples de: «Llueve y hace frío».
+
+\end{activity}
+
+\begin{activity}[id=dia-02-corta-02,type=short,weight=1]
+
+Simboliza: «Estudio y trabajo», usando \(p\) y \(q\).
+
+\end{activity}
+
+\begin{activity}[id=dia-02-corta-03,type=short,weight=1]
+
+Simboliza: «No llueve», usando \(p\) para «llueve».
+
+\end{activity}
+
+\begin{activity}[id=dia-02-corta-04,type=short,weight=1]
+
+Escribe una proposición compuesta con «o».
+
+\end{activity}
+
+\begin{activity}[id=dia-02-corta-05,type=short,weight=1]
+
+Identifica el conectivo principal de: \(\neg\)p \(\land\) q.
+
+\end{activity}
+
+\begin{activity}[id=dia-02-corta-06,type=short,weight=1]
+
+Traduce a lenguaje cotidiano: \(p \to q\).
+
+\end{activity}
+
+\begin{activity}[id=dia-02-desarrollo-01,type=long,weight=2]
+
+Construye tres proposiciones compuestas distintas a partir de dos proposiciones simples. Señala en cada una el conectivo principal.
+
+\end{activity}
+
+\begin{activity}[id=dia-02-desarrollo-02,type=long,weight=2]
+
+Explica la diferencia entre una proposición simple y una compuesta y analiza la estructura de dos ejemplos propios.
+
+\end{activity}
+
+\begin{activity}[id=dia-02-opcion-01,type=choice,weight=1]
+
+El símbolo \(\land\) se lee:
+
+\option{a}{O}
+
+\option{b}{Y}
+
+\option{c}{Si... entonces}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-02-opcion-02,type=choice,weight=1]
+
+La expresión \(\neg p\) representa:
+
+\option{a}{La negación de \(p\)}
+
+\option{b}{La conjunción de \(p\) y \(q\)}
+
+\option{c}{La implicación de \(p\) en \(q\)}
+
+\correct{a}
+
+\end{activity}
+
+\section{Día 3: Negación}
+
+\begin{lesson}[id=dia-03-lectura,weight=0]
+
+Construir negaciones correctas y distinguir negación gramatical de negación lógica.
+
+\end{lesson}
+
+\begin{activity}[id=dia-03-corta-01,type=short,weight=1]
+
+Escribe \(\neg p\) si \(p\): «8 es par».
+
+\end{activity}
+
+\begin{activity}[id=dia-03-corta-02,type=short,weight=1]
+
+Niega: «El número 9 es primo».
+
+\end{activity}
+
+\begin{activity}[id=dia-03-corta-03,type=short,weight=1]
+
+Niega: «Todos los perros son negros».
+
+\end{activity}
+
+\begin{activity}[id=dia-03-corta-04,type=short,weight=1]
+
+Niega: «Existe un número natural mayor que 100».
+
+\end{activity}
+
+\begin{activity}[id=dia-03-corta-05,type=short,weight=1]
+
+Escribe la doble negación de \(p\).
+
+\end{activity}
+
+\begin{activity}[id=dia-03-corta-06,type=short,weight=1]
+
+Determina el valor de verdad de \(\neg p\) cuando \(p\) es falsa.
+
+\end{activity}
+
+\begin{activity}[id=dia-03-desarrollo-01,type=long,weight=2]
+
+Explica por qué la negación de «Todos los estudiantes aprobaron» no es «Ningún estudiante aprobó». Escribe la negación correcta.
+
+\end{activity}
+
+\begin{activity}[id=dia-03-desarrollo-02,type=long,weight=2]
+
+Formula cuatro proposiciones cuantificadas informalmente y escribe sus negaciones usando «existe» o «para todo».
+
+\end{activity}
+
+\begin{activity}[id=dia-03-opcion-01,type=choice,weight=1]
+
+Si p es verdadera, \(\neg p\) es:
+
+\option{a}{Verdadera}
+
+\option{b}{Falsa}
+
+\option{c}{Indeterminada}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-03-opcion-02,type=choice,weight=1]
+
+La negación de «Todos tienen libro» es:
+
+\option{a}{Nadie tiene libro}
+
+\option{b}{Alguien no tiene libro}
+
+\option{c}{Todos no tienen libro}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 4: Conjunción, disyunción y condicional}
+
+\begin{lesson}[id=dia-04-lectura,weight=0]
+
+Interpretar \(\land\), \(\lor\) y \(\to\) en lenguaje natural y simbólico.
+
+\end{lesson}
+
+\begin{activity}[id=dia-04-corta-01,type=short,weight=1]
+
+Simboliza «\(p\) y \(q\)».
+
+\end{activity}
+
+\begin{activity}[id=dia-04-corta-02,type=short,weight=1]
+
+Simboliza «\(p\) o \(q\)».
+
+\end{activity}
+
+\begin{activity}[id=dia-04-corta-03,type=short,weight=1]
+
+Simboliza «si \(p\), entonces \(q\)».
+
+\end{activity}
+
+\begin{activity}[id=dia-04-corta-04,type=short,weight=1]
+
+Traduce \(p\) \(\lor\) \(q\) a palabras.
+
+\end{activity}
+
+\begin{activity}[id=dia-04-corta-05,type=short,weight=1]
+
+Escribe un ejemplo cotidiano de \(p\) \(\to\) \(q\).
+
+\end{activity}
+
+\begin{activity}[id=dia-04-corta-06,type=short,weight=1]
+
+Identifica el conectivo principal de (\(p\) \(\land\) \(q\)) \(\to\) \(r\).
+
+\end{activity}
+
+\begin{activity}[id=dia-04-desarrollo-01,type=long,weight=2]
+
+Explica la diferencia entre «o» inclusiva en lógica y el uso exclusivo que a veces tiene en el lenguaje cotidiano.
+
+\end{activity}
+
+\begin{activity}[id=dia-04-desarrollo-02,type=long,weight=2]
+
+Crea una situación con dos proposiciones simples y escribe su conjunción, disyunción y condicional. Explica cada expresión.
+
+\end{activity}
+
+\begin{activity}[id=dia-04-opcion-01,type=choice,weight=1]
+
+El condicional \(p\) \(\to\) \(q\) es falso únicamente cuando:
+
+\option{a}{\(p\) es falsa y \(q\) verdadera}
+
+\option{b}{\(p\) es verdadera y \(q\) falsa}
+
+\option{c}{ambas son verdaderas}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-04-opcion-02,type=choice,weight=1]
+
+La disyunción \(p\) \(\lor\) \(q\) es verdadera cuando:
+
+\option{a}{Al menos una es verdadera}
+
+\option{b}{Ambas son falsas}
+
+\option{c}{Solo \(p\) es falsa}
+
+\correct{a}
+
+\end{activity}
+
+\section{Día 5: Tablas de verdad: negación y conectivos}
+
+\begin{lesson}[id=dia-05-lectura,weight=0]
+
+Construir tablas de verdad básicas.
+
+\end{lesson}
+
+\begin{activity}[id=dia-05-corta-01,type=short,weight=1]
+
+Completa la columna \(\neg p\) para \(p=V,F\).
+
+\end{activity}
+
+\begin{activity}[id=dia-05-corta-02,type=short,weight=1]
+
+Completa \(p\) \(\land\) \(q\) para (\(V\),\(V\)).
+
+\end{activity}
+
+\begin{activity}[id=dia-05-corta-03,type=short,weight=1]
+
+Completa \(p\) \(\land\) \(q\) para (\(V\),\(F\)).
+
+\end{activity}
+
+\begin{activity}[id=dia-05-corta-04,type=short,weight=1]
+
+Completa \(p\) \(\lor\) \(q\) para (\(F\),\(F\)).
+
+\end{activity}
+
+\begin{activity}[id=dia-05-corta-05,type=short,weight=1]
+
+Completa \(p\) \(\to\) \(q\) para (\(F\),\(V\)).
+
+\end{activity}
+
+\begin{activity}[id=dia-05-corta-06,type=short,weight=1]
+
+¿Cuántas filas tiene una tabla con dos variables proposicionales?
+
+\end{activity}
+
+\begin{activity}[id=dia-05-desarrollo-01,type=long,weight=2]
+
+Construye las tablas completas de \(p\) \(\land\) \(q\) y \(p\) \(\lor\) \(q\). Explica qué filas determinan sus valores.
+
+\end{activity}
+
+\begin{activity}[id=dia-05-desarrollo-02,type=long,weight=2]
+
+Construye la tabla de \(p\) \(\to\) \(q\) y explica por qué solo una combinación la hace falsa.
+
+\end{activity}
+
+\begin{activity}[id=dia-05-opcion-01,type=choice,weight=1]
+
+Con dos variables hay:
+
+\option{a}{2 filas}
+
+\option{b}{3 filas}
+
+\option{c}{4 filas}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-05-opcion-02,type=choice,weight=1]
+
+\(\neg\)F equivale a:
+
+\option{a}{F}
+
+\option{b}{V}
+
+\option{c}{p}
+
+\correct{b}
+
+\end{activity}
+
+\begin{deliverable}[id=entrega-dia-05,type=upload,weight=3]
+
+Entrega un PDF con las tablas de verdad de la negación, conjunción, disyunción y condicional. Incluye una explicación breve de cada columna final.
+
+\end{deliverable}
+
+\section{Día 6: Tablas de verdad compuestas}
+
+\begin{lesson}[id=dia-06-lectura,weight=0]
+
+Evaluar expresiones con varios conectivos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-06-corta-01,type=short,weight=1]
+
+Construye la tabla de \(\neg p\) \(\land\) \(q\).
+
+\end{activity}
+
+\begin{activity}[id=dia-06-corta-02,type=short,weight=1]
+
+Evalúa \(p\) \(\lor\) \(\neg q\) cuando \(p=F\) y \(q=F\).
+
+\end{activity}
+
+\begin{activity}[id=dia-06-corta-03,type=short,weight=1]
+
+Evalúa (\(p\) \(\land\) \(q\)) \(\to\) \(p\) cuando \(p=V\) y \(q=F\).
+
+\end{activity}
+
+\begin{activity}[id=dia-06-corta-04,type=short,weight=1]
+
+Identifica el conectivo principal de \(\neg p\) \(\lor\) \(q\).
+
+\end{activity}
+
+\begin{activity}[id=dia-06-corta-05,type=short,weight=1]
+
+¿Cuántas filas requiere una tabla de tres variables?
+
+\end{activity}
+
+\begin{activity}[id=dia-06-corta-06,type=short,weight=1]
+
+Evalúa \(p\) \(\to\) (q \(\land\) p) para \(p=F\) y \(q=V\).
+
+\end{activity}
+
+\begin{activity}[id=dia-06-desarrollo-01,type=long,weight=2]
+
+Construye la tabla completa de (\(p\) \(\land\) \(q\)) \(\to\) \(r\). Muestra el orden de evaluación de los conectivos.
+
+\end{activity}
+
+\begin{activity}[id=dia-06-desarrollo-02,type=long,weight=2]
+
+Compara \(\neg\)(\(p\) \(\land\) \(q\)) con (\(\neg p\) \(\land\) \(\neg q\)) mediante tablas. Indica si tienen siempre el mismo valor.
+
+\end{activity}
+
+\begin{activity}[id=dia-06-opcion-01,type=choice,weight=1]
+
+Una tabla con tres variables tiene:
+
+\option{a}{4 filas}
+
+\option{b}{6 filas}
+
+\option{c}{8 filas}
+
+\correct{c}
+
+\end{activity}
+
+\begin{activity}[id=dia-06-opcion-02,type=choice,weight=1]
+
+El conectivo principal de (\(p\) \(\lor\) \(q\)) \(\land\) \(r\) es:
+
+\option{a}{\(\lor\)}
+
+\option{b}{\(\land\)}
+
+\option{c}{\(\neg\)}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 7: Tautología, contradicción y contingencia}
+
+\begin{lesson}[id=dia-07-lectura,weight=0]
+
+Clasificar fórmulas mediante sus valores de verdad.
+
+\end{lesson}
+
+\begin{activity}[id=dia-07-corta-01,type=short,weight=1]
+
+Define tautología en una frase.
+
+\end{activity}
+
+\begin{activity}[id=dia-07-corta-02,type=short,weight=1]
+
+Define contradicción en una frase.
+
+\end{activity}
+
+\begin{activity}[id=dia-07-corta-03,type=short,weight=1]
+
+Define contingencia en una frase.
+
+\end{activity}
+
+\begin{activity}[id=dia-07-corta-04,type=short,weight=1]
+
+Clasifica \(p\) \(\lor\) \(\neg p\).
+
+\end{activity}
+
+\begin{activity}[id=dia-07-corta-05,type=short,weight=1]
+
+Clasifica \(p\) \(\land\) \(\neg p\).
+
+\end{activity}
+
+\begin{activity}[id=dia-07-corta-06,type=short,weight=1]
+
+¿Qué indica una columna final con valores \(V\) y \(F\)?
+
+\end{activity}
+
+\begin{activity}[id=dia-07-desarrollo-01,type=long,weight=2]
+
+Construye una tabla para \(p\) \(\to\) \(p\) y clasifícala. Justifica la clasificación.
+
+\end{activity}
+
+\begin{activity}[id=dia-07-desarrollo-02,type=long,weight=2]
+
+Da un ejemplo de tautología, contradicción y contingencia, y verifica cada uno con una tabla.
+
+\end{activity}
+
+\begin{activity}[id=dia-07-opcion-01,type=choice,weight=1]
+
+p\(\lor\)\(\neg\)p es una:
+
+\option{a}{Tautología}
+
+\option{b}{Contradicción}
+
+\option{c}{Contingencia}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-07-opcion-02,type=choice,weight=1]
+
+Una contradicción es falsa:
+
+\option{a}{En algunas filas}
+
+\option{b}{En todas las filas}
+
+\option{c}{En ninguna fila}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 8: Equivalencias lógicas}
+
+\begin{lesson}[id=dia-08-lectura,weight=0]
+
+Reconocer equivalencias y aplicar leyes básicas.
+
+\end{lesson}
+
+\begin{activity}[id=dia-08-corta-01,type=short,weight=1]
+
+Escribe la ley de doble negación.
+
+\end{activity}
+
+\begin{activity}[id=dia-08-corta-02,type=short,weight=1]
+
+Completa: \(\neg\)(\(\neg p\)) \(\equiv\) __.
+
+\end{activity}
+
+\begin{activity}[id=dia-08-corta-03,type=short,weight=1]
+
+¿Qué expresa p \(\land\) q \(\equiv\) q \(\land\) p?
+
+\end{activity}
+
+\begin{activity}[id=dia-08-corta-04,type=short,weight=1]
+
+Aplica De Morgan a \(\neg\)(\(p\) \(\land\) \(q\)).
+
+\end{activity}
+
+\begin{activity}[id=dia-08-corta-05,type=short,weight=1]
+
+Aplica De Morgan a \(\neg\)(\(p\) \(\lor\) \(q\)).
+
+\end{activity}
+
+\begin{activity}[id=dia-08-corta-06,type=short,weight=1]
+
+Indica si \(p\) \(\to\) \(q\) equivale a \(\neg\)p \(\lor\) \(q\).
+
+\end{activity}
+
+\begin{activity}[id=dia-08-desarrollo-01,type=long,weight=2]
+
+Verifica mediante tabla una ley de De Morgan.
+
+\end{activity}
+
+\begin{activity}[id=dia-08-desarrollo-02,type=long,weight=2]
+
+Explica qué significa que dos fórmulas sean lógicamente equivalentes y presenta un ejemplo verificado.
+
+\end{activity}
+
+\begin{activity}[id=dia-08-opcion-01,type=choice,weight=1]
+
+La doble negación establece:
+
+\option{a}{\(\neg \neg p\) \(\equiv  p\)}
+
+\option{b}{\(\neg p \equiv p\)}
+
+\option{c}{p\(\land\)p \(\equiv\) \(\neg\)p}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-08-opcion-02,type=choice,weight=1]
+
+\(\neg\)(\(p\) \(\land\) \(q\)) equivale a:
+
+\option{a}{\(\neg p\) \(\land\) \(\neg q\)}
+
+\option{b}{\(\neg p\) \(\lor\) \(\neg q\)}
+\option{c}{\(p\) \(\lor\) \(q\)}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 9: Argumentos e inferencias}
+
+\begin{lesson}[id=dia-09-lectura,weight=0]
+
+Distinguir premisas, conclusión y validez de un argumento.
+
+\end{lesson}
+
+\begin{activity}[id=dia-09-corta-01,type=short,weight=1]
+
+Identifica las premisas de: Si llueve, la calle se moja; llueve; por tanto, la calle se moja.
+
+\end{activity}
+
+\begin{activity}[id=dia-09-corta-02,type=short,weight=1]
+
+Identifica la conclusión del argumento anterior.
+
+\end{activity}
+
+\begin{activity}[id=dia-09-corta-03,type=short,weight=1]
+
+Escribe un argumento con dos premisas y una conclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-09-corta-04,type=short,weight=1]
+
+¿La validez depende de la verdad efectiva de las premisas o de la forma?
+
+\end{activity}
+
+\begin{activity}[id=dia-09-corta-05,type=short,weight=1]
+
+Separa premisa y conclusión usando «por tanto».
+
+\end{activity}
+
+\begin{activity}[id=dia-09-corta-06,type=short,weight=1]
+
+Representa con p y q: «Si p, entonces q; p; luego q».
+
+\end{activity}
+
+\begin{activity}[id=dia-09-desarrollo-01,type=long,weight=2]
+
+Analiza un argumento cotidiano: enumera sus premisas, conclusión y forma lógica.
+
+\end{activity}
+
+\begin{activity}[id=dia-09-desarrollo-02,type=long,weight=2]
+
+Explica la diferencia entre un argumento válido y uno con premisas verdaderas. Incluye un ejemplo de cada idea.
+
+\end{activity}
+
+\begin{activity}[id=dia-09-opcion-01,type=choice,weight=1]
+
+En un argumento, la conclusión es:
+
+\option{a}{La afirmación que se pretende derivar}
+
+\option{b}{Cualquier ejemplo}
+
+\option{c}{Una pregunta}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-09-opcion-02,type=choice,weight=1]
+
+La validez lógica depende principalmente de:
+
+\option{a}{La popularidad del argumento}
+
+\option{b}{Su estructura inferencial}
+
+\option{c}{La longitud}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 10: Reglas de inferencia I}
+
+\begin{lesson}[id=dia-10-lectura,weight=0]
+
+Aplicar modus ponens y modus tollens.
+
+\end{lesson}
+
+\begin{activity}[id=dia-10-corta-01,type=short,weight=1]
+
+Escribe el esquema de modus ponens.
+
+\end{activity}
+
+\begin{activity}[id=dia-10-corta-02,type=short,weight=1]
+
+Completa: p\(\to\)q, p, por tanto __.
+
+\end{activity}
+
+\begin{activity}[id=dia-10-corta-03,type=short,weight=1]
+
+Escribe el esquema de modus tollens.
+
+\end{activity}
+
+\begin{activity}[id=dia-10-corta-04,type=short,weight=1]
+
+Completa: p\(\to\)q, \(\neg\)q, por tanto __.
+
+\end{activity}
+
+\begin{activity}[id=dia-10-corta-05,type=short,weight=1]
+
+Identifica modus ponens en un ejemplo propio.
+
+\end{activity}
+
+\begin{activity}[id=dia-10-corta-06,type=short,weight=1]
+
+¿Qué regla permite concluir \(\neg\)p a partir de p\(\to\)q y \(\neg\)q?
+
+\end{activity}
+
+\begin{activity}[id=dia-10-desarrollo-01,type=long,weight=2]
+
+Resuelve dos argumentos mediante modus ponens y explica cada paso.
+
+\end{activity}
+
+\begin{activity}[id=dia-10-desarrollo-02,type=long,weight=2]
+
+Construye un argumento válido por modus tollens e identifica claramente sus premisas y conclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-10-opcion-01,type=choice,weight=1]
+
+De p\(\to\)q y p se infiere:
+
+\option{a}{q}
+
+\option{b}{\(\neg\)q}
+
+\option{c}{\(\neg\)p}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-10-opcion-02,type=choice,weight=1]
+
+De p\(\to\)q y \(\neg\)q se infiere:
+
+\option{a}{p}
+
+\option{b}{\(\neg\)p}
+
+\option{c}{q}
+
+\correct{b}
+
+\end{activity}
+
+\begin{deliverable}[id=entrega-dia-10,type=upload,weight=3]
+
+Entrega un PDF con tres argumentos formalizados. Identifica premisas, conclusión y regla de inferencia en cada uno.
+
+\end{deliverable}
+
+\section{Día 11: Reglas de inferencia II}
+
+\begin{lesson}[id=dia-11-lectura,weight=0]
+
+Reconocer silogismo hipotético, disyuntivo y errores frecuentes.
+
+\end{lesson}
+
+\begin{activity}[id=dia-11-corta-01,type=short,weight=1]
+
+Escribe el esquema del silogismo hipotético.
+
+\end{activity}
+
+\begin{activity}[id=dia-11-corta-02,type=short,weight=1]
+
+Completa: p\(\lor\)q, \(\neg\)p, luego __.
+
+\end{activity}
+
+\begin{activity}[id=dia-11-corta-03,type=short,weight=1]
+
+¿Qué se concluye de p\(\to\)q y q\(\to\)r?
+
+\end{activity}
+
+\begin{activity}[id=dia-11-corta-04,type=short,weight=1]
+
+Identifica la regla: p\(\lor\)q, \(\neg\)q, por tanto p.
+
+\end{activity}
+
+\begin{activity}[id=dia-11-corta-05,type=short,weight=1]
+
+¿Es válido afirmar p a partir de p\(\to\)q y q?
+
+\end{activity}
+
+\begin{activity}[id=dia-11-corta-06,type=short,weight=1]
+
+Nombra el error de afirmar el consecuente.
+
+\end{activity}
+
+\begin{activity}[id=dia-11-desarrollo-01,type=long,weight=2]
+
+Analiza un argumento que use silogismo disyuntivo. Explica por qué la conclusión se sigue.
+
+\end{activity}
+
+\begin{activity}[id=dia-11-desarrollo-02,type=long,weight=2]
+
+Inventa un ejemplo de afirmación del consecuente y explica por qué no constituye una inferencia válida.
+
+\end{activity}
+
+\begin{activity}[id=dia-11-opcion-01,type=choice,weight=1]
+
+De p\(\lor\)q y \(\neg\)p se obtiene:
+
+\option{a}{\(\neg\)q}
+
+\option{b}{q}
+
+\option{c}{p}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-11-opcion-02,type=choice,weight=1]
+
+De p\(\to\)q y q no se puede concluir necesariamente:
+
+\option{a}{p}
+
+\option{b}{q}
+
+\option{c}{p\(\to\)q}
+
+\correct{a}
+
+\end{activity}
+
+\section{Día 12: Axiomas y sistemas formales}
+
+\begin{lesson}[id=dia-12-lectura,weight=0]
+
+Comprender axiomas, definiciones, teoremas y reglas de inferencia.
+
+\end{lesson}
+
+\begin{activity}[id=dia-12-corta-01,type=short,weight=1]
+
+Define axioma en una frase.
+
+\end{activity}
+
+\begin{activity}[id=dia-12-corta-02,type=short,weight=1]
+
+¿Qué función cumple una definición?
+
+\end{activity}
+
+\begin{activity}[id=dia-12-corta-03,type=short,weight=1]
+
+¿Qué es un teorema?
+
+\end{activity}
+
+\begin{activity}[id=dia-12-corta-04,type=short,weight=1]
+
+¿Un axioma se demuestra dentro del sistema que lo adopta?
+
+\end{activity}
+
+\begin{activity}[id=dia-12-corta-05,type=short,weight=1]
+
+Escribe un ejemplo de regla de inferencia.
+
+\end{activity}
+
+\begin{activity}[id=dia-12-corta-06,type=short,weight=1]
+
+Ordena: axiomas, demostración, teorema (según su relación lógica).
+
+\end{activity}
+
+\begin{activity}[id=dia-12-desarrollo-01,type=long,weight=2]
+
+Explica la diferencia entre aceptar un axioma y demostrar un teorema. Usa un ejemplo sencillo.
+
+\end{activity}
+
+\begin{activity}[id=dia-12-desarrollo-02,type=long,weight=2]
+
+Describe cómo un sistema formal obtiene resultados a partir de axiomas, definiciones y reglas de inferencia.
+
+\end{activity}
+
+\begin{activity}[id=dia-12-opcion-01,type=choice,weight=1]
+
+Un axioma es:
+
+\option{a}{Una premisa adoptada como punto de partida}
+
+\option{b}{Una conclusión ya demostrada}
+
+\option{c}{Una operación aritmética}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-12-opcion-02,type=choice,weight=1]
+
+Un teorema es una proposición:
+
+\option{a}{Aceptada sin razones}
+
+\option{b}{Demostrada a partir de supuestos}
+
+\option{c}{Siempre falsa}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 13: Demostraciones: estructura conceptual}
+
+\begin{lesson}[id=dia-13-lectura,weight=0]
+
+Identificar hipótesis, tesis y cadena de razones.
+
+\end{lesson}
+
+\begin{activity}[id=dia-13-corta-01,type=short,weight=1]
+
+Señala la hipótesis en: si n es par, entonces n\(^{2}\) es par.
+
+\end{activity}
+
+\begin{activity}[id=dia-13-corta-02,type=short,weight=1]
+
+Señala la tesis de la afirmación anterior.
+
+\end{activity}
+
+\begin{activity}[id=dia-13-corta-03,type=short,weight=1]
+
+¿Qué significa demostrar una afirmación?
+
+\end{activity}
+
+\begin{activity}[id=dia-13-corta-04,type=short,weight=1]
+
+¿Una lista de ejemplos prueba una afirmación universal?
+
+\end{activity}
+
+\begin{activity}[id=dia-13-corta-05,type=short,weight=1]
+
+Escribe una afirmación matemática con hipótesis y conclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-13-corta-06,type=short,weight=1]
+
+Identifica qué debe justificarse en una demostración.
+
+\end{activity}
+
+\begin{activity}[id=dia-13-desarrollo-01,type=long,weight=2]
+
+Explica con tus palabras la estructura «supuestos \(\to\) razones \(\to\) conclusión». Incluye un ejemplo.
+
+\end{activity}
+
+\begin{activity}[id=dia-13-desarrollo-02,type=long,weight=2]
+
+Analiza una demostración breve de tu elección: identifica hipótesis, pasos justificados y conclusión. Si falta una justificación, señálala.
+
+\end{activity}
+
+\begin{activity}[id=dia-13-opcion-01,type=choice,weight=1]
+
+Una demostración matemática busca:
+
+\option{a}{Convencer por autoridad}
+
+\option{b}{Justificar lógicamente una afirmación}
+
+\option{c}{Acumular ejemplos}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-13-opcion-02,type=choice,weight=1]
+
+Probar varios casos particulares demuestra siempre un enunciado universal:
+
+\option{a}{Sí}
+
+\option{b}{No}
+
+\option{c}{Solo si son tres}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 14: Introducción a conjuntos}
+
+\begin{lesson}[id=dia-14-lectura,weight=0]
+
+Comprender conjunto, elemento, pertenencia y descripción.
+
+\end{lesson}
+
+\begin{activity}[id=dia-14-corta-01,type=short,weight=1]
+
+Escribe por extensión el conjunto de vocales.
+
+\end{activity}
+
+\begin{activity}[id=dia-14-corta-02,type=short,weight=1]
+
+Escribe por extensión los naturales menores que 5 (usa la convención indicada por tu curso: comienza en 0).
+
+\end{activity}
+
+\begin{activity}[id=dia-14-corta-03,type=short,weight=1]
+
+Expresa 3\(\in\){1,2,3,4} con palabras.
+
+\end{activity}
+
+\begin{activity}[id=dia-14-corta-04,type=short,weight=1]
+
+Decide si a\(\in\){a,b,c}.
+
+\end{activity}
+
+\begin{activity}[id=dia-14-corta-05,type=short,weight=1]
+
+Escribe un conjunto de tres objetos matemáticos.
+
+\end{activity}
+
+\begin{activity}[id=dia-14-corta-06,type=short,weight=1]
+
+Distingue conjunto y elemento con un ejemplo.
+
+\end{activity}
+
+\begin{activity}[id=dia-14-desarrollo-01,type=long,weight=2]
+
+Explica la diferencia entre un objeto y el conjunto que lo contiene. Usa \(\in\) y \(\notin\) correctamente.
+
+\end{activity}
+
+\begin{activity}[id=dia-14-desarrollo-02,type=long,weight=2]
+
+Describe el mismo conjunto por extensión y por comprensión, y verifica que ambas descripciones coincidan.
+
+\end{activity}
+
+\begin{activity}[id=dia-14-opcion-01,type=choice,weight=1]
+
+El símbolo \(\in\) significa:
+
+\option{a}{Está contenido como subconjunto}
+
+\option{b}{Pertenece a}
+
+\option{c}{Es igual a}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-14-opcion-02,type=choice,weight=1]
+
+Si A={1,2,3}, entonces 4\(\in\)A es:
+
+\option{a}{Verdadero}
+
+\option{b}{Falso}
+
+\option{c}{Una definición}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 15: Notación y subconjuntos}
+
+\begin{lesson}[id=dia-15-lectura,weight=0]
+
+Usar inclusión, igualdad y conjunto vacío.
+
+\end{lesson}
+
+\begin{activity}[id=dia-15-corta-01,type=short,weight=1]
+
+Escribe \(\varnothing\) con palabras.
+
+\end{activity}
+
+\begin{activity}[id=dia-15-corta-02,type=short,weight=1]
+
+Decide si {1,2}\(\subseteq\){1,2,3}.
+
+\end{activity}
+
+\begin{activity}[id=dia-15-corta-03,type=short,weight=1]
+
+Decide si {1,4}\(\subseteq\){1,2,3}.
+
+\end{activity}
+
+\begin{activity}[id=dia-15-corta-04,type=short,weight=1]
+
+¿El conjunto vacío es subconjunto de todo conjunto?
+
+\end{activity}
+
+\begin{activity}[id=dia-15-corta-05,type=short,weight=1]
+
+Escribe un subconjunto propio de {a,b,c}.
+
+\end{activity}
+
+\begin{activity}[id=dia-15-corta-06,type=short,weight=1]
+
+Expresa que A y B tienen los mismos elementos.
+
+\end{activity}
+
+\begin{activity}[id=dia-15-desarrollo-01,type=long,weight=2]
+
+Explica la diferencia entre x\(\in\)A y {x}\(\subseteq\)A mediante ejemplos.
+
+\end{activity}
+
+\begin{activity}[id=dia-15-desarrollo-02,type=long,weight=2]
+
+Demuestra por definición que {1,2}\(\subseteq\){1,2,3}. Explica qué debes verificar.
+
+\end{activity}
+
+\begin{activity}[id=dia-15-opcion-01,type=choice,weight=1]
+
+A\(\subseteq\)B significa:
+
+\option{a}{Todo elemento de A pertenece a B}
+
+\option{b}{A es elemento de B}
+
+\option{c}{A y B son disjuntos}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-15-opcion-02,type=choice,weight=1]
+
+El conjunto vacío:
+
+\option{a}{No es subconjunto de ningún conjunto}
+
+\option{b}{Es subconjunto de todo conjunto}
+
+\option{c}{Tiene un elemento}
+
+\correct{b}
+
+\end{activity}
+
+\begin{deliverable}[id=entrega-dia-15,type=upload,weight=3]
+
+Entrega una hoja con definiciones de conjunto, elemento, pertenencia, subconjunto y conjunto universal, acompañadas de ejemplos correctos.
+
+\end{deliverable}
+
+\section{Día 16: Conjunto universal y complementario}
+
+\begin{lesson}[id=dia-16-lectura,weight=0]
+
+Definir universo de trabajo y complemento relativo.
+
+\end{lesson}
+
+\begin{activity}[id=dia-16-corta-01,type=short,weight=1]
+
+¿Qué representa el conjunto universal U?
+
+\end{activity}
+
+\begin{activity}[id=dia-16-corta-02,type=short,weight=1]
+
+Si U={1,2,3,4} y A={1,3}, escribe \(A^{c}\).
+
+\end{activity}
+
+\begin{activity}[id=dia-16-corta-03,type=short,weight=1]
+
+¿El complemento depende de U?
+
+\end{activity}
+
+\begin{activity}[id=dia-16-corta-04,type=short,weight=1]
+
+Si A=U, determina \(A^{c}\).
+
+\end{activity}
+
+\begin{activity}[id=dia-16-corta-05,type=short,weight=1]
+
+Si A=\(\varnothing\), determina \(A^{c}\) respecto de U.
+
+\end{activity}
+
+\begin{activity}[id=dia-16-corta-06,type=short,weight=1]
+
+Escribe un universo adecuado para el conjunto de vocales.
+
+\end{activity}
+
+\begin{activity}[id=dia-16-desarrollo-01,type=long,weight=2]
+
+Explica por qué el complemento de un conjunto solo queda determinado cuando se especifica el universo.
+
+\end{activity}
+
+\begin{activity}[id=dia-16-desarrollo-02,type=long,weight=2]
+
+Para U={1,2,3,4,5,6} y A={2,4,6}, calcula \(A^{c}\) y verifica que A\(\cup\)\(A^{c}\)=U y A\(\cap\)\(A^{c}\)=\(\varnothing\).
+
+\end{activity}
+
+\begin{activity}[id=dia-16-opcion-01,type=choice,weight=1]
+
+El complemento \(A^{c}\) se define respecto de:
+
+\option{a}{Un universo U}
+
+\option{b}{Cualquier número}
+
+\option{c}{El conjunto potencia}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-16-opcion-02,type=choice,weight=1]
+
+Si A=U, entonces \(A^{c}\) es:
+
+\option{a}{U}
+
+\option{b}{\(\varnothing\)}
+
+\option{c}{A}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 17: Unión e intersección}
+
+\begin{lesson}[id=dia-17-lectura,weight=0]
+
+Calcular unión e intersección de conjuntos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-17-corta-01,type=short,weight=1]
+
+Calcula {1,2}\(\cup\){2,3}.
+
+\end{activity}
+
+\begin{activity}[id=dia-17-corta-02,type=short,weight=1]
+
+Calcula {1,2}\(\cap\){2,3}.
+
+\end{activity}
+
+\begin{activity}[id=dia-17-corta-03,type=short,weight=1]
+
+Calcula {a,b}\(\cup\){c}.
+
+\end{activity}
+
+\begin{activity}[id=dia-17-corta-04,type=short,weight=1]
+
+Calcula {a,b}\(\cap\){c}.
+
+\end{activity}
+
+\begin{activity}[id=dia-17-corta-05,type=short,weight=1]
+
+¿La unión conserva elementos repetidos?
+
+\end{activity}
+
+\begin{activity}[id=dia-17-corta-06,type=short,weight=1]
+
+Interpreta A\(\cap\)B en palabras.
+
+\end{activity}
+
+\begin{activity}[id=dia-17-desarrollo-01,type=long,weight=2]
+
+Resuelve unión e intersección de tres pares de conjuntos y explica el criterio de pertenencia en cada operación.
+
+\end{activity}
+
+\begin{activity}[id=dia-17-desarrollo-02,type=long,weight=2]
+
+Da un ejemplo de conjuntos disjuntos y otro de conjuntos con intersección no vacía. Justifica ambos.
+
+\end{activity}
+
+\begin{activity}[id=dia-17-opcion-01,type=choice,weight=1]
+
+La unión A\(\cup\)B contiene:
+
+\option{a}{Los elementos de A o de B, o de ambos}
+
+\option{b}{Solo los comunes}
+
+\option{c}{Solo los de A}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-17-opcion-02,type=choice,weight=1]
+
+La intersección A\(\cap\)B contiene:
+
+\option{a}{Todos los elementos distintos}
+
+\option{b}{Los elementos comunes}
+
+\option{c}{Los elementos externos}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 18: Diferencia y diferencia simétrica}
+
+\begin{lesson}[id=dia-18-lectura,weight=0]
+
+Operar con diferencia de conjuntos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-18-corta-01,type=short,weight=1]
+
+Calcula {1,2,3}\{2}.
+
+\end{activity}
+
+\begin{activity}[id=dia-18-corta-02,type=short,weight=1]
+
+Calcula {a,b}\{b,c}.
+
+\end{activity}
+
+\begin{activity}[id=dia-18-corta-03,type=short,weight=1]
+
+Calcula {1,2}\(\triangle\){2,3}.
+
+\end{activity}
+
+\begin{activity}[id=dia-18-corta-04,type=short,weight=1]
+
+¿La diferencia A\B siempre coincide con B\A?
+
+\end{activity}
+
+\begin{activity}[id=dia-18-corta-05,type=short,weight=1]
+
+Describe A\B en palabras.
+
+\end{activity}
+
+\begin{activity}[id=dia-18-corta-06,type=short,weight=1]
+
+¿Qué elementos excluye la diferencia simétrica?
+
+\end{activity}
+
+\begin{activity}[id=dia-18-desarrollo-01,type=long,weight=2]
+
+Calcula A\B y B\A para A={1,2,3} y B={2,3,4}. Explica la diferencia.
+
+\end{activity}
+
+\begin{activity}[id=dia-18-desarrollo-02,type=long,weight=2]
+
+Construye un ejemplo de diferencia simétrica y verifica que contiene los elementos que pertenecen exactamente a uno de los dos conjuntos.
+
+\end{activity}
+
+\begin{activity}[id=dia-18-opcion-01,type=choice,weight=1]
+
+A\B contiene elementos que:
+
+\option{a}{Están en A y no en B}
+
+\option{b}{Están en ambos}
+
+\option{c}{No están en ninguno}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-18-opcion-02,type=choice,weight=1]
+
+La diferencia simétrica contiene elementos que pertenecen:
+
+\option{a}{A ambos conjuntos}
+
+\option{b}{Exactamente a uno de los dos}
+
+\option{c}{A ninguno}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 19: Leyes de conjuntos}
+
+\begin{lesson}[id=dia-19-lectura,weight=0]
+
+Aplicar conmutatividad, asociatividad, distributividad e identidad.
+
+\end{lesson}
+
+\begin{activity}[id=dia-19-corta-01,type=short,weight=1]
+
+Escribe la ley conmutativa de la unión.
+
+\end{activity}
+
+\begin{activity}[id=dia-19-corta-02,type=short,weight=1]
+
+Escribe la ley conmutativa de la intersección.
+
+\end{activity}
+
+\begin{activity}[id=dia-19-corta-03,type=short,weight=1]
+
+Completa: A\(\cup\)\(\varnothing\)=__.
+
+\end{activity}
+
+\begin{activity}[id=dia-19-corta-04,type=short,weight=1]
+
+Completa: A\(\cap\)U=__.
+
+\end{activity}
+
+\begin{activity}[id=dia-19-corta-05,type=short,weight=1]
+
+Escribe la ley distributiva de \(\cap\) respecto de \(\cup\).
+
+\end{activity}
+
+\begin{activity}[id=dia-19-corta-06,type=short,weight=1]
+
+¿La unión es asociativa?
+
+\end{activity}
+
+\begin{activity}[id=dia-19-desarrollo-01,type=long,weight=2]
+
+Verifica una ley de conjuntos con un ejemplo concreto y explica por qué un ejemplo no sustituye una demostración general.
+
+\end{activity}
+
+\begin{activity}[id=dia-19-desarrollo-02,type=long,weight=2]
+
+Enuncia las leyes de identidad, dominación y complemento con notación correcta.
+
+\end{activity}
+
+\begin{activity}[id=dia-19-opcion-01,type=choice,weight=1]
+
+A\(\cup\)\(\varnothing\) es igual a:
+
+\option{a}{\(\varnothing\)}
+
+\option{b}{A}
+
+\option{c}{U}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-19-opcion-02,type=choice,weight=1]
+
+A\(\cap\)U es igual a:
+
+\option{a}{A}
+
+\option{b}{\(\varnothing\)}
+
+\option{c}{U}
+
+\correct{a}
+
+\end{activity}
+
+\section{Día 20: Diagramas de Venn}
+
+\begin{lesson}[id=dia-20-lectura,weight=0]
+
+Representar operaciones y regiones de conjuntos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-20-corta-01,type=short,weight=1]
+
+Sombrea conceptualmente A\(\cup\)B en un diagrama de dos conjuntos.
+
+\end{activity}
+
+\begin{activity}[id=dia-20-corta-02,type=short,weight=1]
+
+Describe la región A\(\cap\)B.
+
+\end{activity}
+
+\begin{activity}[id=dia-20-corta-03,type=short,weight=1]
+
+Describe la región A\B.
+
+\end{activity}
+
+\begin{activity}[id=dia-20-corta-04,type=short,weight=1]
+
+¿Qué región representa (A\(\cup\)B)ᶜ?
+
+\end{activity}
+
+\begin{activity}[id=dia-20-corta-05,type=short,weight=1]
+
+¿Qué representa A\(\cap\)B=\(\varnothing\) en un diagrama?
+
+\end{activity}
+
+\begin{activity}[id=dia-20-corta-06,type=short,weight=1]
+
+Dibuja dos conjuntos dentro de U.
+
+\end{activity}
+
+\begin{activity}[id=dia-20-desarrollo-01,type=long,weight=2]
+
+Entrega un diagrama de Venn rotulado para U, A y B, y representa por separado unión, intersección y complemento.
+
+\end{activity}
+
+\begin{activity}[id=dia-20-desarrollo-02,type=long,weight=2]
+
+Explica cómo un diagrama de Venn ayuda a interpretar operaciones, e indica una limitación de usar un dibujo como demostración general.
+
+\end{activity}
+
+\begin{activity}[id=dia-20-opcion-01,type=choice,weight=1]
+
+La región común a A y B representa:
+
+\option{a}{A\(\cup\)B}
+
+\option{b}{A\(\cap\)B}
+
+\option{c}{A\B}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-20-opcion-02,type=choice,weight=1]
+
+El rectángulo exterior suele representar:
+
+\option{a}{U}
+
+\option{b}{\(\varnothing\)}
+
+\option{c}{A\(\cap\)B}
+
+\correct{a}
+
+\end{activity}
+
+\begin{deliverable}[id=entrega-dia-20,type=upload,weight=3]
+
+Entrega un PDF con ejercicios resueltos de unión, intersección, diferencia y complemento. Indica explícitamente el universo.
+
+\end{deliverable}
+
+\section{Día 21: Axiomas básicos de conjuntos: extensionalidad}
+
+\begin{lesson}[id=dia-21-lectura,weight=0]
+
+Comprender igualdad de conjuntos por sus elementos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-21-corta-01,type=short,weight=1]
+
+Enuncia el principio de extensionalidad.
+
+\end{activity}
+
+\begin{activity}[id=dia-21-corta-02,type=short,weight=1]
+
+¿Son iguales {1,2} y {2,1}?
+
+\end{activity}
+
+\begin{activity}[id=dia-21-corta-03,type=short,weight=1]
+
+¿Son iguales {1,1,2} y {1,2}?
+
+\end{activity}
+
+\begin{activity}[id=dia-21-corta-04,type=short,weight=1]
+
+Si A\(\subseteq\)B y B\(\subseteq\)A, ¿qué se concluye?
+
+\end{activity}
+
+\begin{activity}[id=dia-21-corta-05,type=short,weight=1]
+
+¿El orden de escritura cambia un conjunto?
+
+\end{activity}
+
+\begin{activity}[id=dia-21-corta-06,type=short,weight=1]
+
+¿La repetición de elementos cambia un conjunto?
+
+\end{activity}
+
+\begin{activity}[id=dia-21-desarrollo-01,type=long,weight=2]
+
+Explica por qué dos conjuntos son iguales exactamente cuando tienen los mismos elementos.
+
+\end{activity}
+
+\begin{activity}[id=dia-21-desarrollo-02,type=long,weight=2]
+
+Demuestra que {a,b}={b,a} usando extensionalidad o doble inclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-21-opcion-01,type=choice,weight=1]
+
+Dos conjuntos son iguales cuando:
+
+\option{a}{Tienen el mismo nombre}
+
+\option{b}{Tienen exactamente los mismos elementos}
+
+\option{c}{Se escriben en el mismo orden}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-21-opcion-02,type=choice,weight=1]
+
+Si A\(\subseteq\)B y B\(\subseteq\)A, entonces:
+
+\option{a}{A=B}
+
+\option{b}{A\(\cap\)B=\(\varnothing\)}
+
+\option{c}{A\(\in\)B}
+
+\correct{a}
+
+\end{activity}
+
+\section{Día 22: Axiomas básicos: pares, unión y vacío}
+
+\begin{lesson}[id=dia-22-lectura,weight=0]
+
+Conocer construcciones elementales de conjuntos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-22-corta-01,type=short,weight=1]
+
+¿Qué conjunto forma el axioma del par a partir de a y b?
+
+\end{activity}
+
+\begin{activity}[id=dia-22-corta-02,type=short,weight=1]
+
+¿Qué reúne el axioma de unión?
+
+\end{activity}
+
+\begin{activity}[id=dia-22-corta-03,type=short,weight=1]
+
+Escribe un conjunto que contenga a y b como elementos.
+
+\end{activity}
+
+\begin{activity}[id=dia-22-corta-04,type=short,weight=1]
+
+¿Qué caracteriza al conjunto vacío?
+
+\end{activity}
+
+\begin{activity}[id=dia-22-corta-05,type=short,weight=1]
+
+¿Puede haber más de una forma de describir el mismo conjunto?
+
+\end{activity}
+
+\begin{activity}[id=dia-22-corta-06,type=short,weight=1]
+
+¿Qué significa que una colección esté bien definida?
+
+\end{activity}
+
+\begin{activity}[id=dia-22-desarrollo-01,type=long,weight=2]
+
+Explica intuitivamente cómo el axioma del par y el axioma de unión permiten construir conjuntos.
+
+\end{activity}
+
+\begin{activity}[id=dia-22-desarrollo-02,type=long,weight=2]
+
+Da ejemplos de un conjunto de dos elementos y de la unión de dos conjuntos. Describe qué elementos aparecen en cada construcción.
+
+\end{activity}
+
+\begin{activity}[id=dia-22-opcion-01,type=choice,weight=1]
+
+El axioma del par permite formar:
+
+\option{a}{Un conjunto con a y b como elementos}
+
+\option{b}{Un número primo}
+
+\option{c}{Una función}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-22-opcion-02,type=choice,weight=1]
+
+El conjunto vacío se caracteriza por:
+
+\option{a}{Tener un elemento}
+
+\option{b}{No tener elementos}
+
+\option{c}{Tener todos los elementos}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 23: Axiomas básicos: separación y potencia}
+
+\begin{lesson}[id=dia-23-lectura,weight=0]
+
+Entender la formación de subconjuntos y el conjunto potencia.
+
+\end{lesson}
+
+\begin{activity}[id=dia-23-corta-01,type=short,weight=1]
+
+¿Qué reúne P(A)?
+
+\end{activity}
+
+\begin{activity}[id=dia-23-corta-02,type=short,weight=1]
+
+Escribe P({a}).
+
+\end{activity}
+
+\begin{activity}[id=dia-23-corta-03,type=short,weight=1]
+
+¿Cuántos subconjuntos tiene un conjunto de dos elementos?
+
+\end{activity}
+
+\begin{activity}[id=dia-23-corta-04,type=short,weight=1]
+
+¿\(\varnothing\) pertenece a P(A) para todo A?
+
+\end{activity}
+
+\begin{activity}[id=dia-23-corta-05,type=short,weight=1]
+
+¿A pertenece a P(A)?
+
+\end{activity}
+
+\begin{activity}[id=dia-23-corta-06,type=short,weight=1]
+
+Si A tiene tres elementos, ¿cuántos elementos tiene P(A)?
+
+\end{activity}
+
+\begin{activity}[id=dia-23-desarrollo-01,type=long,weight=2]
+
+Explica la idea del axioma de separación: formar un subconjunto mediante una propiedad dentro de un conjunto dado.
+
+\end{activity}
+
+\begin{activity}[id=dia-23-desarrollo-02,type=long,weight=2]
+
+Construye el conjunto potencia de {a,b} y verifica que cada uno de sus elementos sea un subconjunto del conjunto original.
+
+\end{activity}
+
+\begin{activity}[id=dia-23-opcion-01,type=choice,weight=1]
+
+P(A) es:
+
+\option{a}{El conjunto de todos los subconjuntos de A}
+
+\option{b}{El complemento de A}
+
+\option{c}{La unión de A consigo mismo}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-23-opcion-02,type=choice,weight=1]
+
+Si |A|=3, entonces |P(A)| es:
+
+\option{a}{3}
+
+\option{b}{6}
+
+\option{c}{8}
+
+\correct{c}
+
+\end{activity}
+
+\section{Día 24: Conjunto potencia}
+
+\begin{lesson}[id=dia-24-lectura,weight=0]
+
+Enumerar conjuntos potencia y reconocer su cardinalidad finita.
+
+\end{lesson}
+
+\begin{activity}[id=dia-24-corta-01,type=short,weight=1]
+
+Escribe P(\(\varnothing\)).
+
+\end{activity}
+
+\begin{activity}[id=dia-24-corta-02,type=short,weight=1]
+
+Escribe P({1}).
+
+\end{activity}
+
+\begin{activity}[id=dia-24-corta-03,type=short,weight=1]
+
+Enumera P({a,b}).
+
+\end{activity}
+
+\begin{activity}[id=dia-24-corta-04,type=short,weight=1]
+
+¿Cuántos elementos tiene P({1,2,3,4})?
+
+\end{activity}
+
+\begin{activity}[id=dia-24-corta-05,type=short,weight=1]
+
+¿Todo elemento de P(A) es un conjunto?
+
+\end{activity}
+
+\begin{activity}[id=dia-24-corta-06,type=short,weight=1]
+
+¿A es siempre elemento de P(A)?
+
+\end{activity}
+
+\begin{activity}[id=dia-24-desarrollo-01,type=long,weight=2]
+
+Enumera P({1,2,3}) sin omitir subconjuntos. Cuenta y verifica el resultado.
+
+\end{activity}
+
+\begin{activity}[id=dia-24-desarrollo-02,type=long,weight=2]
+
+Explica por qué un conjunto finito con n elementos tiene 2\(^{n}\) subconjuntos, usando el caso de tres elementos.
+
+\end{activity}
+
+\begin{activity}[id=dia-24-opcion-01,type=choice,weight=1]
+
+P({a,b}) contiene:
+
+\option{a}{2 subconjuntos}
+
+\option{b}{3 subconjuntos}
+
+\option{c}{4 subconjuntos}
+
+\correct{c}
+
+\end{activity}
+
+\begin{activity}[id=dia-24-opcion-02,type=choice,weight=1]
+
+Si A tiene n elementos, |P(A)| es:
+
+\option{a}{n\(^{2}\)}
+
+\option{b}{2\(^{n}\)}
+
+\option{c}{2n}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 25: Cuantificadores y conjuntos}
+
+\begin{lesson}[id=dia-25-lectura,weight=0]
+
+Interpretar «para todo» y «existe» en propiedades de conjuntos.
+
+\end{lesson}
+
+\begin{activity}[id=dia-25-corta-01,type=short,weight=1]
+
+Escribe el símbolo de «para todo».
+
+\end{activity}
+
+\begin{activity}[id=dia-25-corta-02,type=short,weight=1]
+
+Escribe el símbolo de «existe».
+
+\end{activity}
+
+\begin{activity}[id=dia-25-corta-03,type=short,weight=1]
+
+Traduce: todo x\(\in\)A también pertenece a B.
+
+\end{activity}
+
+\begin{activity}[id=dia-25-corta-04,type=short,weight=1]
+
+Traduce: existe x\(\in\)A que no pertenece a B.
+
+\end{activity}
+
+\begin{activity}[id=dia-25-corta-05,type=short,weight=1]
+
+¿Qué expresa x\(\in\)A \(\land\) x\(\in\)B?
+
+\end{activity}
+
+\begin{activity}[id=dia-25-corta-06,type=short,weight=1]
+
+Escribe la condición de A\(\subseteq\)B con cuantificadores.
+
+\end{activity}
+
+\begin{activity}[id=dia-25-desarrollo-01,type=long,weight=2]
+
+Formula con cuantificadores la igualdad A=B mediante doble inclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-25-desarrollo-02,type=long,weight=2]
+
+Explica la diferencia entre \(\forall\)x\(\in\)A y \(\exists\)x\(\in\)A mediante dos afirmaciones sobre un conjunto concreto.
+
+\end{activity}
+
+\begin{activity}[id=dia-25-opcion-01,type=choice,weight=1]
+
+\(\forall\) se lee:
+
+\option{a}{Existe}
+
+\option{b}{Para todo}
+
+\option{c}{No pertenece}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-25-opcion-02,type=choice,weight=1]
+
+A\(\subseteq\)B equivale a:
+
+\option{a}{\(\forall\)x(x\(\in\)A\(\to\)x\(\in\)B)}
+
+\option{b}{\(\exists\)x(x\(\in\)A\(\land\)x\(\notin\)B)}
+
+\option{c}{A\(\in\)B}
+
+\correct{a}
+
+\end{activity}
+
+\begin{deliverable}[id=entrega-dia-25,type=upload,weight=3]
+
+Entrega un PDF que enumere el conjunto potencia de dos conjuntos finitos y explique el número de subconjuntos.
+
+\end{deliverable}
+
+\section{Día 26: Demostraciones por inclusión}
+
+\begin{lesson}[id=dia-26-lectura,weight=0]
+
+Probar inclusiones siguiendo la definición.
+
+\end{lesson}
+
+\begin{activity}[id=dia-26-corta-01,type=short,weight=1]
+
+¿Qué debes suponer para probar A\(\subseteq\)B?
+
+\end{activity}
+
+\begin{activity}[id=dia-26-corta-02,type=short,weight=1]
+
+¿Qué debes demostrar sobre un elemento x?
+
+\end{activity}
+
+\begin{activity}[id=dia-26-corta-03,type=short,weight=1]
+
+Completa: sea x\(\in\)A; entonces... (objetivo: x\(\in\)B).
+
+\end{activity}
+
+\begin{activity}[id=dia-26-corta-04,type=short,weight=1]
+
+¿Probar A\(\subseteq\)B basta para concluir A=B?
+
+\end{activity}
+
+\begin{activity}[id=dia-26-corta-05,type=short,weight=1]
+
+¿Qué segunda inclusión se requiere para probar igualdad?
+
+\end{activity}
+
+\begin{activity}[id=dia-26-corta-06,type=short,weight=1]
+
+Escribe el esquema de una prueba por inclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-26-desarrollo-01,type=long,weight=2]
+
+Demuestra que A\(\cap\)B\(\subseteq\)A usando la definición de intersección.
+
+\end{activity}
+
+\begin{activity}[id=dia-26-desarrollo-02,type=long,weight=2]
+
+Demuestra que A\(\subseteq\)A\(\cup\)B usando la definición de unión y organiza la prueba en pasos.
+
+\end{activity}
+
+\begin{activity}[id=dia-26-opcion-01,type=choice,weight=1]
+
+Para probar A\(\subseteq\)B se toma:
+
+\option{a}{Un elemento arbitrario de A}
+
+\option{b}{Un elemento externo}
+
+\option{c}{Solo el conjunto vacío}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-26-opcion-02,type=choice,weight=1]
+
+Para demostrar A=B basta probar:
+
+\option{a}{A\(\subseteq\)B}
+
+\option{b}{B\(\subseteq\)A}
+
+\option{c}{A\(\subseteq\)B y B\(\subseteq\)A}
+
+\correct{c}
+
+\end{activity}
+
+\section{Día 27: Demostraciones de identidades de conjuntos}
+
+\begin{lesson}[id=dia-27-lectura,weight=0]
+
+Demostrar identidades con doble inclusión.
+
+\end{lesson}
+
+\begin{activity}[id=dia-27-corta-01,type=short,weight=1]
+
+¿Qué estrategia sirve para demostrar A=B?
+
+\end{activity}
+
+\begin{activity}[id=dia-27-corta-02,type=short,weight=1]
+
+Para probar A\(\cup\)B=B\(\cup\)A, ¿qué debes tomar arbitrariamente?
+
+\end{activity}
+
+\begin{activity}[id=dia-27-corta-03,type=short,weight=1]
+
+¿Qué significa x\(\in\)A\(\cup\)B?
+
+\end{activity}
+
+\begin{activity}[id=dia-27-corta-04,type=short,weight=1]
+
+¿Qué significa x\(\in\)A\(\cap\)B?
+
+\end{activity}
+
+\begin{activity}[id=dia-27-corta-05,type=short,weight=1]
+
+¿Qué dos direcciones se prueban en doble inclusión?
+
+\end{activity}
+
+\begin{activity}[id=dia-27-corta-06,type=short,weight=1]
+
+¿Un diagrama por sí solo prueba una identidad general?
+
+\end{activity}
+
+\begin{activity}[id=dia-27-desarrollo-01,type=long,weight=2]
+
+Demuestra A\(\cup\)B=B\(\cup\)A por doble inclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-27-desarrollo-02,type=long,weight=2]
+
+Demuestra A\(\cap\)B=B\(\cap\)A por doble inclusión, justificando cada equivalencia.
+
+\end{activity}
+
+\begin{activity}[id=dia-27-opcion-01,type=choice,weight=1]
+
+La doble inclusión consiste en probar:
+
+\option{a}{A\(\subseteq\)B y B\(\subseteq\)A}
+
+\option{b}{A\(\in\)B}
+
+\option{c}{A\(\cap\)B=\(\varnothing\)}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-27-opcion-02,type=choice,weight=1]
+
+x\(\in\)A\(\cap\)B significa:
+
+\option{a}{x\(\in\)A o x\(\in\)B}
+
+\option{b}{x\(\in\)A y x\(\in\)B}
+
+\option{c}{x\(\notin\)A}
+
+\correct{b}
+
+\end{activity}
+
+\section{Día 28: Repaso integrado de lógica}
+
+\begin{lesson}[id=dia-28-lectura,weight=0]
+
+Integrar proposiciones, tablas, equivalencias e inferencias.
+
+\end{lesson}
+
+\begin{activity}[id=dia-28-corta-01,type=short,weight=1]
+
+Construye la negación de p\(\land\)q.
+
+\end{activity}
+
+\begin{activity}[id=dia-28-corta-02,type=short,weight=1]
+
+¿Qué regla aplica a p\(\to\)q y p?
+
+\end{activity}
+
+\begin{activity}[id=dia-28-corta-03,type=short,weight=1]
+
+Clasifica p\(\lor\)\(\neg\)p.
+
+\end{activity}
+
+\begin{activity}[id=dia-28-corta-04,type=short,weight=1]
+
+¿Cuántas filas tiene una tabla de cuatro variables?
+
+\end{activity}
+
+\begin{activity}[id=dia-28-corta-05,type=short,weight=1]
+
+Traduce «si p entonces q» a símbolos.
+
+\end{activity}
+
+\begin{activity}[id=dia-28-corta-06,type=short,weight=1]
+
+Identifica la conclusión en un argumento de dos premisas.
+
+\end{activity}
+
+\begin{activity}[id=dia-28-desarrollo-01,type=long,weight=2]
+
+Construye una tabla de verdad para (p\(\to\)q)\(\lor\)\(\neg\)q y clasifícala.
+
+\end{activity}
+
+\begin{activity}[id=dia-28-desarrollo-02,type=long,weight=2]
+
+Analiza un argumento de tres líneas: formalízalo, identifica la regla de inferencia y determina si es válido.
+
+\end{activity}
+
+\begin{activity}[id=dia-28-opcion-01,type=choice,weight=1]
+
+De p\(\to\)q y p se concluye:
+
+\option{a}{q}
+
+\option{b}{\(\neg\)q}
+
+\option{c}{\(\neg\)p}
+
+\correct{a}
+
+\end{activity}
+
+\begin{activity}[id=dia-28-opcion-02,type=choice,weight=1]
+
+p\(\lor\)\(\neg\)p es:
+
+\option{a}{Contradicción}
+
+\option{b}{Contingencia}
+
+\option{c}{Tautología}
+
+\correct{c}
+
+\end{activity}
+
+\section{Día 29: Repaso integrado de conjuntos}
+
+\begin{lesson}[id=dia-29-lectura,weight=0]
+
+Integrar notación, operaciones, universo y potencia.
+
+\end{lesson}
+
+\begin{activity}[id=dia-29-corta-01,type=short,weight=1]
+
+Calcula A\(\cup\)B para A={1,2}, B={2,3}.
+
+\end{activity}
+
+\begin{activity}[id=dia-29-corta-02,type=short,weight=1]
+
+Calcula A\(\cap\)B para los mismos conjuntos.
+
+\end{activity}
+
+\begin{activity}[id=dia-29-corta-03,type=short,weight=1]
+
+Si U={1,2,3,4}, calcula el complemento de {1,4}.
+
+\end{activity}
+
+\begin{activity}[id=dia-29-corta-04,type=short,weight=1]
+
+Escribe P({x}).
+
+\end{activity}
+
+\begin{activity}[id=dia-29-corta-05,type=short,weight=1]
+
+¿Qué significa A\(\subseteq\)B?
+
+\end{activity}
+
+\begin{activity}[id=dia-29-corta-06,type=short,weight=1]
+
+¿Qué elemento pertenece siempre a P(A)?
+
+\end{activity}
+
+\begin{activity}[id=dia-29-desarrollo-01,type=long,weight=2]
+
+Resuelve un ejercicio que combine unión, intersección y complemento respecto de un universo explícito.
+
+\end{activity}
+
+\begin{activity}[id=dia-29-desarrollo-02,type=long,weight=2]
+
+Construye P({a,b}) y explica cómo se relaciona cada elemento del conjunto potencia con el conjunto original.
+
+\end{activity}
+
+\begin{activity}[id=dia-29-opcion-01,type=choice,weight=1]
+
+Si A={1,2} y B={2,3}, A\(\cap\)B es:
+
+\option{a}{{1,2,3}}
+
+\option{b}{{2}}
+
+\option{c}{\(\varnothing\)}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-29-opcion-02,type=choice,weight=1]
+
+P({x}) es:
+
+\option{a}{{\(\varnothing\),{x}}}
+
+\option{b}{{{x}}}
+
+\option{c}{{x}}
+
+\correct{a}
+
+\end{activity}
+
+\section{Día 30: Evaluación de demostraciones}
+
+\begin{lesson}[id=dia-30-lectura,weight=0]
+
+Redactar pruebas breves y reconocer justificaciones insuficientes.
+
+\end{lesson}
+
+\begin{activity}[id=dia-30-corta-01,type=short,weight=1]
+
+¿Qué se supone al iniciar una prueba de inclusión?
+
+\end{activity}
+
+\begin{activity}[id=dia-30-corta-02,type=short,weight=1]
+
+¿Qué se debe probar al final?
+
+\end{activity}
+
+\begin{activity}[id=dia-30-corta-03,type=short,weight=1]
+
+¿Qué función cumple una definición en una demostración?
+
+\end{activity}
+
+\begin{activity}[id=dia-30-corta-04,type=short,weight=1]
+
+¿Por qué debe justificarse cada paso?
+
+\end{activity}
+
+\begin{activity}[id=dia-30-corta-05,type=short,weight=1]
+
+¿Qué diferencia hay entre ejemplo y prueba?
+
+\end{activity}
+
+\begin{activity}[id=dia-30-corta-06,type=short,weight=1]
+
+Escribe una conclusión matemática con «por tanto».
+
+\end{activity}
+
+\begin{activity}[id=dia-30-desarrollo-01,type=long,weight=2]
+
+Redacta una demostración completa de una inclusión sencilla, citando la definición utilizada.
+
+\end{activity}
+
+\begin{activity}[id=dia-30-desarrollo-02,type=long,weight=2]
+
+Revisa una demostración propia y marca hipótesis, argumento, justificación y conclusión. Corrige cualquier salto lógico.
+
+\end{activity}
+
+\begin{activity}[id=dia-30-opcion-01,type=choice,weight=1]
+
+Una prueba debe justificar:
+
+\option{a}{Solo el primer paso}
+
+\option{b}{Cada inferencia relevante}
+
+\option{c}{Solo el resultado}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-30-opcion-02,type=choice,weight=1]
+
+Un contraejemplo sirve para:
+
+\option{a}{Probar todo enunciado verdadero}
+
+\option{b}{Refutar un enunciado universal}
+
+\option{c}{Definir un conjunto}
+
+\correct{b}
+
+\end{activity}
+
+\begin{deliverable}[id=entrega-dia-30,type=upload,weight=3]
+
+Entrega un PDF con dos demostraciones por doble inclusión y un problema integrado de lógica y conjuntos. Escribe todos los pasos y justificaciones.
+
+\end{deliverable}
+
+\section{Día 31: Síntesis y evaluación final}
+
+\begin{lesson}[id=dia-31-lectura,weight=0]
+
+Consolidar los conceptos centrales del curso.
+
+\end{lesson}
+
+\begin{activity}[id=dia-31-corta-01,type=short,weight=1]
+
+Define proposición.
+
+\end{activity}
+
+\begin{activity}[id=dia-31-corta-02,type=short,weight=1]
+
+Define axioma.
+
+\end{activity}
+
+\begin{activity}[id=dia-31-corta-03,type=short,weight=1]
+
+Escribe una regla de inferencia válida.
+
+\end{activity}
+
+\begin{activity}[id=dia-31-corta-04,type=short,weight=1]
+
+¿Qué es una tautología?
+
+\end{activity}
+
+\begin{activity}[id=dia-31-corta-05,type=short,weight=1]
+
+Define subconjunto.
+
+\end{activity}
+
+\begin{activity}[id=dia-31-corta-06,type=short,weight=1]
+
+Define conjunto potencia.
+
+\end{activity}
+
+\begin{activity}[id=dia-31-desarrollo-01,type=long,weight=2]
+
+Escribe una síntesis de una página como máximo que conecte lógica proposicional, inferencia, axiomas, conjuntos y demostración.
+
+\end{activity}
+
+\begin{activity}[id=dia-31-desarrollo-02,type=long,weight=2]
+
+Resuelve un problema integrado: formaliza dos premisas, deriva una conclusión válida y después expresa una colección de objetos como conjunto, calcula una operación y justifica una inclusión.
+
+\end{activity}
+
+\begin{activity}[id=dia-31-opcion-01,type=choice,weight=1]
+
+Una demostración es:
+
+\option{a}{Una colección de ejemplos}
+
+\option{b}{Una justificación lógica}
+
+\option{c}{Una opinión}
+
+\correct{b}
+
+\end{activity}
+
+\begin{activity}[id=dia-31-opcion-02,type=choice,weight=1]
+
+El conjunto potencia P(A) contiene:
+
+\option{a}{Los elementos de A únicamente}
+
+\option{b}{Todos los subconjuntos de A}
+
+\option{c}{Solo el conjunto vacío}
+
+\correct{b}
+
+\end{activity}
+
+\section{Referencia breve}
+
+\begin{lesson}[id=referencia-conectivos,weight=0]
+
+\begin{table}[id=referencia-conectivos-tabla,header=teal]
+
+\row{Símbolo}{Lectura}
+
+\row{\(\neg p\)}{No \(p\)}
+
+\row{\(p\land q\)}{\(p\) y \(q\)}
+
+\row{\(p\lor q\)}{\(p\) o \(q\), inclusiva}
+
+\row{\(p\to q\)}{Si \(p\), entonces \(q\)}
+
+\row{\(p\leftrightarrow q\)}{\(p\) si y solo si \(q\)}
+
+\row{\(p\equiv q\)}{\(p\) y \(q\) son lógicamente equivalentes}
+
+\end{table}
+
+\end{lesson}
+
+\begin{lesson}[id=referencia-inferencias,weight=0]
+
+\begin{table}[id=referencia-inferencias-tabla,header=teal]
+
+\row{Regla}{Esquema}
+
+\row{Modus ponens}{\(p\to q,\ p\ \therefore q\)}
+
+\row{Modus tollens}{\(p\to q,\ \neg q\ \therefore\neg p\)}
+
+\row{Silogismo hipotético}{\(p\to q,\ q\to r\ \therefore p\to r\)}
+
+\row{Silogismo disyuntivo}{\(p\lor q,\ \neg p\ \therefore q\)}
+
+\end{table}
+
+\end{lesson}
+
+\begin{lesson}[id=referencia-conjuntos,weight=0]
+
+\begin{table}[id=referencia-conjuntos-tabla,header=teal]
+
+\row{Símbolo}{Lectura}
+
+\row{\(x\in A\)}{\(x\) pertenece a \(A\)}
+
+\row{\(A\subseteq B\)}{Todo elemento de \(A\) pertenece a \(B\)}
+
+\row{\(A\cup B\)}{Unión}
+
+\row{\(A\cap B\)}{Intersección}
+
+\row{\(A\setminus B\)}{Diferencia}
+
+\row{\(A^{c}\)}{Complemento respecto de \(U\)}
+
+\row{\(P(A)\)}{Conjunto de todos los subconjuntos de \(A\)}
+
+\end{table}
+
+\end{lesson}
+
+\begin{lesson}[id=referencia-axiomas-conjuntos,weight=0]
+
+En una presentación axiomática elemental pueden estudiarse, entre otros, extensionalidad, conjunto vacío, par, unión y separación; el conjunto potencia se introduce mediante el axioma correspondiente. La formulación exacta depende del sistema axiomático adoptado. En este curso se trabaja con su significado intuitivo y su uso en ejercicios, sin desarrollar un tratamiento formal completo de ZF.
+
+\end{lesson}
+
+\begin{lesson}[id=referencia-esquema-demostracion,weight=0]
+
+Para demostrar \(A\subseteq B\): toma un elemento arbitrario \(x\in A\), usa las definiciones y demuestra que \(x\in B\). Para demostrar \(A=B\): prueba \(A\subseteq B\) y \(B\subseteq A\). Cada paso debe estar justificado.
+
+\end{lesson}
