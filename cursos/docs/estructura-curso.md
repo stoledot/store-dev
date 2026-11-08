@@ -19,9 +19,31 @@ Todo el curso debe estar en <curso>...</curso>
         </author>
         <id></id>
         <slug></slug>
+        <!-Indica en cuánto tiempo expirará el curso una vez iniciada la primera lección-->
+        <expirationtimestart>(tiempo en formato Xmonth Xw Xh Xmin Xs)</expirationtimestart>
+        <!-Indica en cuánto tiempo expirará el curso una vez concluida la última lección-->
+        <expirationtimefinal>(tiempo en formato Xmonth Xw Xh Xmin Xs)</expirationtimefinal>
+        <!-Número máximo de lecciones en el dia, mes o semana actual dependiendo el uso horario de cada usuario-->
+        <maxlessonsperday>7</maxlessonsperday>
+        <maxlessonspermonth>7</maxlessonspermonth>
+        <maxlessonsperweek>5</maxlessonsperweek>
+        <!-Número máximo de lecciones que el alumno puede tomar en un tiempo establecido.
+        - number es un número 
+        - time está en formato Xmonth Xw Xh Xmin Xs-->
+        <maxlessonspertime>number/time</maxlessonspertime>
     </meta>
-    <section id="" title="" slug="" weight="">
-        <lesson id="" slug="" title="" weight="">
+    <section id="" title="" slug="" weight="" expiration-time-start="Xmonth Xw Xd Xh Xmin Xs"
+        expiration-time-final="Xmonth Xw Xd Xh Xmin Xs" max-lessons-per-day="3" max-lessons-per-month="7"
+        max-lessons-per-week="6" max-lessons-per-time="number/time">
+        <lesson id="" slug="" title="" weight="" lesson_retention_duration="Xmonth Xw Xd Xh Xmin Xs"
+                lockout-time-until-the-next-lesson="0 1h 1d 1w 1month 30min 1200s" >
+            <!-
+            Este entorno está diseñado para soportar toda la información acerca de esta lección del curso.
+            Atributos:
+            id: (obligatoria) id de la lección
+            title: (obligatoria) título de la lección
+            weight: (opcional, default "1"), peso de la lección para obtener la calificación final
+            -->
             <content>
             Aquí puedes agregar html o código latex
             </content>
@@ -79,12 +101,14 @@ Todo el curso debe estar en <curso>...</curso>
                 initial-time-margin="=+2s" final-time-margin="0"
                 automatic-sliding="true" mute="false" random-mute="false"
                 random-selection="true" allow-pause="true"
+                number-playbacks-allowed ="inf" idslide=""
                 >
                 <!-
                 Slides de texto estilo Doman ligadas a audio.
                 El sistema elegirá de forma palabras (ligadas a audio) utilizando los siguientes parámetros y las mostrará en forma de slides en la lección en la que está incluido el entorno <domanslides> con la configuración de los parámetros y con la configuración que establezcan los hijos.
                 Parámetros:
                     Parámetros para la selección de palabras (el orden aquí es por jerarquía de mayor a menor jerarquía).
+                        - idslide: (opcional) ids separados por espacios de las palabras/audios que quiero incluir.
                         - regex: (opcional) expresión regular para seleccionar palabras o frases, si no se especifica se utilizan los otros parámetros de selección de palabras. Este es un parámetro de selección de palabras.
                         - category: (opcional) categorías de las palabras/frases separadas por espacios, si no se especifica, se pasarán de todas las categorías. Este es un parámetro de filtro de selección de palabras.
                         - type: (opcional) tipos de palabras, separados por espacios, si no se especifican, se omitirá el filtro. Este es otro parámetro de filtro de selección de palabras.
@@ -102,18 +126,27 @@ Todo el curso debe estar en <curso>...</curso>
                         - mute: (opcional, default "false") si las slides estarán en silencio (sin reproducción de audio). Este es un parámetro para la interfaz.
                         - random-mute: (opcional, default "false") si en las slides estarán muteadas aleatoriamente (algunas sí y otras no). Este es un parámetro para la interfaz.
                         - allow-pause: (opcional, default "true"). Establece que durante la ejecución del proceso de pasar los slides de palabras, se pueda permitir al usuario ponerle pausa.
+                        - number-playbacks-allowed: (opcional, default "inf"). Establece el número de veces que esta serie de slides puede ser reproducida después de la primer reproducción, antes de caducar.
                     -->
                     <domanslides regex="" category="category-id-1 category-id-2" type="words oraciones" 
                         level="level-1 level-2"
                         max-time-length="3s" cantity="2" velocity="x1"
                         initial-time-margin="=+2s" final-time-margin="0"
                         mute="false" random-mute="false"
-                        random-selection="true">
+                        random-selection="true" idslide="">
                         <!-
                         Slides hijas, que me permiten especificar al sistema qué palabras/frases se deben seleccionar para incluir en el padre. Las palabras/frases se seleccionarán primero tomando en cuenta a los hijos y luego al padre.
                         -->
                     </domanslides>
             </domanslides>
+            <video ref="introduccion-unidad-1" title="Introducción a la unidad"></video>
+            <videoyoutube
+                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                title="Introducción al tema"
+                start="90"
+                aspect-ratio="16:9"
+                privacy-enhanced="true">
+            </videoyoutube>
         </lesson> 
     </section>
 </curso>

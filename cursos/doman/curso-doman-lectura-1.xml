@@ -1,0 +1,2453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<curso>
+    <meta>
+        <title>
+        Aprendiendo a Leer
+        </title>
+        <summary>
+        Descripción o resumen del curso
+        </summary>
+        <author>
+        Brillinury y Samuel
+        </author>
+        <id></id>
+        <slug></slug>
+
+        <maxlessonsperweek>5</maxlessonsperweek>
+
+    </meta>
+
+    <section id="presentacion-del-curso" title="Presentación del curso">
+        <lesson id="leccion-presentacion" title="Presentación del curso">
+            <content>
+                <p>
+                </p>
+            </content>
+            <videoyoutube 
+                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                title="Introducción al tema"
+                start="90"
+                aspect-ratio="16:9"
+                privacy-enhanced="true">
+            </videoyoutube>
+        </lesson>
+        <lesson id="instrucciones-para-los-padres" title="Instrucciones para los padres">
+            <content>
+                <p>
+                </p>
+            </content>
+            <videoyoutube 
+                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                title="Introducción al tema"
+                start="90"
+                aspect-ratio="16:9"
+                privacy-enhanced="true">
+            </videoyoutube>
+        </lesson>
+    </section>
+
+    <!--SEMANA 1-->
+    <!-- Semana 1, Día 1 -->
+    <section id="1-1" title="Semana 1. Día 1. Familia, Comida y Casa "  max-lessons-per-day="10" >
+        <lesson id="1-1-1" title="Lección 1.1.1" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-2" title="Lección 1.1.2" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-3" title="Lección 1.1.3" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-4" title="Lección 1.1.4" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-5" title="Lección 1.1.5" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-6" title="Lección 1.1.6" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-7" title="Lección 1.1.7" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-8" title="Lección 1.1.8" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-9" title="Lección 1.1.9" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-1-10" title="Lección 1.1.10" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+    </section>
+    
+    <!-- Semana 1, Día 2 -->
+    <section id="1-2" title="Semana 1. Día 2. Familia, Comida y Casa "  max-lessons-per-day="10" >
+        <lesson id="1-2-1" title="Lección 1.2.1" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-2" title="Lección 1.2.2" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-3" title="Lección 1.2.3" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-4" title="Lección 1.2.4" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-5" title="Lección 1.2.5" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-6" title="Lección 1.2.6" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-7" title="Lección 1.2.7" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-8" title="Lección 1.2.8" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-9" title="Lección 1.2.9" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-2-10" title="Lección 1.2.10" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 1 Día 3-->
+    <section id="1-3" title="Semana 1. Día 3. Familia, Comida y Casa "  max-lessons-per-day="10" >
+        <lesson id="1-3-1" title="Lección 1.3.1" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-2" title="Lección 1.3.2" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-3" title="Lección 1.3.3" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-4" title="Lección 1.3.4" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-5" title="Lección 1.3.5" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-6" title="Lección 1.3.6" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-7" title="Lección 1.3.7" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-8" title="Lección 1.3.8" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-9" title="Lección 1.3.9" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-3-10" title="Lección 1.3.10" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+    </section>
+
+    
+    <!--Semana 1 Día 4-->
+    <section id="1-4" title="Semana 1. Día 4. Familia, Comida y Casa "  max-lessons-per-day="10" >
+        <lesson id="1-4-1" title="Lección 1.4.1" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-2" title="Lección 1.4.2" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-3" title="Lección 1.4.3" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-4" title="Lección 1.4.4" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-5" title="Lección 1.4.5" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-6" title="Lección 1.4.6" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-7" title="Lección 1.4.7" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-8" title="Lección 1.4.8" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-9" title="Lección 1.4.9" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-4-10" title="Lección 1.4.10" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+    </section>
+    
+    
+    
+    <!--Semana 1 Día 5-->
+    <section id="1-5" title="Semana 1. Día 5. Familia, Comida y Casa "  max-lessons-per-day="10" >
+        <lesson id="1-5-1" title="Lección 1.5.1" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-2" title="Lección 1.5.2" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-3" title="Lección 1.5.3" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-4" title="Lección 1.5.4" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-5" title="Lección 1.5.5" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-6" title="Lección 1.5.6" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-7" title="Lección 1.5.7" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-8" title="Lección 1.5.8" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-9" title="Lección 1.5.9" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+        <lesson id="1-5-10" title="Lección 1.5.10" weight="" 
+                lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa" 
+                level="0"
+                max-time-length="45" velocity="x1"
+                automatic-sliding="true"
+                number-playbacks-allowed ="1"
+            ></domanslides>
+        </lesson>
+    </section>
+
+    <!--SEMANA 2-->
+    <!-- Semana 2, Día 1 -->
+    <section id="2-1" title="Semana 2. Día 1. Familia, Comida, Casa y Animales" max-lessons-per-day="10">
+        <lesson id="2-1-1" title="Lección 2.1.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-2" title="Lección 2.1.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-3" title="Lección 2.1.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-4" title="Lección 2.1.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-5" title="Lección 2.1.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-6" title="Lección 2.1.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-7" title="Lección 2.1.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-8" title="Lección 2.1.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-9" title="Lección 2.1.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-1-10" title="Lección 2.1.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!-- Semana 2. Día 2.-->
+    <section id="2-2" title="Semana 2. Día 2. Familia, Comida, Casa y Animales" max-lessons-per-day="10">
+        <lesson id="2-2-1" title="Lección 2.2.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-2" title="Lección 2.2.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-3" title="Lección 2.2.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-4" title="Lección 2.2.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-5" title="Lección 2.2.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-6" title="Lección 2.2.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-7" title="Lección 2.2.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-8" title="Lección 2.2.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-9" title="Lección 2.2.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-2-10" title="Lección 2.2.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 2. Día 3 -->
+    <!--Esta sección traerá 10 <lessons> con la misma configuración-->
+    <section id="2-3" title="Semana 2. Día 3. Familia, Comida, Casa y Animales" max-lessons-per-day="10">
+        <lesson id="2-3-1" title="Lección 2.3.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-2" title="Lección 2.3.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-3" title="Lección 2.3.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-4" title="Lección 2.3.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-5" title="Lección 2.3.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-6" title="Lección 2.3.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-7" title="Lección 2.3.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-8" title="Lección 2.3.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-9" title="Lección 2.3.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-3-10" title="Lección 2.3.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!-- Semana 2. Día 4. -->
+    <!--Esta sección será con la misma configuración que la Semana 2. Día 3. 
+        Tendrá igual, 10 <lessons> con la misma configuración.
+    -->
+    <section id="2-4" title="Semana 2. Día 4. Familia, Comida, Casa, Animales" max-lessons-per-day="10">
+        <lesson id="2-4-1" title="Lección 2.4.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-2" title="Lección 2.4.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-3" title="Lección 2.4.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-4" title="Lección 2.4.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-5" title="Lección 2.4.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-6" title="Lección 2.4.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-7" title="Lección 2.4.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-8" title="Lección 2.4.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-9" title="Lección 2.4.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-4-10" title="Lección 2.4.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!-- Semana 2. Día 5. -->
+    <!--Esta sección será con la misma configuración que la Semana 2. Día 4. 
+        Tendrá igual, 10 <lessons> con la misma configuración.
+    -->
+    <section id="2-5" title="Semana 2. Día 5. Familia, Comida, Casa, Animales" max-lessons-per-day="10">
+        <lesson id="2-5-1" title="Lección 2.5.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-2" title="Lección 2.5.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-3" title="Lección 2.5.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-4" title="Lección 2.5.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-5" title="Lección 2.5.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-6" title="Lección 2.5.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-7" title="Lección 2.5.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-8" title="Lección 2.5.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-9" title="Lección 2.5.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="2-5-10" title="Lección 2.5.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa animales" level="0" max-time-length="55" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!-- Semana 3. Día 1. -->
+    <!--
+    Tendrá igual, 10 <lessons> con la misma configuración.
+    60 segundos por domanslides, Tipo palabra combinado con pareja de palabras.
+    -->
+    <section id="3-1" title="Semana 3. Día 1. Familia, Comida, Casa, Escuela, Salón de Clases" max-lessons-per-day="10">
+        <lesson id="3-1-1" title="Lección 3.1.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-2" title="Lección 3.1.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-3" title="Lección 3.1.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-4" title="Lección 3.1.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-5" title="Lección 3.1.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-6" title="Lección 3.1.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-7" title="Lección 3.1.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-8" title="Lección 3.1.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-9" title="Lección 3.1.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-1-10" title="Lección 3.1.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 3. Día 2.
+    Contenerá 10 <lessons> con la misma configuración.
+    -->
+    <section id="3-2" title="Semana 3. Día 2. Familia, Comida, Casa, Escuela, Salon de clases" max-lessons-per-day="10">
+        <lesson id="3-2-1" title="Lección 3.2.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-2" title="Lección 3.2.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-3" title="Lección 3.2.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-4" title="Lección 3.2.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-5" title="Lección 3.2.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-6" title="Lección 3.2.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-7" title="Lección 3.2.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-8" title="Lección 3.2.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-9" title="Lección 3.2.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-2-10" title="Lección 3.2.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 3, Día 3
+    Esta sección contenerá 10 <lessons>
+    -->
+    <section id="3-3" title="Semana 3, Día 3. Familia, Comida, Casa, Escuela, Salón de Clases" max-lessons-per-day="10">
+        <lesson id="3-3-1" title="Lección 3.3.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-2" title="Lección 3.3.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-3" title="Lección 3.3.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-4" title="Lección 3.3.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-5" title="Lección 3.3.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-6" title="Lección 3.3.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-7" title="Lección 3.3.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-8" title="Lección 3.3.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-9" title="Lección 3.3.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-3-10" title="Lección 3.3.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 3. Día 4-->
+    <section id="3-4" title="Semana 3. Día 4. Familia, comida, casa, escuela, salón de clases" max-lessons-per-day="10">
+        <lesson id="3-4-1" title="Lección 3.4.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-2" title="Lección 3.4.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-3" title="Lección 3.4.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-4" title="Lección 3.4.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-5" title="Lección 3.4.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-6" title="Lección 3.4.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-7" title="Lección 3.4.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-8" title="Lección 3.4.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-9" title="Lección 3.4.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-4-10" title="Lección 3.4.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 3. Día 5.-->
+    <section id="3-5" title="Semana 3. Día 5. Familia, comida, casa, escuela, salón de clases" max-lessons-per-day="10">
+        <lesson id="3-5-1" title="Lección 3.5.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-2" title="Lección 3.5.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-3" title="Lección 3.5.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-4" title="Lección 3.5.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-5" title="Lección 3.5.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-6" title="Lección 3.5.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-7" title="Lección 3.5.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-8" title="Lección 3.5.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-9" title="Lección 3.5.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="3-5-10" title="Lección 3.5.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="familia comida casa escuela salon-de-clases" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 4. Día 1 -->
+    <section id="4-1" title="Semana 4. Día 1. Animales, colores, utensilios de cocina" max-lessons-per-day="10">
+        <lesson id="4-1-1" title="Lección 4.1.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-2" title="Lección 4.1.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-3" title="Lección 4.1.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-4" title="Lección 4.1.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-5" title="Lección 4.1.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-6" title="Lección 4.1.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-7" title="Lección 4.1.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-8" title="Lección 4.1.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-9" title="Lección 4.1.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-1-10" title="Lección 4.1.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 4. Día 2.-->
+    <section id="4-2" title="Semana 4. Día 2. Animales, colores, utensilios de cocina." max-lessons-per-day="10">
+        <lesson id="4-2-1" title="Lección 4.2.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-2" title="Lección 4.2.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-3" title="Lección 4.2.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-4" title="Lección 4.2.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-5" title="Lección 4.2.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-6" title="Lección 4.2.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-7" title="Lección 4.2.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-8" title="Lección 4.2.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-9" title="Lección 4.2.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-2-10" title="Lección 4.2.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 4. Día 3.-->
+    <section id="4-3" title="Semana 4. Día 3. Animales, colores y utensilios de cocina" max-lessons-per-day="10">
+        <lesson id="4-3-1" title="Lección 4.3.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-2" title="Lección 4.3.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-3" title="Lección 4.3.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-4" title="Lección 4.3.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-5" title="Lección 4.3.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-6" title="Lección 4.3.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-7" title="Lección 4.3.7" weight="" lockout-time-until-the-next-lesson="15min" > 
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-8" title="Lección 4.3.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-9" title="Lección 4.3.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-3-10" title="Lección 4.3.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 4. Día 4.-->
+    <section id="4-4" title="Semana 4. Día 4. Animales, colores y utencilios de cocina" max-lessons-per-day="10">
+        <lesson id="4-4-1" title="Lección 4.4.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-2" title="Lección 4.4.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-3" title="Lección 4.4.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-4" title="Lección 4.4.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-5" title="Lección 4.4.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-6" title="Lección 4.4.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-7" title="Lección 4.4.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-8" title="Lección 4.4.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-9" title="Lección 4.4.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-4-10" title="Lección 4.4.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 4. Día 5.-->
+    <section id="4-5" title="Semana 4. Día 5. Animales, colores y utensilios de cocina" max-lessons-per-day="10">
+        <lesson id="4-5-1" title="Lección 4.5.1" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-2" title="Lección 4.5.2" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-3" title="Lección 4.5.3" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-4" title="Lección 4.5.4" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-5" title="Lección 4.5.5" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-6" title="Lección 4.5.6" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-7" title="Lección 4.5.7" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-8" title="Lección 4.5.8" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-9" title="Lección 4.5.9" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="4-5-10" title="Lección 4.5.10" weight="" lockout-time-until-the-next-lesson="15min" >
+            <content>
+                <p>
+                Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.
+                Asegúrate de que tu hijo observe cada palabra.
+                No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.
+                </p>
+            </content>
+            <domanslides category="animales colores utensilios-de-cocina" level="0" type="palabra pareja-de-palabras" max-time-length="65" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--Semana 5. Día 1.-->
+    
+
+</curso>

@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<curso>
+    <meta>
+        <title>
+        Aprendiendo a Leer
+        </title>
+        <summary>
+        Descripción o resumen del curso
+        </summary>
+        <author>
+        Brillinury y Samuel
+        </author>
+    </meta>
+
+    <section id="presentacion-del-curso" title="Presentación del curso">
+        <lesson id="leccion-presentacion" title="Presentación del curso">
+            <content>
+                <p>
+                </p>
+            </content>
+            <videoyoutube 
+                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                title="Introducción al tema"
+                start="90"
+                aspect-ratio="16:9"
+                privacy-enhanced="true">
+            </videoyoutube>
+        </lesson>
+        <lesson id="instrucciones-para-los-padres" title="Instrucciones para los padres">
+            <content>
+                <p>
+                </p>
+            </content>
+            <videoyoutube 
+                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                title="Introducción al tema"
+                start="90"
+                aspect-ratio="16:9"
+                privacy-enhanced="true">
+            </videoyoutube>
+        </lesson>
+    </section>
+
+    <!--SEMANA 1.
+    Esta semana contenerá 50 lecciones.
+    -->
+    <section id="section-sem-1" title="Semana 1. Familia, Comida y Casa"  max-lessons-per-day="10" >
+        <lesson id="lesson-1-1" title="Lección 1.1" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-2" title="Lección 1.2" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-3" title="Lección 1.3" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-4" title="Lección 1.4" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-5" title="Lección 1.5" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-6" title="Lección 1.6" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-7" title="Lección 1.7" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-8" title="Lección 1.8" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-9" title="Lección 1.9" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-10" title="Lección 1.10" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-11" title="Lección 1.11" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-12" title="Lección 1.12" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-13" title="Lección 1.13" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-14" title="Lección 1.14" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-15" title="Lección 1.15" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-16" title="Lección 1.16" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-17" title="Lección 1.17" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-18" title="Lección 1.18" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-19" title="Lección 1.19" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-20" title="Lección 1.20" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-21" title="Lección 1.21" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-22" title="Lección 1.22" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-23" title="Lección 1.23" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-24" title="Lección 1.24" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-25" title="Lección 1.25" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-26" title="Lección 1.26" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-27" title="Lección 1.27" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-28" title="Lección 1.28" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-29" title="Lección 1.29" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-30" title="Lección 1.30" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-31" title="Lección 1.31" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-32" title="Lección 1.32" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-33" title="Lección 1.33" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-34" title="Lección 1.34" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-35" title="Lección 1.35" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-36" title="Lección 1.36" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-37" title="Lección 1.37" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-38" title="Lección 1.38" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-39" title="Lección 1.39" lockout-time-until-the-next-lesson="15min">
+
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-40" title="Lección 1.40" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-41" title="Lección 1.41" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-42" title="Lección 1.42" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-43" title="Lección 1.43" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-44" title="Lección 1.44" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-45" title="Lección 1.45" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-46" title="Lección 1.46" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-47" title="Lección 1.47" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-48" title="Lección 1.48" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-49" title="Lección 1.49" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-1-50" title="Lección 1.50" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa" type="palabra" level="0" max-time-length="45" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+
+    <!--SEMANA 2.
+    Esta semana contenerá 50 lecciones.
+    -->
+    <section id="section-sem-2" title="Semana 2. Familia, Comida, Casa, Animales "  max-lessons-per-day="10" >
+        <lesson id="lesson-2-1" title="Lección 2.1" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-2" title="Lección 2.2" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-3" title="Lección 2.3" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-4" title="Lección 2.4" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-5" title="Lección 2.5" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-6" title="Lección 2.6" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-7" title="Lección 2.7" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-8" title="Lección 2.8" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-9" title="Lección 2.9" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-10" title="Lección 2.10" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-11" title="Lección 2.11" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-12" title="Lección 2.12" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-13" title="Lección 2.13" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-14" title="Lección 2.14" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-15" title="Lección 2.15" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-16" title="Lección 2.16" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-17" title="Lección 2.17" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-18" title="Lección 2.18" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-19" title="Lección 2.19" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-20" title="Lección 2.20" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-21" title="Lección 2.21" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-22" title="Lección 2.22" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-23" title="Lección 2.23" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-24" title="Lección 2.24" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-25" title="Lección 2.25" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-26" title="Lección 2.26" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-27" title="Lección 2.27" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-28" title="Lección 2.28" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-29" title="Lección 2.29" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-30" title="Lección 2.30" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-31" title="Lección 2.31" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-32" title="Lección 2.32" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-33" title="Lección 2.33" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-34" title="Lección 2.34" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-35" title="Lección 2.35" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-36" title="Lección 2.36" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-37" title="Lección 2.37" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-38" title="Lección 2.38" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-39" title="Lección 2.39" lockout-time-until-the-next-lesson="15min">
+
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-40" title="Lección 2.40" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-41" title="Lección 2.41" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-42" title="Lección 2.42" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-43" title="Lección 2.43" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-44" title="Lección 2.44" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-45" title="Lección 2.45" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-46" title="Lección 2.46" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-47" title="Lección 2.47" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-48" title="Lección 2.48" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-49" title="Lección 2.49" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+        <lesson id="lesson-2-50" title="Lección 2.50" lockout-time-until-the-next-lesson="15min">
+            <content><p>Reproduce la siguiente secuencia de palabras que hemos seleccionado cuidadosamente para tu hijo.<br/>Asegúrate de que tu hijo observe cada palabra. <br/>No lo presiones. Muéstraselas cuando él esté en la mejor disposición para observarlas; relajado, atento y receptivo.</p></content>
+            <domanslides category="familia comida casa animales" type="palabra" level="0" max-time-length="55" automatic-sliding="true" number-playbacks-allowed ="1"></domanslides>
+        </lesson>
+    </section>
+    
+</curso>
