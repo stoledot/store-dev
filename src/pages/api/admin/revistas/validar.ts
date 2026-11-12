@@ -1,0 +1,4 @@
+import type { APIRoute } from 'astro';
+import { parseReadingXml, validateReadingXml } from '../../../../features/mathTexts/xmlReading';
+export const prerender=false;
+export const POST:APIRoute=async({request})=>{try{const body=await request.json() as {source?:unknown},source=typeof body.source==='string'?body.source:'';const issues=validateReadingXml(source);if(issues.length)return Response.json({error:issues.slice(0,12).map(i=>`Línea ${i.line}, columna ${i.column}: ${i.message} ${i.suggestion}`).join('\n')},{status:422});const parsed=parseReadingXml(source);if(!parsed.number||!/^[A-Za-z0-9][A-Za-z0-9._/-]{0,39}$/.test(parsed.number))return Response.json({error:'Agrega <number> dentro de <meta> con un número de edición válido.'},{status:422});return Response.json(parsed);}catch(e){return Response.json({error:e instanceof Error?e.message:'XML de edición no válido.'},{status:400});}};

@@ -90,6 +90,8 @@ const shell = buildShellModel({
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code','math']},startup:{typeset:true}};</script>
+    <script is:inline defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {/* Declared so Safari stops probing the site root for it. Those probes are
@@ -283,6 +285,6 @@ const shell = buildShellModel({
         });
       }
     </script>
-    <script type="module" src="/js/latex-renderer.js?v=4"></script>
+    <script type="module" src="/js/latex-renderer.js?v=5"></script>
   </body>
 </html>

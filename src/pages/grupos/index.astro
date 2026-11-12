@@ -1,0 +1,8 @@
+---
+export const prerender=false;
+import { accountsEnabled,getCustomerEmail } from '../../features/auth/customer';
+import Layout from '../../layouts/Layout.astro';
+if(!(await accountsEnabled()))return Astro.redirect('/account/login?next=%2Fgrupos');const email=await getCustomerEmail(Astro.cookies);if(!email)return Astro.redirect('/account/login?next=%2Fgrupos');
+---
+<Layout title="Grupos"><main class="mx-auto max-w-6xl px-4 py-8 sm:px-6" data-social-page><a class="text-sm underline" href="/">← Inicio</a><header class="my-6"><p class="text-xs font-bold uppercase tracking-widest text-brand">Comunidad</p><h1 class="mt-2 font-serif text-4xl">Grupos</h1><p class="mt-2 text-muted">Encuentra grupos que te interesen y participa a tu ritmo.</p></header><div data-group-list class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div><button data-notification-optin class="mt-8 rounded-lg border border-line px-4 py-2 text-sm">Activar avisos del navegador</button></main></Layout>
+<script is:inline src="/social.js"></script>

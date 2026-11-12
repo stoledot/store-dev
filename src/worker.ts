@@ -3,6 +3,9 @@ import { env } from 'cloudflare:workers';
 import { sweepStaleNotifications } from './features/email/outbox';
 import { releaseExpiredReservations } from './features/orders/reservations';
 import { getSetting } from './features/settings/db';
+import { sendUpcomingSubscriptionReminders } from './features/subscriptions/renewalReminder';
+import { sendMagazineIssueNotifications } from './features/magazines/notifications';
+import { sendAdvertisingInquiryNotifications } from './features/advertising/notifications';
 
 /**
  * Worker entrypoint.
@@ -47,6 +50,24 @@ async function runScheduledSweeps(): Promise<void> {
     }
   } catch (err) {
     console.error('Scheduled notification sweep failed:', err);
+  }
+
+  try {
+    await sendUpcomingSubscriptionReminders(db);
+  } catch (err) {
+    console.error('Subscription renewal reminder sweep failed:', err);
+  }
+
+  try {
+    await sendMagazineIssueNotifications(db);
+  } catch (err) {
+    console.error('Magazine issue notification sweep failed:', err);
+  }
+
+  try {
+    await sendAdvertisingInquiryNotifications(db);
+  } catch (err) {
+    console.error('Advertising inquiry notification sweep failed:', err);
   }
 }
 

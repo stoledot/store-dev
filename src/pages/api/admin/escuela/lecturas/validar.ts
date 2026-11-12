@@ -1,0 +1,4 @@
+import type { APIRoute } from 'astro';
+import { parseReadingXml, validateReadingXml } from '../../../../../features/mathTexts/xmlReading';
+export const prerender=false;
+export const POST:APIRoute=async({request})=>{try{const body=await request.json() as {source?:unknown};const source=typeof body.source==='string'?body.source:'';const issues=validateReadingXml(source);if(issues.length)return new Response(JSON.stringify({error:issues.slice(0,10).map(i=>`Línea ${i.line}, columna ${i.column}: ${i.message} ${i.suggestion}`).join('\n')}),{status:422,headers:{'content-type':'application/json'}});return new Response(JSON.stringify(parseReadingXml(source)),{headers:{'content-type':'application/json'}});}catch(e){return new Response(JSON.stringify({error:e instanceof Error?e.message:'XML no válido.'}),{status:400,headers:{'content-type':'application/json'}});}};

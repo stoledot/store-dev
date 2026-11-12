@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<edicion>
+  <meta>
+    <title>Ideas y estructuras matemáticas</title>
+    <volume>1</volume>
+    <number>1</number>
+    <date>2026-11-10</date>
+    <author>Equipo editorial</author>
+    <summary>Una edición sobre patrones, demostraciones y modelos.</summary>
+  </meta>
+  <section id="editorial" title="Editorial">
+    <subsection id="bienvenida" title="Bienvenida">
+      <p>Exploramos una pregunta clásica: ¿por qué funciona esta identidad?</p>
+      <p>La respuesta comienza con $a^2+b^2=c^2$.</p>
+    </subsection>
+  </section>
+  <section id="articulos" title="Artículos">
+    <subsection id="demostraciones" title="Demostraciones">
+      <subsubsection id="teorema" title="Un resultado notable">
+        <theorem id="teorema-1" title="Teorema de ejemplo">
+          <statement>Enunciado del teorema.</statement>
+          <proof>Demostración con fórmulas como $\sum_{k=1}^{n}k$.</proof>
+        </theorem>
+        <definition id="def-1" title="Definición">Una definición.</definition>
+        <example id="ej-1" title="Ejemplo">Un ejemplo resuelto.</example>
+        <remark id="nota-1" title="Observación">Una nota editorial.</remark>
+        <exercise id="ejercicio-1" title="Ejercicio">Un problema para explorar.</exercise>
+        <solution id="solucion-1" title="Solución">Una solución comentada.</solution>
+        <geogebragraphics ref="grafica-unica" title="Exploración interactiva">
+          Arrastra los puntos y observa qué cambia.
+        </geogebragraphics>
+      </subsubsection>
+    </subsection>
+  </section>
+</edicion>

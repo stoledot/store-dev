@@ -35,8 +35,9 @@ Todo el curso debe estar en <curso>...</curso>
     <section id="" title="" slug="" weight="" expiration-time-start="Xmonth Xw Xd Xh Xmin Xs"
         expiration-time-final="Xmonth Xw Xd Xh Xmin Xs" max-lessons-per-day="3" max-lessons-per-month="7"
         max-lessons-per-week="6" max-lessons-per-time="number/time">
-        <lesson id="" slug="" title="" weight="" lesson_retention_duration="Xmonth Xw Xd Xh Xmin Xs"
-                lockout-time-until-the-next-lesson="0 1h 1d 1w 1month 30min 1200s" >
+        <lesson id="" slug="" title="" weight="" lesson_retention_duration="Xmonth Xw Xd Xh Xmin Xs" lockout-time-until-the-next-lesson="0 1h 1d 1w 1month 30min 1200s" 
+        exclude-from-number-max-lessons="true"
+        >
             <!-
             Este entorno está diseñado para soportar toda la información acerca de esta lección del curso.
             Atributos:
@@ -95,13 +96,13 @@ Todo el curso debe estar en <curso>...</curso>
             <geogebragraphics ref="" title="">
             </geogebragraphics>
             <download ref=... title=...></download>
-            <domanslides regex="" category="category-id-1 category-id-2" type="words" 
+            <domanslides idslide="" regex="" category="category-id-1 category-id-2" type="words" 
                 level="level-1 level-2"
                 max-time-length="3s" cantity="2" velocity="x1"
                 initial-time-margin="=+2s" final-time-margin="0"
                 automatic-sliding="true" mute="false" random-mute="false"
                 random-selection="true" allow-pause="true"
-                number-playbacks-allowed ="inf" idslide=""
+                number-playbacks-allowed ="inf" 
                 >
                 <!-
                 Slides de texto estilo Doman ligadas a audio.

@@ -25,6 +25,7 @@ import { CACHE_TAG } from '../../../features/cache/tags';
 import { purgeCacheTags } from '../../../features/cache/purge';
 import { setProductConference, getConference } from '../../../features/conferences/db';
 import { setSchoolContentForProduct } from '../../../features/school/texProducts';
+import { parseProductContent, parseProductVideos, saveProductRichContent } from '../../../features/products/richContent';
 
 export const prerender = false;
 
@@ -42,6 +43,7 @@ export const POST: APIRoute = async ({ request, redirect, locals }) => {
     requireWeight: zonesRequireWeight(shippingFor(locals.settings).config),
   });
   if ('error' in parsed) return redirect(fail(parsed.error), 303);
+  try { parseProductContent(String(form.get('content_sections_json')??'[]')); parseProductVideos(String(form.get('video_sections_json')??'[]')); } catch(err) { return redirect(fail(err instanceof Error?err.message:'Secciones inválidas.'),303); }
   const schoolContentId = String(form.get('school_content_id') ?? '').trim() || null;
   if (schoolContentId) {
     const schoolContent = await env.DB.prepare("SELECT id FROM school_courses WHERE id=? AND status<>'archived' AND product_id IS NULL").bind(schoolContentId).first();
@@ -73,7 +75,7 @@ export const POST: APIRoute = async ({ request, redirect, locals }) => {
   // media row is unreferenced until the attach lands, so a concurrent library
   // delete could leave the product pointing at an object that no longer exists.
   const productId = await createProduct(env.DB, { ...parsed.data, image_key: null, slug });
-  try { await setSchoolContentForProduct(env.DB, productId, schoolContentId); } catch (err) { await deleteProduct(env.DB, productId); return redirect(fail(err instanceof Error ? err.message : 'No se pudo vincular el curso.'),303); }
+  try { await setSchoolContentForProduct(env.DB, productId, schoolContentId); await saveProductRichContent(env.DB,productId,form); } catch (err) { await deleteProduct(env.DB, productId); return redirect(fail(err instanceof Error ? err.message : 'No se pudo guardar el contenido del producto.'),303); }
 
   const conferenceRaw = String(form.get('conference_id') ?? '').trim();
   if (conferenceRaw) {

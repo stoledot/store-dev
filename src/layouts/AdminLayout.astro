@@ -25,7 +25,12 @@ type Section =
   | 'school-admin'
   | 'school-avance'
   | 'school-editar'
-  | 'conferences';
+  | 'subscriptions'
+  | 'readings'
+  | 'magazines'
+  | 'conferences'
+  | 'advertising'
+  | 'social-groups';
 
 interface Props {
   title?: string;
@@ -53,7 +58,12 @@ const inventoryExceptionCount = await countUnresolvedInventoryExceptions(env.DB)
 const nav: { key: Section; label: string; href: string }[] = [
   { key: 'dashboard', label: 'Dashboard', href: '/admin' },
   { key: 'products', label: 'Products', href: '/admin/products' },
+  { key: 'subscriptions', label: 'Suscripciones y lecturas', href: '/admin/suscripciones' },
   { key: 'school', label: 'Cursos y lecciones', href: '/admin/escuela' },
+  { key: 'readings', label: 'Lecturas XML', href: '/admin/escuela/lecturas' },
+  { key: 'magazines', label: 'Revistas matemáticas', href: '/admin/revistas' },
+  { key: 'advertising', label: 'Publicidad', href: '/admin/publicidad' },
+  { key: 'social-groups', label: 'Grupos sociales', href: '/admin/grupos' },
   { key: 'conferences', label: 'Conferencias Zoom', href: '/admin/conferencias' },
   { key: 'school-admin', label: 'Alumnos y pagos', href: '/admin/escuela/administracion' },
   { key: 'school-avance', label: 'Avance de alumnos', href: '/admin/escuela/avance' },
@@ -77,6 +87,8 @@ const currentLabel = nav.find((n) => n.key === active)?.label ?? 'Menu';
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],processEscapes:true},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code','math']},startup:{typeset:true}};</script>
+    <script is:inline defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
     <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{pageTitle}</title>
@@ -208,6 +220,6 @@ const currentLabel = nav.find((n) => n.key === active)?.label ?? 'Menu';
         <slot />
       </main>
     </div>
-    <script type="module" src="/js/latex-renderer.js?v=4"></script>
+    <script type="module" src="/js/latex-renderer.js?v=5"></script>
   </body>
 </html>

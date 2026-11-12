@@ -88,6 +88,12 @@ function formatTable(raw: string, attrsRaw = ''): string {
   if (!rows.length) return '';
   return `<div class="tex-table-wrap"><table class="tex-table"><thead style="background:${header};color:#fff"><tr>${rows[0].map(c => `<th>${renderTexBody(c)}</th>`).join('')}</tr></thead><tbody>${rows.slice(1).map(row => `<tr>${row.map(c => `<td>${renderTexBody(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
+function renderTexList(fragment: string, kind: 'itemize' | 'enumerate'): string {
+  const body = fragment.replace(/^\\begin\{(?:itemize|enumerate)\}/, '').replace(/\\end\{(?:itemize|enumerate)\}\s*$/, '');
+  const items = body.split(/\\item\b/).map((item) => item.trim()).filter(Boolean);
+  const tag = kind === 'itemize' ? 'ul' : 'ol';
+  return `<${tag} class="my-3 list-inside ${kind === 'itemize' ? 'list-disc' : 'list-decimal'}">${items.map((item) => `<li>${renderTexBody(item)}</li>`).join('')}</${tag}>`;
+}
 function renderMathProtected(source: string): { text: string; held: string[] } {
   const held: string[] = [];
   const hold = (html: string) => { const key = `ZZMATHHOLD${held.length}ZZ`; held.push(html); return key; };
@@ -106,12 +112,13 @@ export function renderTexBody(input: string): string {
   source = source.replace(/\\begin\{htmlblock\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{htmlblock\}/g, (_m, _attrs, body) => keep(safeHtmlBlock(body)));
   source = source.replace(/\\begin\{table\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{table\}/g, (_m, attrs, body) => keep(formatTable(body, attrs ?? '')));
   source = source.replace(/\\image\s*\{([^{}]*)\}\s*\{([^{}]*)\}(?:\s*\{([^{}]*)\})?/g, (_m, url, alt, caption) => { const safe = safeUrl(url); return keep(safe ? `<figure class="tex-figure"><img src="${escapeHtml(safe)}" alt="${escapeHtml(alt)}" loading="lazy" class="max-w-full rounded-xl"/>${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ''}</figure>` : `<p>[Imagen no disponible: ${escapeHtml(alt)}]</p>`); });
-  // Let LaTeX.js parse list environments as LaTeX so nested items and their formatting survive.
+  // Convert the supported list environments to semantic HTML; MathJax handles
+  // only the formulas inside each item, never the lesson layout itself.
   const listStarts = /\\begin\{(itemize|enumerate)\}/g; const listFragments: Array<[number,number,string]> = []; let listMatch: RegExpExecArray | null;
   while ((listMatch = listStarts.exec(source))) { const endAt = findEnvironmentEnd(source, listMatch[1], listStarts.lastIndex); if (endAt < 0) continue; const end = endAt + `\\end{${listMatch[1]}}`.length; listFragments.push([listMatch.index,end,source.slice(listMatch.index,end)]); listStarts.lastIndex = end; }
-  for (const [start,end,fragment] of listFragments.reverse()) source = source.slice(0,start) + keep(`<latex-js baseURL="https://cdn.jsdelivr.net/npm/latex.js@0.12.6/dist/" hyphenate="false" class="latex-js-block">${escapeHtml(fragment)}</latex-js>`) + source.slice(end);
+  for (const [start,end,fragment] of listFragments.reverse()) source = source.slice(0,start) + keep(renderTexList(fragment, (fragment.match(/^\\begin\{(itemize|enumerate)\}/)?.[1] ?? 'itemize') as 'itemize'|'enumerate')) + source.slice(end);
   source = source.replace(/\\begin\{(definition|theorem|lemma|proposition|corollary|proof|example|remark|note|warning|solution|axiom|conjecture|problem)\}(?:\[([^\]]*)\])?([\s\S]*?)\\end\{\1\}/g, (_m, kind, title, body) => { const labels: Record<string,string> = {definition:'Definición',theorem:'Teorema',lemma:'Lema',proposition:'Proposición',corollary:'Corolario',proof:'Demostración',example:'Ejemplo',remark:'Observación',note:'Nota',warning:'Atención',solution:'Solución',axiom:'Axioma',conjecture:'Conjetura',problem:'Problema'}; const style = kind === 'warning' ? 'warning' : ['definition','theorem','lemma','proposition','corollary'].includes(kind) ? 'math' : 'example'; return keep(`<aside class="tex-callout tex-${style}"><h3>${labels[kind]}${title ? `: ${escapeHtml(title)}` : ''}</h3><div>${renderTexBody(body)}</div></aside>`); });
-  // Preserve supported math source for the shared LaTeX.js browser renderer while escaping ordinary content.
+  // Preserve math delimiters for MathJax while escaping ordinary content.
   const math = renderMathProtected(source); let html = escapeHtml(math.text);
   html = html.replace(/\\textbf\{([^{}]*)\}/g, '<strong>$1</strong>').replace(/\\textit\{([^{}]*)\}/g, '<em>$1</em>').replace(/\\emph\{([^{}]*)\}/g, '<em>$1</em>').replace(/\\underline\{([^{}]*)\}/g, '<u>$1</u>').replace(/\\texttt\{([^{}]*)\}/g, '<code>$1</code>');
   html = html.replace(/\\(?:par|newline|\\)\s*/g, '\n\n').replace(/\\item\s*/g, '• ').replace(/\\(?:label|ref|cite|index)\{[^{}]*\}/g, '').replace(/\\[a-zA-Z]+\*?(?:\[[^\]]*\])?/g, '').replace(/[{}]/g, '');

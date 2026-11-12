@@ -4,9 +4,12 @@ import type { CategoryOption } from '../categories/db';
 import { getConfig, toMajorUnits, currencyDecimals } from '../../config';
 import { formatWeightValue, type WeightUnit } from '../shipping/weight';
 import { attachmentActive } from '../digitalDelivery/rollout.ts';
+import { formatMoney } from '../../money';
 
 interface ConferenceOption { id: number; title: string; status: string }
 interface SchoolContentOption { id: string; title: string; status: string; content_kind: string; product_id: number | null }
+interface SubscriptionOption { id:string; title:string; interval_unit:string; interval_count:number; unit_amount_minor:number; currency:string; status:string }
+interface VideoAssetOption {title:string;courseTitle:string;courseSlug:string;lessonSlug:string;ref:string}
 
 interface Props {
   action: string;
@@ -31,6 +34,9 @@ interface Props {
   selectedConferenceId?: number | null;
   schoolContentOptions?: SchoolContentOption[];
   selectedSchoolContentId?: string | null;
+  subscriptionOptions?:SubscriptionOption[];
+  selectedSubscriptionIds?:string[];
+  videoAssetOptions?:VideoAssetOption[];
 }
 
 const {
@@ -48,6 +54,9 @@ const {
   selectedConferenceId = null,
   schoolContentOptions = [],
   selectedSchoolContentId = null,
+  subscriptionOptions = [],
+  selectedSubscriptionIds = [],
+  videoAssetOptions = [],
 } = Astro.props;
 const selected = new Set(selectedCategoryIds);
 // New products default to the store currency; edits keep their own.
@@ -156,6 +165,24 @@ const inputClass =
       {conferenceOptions.map((conference) => <option value={conference.id} selected={selectedConferenceId === conference.id}>{conference.title} ({conference.status})</option>)}
     </select>
     <p class="mt-1 text-xs text-muted">Cuando el pago se confirme, el comprador se inscribirá en esta conferencia y recibirá un correo con su clave personal y los enlaces, horarios y claves de cada sesión. Crea y publica la conferencia primero en Admin → Conferencias Zoom.</p>
+  </fieldset>
+
+  <fieldset class="rounded-md border border-line p-4">
+    <legend class="px-1 text-sm font-medium">Suscripciones que activa este producto</legend>
+    <p class="mb-3 text-xs text-muted">El producto funciona como oferta de suscripción recurrente de Stripe. Puedes asociar el mismo plan con varios productos.</p>
+    <div class="space-y-2">{subscriptionOptions.filter(s=>s.status==='active').map(s=><label class="flex items-center gap-2 text-sm"><input type="checkbox" name="content_subscription_id" value={s.id} checked={selectedSubscriptionIds.includes(s.id)}/><span>{s.title} · {formatMoney(s.unit_amount_minor,s.currency)} / {s.interval_count===1?'':`${s.interval_count} `}{s.interval_unit==='month'?'mes':'año'}</span></label>)}{subscriptionOptions.filter(s=>s.status==='active').length===0&&<p class="text-xs text-muted">Crea primero un plan en Admin → Suscripciones.</p>}</div>
+  </fieldset>
+
+  <fieldset class="rounded-md border border-line p-4">
+    <legend class="px-1 text-sm font-medium">Secciones adicionales de producto</legend>
+    <label class="block text-sm">JSON de secciones<textarea name="content_sections_json" rows="5" class={inputClass}>{product?.content_sections_json??'[]'}</textarea></label>
+    <p class="mt-1 text-xs text-muted">Formato: una lista JSON de objetos con title y text. El texto Markdown pasa por el renderizador seguro y conserva LaTeX. pasa por el renderizador seguro y conserva LaTeX.</p>
+  </fieldset>
+  <fieldset class="rounded-md border border-line p-4">
+    <legend class="px-1 text-sm font-medium">Videos de producto</legend>
+    <label class="block text-sm">JSON de secciones de video<textarea name="video_sections_json" rows="5" class={inputClass}>{product?.video_sections_json??'[]'}</textarea></label>
+    <p class="mt-1 text-xs text-muted">YouTube: <code>{`[{"type":"youtube","title":"Introducción","url":"https://youtu.be/VIDEO_ID"}]`}</code>. Para un video privado de la biblioteca R2 usa <code>type=r2</code>, <code>courseSlug</code>, <code>lessonSlug</code> y <code>ref</code> (crea la referencia en Admin → Videos de cursos).</p>
+    {videoAssetOptions.length>0&&<details class="mt-3 rounded-lg bg-gray-50 p-3"><summary class="cursor-pointer text-sm font-medium">Referencias R2 disponibles</summary><ul class="mt-2 space-y-2 text-xs">{videoAssetOptions.map(v=><li><strong>{v.title}</strong> · {v.courseTitle}<code class="ml-1 block break-all">{JSON.stringify({type:'r2',title:v.title,courseSlug:v.courseSlug,lessonSlug:v.lessonSlug,ref:v.ref})}</code></li>)}</ul></details>}
   </fieldset>
 
   <fieldset class="rounded-md border border-line p-4">

@@ -204,6 +204,9 @@ export interface ProductDetailModel {
    *  filtered). Themes show THIS, inside their .markdown-content prose styles —
    *  never the raw source. */
   descriptionHtml: string | null;
+  contentSections: {title:string;html:string}[];
+  videoSections: ({type:'youtube';title:string;videoId:string}|{type:'r2';title:string;src:string})[];
+  subscriptionPlans:{slug:string;title:string;description:string;formattedPrice:string;intervalLabel:string}[];
   /** Lowest variant price when they differ, else the product price. */
   formattedPrice: string;
   /** Raw minor units for the live price script; display-only. */

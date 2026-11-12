@@ -86,7 +86,7 @@ const { model, purchase } = Astro.props;
       )
     }
 
-    <ProductPurchaseForm model={purchase} />
+    {model.subscriptionPlans.length===0&&<ProductPurchaseForm model={purchase} />}
 
     {/* Share — hidden until JS confirms the browser can share or copy. Uses the
         Web Share API (mobile/native sheet) with a clipboard-copy fallback. */}

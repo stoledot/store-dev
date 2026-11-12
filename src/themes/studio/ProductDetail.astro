@@ -82,7 +82,7 @@ const { model, purchase } = Astro.props;
       )
     }
 
-    <ProductPurchaseForm model={purchase} />
+    {model.subscriptionPlans.length===0&&<ProductPurchaseForm model={purchase} />}
 
     <button
       type="button"

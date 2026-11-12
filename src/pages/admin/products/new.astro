@@ -10,6 +10,8 @@ import { listConferences, getConferenceForProduct } from '../../../features/conf
 const categoryOptions = flattenTree(buildTree(await listCategories(env.DB)));
 const conferenceOptions = await listConferences(env.DB);
 const schoolContentOptions = (await env.DB.prepare("SELECT id,title,status,content_kind,product_id FROM school_courses WHERE status<>'archived' AND product_id IS NULL ORDER BY title COLLATE NOCASE").all<{id:string;title:string;status:string;content_kind:string;product_id:number|null}>()).results ?? [];
+const subscriptionOptions=(await env.DB.prepare("SELECT id,title,interval_unit,interval_count,unit_amount_minor,currency,status FROM content_subscriptions ORDER BY title COLLATE NOCASE").all<any>()).results??[];
+const videoRows=(await env.DB.prepare("SELECT a.asset_ref AS ref,a.asset_title AS title,c.title AS courseTitle,c.slug AS courseSlug,l.slug AS lessonSlug,l.assessment_json FROM school_course_video_assets a JOIN school_courses c ON c.id=a.course_id JOIN school_lessons l ON l.course_id=c.id WHERE c.status='published' AND l.status='published' ORDER BY c.title,l.sequence_no,a.asset_title").all<any>()).results??[];const videoAssetOptions=videoRows.filter(v=>{try{return (JSON.parse(v.assessment_json||'{}').blocks??[]).some((b:any)=>b.type==='video'&&b.ref===v.ref);}catch{return false;}}).map(v=>({title:v.title,courseTitle:v.courseTitle,courseSlug:v.courseSlug,lessonSlug:v.lessonSlug,ref:v.ref})).filter((v,i,a)=>a.findIndex(x=>x.courseSlug===v.courseSlug&&x.ref===v.ref)===i);
 const error = Astro.url.searchParams.get('error');
 const weightUnit = Astro.locals.settings?.weightUnit ?? 'g';
 const weightRequired = zonesRequireWeight(shippingFor(Astro.locals.settings).config);
@@ -27,5 +29,7 @@ const weightRequired = zonesRequireWeight(shippingFor(Astro.locals.settings).con
     weightRequired={weightRequired}
     conferenceOptions={conferenceOptions}
     schoolContentOptions={schoolContentOptions}
+    subscriptionOptions={subscriptionOptions}
+    videoAssetOptions={videoAssetOptions}
   />
 </AdminLayout>

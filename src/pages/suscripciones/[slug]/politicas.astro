@@ -1,0 +1,10 @@
+---
+export const prerender=false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../../layouts/Layout.astro';
+import { formatMoney } from '../../../money';
+const slug=Astro.params.slug||'';
+const plan=await env.DB.prepare("SELECT title,description,unit_amount_minor,currency,interval_unit,interval_count,refund_policy_text,privacy_notice_text,privacy_notice_url,subscription_terms_text FROM content_subscriptions WHERE slug=? AND status='active'").bind(slug).first<any>();
+if(!plan)return new Response('Políticas no encontradas.',{status:404});
+---
+<Layout title={`Políticas de ${plan.title}`}><main class="mx-auto max-w-3xl px-4 py-10 sm:px-6"><a href="javascript:history.back()" class="text-sm underline">← Regresar al checkout</a><p class="mt-6 text-xs font-semibold uppercase tracking-widest text-muted">Condiciones del plan</p><h1 class="mt-2 font-serif text-3xl">{plan.title}</h1><p class="mt-3 text-sm text-muted">{formatMoney(plan.unit_amount_minor,plan.currency)} cada {plan.interval_count} {plan.interval_unit==='year'?'año(s)':'mes(es)'}; renovación automática hasta cancelar.</p><article class="mt-6 rounded-2xl border border-line bg-surface p-6"><h2 class="text-lg font-semibold">Política de reembolso</h2><p class="mt-3 whitespace-pre-wrap text-sm leading-7">{plan.refund_policy_text}</p></article><article class="mt-4 rounded-2xl border border-line bg-surface p-6"><h2 class="text-lg font-semibold">Aviso de privacidad</h2><p class="mt-3 whitespace-pre-wrap text-sm leading-7">{plan.privacy_notice_text}</p>{plan.privacy_notice_url&&<a class="mt-3 inline-block underline" href={plan.privacy_notice_url} target="_blank" rel="noopener noreferrer">Abrir aviso integral</a>}</article><article class="mt-4 rounded-2xl border border-line bg-surface p-6"><h2 class="text-lg font-semibold">Condiciones y cargos recurrentes</h2><p class="mt-3 whitespace-pre-wrap text-sm leading-7">{plan.subscription_terms_text}</p></article><p class="mt-5 text-xs text-muted">Puedes cancelar desde Mi cuenta → Suscripciones. La solicitud de cancelación se procesa de inmediato; detiene renovaciones posteriores.</p></main></Layout>

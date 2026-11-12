@@ -5,7 +5,8 @@ const TEX_PATTERN = /\\begin\s*\{[A-Za-z*]+\}|\\\[|\\\(|\$\$|\$(?!\s)(?:[^$\n]|\
 
 // Load dynamically so a CDN or module error can be shown to the student instead of
 // leaving the preview in an indefinite "loading" state.
-const latexLibrary = import('https://cdn.jsdelivr.net/npm/latex.js@0.12.6/dist/latex.mjs')
+let latexLibrary;
+const loadLatexLibrary = () => latexLibrary ??= import('https://cdn.jsdelivr.net/npm/latex.js@0.12.6/dist/latex.mjs')
   .then((library) => {
     if (!customElements.get('latex-js')) {
       class SafeLaTeXComponent extends library.LaTeXJSComponent {
@@ -76,28 +77,15 @@ function makeComponent(source, display = false) {
 
 /** Convert TeX-bearing text nodes within the supplied rendered content. */
 async function renderLatexContent(root = document) {
-  const ready = await latexLibrary;
-  if (!ready.ok) return ready;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      const parent = node.parentElement;
-      if (!parent || SKIP_TAGS.has(parent.tagName) || parent.closest('latex-js')) return NodeFilter.FILTER_REJECT;
-      return hasLatex(node.nodeValue || '') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-    },
-  });
-  const textNodes = [];
-  while (walker.nextNode()) textNodes.push(walker.currentNode);
-  for (const node of textNodes) {
-    const source = node.nodeValue || '';
-    node.replaceWith(makeComponent(source, /\\begin\s*\{|\\\[|\$\$/.test(source)));
-  }
-  return ready;
+  if (!window.MathJax?.typesetPromise) return { ok: false, pending: true };
+  try { await window.MathJax.startup?.promise; window.MathJax.typesetClear?.([root]); await window.MathJax.typesetPromise([root]); return { ok: true }; }
+  catch (error) { return { ok: false, error }; }
 }
 
 /** Compile a student's whole source in the live editor and resolve after parsing. */
 async function renderLatexSource(source, target) {
   if (!target) return { ok: false, error: new Error('No se encontró el contenedor de vista previa.') };
-  const ready = await latexLibrary;
+  const ready = await loadLatexLibrary();
   if (!ready.ok) {
     target.textContent = 'No se pudo cargar LaTeX.js. Revisa la conexión a Internet y vuelve a intentarlo.';
     return ready;
@@ -116,8 +104,7 @@ window.renderLatexContent = renderLatexContent;
 window.renderLatexSource = renderLatexSource;
 
 async function renderAllMathContent() {
-  await latexLibrary;
-  document.querySelectorAll('.prose, .tex-content, .math-content, [data-latex-render]').forEach((root) => void renderLatexContent(root));
+  if (window.MathJax?.typesetPromise) { await window.MathJax.startup?.promise; await renderLatexContent(document.body); }
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => void renderAllMathContent(), { once: true });
@@ -125,12 +112,6 @@ else void renderAllMathContent();
 
 // Re-run the same parser for content inserted by admin previews after page load.
 new MutationObserver((records) => {
-  for (const record of records) {
-    for (const node of record.addedNodes) {
-      if (node instanceof Element && !SKIP_TAGS.has(node.tagName)) void renderLatexContent(node);
-      else if (node instanceof Text && node.parentElement && !SKIP_TAGS.has(node.parentElement.tagName) && hasLatex(node.nodeValue || '')) {
-        node.replaceWith(makeComponent(node.nodeValue || '', /\\begin\s*\{|\\\[|\$\$/.test(node.nodeValue || '')));
-      }
-    }
-  }
+  const roots = records.flatMap((record) => [...record.addedNodes]).filter((node) => node instanceof Element && !node.matches('mjx-container') && !node.closest('mjx-container, latex-js'));
+  if (roots.length) void Promise.resolve(window.MathJax?.startup?.promise).then(() => window.MathJax?.typesetPromise?.(roots));
 }).observe(document.documentElement, { childList: true, subtree: true });
