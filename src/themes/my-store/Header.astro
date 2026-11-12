@@ -42,16 +42,16 @@ const { model } = Astro.props;
 }
 
 <header class="sticky top-0 z-20 border-b border-line bg-paper/85 backdrop-blur">
-  <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 sm:py-5">
-    <a href="/" aria-label={model.storeName} class="font-serif text-2xl tracking-tight">
+  <div class="mx-auto flex min-w-0 max-w-6xl items-center gap-2 px-3 py-3 sm:gap-6 sm:px-6 sm:py-5">
+    <a href="/" aria-label={model.storeName} class="min-w-0 max-w-[48vw] shrink font-serif text-xl tracking-tight sm:max-w-none sm:text-2xl">
       {
         model.logo ? (
           /* Not lazy: the header logo is above the fold on every page. The
              store name stays the alt text, so the header still reads the
              same to a screen reader or when the image fails. */
-          <img src={model.logo.src} alt={model.logo.alt} class="h-8 max-w-48 object-contain sm:h-10" />
+          <img src={model.logo.src} alt={model.logo.alt} class="h-8 max-w-full object-contain sm:h-10 sm:max-w-48" />
         ) : (
-          <span>{model.storeName}</span>
+          <span class="block truncate">{model.storeName}</span>
         )
       }
     </a>
@@ -68,11 +68,12 @@ const { model } = Astro.props;
         putting min-w-0 only on the links themselves is not enough. */}
     <nav
       aria-label="Navegación principal"
-      class="ml-auto flex min-w-0 items-center gap-4 text-xs uppercase tracking-widest text-muted sm:gap-6"
+      class="ml-auto flex shrink-0 items-center gap-2 text-[0.65rem] uppercase tracking-widest text-muted sm:gap-6 sm:text-xs"
     >
       <StoreNav links={model.headerLinks} />
       {/* Search input is desktop-only; give mobile a link to the search page. */}
       <a href={model.search.action} class="hover:text-brand sm:hidden">Buscar</a>
+      <details class="relative"><summary class="cursor-pointer list-none whitespace-nowrap hover:text-brand"><span class="sm:hidden">Social</span><span class="hidden sm:inline">Cuenta social</span></summary><div class="absolute right-0 z-30 mt-3 grid min-w-48 gap-1 rounded-xl border border-line bg-paper p-2 text-xs normal-case tracking-normal shadow-lg"><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social">Tu cuenta social</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social?view=groups">Tus grupos</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social?view=posts">Tus publicaciones</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social?view=saved">Publicaciones guardadas</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account">Cuenta académica</a></div></details>
       {model.cart.enabled && <StoreCartControl href={model.cart.href} />}
       {model.account.enabled && <StoreAccountControl href={model.account.href} />}
     </nav>

@@ -5,6 +5,7 @@ import { env } from 'cloudflare:workers';
 import { accountsEnabled, getCustomerEmail } from '../../../features/auth/customer';
 
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
+const lessonLimitNotice=Astro.url.searchParams.get('limite')==='lecciones';
 const email = await getCustomerEmail(Astro.cookies);
 if (!email) return Astro.redirect('/account/login', 303);
 const enrollment = await env.DB.prepare(`SELECT MAX(valid_until) AS valid_until FROM school_fee_payments WHERE student_email=? COLLATE NOCASE AND fee_type='enrollment' AND valid_until>=date('now')`).bind(email).first<{valid_until:string|null}>();
@@ -27,6 +28,7 @@ const canStudy = true;
 ---
 <Layout title="Mi escuela" description="Tus áreas y cursos en un solo lugar.">
   <main class="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+    {lessonLimitNotice&&<p role="alert" class="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Llegaste al máximo de lecciones permitido para el periodo actual. Podrás continuar cuando comience el siguiente periodo.</p>}
     <header class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs font-semibold uppercase tracking-widest text-kumo-muted">Tu espacio de aprendizaje</p><h1 class="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Mi escuela</h1><p class="mt-2 text-sm text-kumo-muted">Tus intereses, diagnósticos y cursos, juntos y fáciles de consultar.</p></div><a href="/escuela/diagnostico" class="rounded-xl bg-kumo-inverted px-4 py-2.5 text-sm font-semibold text-kumo-base">Áreas y diagnósticos</a></header>
     <div class="mt-5 grid gap-3 sm:grid-cols-2"><div class="rounded-xl border border-kumo-line bg-white p-4"><p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Inscripción</p><p class="mt-1 text-sm font-semibold">{enrollment?.valid_until?`Vigente hasta ${enrollment.valid_until}`:'Sin vigencia activa'}</p></div><div class="rounded-xl border border-kumo-line bg-white p-4"><p class="text-xs font-semibold uppercase tracking-wide text-kumo-muted">Mensualidad</p><p class="mt-1 text-sm font-semibold">{monthly?.valid_until?`Vigente hasta ${monthly.valid_until}`:'Sin vigencia activa'}</p></div></div>
     <section class="mt-6"><div class="mb-3 flex items-center justify-between"><h2 class="text-lg font-semibold">Mis áreas</h2><a class="text-sm underline" href="/escuela/diagnostico">Administrar</a></div>{interests.length?<div class="flex flex-wrap gap-2">{interests.map((interest)=><span class="rounded-full border border-kumo-line bg-white px-3 py-1.5 text-sm"><span class="text-xs text-kumo-muted">{interest.program_title} · </span>{interest.area_title}<span class="ml-2 text-xs">{interest.diagnostic_status==='approved'?`Aprobado ${interest.approved_level??''}`:interest.diagnostic_status==='pending'?'En revisión':interest.diagnostic_status==='rejected'?'Requiere atención':'Sin diagnóstico'}</span></span>)}</div>:<p class="rounded-xl border border-kumo-line bg-white p-4 text-sm text-kumo-muted">Aún no elegiste áreas. Puedes escoger varias y enviar un diagnóstico para cada una.</p>}</section>

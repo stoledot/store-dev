@@ -12,6 +12,7 @@ import { catalogPath } from '../settings/home';
 import { formatMoney, toMajorUnits, currencyDecimals } from '../../money';
 import { requirePublicId } from '../catalog/serialize';
 import { buildProductCard } from './productCard';
+import { parseProductContent, parseProductVideos } from '../products/richContent';
 import type {
   ProductDetailModel,
   ProductPurchaseModel,
@@ -93,13 +94,17 @@ export async function loadProductDetail(
 
   // Independent once the product is known. Run together so an uncached render
   // pays one concurrent wait instead of a serial chain.
-  const [categories, storedRelated, variants, extras, gallery] = await Promise.all([
+  const [categories, storedRelated, variants, extras, gallery, rawPlans] = await Promise.all([
     categoriesForProduct(db, product.id),
     getRelatedStored(product, RELATED_TARGET),
     listVariants(db, product.id),
     listExtras(db, product.id),
     listProductImages(db, product.id),
+    db.prepare("SELECT s.slug,s.title,s.description,s.unit_amount_minor,s.currency,s.interval_unit,s.interval_count FROM product_content_subscriptions ps JOIN content_subscriptions s ON s.id=ps.subscription_id WHERE ps.product_id=? AND s.status='active' ORDER BY s.title").bind(product.id).all<{slug:string;title:string;description:string;unit_amount_minor:number;currency:string;interval_unit:string;interval_count:number}>(),
   ]);
+  let contentSections:{title:string;html:string}[]=[],videoSections:ProductDetailModel['videoSections']=[];
+  try{contentSections=parseProductContent(product.content_sections_json).map(section=>({title:section.title,html:renderMarkdown(section.text,{baseUrl:options.imageBaseUrl})}));}catch{contentSections=[];}
+  try{videoSections=parseProductVideos(product.video_sections_json).map(video=>video.type==='youtube'?{type:'youtube' as const,title:video.title,videoId:video.videoId}:{type:'r2' as const,title:video.title,src:`/api/escuela/cursos/${encodeURIComponent(video.courseSlug)}/${encodeURIComponent(video.lessonSlug)}/videos/${encodeURIComponent(video.ref)}`});}catch{videoSections=[];}
 
   const semantic = storedRelated ?? [];
   let related = semantic;
@@ -116,7 +121,9 @@ export async function loadProductDetail(
   const soldOut = hasVariants ? variants.every((v) => v.stock <= 0) : state === 'out';
 
   const variantPrices = variants.map((v) => v.price_cents);
-  const displayPriceCents = hasVariants ? Math.min(...variantPrices) : product.price_cents;
+  const primaryPlan=rawPlans.results?.[0];
+  const displayPriceCents = primaryPlan?.unit_amount_minor ?? (hasVariants ? Math.min(...variantPrices) : product.price_cents);
+  const displayCurrency=primaryPlan?.currency??options.currency;
   const priceVaries = hasVariants && Math.min(...variantPrices) !== Math.max(...variantPrices);
 
   // A variant's linked image reaches the markup as the gallery anchor — a pimg_
@@ -173,10 +180,10 @@ export async function loadProductDetail(
       // script announced the product row's, so a legacy row advertised one
       // currency and rendered another, and picking a variant switched between
       // them mid-page.
-      price: toMajorUnits(displayPriceCents, options.currency).toFixed(
-        currencyDecimals(options.currency),
+      price: toMajorUnits(displayPriceCents, displayCurrency).toFixed(
+        currencyDecimals(displayCurrency),
       ),
-      priceCurrency: options.currency.toUpperCase(),
+      priceCurrency: displayCurrency.toUpperCase(),
       availability: soldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
       url: new URL(options.pathname, options.origin).href,
     },
@@ -202,9 +209,12 @@ export async function loadProductDetail(
       descriptionHtml: product.description
         ? renderMarkdown(product.description, { baseUrl: options.imageBaseUrl })
         : null,
-      formattedPrice: formatMoney(displayPriceCents, options.currency),
+      contentSections,
+      videoSections,
+      subscriptionPlans:(rawPlans.results??[]).map(plan=>({slug:plan.slug,title:plan.title,description:plan.description,formattedPrice:formatMoney(plan.unit_amount_minor,plan.currency),intervalLabel:`cada ${plan.interval_count===1?'':`${plan.interval_count} `}${plan.interval_unit==='month'?'mes':'año'}`})),
+      formattedPrice: formatMoney(displayPriceCents, displayCurrency),
       priceCents: product.price_cents,
-      currency: options.currency,
+      currency: displayCurrency,
       priceVaries,
       soldOut,
       // Deliberately never shown for a product with variants: the product-level

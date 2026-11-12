@@ -274,7 +274,7 @@
                     <li>Instala un editor de texto o entorno de desarrollo LaTeX. 
                         Algunos editores populares incluyen TeXstudio, Overleaf (basado en la web) 
                         y Visual Studio Code con extensiones LaTeX.
-                    </li>
+                    </li**>
                     <li>Configura el editor para utilizar la distribución de LaTeX instalada.</li>
                 </ol>
 
@@ -288,7 +288,6 @@
                 <p>Para instalar LaTeX en Windows, sigue estos pasos:</p>
                 <h3>1. Descargar e instalar MikTeX</h3>
                 <p>Visita el sitio web oficial de MikTeX 
-                (<a href="https://miktex.org/download">https://miktex.org/download</a>) 
                 y descarga el instalador para Windows.
                 Ejecuta el instalador y sigue las instrucciones en pantalla para completar la instalación.
                 </p>
@@ -674,10 +673,27 @@ saludar("Mundo")
                     </code>
                 </pre>
             </content>
-            <inputlatex>
-                <p>Escribe un comando para crear un título de sección llamado "Conclusión".</p>
-                <p>Escribe un entorno para crear una lista numerada con tres elementos.</p>
-            </inputlatex>
         </lesson>
+
+        <lesson id="conceptos-basicos-lesson-3" 
+            title="Lección 3: Secciones y subsecciones" weight="4">
+            <content>
+                <p>En LaTeX, las secciones y subsecciones se crean utilizando los comandos <code>\section</code> y <code>\subsection</code>.</p>
+                <p>Ejemplo de cómo se ve una sección y una subsección en LaTeX:</p>
+                <pre>
+                    <code>
+                        \section{Sección Principal}
+                        Contenido de la sección principal.
+                        
+                        \subsection{Subsección}
+                        Contenido de la subsección.
+                    </code>
+                </pre>
+                <p>Recuerda que las secciones y subsecciones ayudan a organizar el contenido de tu documento y facilitan la navegación dentro del mismo.</p>
+            </content>
+        </lesson>
+
     </section>
+
+    <section id=""
 </curso>

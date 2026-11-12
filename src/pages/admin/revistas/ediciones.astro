@@ -1,0 +1,81 @@
+---
+export const prerender=false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { parseReadingXml, validateReadingXml } from '../../../features/mathTexts/xmlReading';
+import { getStorage } from '../../../features/storage';
+import { optimizeUpload } from '../../../features/products/imageOptimize';
+import { uploadMedia, validateUpload } from '../../../features/media/upload';
+import { mediaUrl } from '../../../features/media/url';
+import { getConfig } from '../../../config';
+const clean=(v:unknown,n=300)=>String(v??'').trim().slice(0,n),slugify=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,100)||'edicion';
+let error='';const magazineSlug=Astro.url.searchParams.get('revista')||'';const magazine=magazineSlug?await env.DB.prepare('SELECT * FROM math_magazines WHERE slug=?').bind(magazineSlug).first<any>():null;
+const editId=Astro.url.searchParams.get('edit')||'';const editing=editId?await env.DB.prepare('SELECT * FROM math_magazine_issues WHERE id=? AND magazine_id=?').bind(editId,magazine?.id??'').first<any>():null;let editingSource='';if(editing?.xml_source_key&&env.FILES){const object=await env.FILES.get(editing.xml_source_key);if(object)editingSource=await object.text();}
+async function queueIssueNotice(issueId:string,magazineId:string){await env.DB.prepare(`INSERT OR IGNORE INTO math_magazine_issue_notifications(issue_id,student_email) SELECT ?,lower(trim(ss.student_email)) FROM school_subscriptions ss JOIN content_subscriptions cs ON cs.id=ss.content_subscription_id WHERE cs.magazine_id=? AND cs.status='active' AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now'))`).bind(issueId,magazineId).run();}
+if(Astro.request.method==='POST')try{const f=await Astro.request.formData();if(!magazine)throw new Error('Selecciona una revista válida.');const action=String(f.get('_action')||'save'),issueId=clean(f.get('id'),100);if(action==='status'){const status=f.get('status')==='published'?'published':'draft';await env.DB.prepare('UPDATE math_magazine_issues SET status=?,updated_at=? WHERE id=? AND magazine_id=?').bind(status,new Date().toISOString(),issueId,magazine.id).run();if(status==='published')await queueIssueNotice(issueId,magazine.id);return Astro.redirect(`/admin/revistas/ediciones?revista=${encodeURIComponent(magazine.slug)}&ok=status`,303);}
+ let source=String(f.get('xml_source')??''),filename=clean(f.get('xml_filename'),200)||'edicion.xml';const xmlFile=f.get('xml_file');if(xmlFile instanceof File&&xmlFile.size){if(xmlFile.size>1_000_000)throw new Error('El XML no puede superar 1 MB.');if(!xmlFile.name.toLowerCase().endsWith('.xml'))throw new Error('El archivo debe tener extensión .xml.');source=await xmlFile.text();filename=xmlFile.name.replace(/[\r\n"\\]/g,'_').slice(0,200);}if(!source.trim())throw new Error('Carga un XML o pega el XML de la edición.');const issues=validateReadingXml(source);if(issues.length)throw new Error(issues.slice(0,8).map(i=>`Línea ${i.line}, columna ${i.column}: ${i.message}`).join(' '));const xml=parseReadingXml(source);if(!xml.number||!/^[A-Za-z0-9][A-Za-z0-9._/-]{0,39}$/.test(xml.number))throw new Error('El número de edición debe ser válido.');
+ let cover=clean(f.get('existing_cover_key'),300)||null;const coverFile=f.get('cover');if(coverFile instanceof File&&coverFile.size){const invalid=validateUpload(coverFile);if(invalid)throw new Error(invalid);cover=(await uploadMedia(env.DB,getStorage(),await optimizeUpload(coverFile),coverFile.name)).image_key;}
+ const slug=slugify(`${xml.volume?`${xml.volume}-`:''}${xml.number}-${xml.title}`),now=new Date().toISOString(),targetId=issueId||crypto.randomUUID();if(!env.FILES)throw new Error('El almacenamiento privado FILES no está configurado.');const duplicate=await env.DB.prepare('SELECT id FROM math_magazine_issues WHERE magazine_id=? AND slug=? AND id<>?').bind(magazine.id,slug,targetId).first();if(duplicate)throw new Error('Ya existe una edición con ese slug.');const issueDate=xml.date,status=f.get('status')==='published'?'published':'draft',key=`math-magazines/${magazine.id}/${targetId}/${Date.now()}-${filename}`;await env.FILES.put(key,source,{httpMetadata:{contentType:'application/xml; charset=utf-8'},customMetadata:{magazineId:magazine.id,issueId:targetId}});
+ if(issueId)await env.DB.prepare('UPDATE math_magazine_issues SET slug=?,issue_number=?,volume=?,title=?,author=?,issue_date=?,summary=?,xml_source_key=?,xml_filename=?,cover_image_key=?,status=?,updated_at=? WHERE id=? AND magazine_id=?').bind(slug,xml.number,xml.volume??'',xml.title,xml.author,issueDate,xml.summary,key,filename,cover,status,now,targetId,magazine.id).run();else await env.DB.prepare('INSERT INTO math_magazine_issues(id,magazine_id,slug,issue_number,volume,title,author,issue_date,summary,xml_source_key,xml_filename,cover_image_key,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(targetId,magazine.id,slug,xml.number,xml.volume??'',xml.title,xml.author,issueDate,xml.summary,key,filename,cover,status,now,now).run();if(status==='published')await queueIssueNotice(targetId,magazine.id);return Astro.redirect(`/admin/revistas/ediciones?revista=${encodeURIComponent(magazine.slug)}&ok=saved`,303);
+}catch(e){error=e instanceof Error?e.message:'No se pudo guardar la edición.';}
+const issues=(magazine?(await env.DB.prepare('SELECT * FROM math_magazine_issues WHERE magazine_id=? ORDER BY issue_date DESC,volume DESC,issue_number DESC LIMIT 100').bind(magazine.id).all<any>()).results??[]:[]);const ok=Astro.url.searchParams.get('ok'),imageBase=getConfig().images.baseUrl;
+---
+<AdminLayout title="Ediciones de revista" active="magazines"><main class="mx-auto max-w-6xl px-4 py-8 sm:px-6"><a href="/admin/revistas" class="text-sm underline">← Revistas</a>{magazine?<><header class="my-5"><p class="text-xs font-semibold uppercase tracking-widest text-gray-500">Ediciones XML</p><h1 class="mt-2 font-serif text-3xl">{magazine.title}</h1><p class="mt-2 text-sm text-gray-600">Cada edición conserva su XML privado y portada pública. Al publicarla, se encola un correo para las personas con suscripción vigente a esta revista.</p></header>{error&&<p class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}{ok&&<p class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">Edición guardada.</p>}<section class="rounded-2xl border border-line bg-surface p-5 sm:p-7"><h2 class="text-lg font-semibold">{editing?'Editar edición':'Cargar edición'}</h2><form method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">{editing&&<><input type="hidden" name="id" value={editing.id}/><input type="hidden" name="existing_cover_key" value={editing.cover_image_key??''}/></>}<label class="block text-sm">Archivo XML de la edición<input class="mt-1 block w-full" type="file" name="xml_file" accept=".xml,text/xml"/></label><label class="block text-sm">O pega/edita el XML<textarea id="issue-xml" name="xml_source" rows="20" class="mt-1 block w-full rounded-lg border border-line p-3 font-mono text-xs" placeholder="&lt;edicion&gt;...&lt;/edicion&gt;">{editingSource}</textarea></label><label class="block text-sm">Portada de esta edición<input class="mt-1 block w-full rounded-lg border border-line p-2" type="file" name="cover" accept="image/jpeg,image/png,image/webp,image/gif"/><span class="text-xs text-muted">JPEG, PNG, WebP o GIF, máximo 5 MB. Si no eliges una imagen se usa la portada general de la revista.</span>{editing?.cover_image_key&&<img class="mt-3 h-44 w-36 rounded-lg border object-cover" src={mediaUrl(editing.cover_image_key,imageBase)} alt={`Portada de ${editing.title}`}/>}</label><div class="flex flex-wrap items-center gap-3"><label class="text-sm">Estado<select name="status" class="ml-2 rounded border border-line p-2"><option value="draft" selected={!editing||editing.status==='draft'}>Borrador</option><option value="published" selected={editing?.status==='published'}>Publicada</option></select></label><button type="button" id="validate-issue" class="rounded-lg border border-line px-4 py-2 text-sm">Validar y previsualizar</button><button class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Guardar edición</button>{editing&&<a href={`/admin/revistas/ediciones?revista=${encodeURIComponent(magazine.slug)}`} class="rounded-lg border px-4 py-2 text-sm">Cancelar</a>}</div></form><div id="issue-errors" class="mt-4 hidden whitespace-pre-wrap rounded-lg bg-red-50 p-3 text-sm text-red-800"></div><div id="issue-preview" class="mt-4 hidden space-y-3"></div></section>
+<section class="mt-8"><h2 class="mb-3 text-lg font-semibold">Ediciones</h2><div class="overflow-x-auto rounded-xl border border-line"><table class="w-full min-w-[52rem] text-left text-sm"><thead><tr class="bg-gray-50"><th class="p-3">Edición</th><th class="p-3">Fecha</th><th class="p-3">Estado</th><th class="p-3">Acciones</th></tr></thead><tbody>{issues.map(i=><tr class="border-t border-line"><td class="p-3"><div class="font-semibold">{i.title}</div><div class="text-xs text-muted">{i.volume?`Vol. ${i.volume} · `:''}Núm. {i.issue_number} · {i.xml_filename}</div></td><td class="p-3">{i.issue_date}</td><td class="p-3">{i.status}</td><td class="p-3"><div class="flex gap-3"><a class="underline" href={`/admin/revistas/ediciones?revista=${encodeURIComponent(magazine.slug)}&edit=${encodeURIComponent(i.id)}`}>Editar XML</a>{i.status==='published'&&<a class="underline" href={`/revistas/${magazine.slug}/${i.slug}`} target="_blank">Abrir</a>}<form method="POST"><input type="hidden" name="_action" value="status"/><input type="hidden" name="id" value={i.id}/><input type="hidden" name="status" value={i.status==='published'?'draft':'published'}/><button class="underline">{i.status==='published'?'Pasar a borrador':'Publicar'}</button></form></div></td></tr>)}{!issues.length&&<tr><td colspan="4" class="p-5 text-center text-muted">Aún no hay ediciones.</td></tr>}</tbody></table></div></section></>:<p class="mt-6 rounded-xl border border-dashed p-6">No se encontró la revista indicada. <a class="underline" href="/admin/revistas">Elige una revista</a>.</p>}</main>
+<script>
+const input=document.querySelector<HTMLTextAreaElement>('#issue-xml'),button=document.querySelector<HTMLButtonElement>('#validate-issue'),errors=document.querySelector<HTMLDivElement>('#issue-errors'),preview=document.querySelector<HTMLDivElement>('#issue-preview'),file=document.querySelector<HTMLInputElement>('input[name="xml_file"]');
+file?.addEventListener('change',async()=>{const f=file.files?.[0];
+if(f&&input)input.value=await f.text();});
+button?.addEventListener('click',async()=>
+{
+    if(!input||!errors||!preview) return;
+    errors.classList.add('hidden');preview.classList.add('hidden');
+    try{
+        const res= await fetch
+        (
+            '/api/admin/revistas/validar',
+            {
+                method:'POST',
+                headers:
+                {
+                    'content-type':'application/json'
+                },
+                body:JSON.stringify({source:input.value})
+            }
+        ),
+        data = (await res.json()) as any;
+        if(!res.ok) throw new Error(data.error||'XML inválido.');
+        const meta = document.createElement('header');
+        meta.className='rounded-xl border border-line bg-white p-4';
+        const h = document.createElement('h3');
+        h.className='font-semibold';
+        h.textContent=data.title;
+        const p=document.createElement('p');
+        p.className='text-sm';
+        p.textContent=`Volumen ${data.volume||'—'} · Número ${data.number} · ${data.date}`;
+        meta.appendChild(h);
+        meta.appendChild(p);
+        preview.replaceChildren(meta);
+        for(const item of data.cards)
+        {
+            const card=document.createElement('article');
+            card.className='rounded-xl border border-line bg-white p-4';
+            const title= (document.createElement('h4'));
+            title.className='font-semibold';
+            title.textContent= item.title;
+            const body=document.createElement('div');
+            body.className='mt-3';
+            body.innerHTML=item.html;
+            card.appendChild(title);
+            card.appendChild(body);
+            preview.appendChild(card);
+        }
+        preview.classList.remove('hidden');
+        window.renderLatexContent?.(document);
+    }
+    catch(e)
+    {
+        errors.textContent= e instanceof Error?e.message:'XML inválido.';
+        errors.classList.remove('hidden');
+    }});
+</script></AdminLayout>

@@ -125,6 +125,13 @@ export function createStripeProvider(
         webhookSecret,
       );
 
+      if(event.type==='customer.subscription.created'||event.type==='customer.subscription.updated'||event.type==='customer.subscription.deleted'){
+        const sub=event.data.object as any,customer=typeof sub.customer==='string'?sub.customer:sub.customer?.id,metadata=sub.metadata??{},contentSubscriptionId=metadata.content_subscription_id,studentEmail=metadata.student_email,stripePriceId=metadata.stripe_price_id,consentId=metadata.consent_id;return {type:event.type,...(customer&&contentSubscriptionId&&studentEmail&&stripePriceId?{subscriptionStart:{stripeSubscriptionId:sub.id,stripeCustomerId:customer,email:studentEmail,contentSubscriptionId,stripePriceId,consentId}}:{}),subscriptionUpdate:{stripeSubscriptionId:sub.id,status:sub.status,currentPeriodStart:sub.current_period_start?new Date(sub.current_period_start*1000).toISOString():null,currentPeriodEnd:sub.current_period_end?new Date(sub.current_period_end*1000).toISOString():null,cancelAtPeriodEnd:Boolean(sub.cancel_at_period_end),canceledAt:sub.canceled_at?new Date(sub.canceled_at*1000).toISOString():null,endedAt:sub.ended_at?new Date(sub.ended_at*1000).toISOString():null,eventCreated:event.created}};
+      }
+      if(event.type==='invoice.payment_succeeded'||event.type==='invoice.payment_failed'){
+        const invoice=event.data.object as Stripe.Invoice;const loose=invoice as unknown as {subscription?:string|{id:string}|null;parent?:{subscription_details?:{subscription?:string|{id:string}|null}};status_transitions?:{paid_at?:number|null}};const raw=loose.subscription??loose.parent?.subscription_details?.subscription;const subscriptionId=typeof raw==='string'?raw:raw?.id;if(subscriptionId)return {type:event.type,subscriptionUpdate:{stripeSubscriptionId:subscriptionId,status:event.type==='invoice.payment_succeeded'?'active':'past_due',currentPeriodStart:null,currentPeriodEnd:null,cancelAtPeriodEnd:false,canceledAt:null,endedAt:null,lastPaymentAt:event.type==='invoice.payment_succeeded'&&loose.status_transitions?.paid_at?new Date(loose.status_transitions.paid_at*1000).toISOString():null,lastInvoiceId:invoice.id,eventCreated:event.created}};
+      }
+
       if (
         event.type === 'checkout.session.expired' ||
         event.type === 'checkout.session.async_payment_failed'
@@ -147,6 +154,16 @@ export function createStripeProvider(
         event.type === 'checkout.session.async_payment_succeeded'
       ) {
         const session = event.data.object;
+
+        if(session.mode==='subscription'){
+          const subscription=typeof session.subscription==='string'?session.subscription:session.subscription?.id;
+          const customer=typeof session.customer==='string'?session.customer:session.customer?.id;
+          const email=session.customer_details?.email??session.customer_email??session.metadata?.student_email??'';
+          const planId=session.metadata?.content_subscription_id??'';
+          const priceId=session.metadata?.stripe_price_id??'';
+          if(subscription&&customer&&email&&planId&&priceId)return {type:event.type,subscriptionStart:{stripeSubscriptionId:subscription,stripeCustomerId:customer,email,contentSubscriptionId:planId,stripePriceId:priceId,consentId:session.metadata?.consent_id}};
+          return {type:event.type};
+        }
 
         // Only record when actually settled: 'paid', or 'no_payment_required'
         // ($0 / 100%-off). 'unpaid' = pending async payment — wait for the
@@ -324,3 +341,6 @@ export function createStripeProvider(
     },
   };
 }
+
+export async function createStripeSubscriptionCheckout(params:{secretKey:string;priceId:string;expectedAmount:number;expectedCurrency:string;intervalUnit:string;intervalCount:number;email:string;successUrl:string;cancelUrl:string;metadata:Record<string,string>}):Promise<string>{const stripe=new Stripe(params.secretKey,{httpClient:Stripe.createFetchHttpClient()});const price=await stripe.prices.retrieve(params.priceId);if(!price.active||price.type!=='recurring'||price.unit_amount!==params.expectedAmount||price.currency.toLowerCase()!==params.expectedCurrency.toLowerCase()||price.recurring?.interval!==params.intervalUnit||price.recurring?.interval_count!==params.intervalCount)throw new Error('El Price de Stripe no coincide con el importe, moneda o periodo configurado.');const session=await stripe.checkout.sessions.create({mode:'subscription',line_items:[{price:params.priceId,quantity:1}],customer_email:params.email,success_url:params.successUrl,cancel_url:params.cancelUrl,metadata:params.metadata,subscription_data:{metadata:params.metadata}});if(!session.url)throw new Error('Stripe no devolvió la URL de pago.');return session.url;}
+export async function scheduleStripeSubscriptionCancellation(secretKey:string,subscriptionId:string):Promise<void>{const stripe=new Stripe(secretKey,{httpClient:Stripe.createFetchHttpClient()});await stripe.subscriptions.update(subscriptionId,{cancel_at_period_end:true});}

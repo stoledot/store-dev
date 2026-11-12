@@ -22,6 +22,8 @@ export interface Product {
   file_name: string | null;
   file_mime: string | null;
   file_size_bytes: number | null;
+  content_sections_json: string;
+  video_sections_json: string;
   /** Precomputed semantic neighbours as a JSON id array; null = not computed yet
    *  (see migration 0024 / features/search relatedIds). */
   related_ids: string | null;

@@ -21,6 +21,8 @@
    weight here — and no theme may restyle Admin by accident. */
 @import "./themes/_admin.css";
 
+.advertise-card{margin:1.25rem 0;padding:1rem 1.15rem;border:1px solid #d1d5db;border-left:3px solid #4f46e5;border-radius:1rem;background:#f8f8ff}.advertise-card .advertise-eyebrow{margin:0;color:#64748b;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase}.advertise-card h3{margin:.35rem 0;font-size:1rem;font-weight:700}.advertise-card p:not(.advertise-eyebrow){margin:.25rem 0 .7rem;color:#64748b;font-size:.875rem}.advertise-card a{color:#4338ca;font-size:.875rem;font-weight:650;text-decoration:underline;text-underline-offset:3px}
+
 /* Admin's own tokens: the upstream light palette, frozen. These match the
    default theme's values today, but they are Admin's, not the default theme's —
    the default theme can evolve without dragging Admin along. */

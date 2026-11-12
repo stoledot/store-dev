@@ -7,6 +7,7 @@ import {
 } from '../../../features/payments';
 import { getStoreSettings } from '../../../features/settings/db';
 import { recordPaidWebhookOrder } from '../../../features/orders/recordWebhook';
+import { getSecret } from '../../../features/secrets/store';
 
 export const prerender = false;
 
@@ -19,7 +20,8 @@ const METHODS: PaymentMethod[] = ['stripe', 'lightning', 'opennode'];
 export const POST: APIRoute = async ({ request, params }) => {
   const method = params.provider as PaymentMethod;
   const settings = await getStoreSettings(env.DB);
-  if (!METHODS.includes(method) || !isMethodAvailable(method, settings)) {
+  const stripeSubscriptionEndpointReady=method==='stripe'&&Boolean(await getSecret(env.DB,'stripe_secret_key')&&await getSecret(env.DB,'stripe_webhook_secret'));
+  if (!METHODS.includes(method) || (!isMethodAvailable(method, settings)&&!stripeSubscriptionEndpointReady)) {
     return new Response('Unknown or unconfigured payment method', { status: 404 });
   }
 

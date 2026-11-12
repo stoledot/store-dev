@@ -114,6 +114,8 @@ export interface WebhookResult {
   order?: PaidOrderInput;
   /** Present only when the event reports a refund made at the provider. */
   refundSync?: RefundSyncInput;
+  subscriptionStart?:{stripeSubscriptionId:string;stripeCustomerId:string;email:string;contentSubscriptionId:string;stripePriceId:string;consentId?:string};
+  subscriptionUpdate?:{stripeSubscriptionId:string;status:string;currentPeriodStart:string|null;currentPeriodEnd:string|null;cancelAtPeriodEnd:boolean;canceledAt:string|null;endedAt:string|null;lastPaymentAt?:string|null;lastInvoiceId?:string|null;eventCreated?:number};
 }
 
 /**

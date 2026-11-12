@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lectura>
+    <meta>
+        <title>La Razón Áurea</title>
+        <author>Brillinury y Samuel</author>
+        <date>2024-06-18</date>
+        <summary>Explicación matemática del origen de la razón aurea.</summary>
+        
+    </meta>
+    <section id="main" title="¿Cómo se obtiene la razón áurea?">
+        <p>La razón áurea, también conocida como proporción áurea, 
+        es un número irracional que aparece en diversas estructuras geométricas y naturales. </p>
+
+        <p>Geométricamente, la razón áurea se puede obtener dividiendo un segmento en dos partes de manera que la relación entre la longitud total y la parte más larga sea igual a la relación entre la parte más larga y la más corta. Esta proporción se encuentra en figuras como el pentágono regular y la espiral logarítmica.</p>
+
+        $$\phi=\frac{a}{b}=\frac{a+b}{a}$$
+
+        <img src='https://ovacen.com/wp-content/uploads/2015/08/calculadora-numero-aureo.jpg' 
+        alt="División de un segmento según la razón áurea" ></img>
+
+        <p>Elaborando el cálculo de la razón áurea, si llamamos a la parte más larga del segmento \(a\) y a la más corta \(b\), se cumple que \(\frac{a+b}{a} = \frac{a}{b}\). Resolviendo esta ecuación se obtiene que \(\frac{a}{b} = \phi = \frac{1 + \sqrt{5}}{2}\).</p>
+        <p>Este valor, \(\phi\), es conocido como el número áureo y tiene propiedades matemáticas únicas, apareciendo en diversas áreas como el arte, la arquitectura y la naturaleza.</p>
+        <p>En resumen, la razón áurea combina belleza estética y rigor matemático, siendo un ejemplo fascinante de cómo las matemáticas se manifiestan en el mundo que nos rodea.</p>
+
+    </section>
+
+
+</lectura>

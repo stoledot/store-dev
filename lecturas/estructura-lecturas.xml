@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lectura>
+    <meta>
+        <title>Estructura de Lecturas</title>
+        <author>Autor Desconocido</author>
+        <date>2024-06-18</date>
+        <summary>
+        Esta lectura describe la estructura de las lecturas y cómo deben ser presentadas a los niños para maximizar su comprensión y atención.
+        </summary>
+    </meta>
+
+    <!--Todos los títulos y metadatos también pueden incluir código latex que deberá ser compilado con latex.js-->
+    <section id="estructura-lecturas" title="Estructura de las Lecturas">
+        <subsection id="estructura-lecturas-intro" title="Introducción">
+            <subsubsection id="estructura-lecturas-intro-detalle" title="Detalle de la Introducción">
+                <!--Aquí va el html mezclado con código latex que será compilado con latex.js-->
+                <!--
+                También incluirá dentro de <section>, <subsection> y <subsubsection> los siguientes elementos:
+                <theorem id="teorema-ejemplo" title="Teorema de Ejemplo">
+                    <statement>
+                        Aquí va el enunciado del teorema.
+                    </statement>
+                    <proof>
+                        Aquí va la demostración del teorema.
+                    </proof>
+                </theorem>
+                <definition id="definicion-ejemplo" title="Definición de Ejemplo">
+                    Aquí va la definición.
+                </definition>
+                <example id="ejemplo-ejemplo" title="Ejemplo de Ejemplo">
+                    Aquí va el ejemplo.
+                </example>
+                <remark id="observacion-ejemplo" title="Observación de Ejemplo">
+                    Aquí va la observación.
+                </remark>
+                <corollary id="corolario-ejemplo" title="Corolario de Ejemplo">
+                    Aquí va el corolario.
+                </corollary>
+                <lemma id="lema-ejemplo" title="Lema de Ejemplo">
+                    Aquí va el lema.
+                </lemma>
+                <proposition id="proposicion-ejemplo" title="Proposición de Ejemplo">
+                    Aquí va la proposición.
+                </proposition>
+                <conjecture id="conjetura-ejemplo" title="Conjetura de Ejemplo">
+                    Aquí va la conjetura.
+                </conjecture>
+                <axiom id="axioma-ejemplo" title="Axioma de Ejemplo">
+                    Aquí va el axioma.
+                </axiom>
+                <remark id="observacion-axioma-ejemplo" title="Observación sobre el Axioma de Ejemplo">
+                    Aquí va la observación sobre el axioma.
+                </remark>
+                <remark id="observacion-general-ejemplo" title="Observación General de Ejemplo">
+                    Aquí va la observación general.
+                </remark>
+                <exercise id="ejercicio-ejemplo" title="Ejercicio de Ejemplo">
+                    Aquí va el ejercicio.
+                </exercise>
+                <solution id="solucion-ejemplo" title="Solución de Ejemplo">
+                    Aquí va la solución.
+                </solution>
+                
+                y otros ambientes matemáticos.
+
+                tambien se pueden incluir otros tipos de elementos:
+                <geogebragraphics ref="..." title="Geogebra de Ejemplo">
+                </geogebragraphics>
+                -->
+            </subsubsection>
+        </subsection>
+    </section>
+</lectura>
+
