@@ -100,6 +100,30 @@ const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.descript
   </section>
 
   <section class="my-10 rounded-2xl border border-line bg-brand p-6 text-white sm:flex sm:items-center sm:justify-between"><div><h2 class="font-serif text-2xl">Ir a la tienda</h2><p class="mt-2 text-sm text-white/80">Explora cursos, lecturas y materiales disponibles.</p></div><a href="/shop" class="mt-4 rounded-full bg-white px-5 py-3 text-sm font-semibold text-brand sm:mt-0">Visitar tienda →</a></section>
+  <section class="my-8 rounded-2xl border border-line bg-surface p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
+    <div><h2 class="font-serif text-2xl">Donar</h2><p class="mt-2 text-sm text-muted">Tu apoyo ayuda a que este proyecto continúe.</p></div>
+    <a href="/donar" class="mt-4 inline-flex rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 sm:mt-0">Conocer las donaciones →</a>
+  </section>
   <section class="mb-6 rounded-2xl border border-line bg-surface p-5 sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-6"><div><p class="text-xs font-bold uppercase tracking-widest text-brand">Comunidad</p><h2 class="mt-1 font-serif text-2xl">Encuentra tus grupos</h2><p class="mt-2 text-sm text-muted">Únete a grupos para compartir ideas y conversar sobre matemáticas y lectura.</p></div><a href="/grupos" class="mt-4 inline-flex rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white sm:mt-0">Explorar grupos →</a></section>
-  {studentEmail ? <div class="my-10" data-social-page>{socialGroups.length>0&&<form data-post-form data-group={socialGroups[0].id} class="mb-6 rounded-2xl border border-line bg-surface p-4"><label class="grid gap-2 font-semibold">Publicar en uno de tus grupos<select name="groupSelect" class="rounded-lg border border-line bg-background p-2">{socialGroups.map(g=><option value={g.id}>{g.title}</option>)}</select><textarea name="body" required maxlength="5000" rows="3" placeholder="Comparte una idea con tu grupo…" class="rounded-xl border border-line bg-background p-3 font-normal"></textarea></label><div class="mt-3 flex justify-end"><button class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Publicar</button></div><p data-status class="mt-2 text-sm text-red-700"></p></form>}<SocialFeed/><button data-notification-optin class="mt-5 rounded-lg border border-line px-4 py-2 text-sm">Activar avisos del navegador</button></div> : <section class="my-10 rounded-2xl border border-line bg-surface p-6 text-center"><h2 class="font-serif text-2xl">Comparte con la comunidad</h2><p class="mt-2 text-sm text-muted">Inicia sesión para unirte a grupos y participar en las conversaciones.</p><a href="/account/login?next=%2F" class="mt-4 inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Iniciar sesión</a></section>}
+  {studentEmail ? <div class="my-10" data-social-page>
+    {socialGroups.length>0&&
+    <form data-post-form data-group={socialGroups[0].id} 
+      class="mb-6 rounded-2xl border border-line bg-surface p-4">
+      <label class="grid gap-2 font-semibold">
+        Publicar en uno de tus grupos
+        <select name="groupSelect" class="rounded-lg border border-line bg-background p-2">
+          {socialGroups.map(g=><option value={g.id}>{g.title}</option>)}
+        </select>
+        <textarea name="body" required maxlength="5000" rows="3" placeholder="Comparte una idea con tu grupo…" class="rounded-xl border border-line bg-background p-3 font-normal">
+        </textarea>
+      </label>
+      <div class="mt-3 flex justify-end">
+        <button class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">
+          Publicar
+        </button>
+      </div>
+      <p data-status class="mt-2 text-sm text-red-700"></p>
+    </form>}
+    <SocialFeed/>
+    <button data-notification-optin class="mt-5 rounded-lg border border-line px-4 py-2 text-sm">Activar avisos del navegador</button></div> : <section class="my-10 rounded-2xl border border-line bg-surface p-6 text-center"><h2 class="font-serif text-2xl">Comparte con la comunidad</h2><p class="mt-2 text-sm text-muted">Inicia sesión para unirte a grupos y participar en las conversaciones.</p><a href="/account/login?next=%2F" class="mt-4 inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Iniciar sesión</a></section>}
 </Layout>

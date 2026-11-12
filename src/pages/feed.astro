@@ -1,0 +1,36 @@
+---
+import { env } from 'cloudflare:workers';
+import Layout from '../layouts/Layout.astro';
+import { getCustomerEmail } from '../features/auth/customer';
+import SocialFeed from '../components/social/SocialFeed.astro';
+
+const studentEmail = await getCustomerEmail(Astro.cookies);
+const socialGroups=studentEmail?((await env.DB.prepare('SELECT g.id,g.title FROM social_groups g JOIN social_group_members m ON m.group_id=g.id WHERE m.email=? COLLATE NOCASE AND g.status=\'active\' ORDER BY g.title').bind(studentEmail).all<any>()).results??[]):[];
+---
+
+
+
+<Layout title="Aprende matemáticas y lectura" description="Programas de matemáticas y lectura con una ruta clara, contenidos accesibles y acompañamiento para aprender a tu ritmo.">
+    <section class="mb-6 rounded-2xl border border-line bg-surface p-5 sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-6"><div><p class="text-xs font-bold uppercase tracking-widest text-brand">Comunidad</p><h2 class="mt-1 font-serif text-2xl">Encuentra tus grupos</h2><p class="mt-2 text-sm text-muted">Únete a grupos para compartir ideas y conversar sobre matemáticas y lectura.</p></div><a href="/grupos" class="mt-4 inline-flex rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white sm:mt-0">Explorar grupos →</a></section>
+  {studentEmail ? <div class="my-10" data-social-page>
+    {socialGroups.length>0&&
+    <form data-post-form data-group={socialGroups[0].id} 
+      class="mb-6 rounded-2xl border border-line bg-surface p-4">
+      <label class="grid gap-2 font-semibold">
+        Publicar en uno de tus grupos
+        <select name="groupSelect" class="rounded-lg border border-line bg-background p-2">
+          {socialGroups.map(g=><option value={g.id}>{g.title}</option>)}
+        </select>
+        <textarea name="body" required maxlength="5000" rows="3" placeholder="Comparte una idea con tu grupo…" class="rounded-xl border border-line bg-background p-3 font-normal">
+        </textarea>
+      </label>
+      <div class="mt-3 flex justify-end">
+        <button class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">
+          Publicar
+        </button>
+      </div>
+      <p data-status class="mt-2 text-sm text-red-700"></p>
+    </form>}
+    <SocialFeed/>
+    <button data-notification-optin class="mt-5 rounded-lg border border-line px-4 py-2 text-sm">Activar avisos del navegador</button></div> : <section class="my-10 rounded-2xl border border-line bg-surface p-6 text-center"><h2 class="font-serif text-2xl">Comparte con la comunidad</h2><p class="mt-2 text-sm text-muted">Inicia sesión para unirte a grupos y participar en las conversaciones.</p><a href="/account/login?next=%2F" class="mt-4 inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Iniciar sesión</a></section>}
+</Layout>

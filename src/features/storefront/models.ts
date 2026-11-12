@@ -206,7 +206,7 @@ export interface ProductDetailModel {
   descriptionHtml: string | null;
   contentSections: {title:string;html:string}[];
   videoSections: ({type:'youtube';title:string;videoId:string}|{type:'r2';title:string;src:string})[];
-  subscriptionPlans:{slug:string;title:string;description:string;formattedPrice:string;intervalLabel:string}[];
+  subscriptionPlans:{slug:string;title:string;description:string;formattedPrice:string;intervalLabel:string;updatedAt:string;terms:string;refundPolicy:string;privacyNotice:string;privacyNoticeUrl:string}[];
   /** Lowest variant price when they differ, else the product price. */
   formattedPrice: string;
   /** Raw minor units for the live price script; display-only. */

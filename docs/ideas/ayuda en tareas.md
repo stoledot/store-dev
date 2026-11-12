@@ -8,3 +8,6 @@ Que haya respuesta para negociar un precio con profesor.
 Meter a maestros y que nos den comisión, freelancer de matemáticos.
 
 #
+Agregar donaciones
+
+#

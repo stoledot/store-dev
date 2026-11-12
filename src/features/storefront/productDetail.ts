@@ -100,8 +100,10 @@ export async function loadProductDetail(
     listVariants(db, product.id),
     listExtras(db, product.id),
     listProductImages(db, product.id),
-    db.prepare("SELECT s.slug,s.title,s.description,s.unit_amount_minor,s.currency,s.interval_unit,s.interval_count FROM product_content_subscriptions ps JOIN content_subscriptions s ON s.id=ps.subscription_id WHERE ps.product_id=? AND s.status='active' ORDER BY s.title").bind(product.id).all<{slug:string;title:string;description:string;unit_amount_minor:number;currency:string;interval_unit:string;interval_count:number}>(),
+    db.prepare("SELECT s.slug,s.title,s.description,s.unit_amount_minor,s.currency,s.interval_unit,s.interval_count,s.updated_at,s.subscription_terms_text,s.refund_policy_text,s.privacy_notice_text,s.privacy_notice_url,s.status FROM product_content_subscriptions ps JOIN content_subscriptions s ON s.id=ps.subscription_id WHERE ps.product_id=? ORDER BY s.title").bind(product.id).all<{slug:string;title:string;description:string;unit_amount_minor:number;currency:string;interval_unit:string;interval_count:number;updated_at:string;subscription_terms_text:string;refund_policy_text:string;privacy_notice_text:string;privacy_notice_url:string;status:string}>(),
   ]);
+  const allPlans = rawPlans.results ?? [];
+  const activePlans = allPlans.filter((plan) => plan.status === 'active');
   let contentSections:{title:string;html:string}[]=[],videoSections:ProductDetailModel['videoSections']=[];
   try{contentSections=parseProductContent(product.content_sections_json).map(section=>({title:section.title,html:renderMarkdown(section.text,{baseUrl:options.imageBaseUrl})}));}catch{contentSections=[];}
   try{videoSections=parseProductVideos(product.video_sections_json).map(video=>video.type==='youtube'?{type:'youtube' as const,title:video.title,videoId:video.videoId}:{type:'r2' as const,title:video.title,src:`/api/escuela/cursos/${encodeURIComponent(video.courseSlug)}/${encodeURIComponent(video.lessonSlug)}/videos/${encodeURIComponent(video.ref)}`});}catch{videoSections=[];}
@@ -121,7 +123,7 @@ export async function loadProductDetail(
   const soldOut = hasVariants ? variants.every((v) => v.stock <= 0) : state === 'out';
 
   const variantPrices = variants.map((v) => v.price_cents);
-  const primaryPlan=rawPlans.results?.[0];
+  const primaryPlan=activePlans[0];
   const displayPriceCents = primaryPlan?.unit_amount_minor ?? (hasVariants ? Math.min(...variantPrices) : product.price_cents);
   const displayCurrency=primaryPlan?.currency??options.currency;
   const priceVaries = hasVariants && Math.min(...variantPrices) !== Math.max(...variantPrices);
@@ -211,7 +213,7 @@ export async function loadProductDetail(
         : null,
       contentSections,
       videoSections,
-      subscriptionPlans:(rawPlans.results??[]).map(plan=>({slug:plan.slug,title:plan.title,description:plan.description,formattedPrice:formatMoney(plan.unit_amount_minor,plan.currency),intervalLabel:`cada ${plan.interval_count===1?'':`${plan.interval_count} `}${plan.interval_unit==='month'?'mes':'año'}`})),
+      subscriptionPlans:activePlans.map(plan=>({slug:plan.slug,title:plan.title,description:plan.description,formattedPrice:formatMoney(plan.unit_amount_minor,plan.currency),intervalLabel:`cada ${plan.interval_count===1?'':`${plan.interval_count} `}${plan.interval_unit==='month'?'mes':'año'}`,updatedAt:plan.updated_at,terms:plan.subscription_terms_text,refundPolicy:plan.refund_policy_text,privacyNotice:plan.privacy_notice_text,privacyNoticeUrl:plan.privacy_notice_url})),
       formattedPrice: formatMoney(displayPriceCents, displayCurrency),
       priceCents: product.price_cents,
       currency: displayCurrency,
@@ -244,10 +246,10 @@ export async function loadProductDetail(
       expressAction: '/express',
       hasOptions: hasVariants || extras.length > 0,
       soldOut,
-      showAddToCart: cartEnabled,
+      showAddToCart: cartEnabled && allPlans.length === 0,
       // Buy now is express (it skips the cart), so it survives the cart being
       // switched off — but not the absence of any rail that can take money.
-      showBuyNow: buyNowEnabled && canCheckout,
+      showBuyNow: buyNowEnabled && canCheckout && allPlans.length === 0,
       variantLabel: product.variant_label,
       variants: variants.map((variant, index) => ({
         id: requirePublicId(variant.public_id, variant.id, 'variant'),

@@ -41,6 +41,7 @@ import { purgeStockProductCache } from '../../features/cache/purge';
 import { lifecycleActive } from '../../features/digitalDelivery/rollout.ts';
 import { mintLightningOrder } from '../../features/payments/lightning-provider';
 import { getLightningBackend } from '../../features/payments/lightning';
+import { hasSubscriptionProduct } from '../../features/subscriptions/purchaseGuard';
 
 export const prerender = false;
 
@@ -193,6 +194,9 @@ export const POST: APIRoute = async ({ request, cookies, url, redirect }) => {
   }
 
   if (lines.length === 0) return redirect('/cart', 303);
+  if (await hasSubscriptionProduct(env.DB, lines.map((line) => line.product.id))) {
+    return new Response('Un producto del carrito requiere contratación recurrente desde su página. Retíralo del carrito para continuar.', { status: 409 });
+  }
 
   // Don't oversell — check the variant's stock (or the product's), not the base.
   const short = lines.find((l) => l.availableStock < l.qty);
@@ -534,6 +538,9 @@ async function handleJsonCheckout(request: Request, url: URL): Promise<Response>
     }
     if (!Number.isInteger(qty) || qty < 1) return cjson({ error: `Invalid quantity for "${selector}".` }, 400);
     if (!product || !product.active) return cjson({ error: `Product not found: ${selector}` }, 404);
+    if (await hasSubscriptionProduct(env.DB, [product.id])) {
+      return cjson({ error: 'This product requires subscription checkout from its product page.' }, 409);
+    }
     const slug = product.slug;
 
     // Variant: required when the product has any. Validate it belongs + is active.

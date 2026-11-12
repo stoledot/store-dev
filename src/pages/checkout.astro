@@ -29,6 +29,7 @@ import {
 } from '../features/orders/reservations';
 import { reservationItems } from '../features/orders/reservationItems.ts';
 import { purgeStockProductCache } from '../features/cache/purge';
+import { hasSubscriptionProduct } from '../features/subscriptions/purchaseGuard';
 
 const cfg = getConfig();
 const isPost = Astro.request.method === 'POST';
@@ -123,6 +124,9 @@ if (productPublicId) {
   }));
 }
 if (lines.length === 0) return Astro.redirect('/cart', 303);
+if (await hasSubscriptionProduct(env.DB, lines.map((line) => line.product.id))) {
+  return new Response('Un producto requiere contratación recurrente desde su página. Retíralo del carrito para continuar.', { status: 409 });
+}
 
 const subtotalCents = lines.reduce((s, l) => s + l.unitPriceCents * l.qty, 0);
 const currency = cfg.currency;

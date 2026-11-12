@@ -1,0 +1,44 @@
+---
+import type { ProductDetailModel } from '../storefront/models';
+
+interface Props {
+  productId: string;
+  plans: ProductDetailModel['subscriptionPlans'];
+}
+const { productId, plans } = Astro.props;
+---
+
+{plans.length > 0 && <section class="mx-auto my-8 max-w-6xl px-4 sm:px-6">
+  <div class="rounded-2xl border border-line bg-surface p-5 sm:p-7">
+    <p class="text-xs font-semibold uppercase tracking-widest text-brand">Acceso recurrente</p>
+    <h2 class="mt-2 font-serif text-2xl">Elige una suscripción</h2>
+    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+      {plans.map(plan => <article class="rounded-xl border border-line bg-white p-4">
+        <h3 class="font-semibold">{plan.title}</h3>
+        {plan.description && <p class="mt-2 text-sm text-muted">{plan.description}</p>}
+        <p class="mt-3 text-lg font-semibold">{plan.formattedPrice} <span class="text-sm font-normal text-muted">{plan.intervalLabel}</span></p>
+        <p class="mt-2 text-sm text-muted">El primer cargo se realiza al confirmar el pago. Los cargos siguientes se realizan automáticamente {plan.intervalLabel}, hasta que canceles. Puedes cancelar desde Mi cuenta → Suscripciones para detener las renovaciones posteriores.</p>
+        <details class="mt-3 rounded-lg border border-line p-3">
+          <summary class="cursor-pointer text-sm font-semibold">Consultar condiciones, reembolsos y privacidad</summary>
+          <h4 class="mt-3 font-semibold">Condiciones de la suscripción</h4>
+          <p class="mt-1 whitespace-pre-wrap text-sm">{plan.terms}</p>
+          <h4 class="mt-3 font-semibold">Política de reembolso</h4>
+          <p class="mt-1 whitespace-pre-wrap text-sm">{plan.refundPolicy}</p>
+          <h4 class="mt-3 font-semibold">Aviso de privacidad</h4>
+          <p class="mt-1 whitespace-pre-wrap text-sm">{plan.privacyNotice}</p>
+          {plan.privacyNoticeUrl && <a class="mt-2 inline-block text-sm underline" href={plan.privacyNoticeUrl} target="_blank" rel="noopener noreferrer">Abrir aviso integral</a>}
+        </details>
+        <form class="mt-4 grid gap-3" method="POST" action="/api/subscriptions/checkout">
+          <input type="hidden" name="product_id" value={productId}/>
+          <input type="hidden" name="subscription_slug" value={plan.slug}/>
+          <input type="hidden" name="policy_version" value={plan.updatedAt}/>
+          <label class="flex items-start gap-2 text-sm"><input class="mt-1" type="checkbox" name="accept_subscription_terms" value="yes" required/><span>Acepto las condiciones de la suscripción.</span></label>
+          <label class="flex items-start gap-2 text-sm"><input class="mt-1" type="checkbox" name="accept_refund_policy" value="yes" required/><span>Acepto la política de reembolso.</span></label>
+          <label class="flex items-start gap-2 text-sm"><input class="mt-1" type="checkbox" name="acknowledge_privacy_notice" value="yes" required/><span>Confirmo que pude consultar el aviso de privacidad.</span></label>
+          <label class="flex items-start gap-2 text-sm"><input class="mt-1" type="checkbox" name="authorize_recurring_charges" value="yes" required/><span><strong>Autorizo los cargos recurrentes</strong> de {plan.formattedPrice} {plan.intervalLabel}, hasta cancelar.</span></label>
+          <button class="justify-self-start rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white">Continuar a pago seguro de Stripe →</button>
+        </form>
+      </article>)}
+    </div>
+  </div>
+</section>}
