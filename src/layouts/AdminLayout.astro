@@ -26,6 +26,7 @@ type Section =
   | 'school-avance'
   | 'school-editar'
   | 'subscriptions'
+  | 'donations'
   | 'readings'
   | 'magazines'
   | 'conferences'
@@ -59,6 +60,7 @@ const nav: { key: Section; label: string; href: string }[] = [
   { key: 'dashboard', label: 'Dashboard', href: '/admin' },
   { key: 'products', label: 'Products', href: '/admin/products' },
   { key: 'subscriptions', label: 'Suscripciones y lecturas', href: '/admin/suscripciones' },
+  { key: 'donations', label: 'Donaciones', href: '/admin/donaciones' },
   { key: 'school', label: 'Cursos y lecciones', href: '/admin/escuela' },
   { key: 'readings', label: 'Lecturas XML', href: '/admin/escuela/lecturas' },
   { key: 'magazines', label: 'Revistas matemáticas', href: '/admin/revistas' },

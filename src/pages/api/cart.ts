@@ -6,6 +6,7 @@ import { getProductByPublicId } from '../../features/products/db';
 import { listVariants, getExtrasByPublicIds } from '../../features/products/variants';
 import { parsePublicId } from '../../features/ids/publicId.ts';
 import { getStoreSettings } from '../../features/settings/db';
+import { hasSubscriptionProduct } from '../../features/subscriptions/purchaseGuard';
 
 export const prerender = false;
 
@@ -45,6 +46,9 @@ export const POST: APIRoute = async ({ request, cookies, url, redirect }) => {
   const productPublicId = parsePublicId(form.get('product_id'), 'product');
   const product = productPublicId ? await getProductByPublicId(env.DB, productPublicId) : null;
   if (!product || !product.active || !product.public_id) return done();
+  if (await hasSubscriptionProduct(env.DB, [product.id])) {
+    return new Response('Este producto se contrata desde su página de suscripción.', { status: 409 });
+  }
 
   // Variant is required when the product has any.
   const variants = await listVariants(env.DB, product.id);

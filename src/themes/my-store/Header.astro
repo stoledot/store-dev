@@ -42,8 +42,8 @@ const { model } = Astro.props;
 }
 
 <header class="sticky top-0 z-20 border-b border-line bg-paper/85 backdrop-blur">
-  <div class="mx-auto flex min-w-0 max-w-6xl items-center gap-2 px-3 py-3 sm:gap-6 sm:px-6 sm:py-5">
-    <a href="/" aria-label={model.storeName} class="min-w-0 max-w-[48vw] shrink font-serif text-xl tracking-tight sm:max-w-none sm:text-2xl">
+  <div class="mx-auto flex min-w-0 max-w-6xl flex-wrap items-center gap-2 px-3 py-3 sm:flex-nowrap sm:gap-6 sm:px-6 sm:py-5">
+    <a href="/" aria-label={model.storeName} class="w-full min-w-0 font-serif text-xl tracking-tight sm:w-auto sm:shrink sm:text-2xl">
       {
         model.logo ? (
           /* Not lazy: the header logo is above the fold on every page. The
@@ -68,9 +68,10 @@ const { model } = Astro.props;
         putting min-w-0 only on the links themselves is not enough. */}
     <nav
       aria-label="Navegación principal"
-      class="ml-auto flex shrink-0 items-center gap-2 text-[0.65rem] uppercase tracking-widest text-muted sm:gap-6 sm:text-xs"
+      class="ml-auto flex w-full min-w-0 flex-wrap items-center justify-end gap-2 text-[0.65rem] uppercase tracking-widest text-muted sm:w-auto sm:shrink-0 sm:gap-6 sm:text-xs"
     >
       <StoreNav links={model.headerLinks} />
+      <a href="/donar" class="rounded-full bg-red-600 px-3 py-2 font-bold text-white hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Donar</a>
       {/* Search input is desktop-only; give mobile a link to the search page. */}
       <a href={model.search.action} class="hover:text-brand sm:hidden">Buscar</a>
       <details class="relative"><summary class="cursor-pointer list-none whitespace-nowrap hover:text-brand"><span class="sm:hidden">Social</span><span class="hidden sm:inline">Cuenta social</span></summary><div class="absolute right-0 z-30 mt-3 grid min-w-48 gap-1 rounded-xl border border-line bg-paper p-2 text-xs normal-case tracking-normal shadow-lg"><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social">Tu cuenta social</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social?view=groups">Tus grupos</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social?view=posts">Tus publicaciones</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account/social?view=saved">Publicaciones guardadas</a><a class="rounded-lg px-3 py-2 hover:bg-surface" href="/account">Cuenta académica</a></div></details>

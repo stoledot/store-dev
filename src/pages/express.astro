@@ -13,6 +13,7 @@ import { stripeDestination } from '../features/shipping/destination';
 import { readCart, resolveCart } from '../features/cart/cart';
 import { enabledMethods } from '../features/payments';
 import ProductImage from '../features/products/ProductImage.astro';
+import { hasSubscriptionProduct } from '../features/subscriptions/purchaseGuard';
 
 // Express checkout — a single payment-method-picker step (first listed = the
 // store's default). Two sources: "Buy now" (a single product_id [+ variant/extras])
@@ -45,6 +46,7 @@ let backHref = '/';
 if (isBuyNow && productPublicId) {
   const product = await getProductByPublicId(env.DB, productPublicId);
   if (!product || !product.active) return Astro.redirect('/', 303);
+  if (await hasSubscriptionProduct(env.DB, [product.id])) return Astro.redirect(`/products/${product.slug}`, 303);
   backHref = `/products/${product.slug}`;
 
   const variantPublicId = parsePublicId(fld('variant_id'), 'variant');
@@ -89,6 +91,9 @@ if (isBuyNow && productPublicId) {
 } else {
   const { lines: cartLines } = await resolveCart(env.DB, readCart(Astro.cookies));
   if (cartLines.length === 0) return Astro.redirect('/cart', 303);
+  if (await hasSubscriptionProduct(env.DB, cartLines.map((line) => line.product.id))) {
+    return new Response('Un producto requiere contratación recurrente desde su página. Retíralo del carrito para continuar.', { status: 409 });
+  }
   // Stock can drop between adding to the cart and checking out. Bounce to the cart
   // rather than rendering a total the shopper can't actually buy: this page has no
   // quantity or remove controls, and /cart already flags the offending line

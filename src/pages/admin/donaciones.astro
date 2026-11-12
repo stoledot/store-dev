@@ -1,0 +1,74 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getConfig } from '../../config';
+import { getSetting, setSetting } from '../../features/settings/db';
+import { defaultDonationDraft, parseDonationAmounts, readDonationDraft, type DonationDraft } from '../../features/donations/draft';
+
+const currency = getConfig().currency.toUpperCase();
+let draft: DonationDraft = { ...defaultDonationDraft, currency };
+let error = '';
+try {
+  draft = readDonationDraft(await getSetting(env.DB, 'donations_draft'));
+  if (!draft.currency) draft.currency = currency;
+} catch (err) {
+  console.error('Could not read donation draft:', err);
+  error = 'No se pudo leer el borrador guardado. Contacta al administrador antes de modificarlo.';
+}
+
+if (Astro.request.method === 'POST' && !error) {
+  const form = await Astro.request.formData();
+  const proposed: DonationDraft = {
+    currency,
+    oneTimeAmounts: String(form.get('one_time_amounts') ?? '').trim(),
+    monthlyAmounts: String(form.get('monthly_amounts') ?? '').trim(),
+    terms: String(form.get('terms') ?? '').trim(),
+    refundPolicy: String(form.get('refund_policy') ?? '').trim(),
+    privacyNotice: String(form.get('privacy_notice') ?? '').trim(),
+  };
+  draft = proposed;
+  try {
+    if ([draft.oneTimeAmounts, draft.monthlyAmounts].some((text) => text.length > 1000) ||
+        [draft.terms, draft.refundPolicy, draft.privacyNotice].some((text) => text.length > 12000)) {
+      throw new Error('El contenido supera el límite permitido.');
+    }
+    parseDonationAmounts(draft.oneTimeAmounts, currency);
+    parseDonationAmounts(draft.monthlyAmounts, currency);
+    await setSetting(env.DB, 'donations_draft', JSON.stringify(draft));
+    return Astro.redirect('/admin/donaciones?saved=1', 303);
+  } catch (err) {
+    console.error('Could not save donation draft:', err);
+    error = err instanceof Error ? err.message : 'No se pudo guardar el borrador.';
+  }
+}
+---
+
+<AdminLayout title="Donaciones" active="donations">
+  <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+    <h1 class="font-serif text-3xl">Donaciones</h1>
+    <p class="mt-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Esta configuración es solo un borrador: los pagos aún no están implementados y no se pueden activar. Los textos son ejemplos y deben revisarse con asesoría legal antes de aceptar aportaciones.</p>
+    {Astro.url.searchParams.get('saved') === '1' && <p class="mt-4 rounded-xl bg-green-50 p-3 text-sm text-green-900">Borrador guardado.</p>}
+    {error && <p role="alert" class="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+    {draft.currency !== currency && <p role="alert" class="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">La moneda cambió de {draft.currency} a {currency}. Revisa los montos antes de guardar.</p>}
+    <form method="POST" class="mt-6 grid gap-5">
+      <label class="grid gap-2 text-sm font-semibold">Montos únicos sugeridos ({currency})
+        <textarea name="one_time_amounts" rows="4" maxlength="1000" class="rounded-lg border border-line bg-surface p-3 font-normal" placeholder="100&#10;250&#10;500">{draft.oneTimeAmounts}</textarea>
+        <span class="font-normal text-muted">Un importe por línea, en unidades de la moneda; usa punto para decimales.</span>
+      </label>
+      <label class="grid gap-2 text-sm font-semibold">Montos mensuales sugeridos ({currency})
+        <textarea name="monthly_amounts" rows="4" maxlength="1000" class="rounded-lg border border-line bg-surface p-3 font-normal">{draft.monthlyAmounts}</textarea>
+      </label>
+      <label class="grid gap-2 text-sm font-semibold">Condiciones de la aportación
+        <textarea name="terms" rows="6" maxlength="12000" class="rounded-lg border border-line bg-surface p-3 font-normal">{draft.terms}</textarea>
+      </label>
+      <label class="grid gap-2 text-sm font-semibold">Política de devoluciones
+        <textarea name="refund_policy" rows="5" maxlength="12000" class="rounded-lg border border-line bg-surface p-3 font-normal">{draft.refundPolicy}</textarea>
+      </label>
+      <label class="grid gap-2 text-sm font-semibold">Aviso de privacidad
+        <textarea name="privacy_notice" rows="6" maxlength="12000" class="rounded-lg border border-line bg-surface p-3 font-normal">{draft.privacyNotice}</textarea>
+      </label>
+      <button type="submit" class="justify-self-start rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-white">Guardar borrador</button>
+    </form>
+  </main>
+</AdminLayout>
