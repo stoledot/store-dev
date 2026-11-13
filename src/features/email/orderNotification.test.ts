@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Order } from '../orders/db';
-import { orderNotificationEmail } from './orderConfirmation';
+import { orderConfirmationEmail, orderNotificationEmail } from './orderConfirmation';
 import type { ConferenceAccess } from '../conferences/access.ts';
 
 
@@ -54,6 +54,19 @@ describe('orderNotificationEmail', () => {
       expect(body).toContain('ord_zdpyy315je');
     }
     expect(message.html).toContain('/admin/orders/ord_zdpyy315je');
+  });
+
+  it('confirms managed conference registration in both versions of the receipt', () => {
+    const access: ConferenceAccess = {
+      id: 1, order_id: 105, order_item_id: 1, seat_number: 1, access_key: 'KEY',
+      zoom_url: '', instructions: 'Conferencia de prueba', created_at: '', conference_id: 3,
+    };
+    const message = orderConfirmationEmail(order(), [], 'https://example.com', 'Minshop', 'original', null, [access]);
+    for (const body of [message.text, message.html]) {
+      expect(body).toContain('Tu inscripción a la conferencia está confirmada.');
+      expect(body).toContain('Conferencia de prueba');
+      expect(body).toContain('KEY');
+    }
   });
 
   it('does not render null when a legacy order has no public ID', () => {

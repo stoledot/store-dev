@@ -221,3 +221,54 @@ export async function setProductConference(
     .bind(productId, conferenceId)
     .run();
 }
+
+
+/**
+ * Retrieves all conferences that a user with the given email is participating in.
+ * CREATE TABLE conference_sessions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  conference_id INTEGER NOT NULL REFERENCES conferences(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  starts_at TEXT NOT NULL,
+  duration_minutes INTEGER NOT NULL DEFAULT 60,
+  time_zone TEXT NOT NULL DEFAULT 'UTC',
+  zoom_meeting_id TEXT,
+  join_url TEXT,
+  passcode TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)
+ */
+
+export async function getUserConferences(
+  db: D1Database,
+  email: string,
+): Promise<Conference[]> {
+  return db
+    .prepare(`
+      SELECT c.*
+      FROM conferences c
+      LEFT JOIN conference_participants cp ON cp.conference_id = c.id
+      WHERE cp.email = ?
+    `)
+    .bind(email)
+    .all<Conference>()
+    .then(result => result.results ?? []);
+}
+
+export async function getUserConferencesSessions(
+  db: D1Database,
+  email: string,
+): Promise<ConferenceSession[]> {
+  return db
+    .prepare(`
+      SELECT s.id, s.title, s.starts_at, s.duration_minutes, s.time_zone, s.zoom_meeting_id, s.join_url, s.passcode, s.created_at
+      FROM conference_sessions s
+      LEFT JOIN conferences c ON c.id = s.conference_id
+      LEFT JOIN conference_participants cp ON cp.conference_id = c.id
+      WHERE cp.email = ?
+      
+      `)
+    .bind(email) // Assuming userId is actually the email of the user, otherwise this should be changed to the email variable  
+    .all<ConferenceSession>()
+    .then(result => result.results ?? []);
+}

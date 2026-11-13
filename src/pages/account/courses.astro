@@ -4,10 +4,13 @@ export const prerender = false;
 import { env } from 'cloudflare:workers';
 import Layout from '../../layouts/Layout.astro';
 import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+import { ensureCustomerAccount } from '../../features/auth/customerIdentity';
+import { courseAccessSql } from '../../features/school/courseAccess';
 
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 const email = await getCustomerEmail(Astro.cookies);
 if (!email) return Astro.redirect('/account/login', 303);
+const clientNumber=await ensureCustomerAccount(env.DB,email);
 
 const { results = [] } = await env.DB.prepare(`
   SELECT
@@ -79,28 +82,9 @@ const { results = [] } = await env.DB.prepare(`
     ON cp.course_id = c.id AND lower(cp.student_email) = lower(?)
   WHERE c.status = 'published'
     AND c.content_kind IN ('course','reading')
-    AND (
-      EXISTS (
-        SELECT 1 FROM school_course_assignments x
-        WHERE x.course_id = c.id
-          AND lower(x.student_email) = lower(?)
-          AND x.status = 'active'
-          AND EXISTS (SELECT 1 FROM school_area_diagnostics d WHERE d.student_email=x.student_email COLLATE NOCASE AND d.area_id=c.area_id AND d.status='approved' AND d.approved_level=c.level_code AND d.attempt_no=(SELECT MAX(d2.attempt_no) FROM school_area_diagnostics d2 WHERE d2.student_email=d.student_email COLLATE NOCASE AND d2.area_id=d.area_id))
-          AND EXISTS (SELECT 1 FROM school_fee_payments f WHERE f.student_email=x.student_email COLLATE NOCASE AND f.fee_type='enrollment' AND f.valid_until>=date('now'))
-          AND EXISTS (SELECT 1 FROM school_fee_payments f WHERE f.student_email=x.student_email COLLATE NOCASE AND f.fee_type='monthly' AND f.valid_until>=date('now'))
-      )
-      OR EXISTS (
-        SELECT 1
-        FROM order_items oi
-        JOIN orders o ON o.id = oi.order_id
-        WHERE oi.school_course_id = c.id
-          AND lower(trim(o.email)) = lower(trim(?))
-          AND o.status = 'paid'
-          AND COALESCE(o.refunded_cents, 0) < o.amount_total_cents
-      )
-    )
+    AND ${courseAccessSql}
   ORDER BY c.title COLLATE NOCASE
-`).bind(email, email, email, email, email, email).all<{
+`).bind(email, email, email, email, email, email, email, email, clientNumber, clientNumber).all<{
   id: string;
   slug: string;
   title: string;

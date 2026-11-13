@@ -100,8 +100,6 @@ export async function deliverOrderNotifications(
     if (attempts == null) continue;
     try {
       // Create the conference entitlement before the customer receipt is sent.
-      // A missing Zoom configuration fails this outbox row so the normal retry
-      // path can deliver the credential once configuration is corrected.
       const conferenceAccess = kind === 'customer-receipt'
         ? await ensureConferenceAccessForOrder(db, orderId, {
             zoomUrl: env.CONFERENCE_ZOOM_URL,
@@ -110,11 +108,8 @@ export async function deliverOrderNotifications(
         : [];
       const emailer = await getEmailProvider(s);
       if (!emailer) {
-        if (isGuestLinkReissueKind(kind)) {
-          // A reissue already killed the old links — its email is a CREDENTIAL
-          // delivery, so a temporarily unconfigured provider is a retryable
-          // failure (sweep picks it up), never a terminal skip. Reissue also
-          // refuses up front when email is off, so this is the rare race.
+        if (isGuestLinkReissueKind(kind) || conferenceAccess.length > 0) {
+          // Credential delivery must remain retryable if email is unavailable.
           await markFailed(db, orderId, kind, attempts, 'Email provider unavailable');
           continue;
         }
@@ -202,11 +197,10 @@ export async function deliverOrderNotifications(
       // second store's row to 'dead'. public_id is globally random; the id
       // fallback is only for pre-0005 legacy rows without one.
       await emailer.send({ ...msg, idempotencyKey: `${kind}/${order.public_id ?? orderId}` });
-      await markSent(db, orderId, kind, attempts);
-      if (kind === 'customer-receipt') {
-        try { await markOrderConferenceParticipantsInvited(db, orderId); }
-        catch (err) { console.error('Conference participant status update failed:', err); }
+      if (kind === 'customer-receipt' && conferenceAccess.some((access) => access.conference_id != null)) {
+        await markOrderConferenceParticipantsInvited(db, orderId);
       }
+      await markSent(db, orderId, kind, attempts);
     } catch (err) {
       console.error(`Order notification ${kind}/${order?.public_id ?? '(unresolved order)'} failed:`, err);
       await markFailed(db, orderId, kind, attempts, err);

@@ -27,6 +27,7 @@ export interface PendingPayment {
   ship_address: string | null; // JSON (ShippingAddress) or null
   /** Explicit link for post-0021 rows; null preserves legacy settlement. */
   reservation_id: string | null;
+  school_payment_obligation_id?: string | null;
   status: string; // 'pending' | 'settled' | 'expired'
   expires_at: string | null;
   created_at: string;
@@ -51,6 +52,7 @@ export interface NewPendingPayment {
   shipAddressJson?: string | null;
   /** Inventory hold created with this payment; absent for legacy rows. */
   reservationId?: string | null;
+  schoolPaymentObligationId?: string | null;
   expiresAt: string | null;
 }
 
@@ -58,8 +60,8 @@ export async function createPendingPayment(db: D1Database, p: NewPendingPayment)
   await db
     .prepare(
       `INSERT INTO pending_payments
-         (public_id, payment_hash, backend, bolt11, amount_sat, amount_total_cents, currency, email, items, shipping_cents, shipping_label, shipping_weight_grams, delivery_method, ship_address, expires_at, reservation_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         (public_id, payment_hash, backend, bolt11, amount_sat, amount_total_cents, currency, email, items, shipping_cents, shipping_label, shipping_weight_grams, delivery_method, ship_address, expires_at, reservation_id, school_payment_obligation_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       p.publicId,
@@ -78,6 +80,7 @@ export async function createPendingPayment(db: D1Database, p: NewPendingPayment)
       p.shipAddressJson ?? null,
       p.expiresAt,
       p.reservationId ?? null,
+      p.schoolPaymentObligationId ?? null,
     )
     .run();
 }
@@ -150,6 +153,7 @@ export function pendingToPaidOrder(p: PendingPayment): PaidOrderInput {
     providerSessionId: p.payment_hash,
     publicId: p.public_id,
     reservationId: p.reservation_id ?? undefined,
+    schoolPaymentObligationId: p.school_payment_obligation_id ?? undefined,
     email: p.email,
     amountTotalCents: p.amount_total_cents,
     shippingCents: p.shipping_cents,

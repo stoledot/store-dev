@@ -7,6 +7,7 @@ import {
   setCustomerSession,
 } from '../../features/auth/customer';
 import { ensureCustomerAccount } from '../../features/auth/customerIdentity';
+import { customerReturnTo } from '../../features/auth/returnTo';
 
 // Consume a magic link: verify the token → set the session cookie → /account.
 // Invalid/expired → back to login with a hint. (Cookie is Secure only over https,
@@ -21,7 +22,6 @@ if (moved) return Astro.redirect('/account/login?error=email-moved',303);
 // The client number is created only after the one-time email token proves mailbox ownership.
 await ensureCustomerAccount(env.DB,email);
 await setCustomerSession(Astro.cookies, email, Astro.url.protocol === 'https:');
-const requestedNext = Astro.url.searchParams.get('next') ?? '';
-const returnTo = ['/account/profile', '/escuela/diagnostico'].includes(requestedNext) ? requestedNext : '/account';
+const returnTo = customerReturnTo(Astro.url.searchParams.get('next'));
 return Astro.redirect(returnTo, 303);
 ---

@@ -36,7 +36,7 @@ export function createDemoProvider(db: D1Database): PaymentProvider {
         amountSat: null,
         amountTotalCents: subtotal + shippingCents,
         currency: params.lineItems[0]?.currency ?? 'usd',
-        email: params.selectedShipping?.email ?? null,
+        email: params.selectedShipping?.email ?? params.customerEmail ?? null,
         itemsJson: params.orderItemsJson ?? null,
         shippingCents,
         shippingLabel: params.selectedShipping?.label ?? null,
@@ -46,6 +46,7 @@ export function createDemoProvider(db: D1Database): PaymentProvider {
           ? JSON.stringify(params.selectedShipping.address)
           : null,
         reservationId: params.metadata?.reservation_id ?? null,
+        schoolPaymentObligationId: params.metadata?.school_obligation_id ?? null,
         // Fixed 24h window: past it the pay page refuses to render, poll, or
         // settle the demo checkout (the guest token stays valid for the order
         // if one settled).
@@ -54,7 +55,7 @@ export function createDemoProvider(db: D1Database): PaymentProvider {
       // Point at the unified self-rendered pay page, absolute (origin from
       // successUrl). New checkouts address it by guest access token; the bare
       // public-id fallback only serves legacy in-flight sessions.
-      return { url: new URL(`/pay/${params.accessToken ?? publicId}`, params.successUrl).href };
+      return { url: new URL(`/pay/${params.accessToken ?? publicId}`, params.successUrl).href, providerSessionId: `demo_${publicId}` };
     },
 
     async verifyWebhook(): Promise<WebhookResult> {

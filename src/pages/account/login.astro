@@ -10,13 +10,14 @@ import {
   setCustomerSession,
 } from '../../features/auth/customer';
 import { verifyClientPassword } from '../../features/auth/customerIdentity';
+import { customerReturnTo } from '../../features/auth/returnTo';
 import { verifyConfiguredTurnstile, TURNSTILE_FIELD } from '../../features/auth/turnstile';
 import { getSecret } from '../../features/secrets/store';
 import Turnstile from '../../features/auth/Turnstile.astro';
 
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 // Already signed in → account.
-const returnTo = ['/account/profile', '/escuela/diagnostico', '/escuela/inscripcion', '/escuela/alumno', '/escuela/docente'].includes(Astro.url.searchParams.get('next') ?? '') ? Astro.url.searchParams.get('next')! : '/account';
+const returnTo = customerReturnTo(Astro.url.searchParams.get('next'));
 if (await getCustomerEmail(Astro.cookies)) return Astro.redirect(returnTo, 303);
 
 let sent = false;

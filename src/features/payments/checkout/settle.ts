@@ -45,9 +45,21 @@ export async function settleDemoCheckout(
     return { declined: 'This demo checkout has expired.' };
   }
   const outcome = String(form.get('outcome') ?? 'approve');
-  const email = resolveRequiredOrderEmail(String(form.get('email') ?? ''), pending.email);
+  const email = pending.school_payment_obligation_id
+    ? resolveRequiredOrderEmail('', pending.email)
+    : resolveRequiredOrderEmail(String(form.get('email') ?? ''), pending.email);
   if (!email) return { declined: 'A valid email is required.' };
   if (outcome === 'approve') {
+    if (pending.school_payment_obligation_id) {
+      const obligation = await env.DB.prepare(`
+        SELECT id FROM school_payment_obligations
+         WHERE id=? AND (student_email=? COLLATE NOCASE OR EXISTS (
+           SELECT 1 FROM customer_email_aliases a WHERE a.old_email=? COLLATE NOCASE
+             AND a.current_email=school_payment_obligations.student_email COLLATE NOCASE)) AND status='pending'
+           AND checkout_session_id=? AND amount_cents=? AND lower(currency)=lower(?)
+      `).bind(pending.school_payment_obligation_id, email, email, pending.payment_hash, pending.amount_total_cents, pending.currency).first<{id:string}>();
+      if (!obligation) return { declined: 'Este pago ya no está disponible.' };
+    }
     const order = { ...pendingToPaidOrder(pending), email };
     // pendingToPaidOrder carries settlePaymentHash, so the pending row settles
     // inside the order batch — no separate markPendingSettled round trip. With

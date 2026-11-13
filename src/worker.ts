@@ -6,6 +6,9 @@ import { getSetting } from './features/settings/db';
 import { sendUpcomingSubscriptionReminders } from './features/subscriptions/renewalReminder';
 import { sendMagazineIssueNotifications } from './features/magazines/notifications';
 import { sendAdvertisingInquiryNotifications } from './features/advertising/notifications';
+import { reconcileEnrollmentPolicies, reconcileSubprogramSchedules } from './features/school/subprogramBilling';
+import { sendSubprogramApprovalEmails } from './features/school/subprogramApprovalEmail';
+import { reconcileDemoSchoolPayments } from './features/school/reconcileDemoPayments';
 
 /**
  * Worker entrypoint.
@@ -68,6 +71,23 @@ async function runScheduledSweeps(): Promise<void> {
     await sendAdvertisingInquiryNotifications(db);
   } catch (err) {
     console.error('Advertising inquiry notification sweep failed:', err);
+  }
+
+  try {
+    await reconcileEnrollmentPolicies(db);
+    await reconcileSubprogramSchedules(db);
+  } catch (err) {
+    console.error('Scheduled subprogram billing failed:', err);
+  }
+  try {
+    await sendSubprogramApprovalEmails(db);
+  } catch (err) {
+    console.error('Scheduled subprogram approval email failed:', err);
+  }
+  try {
+    await reconcileDemoSchoolPayments(db);
+  } catch (err) {
+    console.error('Scheduled demo school payment reconciliation failed:', err);
   }
 }
 

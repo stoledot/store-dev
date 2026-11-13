@@ -1,0 +1,64 @@
+---
+import type { getSchoolHomeSummary } from './homeSummary';
+
+interface Props {
+  summary: Awaited<ReturnType<typeof getSchoolHomeSummary>>;
+}
+
+const { summary } = Astro.props;
+---
+
+<section aria-labelledby="student-home-title" class="my-5 overflow-hidden rounded-[2rem] border border-line bg-surface shadow-sm sm:my-8">
+  <div class="grid gap-6 border-b border-line bg-paper p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand">Tu espacio de aprendizaje</p>
+      <h2 id="student-home-title" class="mt-2 font-serif text-3xl tracking-tight sm:text-4xl">Es buen momento para continuar</h2>
+      <p class="mt-3 max-w-xl text-sm leading-6 text-muted">Tus cursos, inscripciones y avisos, reunidos en un solo lugar.</p>
+    </div>
+    <div class="grid grid-cols-2 gap-3 lg:min-w-72">
+      <a href="/account/courses" class="rounded-2xl border border-line bg-surface px-4 py-3 transition hover:border-brand">
+        <span class="block text-xs font-medium text-muted">Cursos disponibles</span>
+        <span class="mt-1 block text-2xl font-semibold tabular-nums">{summary.courseCount}</span>
+      </a>
+      <a href="/account/notificaciones" class="rounded-2xl border border-line bg-surface px-4 py-3 transition hover:border-brand">
+        <span class="block text-xs font-medium text-muted">Avisos sin leer</span>
+        <span class="mt-1 block text-2xl font-semibold tabular-nums">{summary.unreadCount}</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(16rem,1fr)]">
+    <div>
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div><p class="text-xs font-bold uppercase tracking-[0.16em] text-muted">A tu ritmo</p><h3 class="mt-1 font-serif text-2xl">Tus cursos</h3></div>
+        <a href="/account/courses" class="text-sm font-semibold text-brand underline underline-offset-4">Ver todos →</a>
+      </div>
+      {summary.courses.length ? <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        {summary.courses.map(course => <article class="flex min-h-44 flex-col rounded-2xl border border-line bg-paper p-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-muted">{course.progress_status === 'completed' ? 'Completado' : course.progress_status === 'in_progress' ? 'En curso' : 'Disponible'}</p>
+          <h4 class="mt-2 text-lg font-semibold leading-snug">{course.title}</h4>
+          {course.lesson_title && <p class="mt-2 text-sm leading-5 text-muted">{course.progress_status === 'completed' ? 'Repasar' : 'Siguiente'}: {course.lesson_title}</p>}
+          <a href={course.lesson_slug ? `/escuela/cursos/${encodeURIComponent(course.slug)}/${encodeURIComponent(course.lesson_slug)}` : '/account/courses'} class="mt-auto inline-flex min-h-11 items-center self-start pt-3 text-sm font-semibold text-brand underline underline-offset-4">
+            {!course.lesson_slug ? 'Ver curso' : course.progress_status === 'completed' ? 'Repasar' : course.progress_status === 'in_progress' ? 'Continuar' : 'Comenzar'} →
+          </a>
+        </article>)}
+      </div> : <div class="mt-4 rounded-2xl border border-dashed border-line bg-paper p-5"><p class="text-sm leading-6 text-muted">Aún no tienes cursos disponibles. <a href="#programas" class="font-semibold text-brand underline">Explora los programas</a> para encontrar tu siguiente paso.</p></div>}
+    </div>
+
+    <div class="space-y-6">
+      {summary.diagnostics.length > 0 && <div>
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-muted">Tu proceso</p>
+        <h3 class="mt-1 font-serif text-2xl">Inscripciones</h3>
+        <ul class="mt-4 space-y-3">{summary.diagnostics.map(item => <li class="rounded-2xl border border-line p-4 text-sm">
+          <strong class="text-base">{item.title}</strong>
+          {item.status === 'pending' ? <p class="mt-2 leading-6 text-muted">Tu diagnóstico está en revisión.</p> : item.status === 'rejected' ? <p class="mt-2 leading-6">Tu diagnóstico necesita atención. <a class="font-semibold text-brand underline" href={`/subprogramas/${encodeURIComponent(item.subprogram_id)}#diagnostico`}>Enviar uno nuevo</a></p> : item.due_count > 0 ? <p class="mt-2 leading-6">Diagnóstico aprobado. {item.enrollment_due_count > 0 ? 'Tienes pendiente el pago de inscripción. ' : ''}Tienes {item.due_count} {item.due_count === 1 ? 'pago disponible' : 'pagos disponibles'}. <a class="font-semibold text-brand underline" href="/account/payments">Revisar pagos</a></p> : item.enrollment_required && !item.enrollment_valid ? <p class="mt-2 leading-6">Necesitas una inscripción vigente. <a class="font-semibold text-brand underline" href="/account/payments">Consulta tus pagos</a> o contacta a la escuela.</p> : !item.modality_valid ? <p class="mt-2 leading-6">Tu modalidad aún no tiene un pago vigente. <a class="font-semibold text-brand underline" href="/account/payments">Consulta tus pagos</a> o contacta a la escuela.</p> : <p class="mt-2 leading-6 text-muted">Diagnóstico aprobado y pagos vigentes.</p>}
+        </li>)}</ul>
+      </div>}
+      {summary.notifications.length > 0 && <div>
+        <div class="flex items-end justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-[0.16em] text-muted">Para ti</p><h3 class="mt-1 font-serif text-2xl">Avisos recientes</h3></div><a href="/account/notificaciones" class="text-sm font-semibold text-brand underline underline-offset-4">Ver todos</a></div>
+        <ul class="mt-4 space-y-3">{summary.notifications.map(notification => <li class="rounded-2xl border border-line p-4 text-sm"><strong>{notification.title}</strong><p class="mt-1 whitespace-pre-wrap leading-6 text-muted">{notification.message}</p></li>)}</ul>
+      </div>}
+      {summary.diagnostics.length === 0 && summary.notifications.length === 0 && <div class="rounded-2xl bg-paper p-5"><h3 class="font-serif text-xl">Tu siguiente paso</h3><p class="mt-2 text-sm leading-6 text-muted">Aquí verás tus diagnósticos y avisos cuando comiences tu inscripción.</p><a href="#programas" class="mt-3 inline-block text-sm font-semibold text-brand underline underline-offset-4">Conocer los programas →</a></div>}
+    </div>
+  </div>
+</section>

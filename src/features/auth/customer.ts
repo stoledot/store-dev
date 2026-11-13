@@ -5,6 +5,7 @@ import { getSetting } from '../settings/db';
 import { getEmailProvider } from '../email';
 import { loginLinkEmail } from '../email/loginLink';
 import { signToken, verifyToken } from './token';
+import { customerReturnTo } from './returnTo';
 
 /**
  * Passwordless customer auth (magic-link). Default adapter for the storefront
@@ -47,7 +48,7 @@ export async function requestLogin(email: string, origin: string, returnTo = '/a
   if (!secret) return;
   const addr = normalize(email);
   const token = await signToken(addr, secret, MAGIC_TTL, now());
-  const safeReturnTo = ['/account/profile', '/escuela/diagnostico'].includes(returnTo) ? returnTo : '/account';
+  const safeReturnTo = customerReturnTo(returnTo);
   const link = `${origin}/account/verify?token=${encodeURIComponent(token)}&next=${encodeURIComponent(safeReturnTo)}`;
 
   if (import.meta.env.DEV) console.log(`[magic-link] ${addr} → ${link}`);

@@ -1,0 +1,59 @@
+---
+import type { Program, Subprogram } from './programs';
+
+interface Props {
+  programs: Program[];
+  subprogram?: Subprogram;
+}
+const { programs, subprogram } = Astro.props;
+const input = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2';
+---
+<form method="POST" class="space-y-3">
+  <input type="hidden" name="action" value="save-subprogram" />
+  {subprogram && <input type="hidden" name="id" value={subprogram.id} />}
+  <div class="grid gap-3 sm:grid-cols-2">
+    <label class="block text-sm">Programa
+      <select name="program_slug" required class={input}>
+        {programs.map((program) => <option value={program.slug} selected={program.slug === subprogram?.program_slug}>{program.title}</option>)}
+      </select>
+    </label>
+    <label class="block text-sm">Identificador (slug)
+      <input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" value={subprogram?.slug} class={input} />
+    </label>
+    <label class="block text-sm">Nombre
+      <input name="title" required value={subprogram?.title} class={input} />
+    </label>
+    <label class="block text-sm">Nivel educativo
+      <input name="education_level" value={subprogram?.education_level} class={input} />
+    </label>
+    <label class="block text-sm">URL de imagen
+      <input name="image_url" value={subprogram?.image_url} class={input} />
+    </label>
+    <label class="block text-sm">Duración
+      <input name="duration_description" value={subprogram?.duration_description} class={input} />
+    </label>
+  </div>
+  <label class="block text-sm">Descripción
+    <textarea name="description" rows="3" class={input}>{subprogram?.description}</textarea>
+  </label>
+  <label class="block text-sm">Objetivos
+    <textarea name="objectives" rows="3" class={input}>{subprogram?.objectives}</textarea>
+  </label>
+  <label class="block text-sm">Metodología
+    <textarea name="methodology" rows="3" class={input}>{subprogram?.methodology}</textarea>
+  </label>
+  <label class="block text-sm">Términos (Markdown)
+    <textarea name="terms_md" rows="3" class={input}>{subprogram?.terms_md}</textarea>
+  </label>
+  <label class="block text-sm">Políticas (Markdown)
+    <textarea name="policies_md" rows="3" class={input}>{subprogram?.policies_md}</textarea>
+  </label>
+  <label class="block text-sm">Estado
+    <select name="status" class={input}>
+      <option value="draft" selected={!subprogram || subprogram.status === 'draft'}>Borrador</option>
+      <option value="active" selected={subprogram?.status === 'active'}>Activo</option>
+      <option value="archived" selected={subprogram?.status === 'archived'}>Archivado</option>
+    </select>
+  </label>
+  <button class="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">{subprogram ? 'Guardar subprograma' : 'Crear subprograma'}</button>
+</form>

@@ -8,6 +8,8 @@ import { getOrderByPublicId } from '../../features/orders/db';
 import { isLegacyPublicId } from '../../features/ids/publicId.ts';
 import { isAccessToken } from '../../features/ids/token.ts';
 import { resolveAccessToken } from '../../features/orders/guestAccess.ts';
+import { getCustomerEmail } from '../../features/auth/customer';
+import { getStoreSettings } from '../../features/settings/db';
 import DemoCheckout from '../../features/payments/checkout/DemoCheckout.astro';
 import LightningPay from '../../features/payments/checkout/LightningPay.astro';
 import {
@@ -44,6 +46,15 @@ if (await getOrderByPublicId(env.DB, orderPublicId)) {
 
 const pending = await getPendingByPublicId(env.DB, orderPublicId);
 if (!pending) return new Response('Not found', { status: 404 });
+if (pending.school_payment_obligation_id) {
+  const email = await getCustomerEmail(Astro.cookies);
+  if (!email || email.toLowerCase() !== pending.email?.toLowerCase()) {
+    return new Response('Not found', { status: 404, headers: { 'cache-control': 'private, no-store' } });
+  }
+  if ((Astro.locals.settings ?? await getStoreSettings(env.DB)).disabledPaymentMethods.includes('demo')) {
+    return new Response('Demo checkout disabled', { status: 403, headers: { 'cache-control': 'private, no-store' } });
+  }
+}
 
 const isDemo = pending.backend === 'demo';
 const isLightning = pending.backend === 'lnbits' || pending.backend === 'phoenixd';

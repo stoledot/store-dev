@@ -1,0 +1,80 @@
+---
+import type { Course, Modality, PaymentProduct } from './programs';
+import { formatPrice } from '../../config';
+
+interface Props {
+  subprogramId: string;
+  courses: Course[];
+  products: PaymentProduct[];
+  modality?: Modality;
+}
+const { subprogramId, courses, products, modality } = Astro.props;
+const input = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2';
+---
+<form method="POST" class="space-y-3">
+  <input type="hidden" name="action" value="save-modality" />
+  <input type="hidden" name="subprogram_id" value={subprogramId} />
+  {modality && <input type="hidden" name="id" value={modality.id} />}
+  <div class="grid gap-3 sm:grid-cols-2">
+    <label class="block text-sm">Nombre de la modalidad
+      <input name="title" required value={modality?.title} class={input} />
+    </label>
+    <label class="block text-sm">Producto de pago
+      <select name="payment_product_id" required class={input}>
+        <option value="">Selecciona un producto</option>
+        {products.map((product) => <option value={product.id} selected={product.id === modality?.payment_product_id}>{product.title} · {formatPrice(product.amount_cents, product.currency)}{!product.active ? ' (inactivo)' : ''}</option>)}
+      </select>
+    </label>
+    <label class="block text-sm">Tipo de pago
+      <select name="payment_type" class={input}>
+        <option value="enrollment" selected={modality?.payment_type === 'enrollment'}>Inscripción</option>
+        <option value="classes" selected={modality?.payment_type === 'classes'}>Clases</option>
+        <option value="other" selected={modality?.payment_type === 'other'}>Otro</option>
+      </select>
+    </label>
+    <label class="block text-sm">Curso cubierto
+      <select name="course_id" class={input}>
+        <option value="">Todos los cursos del subprograma</option>
+        {courses.map((course) => <option value={course.id} selected={course.id === modality?.course_id}>{course.title} ({course.status})</option>)}
+      </select>
+    </label>
+    <label class="block text-sm">Frecuencia
+      <select name="frequency_unit" class={input}>
+        <option value="once" selected={!modality || modality.frequency_unit === 'once'}>Una vez</option>
+        <option value="week" selected={modality?.frequency_unit === 'week'}>Semanas</option>
+        <option value="month" selected={modality?.frequency_unit === 'month'}>Meses</option>
+        <option value="year" selected={modality?.frequency_unit === 'year'}>Años</option>
+      </select>
+    </label>
+    <label class="block text-sm">Cada cuántas unidades
+      <input type="number" name="frequency_count" min="1" step="1" required value={modality?.frequency_count ?? 1} class={input} />
+    </label>
+    <label class="block text-sm">Clases por pago (vacío = sin límite)
+      <input type="number" name="classes_per_payment" min="1" step="1" value={modality?.classes_per_payment ?? ''} class={input} />
+    </label>
+    <label class="block text-sm">Vigencia: cantidad (vacío = sin caducidad)
+      <input type="number" name="validity_count" min="1" step="1" value={modality?.validity_count ?? ''} class={input} />
+    </label>
+    <label class="block text-sm">Vigencia: unidad
+      <select name="validity_unit" class={input}>
+        <option value="">Sin caducidad</option>
+        <option value="day" selected={modality?.validity_unit === 'day'}>Días</option>
+        <option value="week" selected={modality?.validity_unit === 'week'}>Semanas</option>
+        <option value="month" selected={modality?.validity_unit === 'month'}>Meses</option>
+        <option value="year" selected={modality?.validity_unit === 'year'}>Años</option>
+      </select>
+    </label>
+    <label class="block text-sm">Estado
+      <select name="status" class={input}>
+        <option value="draft" selected={!modality || modality.status === 'draft'}>Borrador</option>
+        <option value="active" selected={modality?.status === 'active'}>Activo</option>
+        <option value="archived" selected={modality?.status === 'archived'}>Archivado</option>
+      </select>
+    </label>
+  </div>
+  <label class="flex items-center gap-2 text-sm">
+    <input type="checkbox" name="requires_current_enrollment" value="1" checked={modality?.requires_current_enrollment === 1} />
+    Requiere inscripción vigente (no aplica a pagos de inscripción)
+  </label>
+  <button class="rounded bg-brand px-4 py-2 text-sm font-semibold text-white" disabled={products.length === 0}>{modality ? 'Guardar modalidad' : 'Crear modalidad'}</button>
+</form>

@@ -37,6 +37,9 @@ const statements = [
   env.DB.prepare('UPDATE school_course_assignments SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE school_student_intake SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE school_fee_payments SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_payment_obligations SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare('UPDATE school_notifications SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
+  env.DB.prepare("UPDATE pending_payments SET email=? WHERE email=? COLLATE NOCASE AND backend='demo' AND status='pending' AND school_payment_obligation_id IS NOT NULL").bind(newEmail,oldEmail),
   env.DB.prepare('UPDATE school_subscriptions SET student_email=? WHERE student_email=? COLLATE NOCASE').bind(newEmail,oldEmail),
 ];
 try { await env.DB.batch(statements); } catch (err) { console.error('Email change failed',err); return Astro.redirect('/account/profile?error=update-failed',303); }

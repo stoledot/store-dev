@@ -17,7 +17,7 @@ describe('isPublicCatalogApi', () => {
 
 describe('isPublicStorefrontPath', () => {
   it('allows catalog documents but excludes personalized fragments and payments', () => {
-    expect(isPublicStorefrontPath('/')).toBe(true);
+    expect(isPublicStorefrontPath('/')).toBe(false);
     expect(isPublicStorefrontPath('/products/mug')).toBe(true);
     expect(isPublicStorefrontPath('/product/mug')).toBe(true);
     expect(isPublicStorefrontPath('/pages/about')).toBe(true);
@@ -30,7 +30,6 @@ describe('isPublicStorefrontPath', () => {
 
 describe('responseCacheControl', () => {
   it.each([
-    '/',
     '/products',
     '/products/mug',
     '/categories/home',
@@ -46,6 +45,7 @@ describe('responseCacheControl', () => {
   });
 
   it.each([
+    '/',
     '/cart',
     '/checkout',
     '/express',
