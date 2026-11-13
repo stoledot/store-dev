@@ -8,6 +8,14 @@
 4. En Admin → Conferencias Zoom, crea una conferencia y agrega sus sesiones. Cada sesión crea una reunión distinta por la API de Zoom.
 5. Publica la conferencia y enlázala a un producto desde su formulario de creación/edición.
 
+## Grupos de subprogramas
+
+Aplica la migración `0078_school_groups.sql` después de la `0077`. En Admin → Programas → Grupos escolares, crea un grupo por subprograma, añade los cursos vinculados al subprograma y selecciona una conferencia publicada. Asigna manualmente a cada alumno con sus pagos requeridos vigentes; puede cambiarse de grupo desde la misma pantalla. Si la modalidad limita el acceso a un curso, esa limitación sigue aplicando.
+
+La asignación se conserva si un pago requerido vence o se reembolsa, pero se suspende el acceso a los cursos y a la conferencia del grupo hasta regularizarlo. Un cargo pendiente suspende el acceso a partir del día siguiente a su vencimiento, tomando como referencia la fecha UTC. Una compra o invitación independiente conserva sus propios derechos.
+
+Las sesiones próximas aparecen en la página inicial y la agenda completa en `/account/conferences`. Las invitaciones nuevas se conservan también si el alumno compra la conferencia. En registros anteriores a esta migración no es posible distinguir una invitación que después se combinó con una compra; vuelve a invitar al alumno si necesita mantener ese acceso independientemente del pago.
+
 ## Migración y despliegue
 
 Usa el comando de migración que ya utilice este checkout (`npm run db:migrate:remote` si está configurado en package.json). Verifica primero `wrangler.jsonc` y el entorno de destino. Luego ejecuta las comprobaciones habituales (`npm test` y `npm run build`) antes de desplegar.

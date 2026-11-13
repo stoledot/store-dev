@@ -8,6 +8,8 @@ import { getConfig } from '../config';
 import { mediaUrl } from '../features/media/url';
 import { getSchoolHomeSummary } from '../features/school/homeSummary';
 import StudentHome from '../features/school/StudentHome.astro';
+import { getUserConferencesSessions } from '../features/conferences/db';
+import { formatConferenceSession, sessionStart, sortConferenceSessions } from '../features/conferences/dates';
 
 const config = getConfig();
 const configuredName = Astro.locals.settings?.storeName ?? config.storeName;
@@ -15,6 +17,10 @@ const schoolName = !configuredName || configuredName === 'My Shop' ? 'Escuela de
 const studentEmail = await getCustomerEmail(Astro.cookies);
 Astro.response.headers.set('Cache-Control', 'private, no-store');
 const schoolSummary = studentEmail && await accountsEnabled() ? await getSchoolHomeSummary(env.DB, studentEmail) : null;
+const upcomingSessions = schoolSummary && studentEmail
+  ? sortConferenceSessions(await getUserConferencesSessions(env.DB, studentEmail))
+      .filter(session => sessionStart(session).getTime() >= Date.now()).slice(0, 3)
+  : [];
 const socialGroups=studentEmail?((await env.DB.prepare('SELECT g.id,g.title FROM social_groups g JOIN social_group_members m ON m.group_id=g.id WHERE m.email=? COLLATE NOCASE AND g.status=\'active\' ORDER BY g.title').bind(studentEmail).all<any>()).results??[]):[];
 const subscriptionContent=studentEmail?((await env.DB.prepare(`SELECT DISTINCT c.title,c.slug,c.summary,c.content_kind,(SELECT l.slug FROM school_lessons l WHERE l.course_id=c.id AND l.status='published' ORDER BY l.sequence_no LIMIT 1) AS first_lesson FROM school_courses c JOIN content_subscription_courses sc ON sc.course_id=c.id JOIN school_subscriptions ss ON ss.content_subscription_id=sc.subscription_id WHERE c.status='published' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now')) ORDER BY c.content_kind,c.title COLLATE NOCASE`).bind(studentEmail).all<any>()).results??[]):[];
 const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.description,m.cover_image_key,(SELECT i.title FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_title,(SELECT i.slug FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_slug,(SELECT CASE WHEN MAX(CASE WHEN cs.magazine_access='all' THEN 1 ELSE 0 END)=1 THEN 'all' WHEN COUNT(*)>0 THEN 'latest' ELSE '' END FROM school_subscriptions ss JOIN content_subscriptions cs ON cs.id=ss.content_subscription_id WHERE cs.magazine_id=m.id AND cs.status='active' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AS access_mode FROM math_magazines m WHERE m.status='published' ORDER BY m.title COLLATE NOCASE LIMIT 12`).bind(studentEmail??'').all<any>()).results??[];
@@ -22,6 +28,10 @@ const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.descript
 
 <Layout title="Aprende matemáticas y lectura" description="Programas de matemáticas y lectura con una ruta clara, contenidos accesibles y acompañamiento para aprender a tu ritmo.">
   {schoolSummary && <StudentHome summary={schoolSummary} />}
+  {schoolSummary && upcomingSessions.length > 0 && <section aria-labelledby="upcoming-conferences" class="my-5 rounded-3xl border border-line bg-surface p-6 sm:p-8">
+    <div class="flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-[0.16em] text-brand">Tu agenda</p><h2 id="upcoming-conferences" class="mt-1 font-serif text-2xl">Próximas conferencias</h2></div><a href="/account/conferences" class="text-sm font-semibold text-brand underline underline-offset-4">Ver todas →</a></div>
+    <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{upcomingSessions.map(session => <article class="rounded-2xl border border-line bg-paper p-5"><p class="text-xs font-semibold uppercase tracking-wide text-muted">{session.conference_title}</p><h3 class="mt-2 font-semibold">{session.title}</h3><p class="mt-2 text-sm text-muted">{formatConferenceSession(session)} · {session.time_zone}</p><a href="/account/conferences" class="mt-4 inline-block text-sm font-semibold text-brand underline underline-offset-4">Ver sesión →</a></article>)}</div>
+  </section>}
   <section aria-labelledby="home-hero-title" 
     class="relative isolate my-5 overflow-hidden rounded-[2rem] border border-line bg-brand sm:my-8">
     <!--<div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-brand/15 via-paper to-surface"></div>-->

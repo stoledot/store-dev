@@ -7,6 +7,8 @@ import { claimSchoolCheckout } from '../../src/features/school/schoolCheckout.ts
 import { subprogramCourseAccessSql } from '../../src/features/school/subprogramAccess.ts';
 import { settleSubprogramObligation } from '../../src/features/school/subprogramSettlement.ts';
 import { getSchoolHomeSummary } from '../../src/features/school/homeSummary.ts';
+import { saveSchoolGroupAction } from '../../src/features/school/groups.ts';
+import { getUserConferences, getUserConferencesSessions } from '../../src/features/conferences/db.ts';
 
 const mf = new Miniflare({
   modules: true,
@@ -50,6 +52,10 @@ try {
     "CREATE TABLE school_classrooms (id TEXT, cycle_id TEXT, course_id TEXT, status TEXT, starts_on TEXT, ends_on TEXT)",
     "CREATE TABLE school_academic_cycles (id TEXT, status TEXT)",
     "CREATE TABLE school_areas (id TEXT, title TEXT, program_slug TEXT)",
+    "CREATE TABLE conferences (id INTEGER PRIMARY KEY, title TEXT, status TEXT)",
+    "CREATE TABLE conference_sessions (id INTEGER PRIMARY KEY, conference_id INTEGER, title TEXT, starts_at TEXT, duration_minutes INTEGER, time_zone TEXT, zoom_meeting_id TEXT, join_url TEXT, passcode TEXT)",
+    "CREATE TABLE conference_participants (id INTEGER PRIMARY KEY, conference_id INTEGER, email TEXT, source_order_id INTEGER)",
+    "CREATE TABLE conference_access (id INTEGER PRIMARY KEY, conference_id INTEGER, order_id INTEGER)",
     "INSERT INTO school_programs VALUES ('matematicas','active')",
     "INSERT INTO school_subprograms VALUES ('s1','matematicas','Álgebra','active')",
     "INSERT INTO customer_accounts VALUES ('test@example.test','0000000001')",
@@ -61,9 +67,15 @@ try {
     "INSERT INTO school_course_progress VALUES ('c1','test@example.test','in_progress')",
     "INSERT INTO school_subprogram_courses VALUES ('s1','c1')",
     "INSERT INTO orders VALUES (1,'paid',0,2000,'old@example.test'),(2,'paid',0,1000,'test@example.test')",
+    "INSERT INTO conferences VALUES (1,'Clases en vivo','published'),(2,'Invitación','published'),(3,'Compra','published')",
+    "INSERT INTO conference_sessions VALUES (1,1,'Sesión 1','2030-01-01 10:00',60,'UTC',NULL,NULL,NULL),(2,1,'Sesión 2','2030-01-08 10:00',60,'UTC',NULL,NULL,NULL)",
   ]) await db.prepare(sql).run();
   const migration = await readFile(new URL('../../migrations/0077_school_subprogram_journey.sql', import.meta.url), 'utf8');
   for (const sql of migration.replace(/--[^\n]*/g, '').split(';').map((part) => part.trim()).filter(Boolean)) {
+    await db.prepare(sql).run();
+  }
+  const groupsMigration = await readFile(new URL('../../migrations/0078_school_groups.sql', import.meta.url), 'utf8');
+  for (const sql of groupsMigration.replace(/--[^\n]*/g, '').split(';').map((part) => part.trim()).filter(Boolean)) {
     await db.prepare(sql).run();
   }
   await db.prepare('ALTER TABLE school_notifications ADD COLUMN read_at TEXT').run();
@@ -94,6 +106,14 @@ try {
   assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM school_notifications WHERE title='Diagnóstico aprobado'").first()).n, 1);
   const classes = initial.find((row) => row.modality_payment_type === 'classes');
   const enrollmentCharge = initial.find((row) => row.modality_payment_type === 'enrollment');
+  await db.prepare("UPDATE school_payment_obligations SET status='cancelled' WHERE id NOT IN (?,?)").bind(classes.id, enrollmentCharge.id).run();
+  const studentEnrollment = await db.prepare('SELECT id FROM school_subprogram_enrollments').first();
+  await saveSchoolGroupAction(db, form({ action: 'create', subprogram_id: 's1', title: 'Grupo A' }));
+  const group = await db.prepare('SELECT id FROM school_subprogram_groups').first();
+  await saveSchoolGroupAction(db, form({ action: 'add-course', group_id: group.id, course_id: 'c1' }));
+  await assert.rejects(() => saveSchoolGroupAction(db, form({ action: 'add-course', group_id: group.id, course_id: 'c2' })));
+  await saveSchoolGroupAction(db, form({ action: 'conference', group_id: group.id, conference_id: '1' }));
+  await assert.rejects(() => saveSchoolGroupAction(db, form({ action: 'assign', group_id: group.id, enrollment_id: studentEnrollment.id })));
   await db.prepare("UPDATE school_payment_obligations SET available_at=date('now') WHERE id IN (?,?)").bind(classes.id, enrollmentCharge.id).run();
   const beforePayment = await getSchoolHomeSummary(db, 'test@example.test');
   assert.equal(beforePayment.diagnostics[0].enrollment_due_count, 1);
@@ -120,7 +140,35 @@ try {
   await db.prepare("UPDATE school_payment_obligations SET status='paid',order_id=2,paid_at=datetime('now'),modality_valid_until=datetime('now','+1 day') WHERE id=?").bind(classes.id).run();
   assert.equal(await canAccess('0000000001', 'c1'), null);
   await db.prepare("UPDATE school_payment_obligations SET modality_valid_until=datetime('now','+1 day') WHERE id=?").bind(enrollmentCharge.id).run();
+  assert.equal(await canAccess('0000000001', 'c1'), null);
+  await saveSchoolGroupAction(db, form({ action: 'assign', group_id: group.id, enrollment_id: studentEnrollment.id }));
   assert.ok(await canAccess('0000000001', 'c1'));
+  assert.deepEqual((await getUserConferences(db, 'test@example.test')).map(c => c.id), [1]);
+  assert.equal((await getUserConferencesSessions(db, 'test@example.test')).length, 2);
+  await saveSchoolGroupAction(db, form({ action: 'create', subprogram_id: 's1', title: 'Grupo B' }));
+  const groupB = await db.prepare("SELECT id FROM school_subprogram_groups WHERE title='Grupo B'").first();
+  await saveSchoolGroupAction(db, form({ action: 'assign', group_id: groupB.id, enrollment_id: studentEnrollment.id }));
+  assert.equal(await canAccess('0000000001', 'c1'), null);
+  assert.equal((await getUserConferences(db, 'test@example.test')).length, 0);
+  await saveSchoolGroupAction(db, form({ action: 'assign', group_id: group.id, enrollment_id: studentEnrollment.id }));
+  const futureCharge = initial.find(row => row.id !== classes.id && row.id !== enrollmentCharge.id);
+  await db.prepare("UPDATE school_payment_obligations SET status='pending',due_at=date('now','-1 day') WHERE id=?").bind(futureCharge.id).run();
+  assert.equal(await canAccess('0000000001', 'c1'), null);
+  assert.equal((await getUserConferences(db, 'test@example.test')).length, 0);
+  assert.equal((await db.prepare('SELECT group_id FROM school_subprogram_group_members WHERE enrollment_id=?').bind(studentEnrollment.id).first()).group_id, group.id);
+  await db.prepare("UPDATE school_payment_obligations SET status='cancelled',due_at=? WHERE id=?").bind(futureCharge.due_at, futureCharge.id).run();
+  assert.ok(await canAccess('0000000001', 'c1'));
+  await db.prepare("UPDATE school_subprograms SET enrollment_modality_id=NULL WHERE id='s1'").run();
+  await db.prepare("UPDATE school_payment_modalities SET requires_current_enrollment=0 WHERE id='m1'").run();
+  await db.prepare("UPDATE orders SET refunded_cents=2000 WHERE id=1").run();
+  assert.ok(await canAccess('0000000001', 'c1'));
+  await db.prepare("UPDATE orders SET refunded_cents=0 WHERE id=1").run();
+  await db.prepare("UPDATE school_payment_modalities SET requires_current_enrollment=1 WHERE id='m1'").run();
+  await db.prepare("UPDATE school_subprograms SET enrollment_modality_id='m2' WHERE id='s1'").run();
+  await db.prepare("UPDATE school_payment_obligations SET status='pending' WHERE id=?").bind(classes.id).run();
+  assert.equal(await canAccess('0000000001', 'c1'), null);
+  assert.equal((await getUserConferences(db, 'test@example.test')).length, 0);
+  await db.prepare("UPDATE school_payment_obligations SET status='paid' WHERE id=?").bind(classes.id).run();
   assert.equal(await canAccess('0000000001', 'c2'), null);
   assert.equal(await canAccess('0000000002', 'c1'), null);
   for (const page of ['index.astro', 'calificaciones.astro']) {
@@ -146,7 +194,20 @@ try {
   await db.prepare("DELETE FROM school_course_access_overrides WHERE course_id='c1'").run();
   await db.prepare("UPDATE orders SET refunded_cents=2000 WHERE id=1").run();
   assert.equal(await canAccess('0000000001', 'c1'), null);
+  assert.equal((await getUserConferences(db, 'test@example.test')).length, 0);
+  await db.prepare("INSERT INTO conference_participants(id,conference_id,email,source_order_id,manual_invitation) VALUES (1,2,'test@example.test',NULL,1)").run();
+  await db.prepare("INSERT INTO conference_access VALUES (1,3,2)").run();
+  assert.deepEqual((await getUserConferences(db, 'TEST@example.test')).map(c => c.id).sort(), [2,3]);
+  await db.prepare("INSERT INTO conference_access VALUES (2,1,2)").run();
+  assert.deepEqual((await getUserConferences(db, 'test@example.test')).map(c => c.id).sort(), [1,2,3]);
+  assert.equal((await getUserConferencesSessions(db, 'test@example.test')).length, 2);
+  await db.prepare("UPDATE orders SET refunded_cents=1000 WHERE id=2").run();
+  assert.deepEqual((await getUserConferences(db, 'test@example.test')).map(c => c.id).sort(), [2]);
+  await db.prepare("UPDATE orders SET refunded_cents=0 WHERE id=2").run();
   await db.prepare("UPDATE orders SET refunded_cents=0 WHERE id=1").run();
+  assert.deepEqual((await getUserConferences(db, 'test@example.test')).map(c => c.id).sort(), [1,2,3]);
+  assert.equal((await getUserConferencesSessions(db, 'test@example.test')).length, 2);
+  await db.prepare("UPDATE school_payment_obligations SET status='pending' WHERE id NOT IN (?,?)").bind(classes.id, enrollmentCharge.id).run();
   await db.prepare("UPDATE school_payment_obligations SET status='pending',order_id=NULL,paid_at=NULL WHERE id=?").bind(classes.id).run();
   await db.prepare("UPDATE school_payment_obligations SET available_at=due_at WHERE id=?").bind(classes.id).run();
   const pendingSummary = await getSchoolHomeSummary(db, 'test@example.test');

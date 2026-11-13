@@ -28,6 +28,11 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
     }>(),
     db.prepare(`
       SELECT d.subprogram_id,s.title,d.status,
+        (SELECT g.title FROM school_subprogram_enrollments e
+          JOIN school_subprogram_group_members gm ON gm.enrollment_id=e.id
+          JOIN school_subprogram_groups g ON g.id=gm.group_id AND g.subprogram_id=e.subprogram_id
+          WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active' AND g.status='active'
+          LIMIT 1) AS group_title,
         CASE WHEN s.enrollment_modality_id IS NOT NULL OR EXISTS (
           SELECT 1 FROM school_subprogram_enrollments e JOIN school_payment_modalities m ON m.id=e.modality_id
            WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active' AND m.requires_current_enrollment=1
@@ -62,7 +67,7 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
       ORDER BY CASE WHEN d.status='rejected' THEN 0 WHEN d.status='pending' THEN 1 WHEN due_count>0 THEN 2 ELSE 3 END,
         d.submitted_at DESC,d.rowid DESC
     `).bind(clientNumber).all<{
-      subprogram_id: string; title: string; status: string; due_count: number; enrollment_due_count: number;
+      subprogram_id: string; title: string; status: string; due_count: number; enrollment_due_count: number; group_title: string | null;
       enrollment_required: number; enrollment_valid: number; modality_valid: number;
     }>(),
     db.prepare(`SELECT id,title,COALESCE(NULLIF(message,''),body) AS message FROM school_notifications
