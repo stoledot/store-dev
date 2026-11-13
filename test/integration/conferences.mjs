@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { Miniflare } from 'miniflare';
 import { ensureConferenceAccessForOrder, markOrderConferenceParticipantsInvited } from '../../src/features/conferences/access.ts';
+import { upsertParticipant } from '../../src/features/conferences/db.ts';
 
 const mf = new Miniflare({
   modules: true,
@@ -18,7 +19,7 @@ try {
     "CREATE TABLE conferences (id INTEGER PRIMARY KEY, public_id TEXT, title TEXT, description TEXT, status TEXT, created_at TEXT, updated_at TEXT)",
     'CREATE TABLE conference_sessions (id INTEGER PRIMARY KEY, conference_id INTEGER, title TEXT, starts_at TEXT, duration_minutes INTEGER, time_zone TEXT, join_url TEXT, passcode TEXT)',
     'CREATE TABLE product_conferences (product_id INTEGER PRIMARY KEY, conference_id INTEGER)',
-    "CREATE TABLE conference_participants (id INTEGER PRIMARY KEY, public_id TEXT UNIQUE, conference_id INTEGER, name TEXT, email TEXT, access_key TEXT, source_order_id INTEGER, status TEXT DEFAULT 'pending', invited_at TEXT, last_email_at TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(conference_id,email))",
+    "CREATE TABLE conference_participants (id INTEGER PRIMARY KEY, public_id TEXT UNIQUE, conference_id INTEGER, name TEXT, email TEXT, access_key TEXT, source_order_id INTEGER, status TEXT DEFAULT 'pending', invited_at TEXT, last_email_at TEXT, created_at TEXT DEFAULT CURRENT_TIMESTAMP, manual_invitation INTEGER NOT NULL DEFAULT 0, UNIQUE(conference_id,email))",
     "CREATE TABLE conference_access (id INTEGER PRIMARY KEY, order_id INTEGER, order_item_id INTEGER, seat_number INTEGER, access_key TEXT UNIQUE, zoom_url TEXT, instructions TEXT, conference_id INTEGER, created_at TEXT DEFAULT CURRENT_TIMESTAMP, UNIQUE(order_item_id,seat_number))",
     "INSERT INTO conferences VALUES (1,'conf_1','Taller','Descripción','published','','')",
     "INSERT INTO products VALUES (1,'Taller A','taller-a',''), (2,'Taller B','taller-b',''), (3,'Otro','otro','')",
@@ -52,6 +53,9 @@ try {
   await db.prepare('DELETE FROM conference_access WHERE order_item_id=1 AND seat_number=2').run();
   assert.equal((await ensureConferenceAccessForOrder(db, 1)).length, 3);
   assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM conference_participants').first()).n, 1);
+  await db.prepare("INSERT INTO conference_participants(public_id,conference_id,name,email,access_key,source_order_id) VALUES ('legacy',1,'','legacy@example.com','LEGACY',NULL)").run();
+  await upsertParticipant(db, 1, '', 'legacy@example.com', 2);
+  assert.equal((await db.prepare("SELECT manual_invitation FROM conference_participants WHERE email='legacy@example.com'").first()).manual_invitation, 1);
   console.log('Conference purchase enrollment integration passed.');
 } finally {
   await mf.dispose();

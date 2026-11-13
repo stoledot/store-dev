@@ -1,4 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types';
+import { enrollmentPaymentValidSql } from '../school/enrollmentEligibility.ts';
 
 export interface Conference {
   id: number;
@@ -20,6 +21,7 @@ export interface ConferenceSession {
   zoom_meeting_id: string | null;
   join_url: string | null;
   passcode: string | null;
+  conference_title?: string;
 }
 
 export interface ConferenceParticipant {
@@ -151,8 +153,8 @@ export async function upsertParticipant(
   }
   await db
     .prepare(`INSERT INTO conference_participants
-      (public_id, conference_id, name, email, access_key, source_order_id)
-      VALUES (?, ?, ?, ?, ?, ?)
+      (public_id, conference_id, name, email, access_key, source_order_id, manual_invitation)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(conference_id, email) DO UPDATE SET
         name = CASE WHEN excluded.name <> '' THEN excluded.name ELSE conference_participants.name END,
         access_key = CASE
@@ -161,7 +163,9 @@ export async function upsertParticipant(
           THEN excluded.access_key
           ELSE conference_participants.access_key
         END,
-        source_order_id = COALESCE(excluded.source_order_id, conference_participants.source_order_id)`)
+        source_order_id = COALESCE(excluded.source_order_id, conference_participants.source_order_id),
+        manual_invitation = MAX(conference_participants.manual_invitation, excluded.manual_invitation,
+          CASE WHEN conference_participants.source_order_id IS NULL THEN 1 ELSE 0 END)`)
     .bind(
       `cp_${crypto.randomUUID().replaceAll('-', '')}`,
       conferenceId,
@@ -169,6 +173,7 @@ export async function upsertParticipant(
       normalized,
       accessKey(),
       sourceOrderId,
+      sourceOrderId === null ? 1 : 0,
     )
     .run();
   const row = await db
@@ -239,6 +244,22 @@ export async function setProductConference(
 )
  */
 
+const conferenceEntitlementSql = `(
+  EXISTS (SELECT 1 FROM conference_participants cp WHERE cp.conference_id=c.id
+    AND lower(trim(cp.email))=lower(trim(?)) AND (cp.source_order_id IS NULL OR cp.manual_invitation=1))
+  OR EXISTS (SELECT 1 FROM conference_access ca JOIN orders o ON o.id=ca.order_id
+    WHERE ca.conference_id=c.id AND lower(trim(o.email))=lower(trim(?))
+      AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents)
+  OR (c.status='published' AND EXISTS (
+    SELECT 1 FROM school_subprogram_groups g
+    JOIN school_subprogram_group_members member ON member.group_id=g.id
+    JOIN school_subprogram_enrollments e ON e.id=member.enrollment_id AND e.subprogram_id=g.subprogram_id
+    JOIN customer_accounts account ON account.client_number=e.client_number
+    WHERE g.conference_id=c.id AND g.status='active' AND account.email=? COLLATE NOCASE
+      AND ${enrollmentPaymentValidSql}
+  ))
+)`;
+
 export async function getUserConferences(
   db: D1Database,
   email: string,
@@ -247,10 +268,10 @@ export async function getUserConferences(
     .prepare(`
       SELECT c.*
       FROM conferences c
-      LEFT JOIN conference_participants cp ON cp.conference_id = c.id
-      WHERE cp.email = ?
+      WHERE ${conferenceEntitlementSql}
+      ORDER BY c.title COLLATE NOCASE,c.id
     `)
-    .bind(email)
+    .bind(email, email, email)
     .all<Conference>()
     .then(result => result.results ?? []);
 }
@@ -261,14 +282,13 @@ export async function getUserConferencesSessions(
 ): Promise<ConferenceSession[]> {
   return db
     .prepare(`
-      SELECT s.id, s.title, s.starts_at, s.duration_minutes, s.time_zone, s.zoom_meeting_id, s.join_url, s.passcode, s.created_at
+      SELECT s.*,c.title AS conference_title
       FROM conference_sessions s
-      LEFT JOIN conferences c ON c.id = s.conference_id
-      LEFT JOIN conference_participants cp ON cp.conference_id = c.id
-      WHERE cp.email = ?
-      
+      JOIN conferences c ON c.id = s.conference_id
+      WHERE ${conferenceEntitlementSql}
+      ORDER BY s.starts_at,s.id
       `)
-    .bind(email) // Assuming userId is actually the email of the user, otherwise this should be changed to the email variable  
+    .bind(email, email, email)
     .all<ConferenceSession>()
     .then(result => result.results ?? []);
 }

@@ -15,6 +15,7 @@ import {
   upsertParticipant,
 } from '../../../features/conferences/db';
 import { sendConferenceEmail } from '../../../features/conferences/email';
+import { sessionStart } from '../../../features/conferences/dates';
 import { createZoomMeeting, deleteZoomMeeting, updateZoomMeeting } from '../../../features/conferences/zoom';
 
 const id = Number(Astro.params.id);
@@ -57,6 +58,7 @@ if (Astro.request.method === 'POST') {
       if (!title || !startsAt || !Number.isInteger(duration) || duration < 5 || duration > 600) {
         throw new Error('Completa título, fecha y duración (5–600 minutos).');
       }
+      sessionStart({ starts_at: startsAt, time_zone: timeZone });
 
       const zoom = await createZoomMeeting(env.DB, {
         title: `${conference.title} — ${title}`,
@@ -88,6 +90,7 @@ if (Astro.request.method === 'POST') {
       const duration = Number(form.get('duration_minutes') ?? current.duration_minutes);
       const timeZone = String(form.get('time_zone') ?? current.time_zone);
       if (!title || !startsAt || !Number.isInteger(duration) || duration < 5 || duration > 600) throw new Error('Completa título, fecha y duración (5–600 minutos).');
+      sessionStart({ starts_at: startsAt, time_zone: timeZone });
       if (current.zoom_meeting_id) await updateZoomMeeting(env.DB, current.zoom_meeting_id, { title: `${conference.title} — ${title}`, startsAt, duration, timeZone });
       await updateSession(env.DB, sessionId, id, { title, starts_at: startsAt, duration_minutes: duration, time_zone: timeZone });
       for (const participant of await listParticipants(env.DB, id)) {

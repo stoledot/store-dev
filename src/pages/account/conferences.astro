@@ -5,10 +5,12 @@ import { getUserConferences, getUserConferencesSessions } from '../../features/c
 export const prerender = false;
 import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
 import { ensureProfile } from '../../features/customers/profiles';
+import { formatConferenceSession, sessionStart, sortConferenceSessions } from '../../features/conferences/dates';
 
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 const email = await getCustomerEmail(Astro.cookies);
 if (!email) return Astro.redirect('/account/login', 303);
+Astro.response.headers.set('Cache-Control', 'private, no-store');
 await ensureProfile(env.DB,email);
 
 const userEmail = email;
@@ -18,25 +20,8 @@ const [conferences, sessions] = await Promise.all([
   getUserConferencesSessions(env.DB, userEmail),
 ]);
 
-const sortedSessions = [...sessions].sort(
-  (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
-);
-
-function formatSessionDate(dateString: string, timeZone?: string) {
-  try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('es-MX', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: timeZone || 'UTC',
-    }).format(date);
-  } catch {
-    return dateString;
-  }
-}
+const sortedSessions = sortConferenceSessions(sessions);
+const nextSession = sortedSessions.find(session => sessionStart(session).getTime() >= Date.now());
 
 const conferenceMap = new Map(conferences.map((c) => [c.id, c.title]));
 ---
@@ -98,8 +83,8 @@ const conferenceMap = new Map(conferences.map((c) => [c.id, c.title]));
         <div class="min-w-0">
           <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Próxima Sesión</p>
           <p class="text-sm font-semibold text-slate-900 truncate">
-            {sortedSessions.length > 0 
-              ? formatSessionDate(sortedSessions[0].starts_at, sortedSessions[0].time_zone) 
+            {nextSession
+              ? formatConferenceSession(nextSession)
               : 'Sin programar'}
           </p>
         </div>
@@ -143,7 +128,7 @@ const conferenceMap = new Map(conferences.map((c) => [c.id, c.title]));
                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    {formatSessionDate(session.starts_at, session.time_zone)} ({session.time_zone})
+                    {formatConferenceSession(session)} ({session.time_zone})
                   </span>
 
                   <span class="flex items-center gap-1">
