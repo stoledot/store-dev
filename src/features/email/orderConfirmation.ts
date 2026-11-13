@@ -89,6 +89,9 @@ export function orderConfirmationEmail(
     ? [
         '',
         'Conference access',
+        ...(conferenceAccess.some((access) => access.conference_id != null)
+          ? ['Tu inscripción a la conferencia está confirmada.']
+          : []),
         ...conferenceAccess.flatMap((access, index) => [
           `Seat ${index + 1}: ${access.access_key}`,
           ...(access.zoom_url ? [`Zoom: ${access.zoom_url}`] : []),
@@ -97,7 +100,7 @@ export function orderConfirmationEmail(
       ]
     : [];
   const conferenceHtml = conferenceAccess.length
-    ? `<section style="margin-top:24px;padding:16px;border:1px solid ${PALETTE.line};border-radius:8px;"><h2 style="margin:0 0 12px;font-size:18px;">Your conference access</h2>${conferenceAccess.map((access, index) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;"><strong>Seat ${index + 1} · Access key:</strong><br><code style="font-size:16px;letter-spacing:1px;">${escapeHtml(access.access_key)}</code>${access.zoom_url ? `<br><strong>Zoom:</strong> <a href="${escapeHtml(access.zoom_url)}">Join the conference</a>` : ''}${access.instructions ? `<br>${escapeHtml(access.instructions).replace(/\n/g, '<br>')}` : ''}</p>`).join('')}</section>`
+    ? `<section style="margin-top:24px;padding:16px;border:1px solid ${PALETTE.line};border-radius:8px;"><h2 style="margin:0 0 12px;font-size:18px;">Your conference access</h2>${conferenceAccess.some((access) => access.conference_id != null) ? '<p>Tu inscripción a la conferencia está confirmada.</p>' : ''}${conferenceAccess.map((access, index) => `<p style="margin:0 0 12px;font-size:14px;line-height:1.6;"><strong>Seat ${index + 1} · Access key:</strong><br><code style="font-size:16px;letter-spacing:1px;">${escapeHtml(access.access_key)}</code>${access.zoom_url ? `<br><strong>Zoom:</strong> <a href="${escapeHtml(access.zoom_url)}">Join the conference</a>` : ''}${access.instructions ? `<br>${escapeHtml(access.instructions).replace(/\n/g, '<br>')}` : ''}</p>`).join('')}</section>`
     : '';
 
   const text = [

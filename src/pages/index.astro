@@ -1,22 +1,27 @@
 ---
 import { env } from 'cloudflare:workers';
 import Layout from '../layouts/Layout.astro';
-import { getCustomerEmail } from '../features/auth/customer';
+import { accountsEnabled, getCustomerEmail } from '../features/auth/customer';
 import ProductList from '../features/products/ProductList.astro';
 import SocialFeed from '../components/social/SocialFeed.astro';
 import { getConfig } from '../config';
 import { mediaUrl } from '../features/media/url';
+import { getSchoolHomeSummary } from '../features/school/homeSummary';
+import StudentHome from '../features/school/StudentHome.astro';
 
 const config = getConfig();
 const configuredName = Astro.locals.settings?.storeName ?? config.storeName;
 const schoolName = !configuredName || configuredName === 'My Shop' ? 'Escuela de Matemáticas' : configuredName;
 const studentEmail = await getCustomerEmail(Astro.cookies);
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+const schoolSummary = studentEmail && await accountsEnabled() ? await getSchoolHomeSummary(env.DB, studentEmail) : null;
 const socialGroups=studentEmail?((await env.DB.prepare('SELECT g.id,g.title FROM social_groups g JOIN social_group_members m ON m.group_id=g.id WHERE m.email=? COLLATE NOCASE AND g.status=\'active\' ORDER BY g.title').bind(studentEmail).all<any>()).results??[]):[];
 const subscriptionContent=studentEmail?((await env.DB.prepare(`SELECT DISTINCT c.title,c.slug,c.summary,c.content_kind,(SELECT l.slug FROM school_lessons l WHERE l.course_id=c.id AND l.status='published' ORDER BY l.sequence_no LIMIT 1) AS first_lesson FROM school_courses c JOIN content_subscription_courses sc ON sc.course_id=c.id JOIN school_subscriptions ss ON ss.content_subscription_id=sc.subscription_id WHERE c.status='published' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now')) ORDER BY c.content_kind,c.title COLLATE NOCASE`).bind(studentEmail).all<any>()).results??[]):[];
 const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.description,m.cover_image_key,(SELECT i.title FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_title,(SELECT i.slug FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_slug,(SELECT CASE WHEN MAX(CASE WHEN cs.magazine_access='all' THEN 1 ELSE 0 END)=1 THEN 'all' WHEN COUNT(*)>0 THEN 'latest' ELSE '' END FROM school_subscriptions ss JOIN content_subscriptions cs ON cs.id=ss.content_subscription_id WHERE cs.magazine_id=m.id AND cs.status='active' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AS access_mode FROM math_magazines m WHERE m.status='published' ORDER BY m.title COLLATE NOCASE LIMIT 12`).bind(studentEmail??'').all<any>()).results??[];
 ---
 
 <Layout title="Aprende matemáticas y lectura" description="Programas de matemáticas y lectura con una ruta clara, contenidos accesibles y acompañamiento para aprender a tu ritmo.">
+  {schoolSummary && <StudentHome summary={schoolSummary} />}
   <section aria-labelledby="home-hero-title" 
     class="relative isolate my-5 overflow-hidden rounded-[2rem] border border-line bg-brand sm:my-8">
     <!--<div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-brand/15 via-paper to-surface"></div>-->
@@ -99,31 +104,12 @@ const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.descript
     </div>
   </section>
 
+  
+
   <section class="my-10 rounded-2xl border border-line bg-brand p-6 text-white sm:flex sm:items-center sm:justify-between"><div><h2 class="font-serif text-2xl">Ir a la tienda</h2><p class="mt-2 text-sm text-white/80">Explora cursos, lecturas y materiales disponibles.</p></div><a href="/shop" class="mt-4 rounded-full bg-white px-5 py-3 text-sm font-semibold text-brand sm:mt-0">Visitar tienda →</a></section>
   <section class="my-8 rounded-2xl border border-line bg-surface p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
     <div><h2 class="font-serif text-2xl">Donar</h2><p class="mt-2 text-sm text-muted">Tu apoyo ayuda a que este proyecto continúe.</p></div>
     <a href="/donar" class="mt-4 inline-flex rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 sm:mt-0">Conocer las donaciones →</a>
   </section>
-  <section class="mb-6 rounded-2xl border border-line bg-surface p-5 sm:flex sm:items-center sm:justify-between sm:gap-5 sm:p-6"><div><p class="text-xs font-bold uppercase tracking-widest text-brand">Comunidad</p><h2 class="mt-1 font-serif text-2xl">Encuentra tus grupos</h2><p class="mt-2 text-sm text-muted">Únete a grupos para compartir ideas y conversar sobre matemáticas y lectura.</p></div><a href="/grupos" class="mt-4 inline-flex rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white sm:mt-0">Explorar grupos →</a></section>
-  {studentEmail ? <div class="my-10" data-social-page>
-    {socialGroups.length>0&&
-    <form data-post-form data-group={socialGroups[0].id} 
-      class="mb-6 rounded-2xl border border-line bg-surface p-4">
-      <label class="grid gap-2 font-semibold">
-        Publicar en uno de tus grupos
-        <select name="groupSelect" class="rounded-lg border border-line bg-background p-2">
-          {socialGroups.map(g=><option value={g.id}>{g.title}</option>)}
-        </select>
-        <textarea name="body" required maxlength="5000" rows="3" placeholder="Comparte una idea con tu grupo…" class="rounded-xl border border-line bg-background p-3 font-normal">
-        </textarea>
-      </label>
-      <div class="mt-3 flex justify-end">
-        <button class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">
-          Publicar
-        </button>
-      </div>
-      <p data-status class="mt-2 text-sm text-red-700"></p>
-    </form>}
-    <SocialFeed/>
-    <button data-notification-optin class="mt-5 rounded-lg border border-line px-4 py-2 text-sm">Activar avisos del navegador</button></div> : <section class="my-10 rounded-2xl border border-line bg-surface p-6 text-center"><h2 class="font-serif text-2xl">Comparte con la comunidad</h2><p class="mt-2 text-sm text-muted">Inicia sesión para unirte a grupos y participar en las conversaciones.</p><a href="/account/login?next=%2F" class="mt-4 inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Iniciar sesión</a></section>}
+  
 </Layout>

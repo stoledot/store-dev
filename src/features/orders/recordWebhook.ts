@@ -13,6 +13,7 @@ import {
 } from './reservations';
 import { markPendingSettled } from '../payments/lightning/pending';
 import { purgeStockProductCache } from '../cache/purge';
+import { settleSubprogramObligation } from '../school/subprogramSettlement';
 
 /**
  * Persist a verified paid-webhook order (idempotent on the provider session id)
@@ -34,45 +35,60 @@ import { purgeStockProductCache } from '../cache/purge';
  * answer (the provider webhook routes, whose retries are the safety net) simply
  * don't pass it.
  */
-async function settleSchoolObligation(
+export async function settleSchoolObligation(
   paidOrder: NonNullable<WebhookResult['order']>,
   orderId: number,
+  paymentMethod: string,
 ): Promise<void> {
   const obligationId = paidOrder.schoolPaymentObligationId;
   if (!obligationId) return;
+  const validity = await env.DB.prepare(`
+    SELECT modality_validity_count,modality_validity_unit,subprogram_schedule_id
+      FROM school_payment_obligations WHERE id=?
+  `).bind(obligationId).first<{modality_validity_count:number|null;modality_validity_unit:string|null;subprogram_schedule_id:string|null}>();
+  if (validity?.subprogram_schedule_id) {
+    await settleSubprogramObligation(env.DB, paidOrder, orderId, paymentMethod, validity);
+    return;
+  }
+  const paidAt = new Date();
   const updated = await env.DB.prepare(`
     UPDATE school_payment_obligations
-       SET status='paid', order_id=?, paid_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
+       SET status='paid', order_id=?, paid_at=?, modality_valid_until=?,
            checkout_lock_token=NULL, checkout_locked_at=NULL, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
-     WHERE id=? AND student_email=? COLLATE NOCASE AND status='pending'
+     WHERE id=? AND (student_email=? COLLATE NOCASE OR EXISTS (
+       SELECT 1 FROM customer_email_aliases a WHERE a.old_email=? COLLATE NOCASE
+         AND a.current_email=school_payment_obligations.student_email COLLATE NOCASE)) AND status='pending'
        AND amount_cents=? AND lower(currency)=lower(?) AND checkout_session_id=?
-  `).bind(orderId, obligationId, paidOrder.email ?? '', paidOrder.amountTotalCents, paidOrder.currency, paidOrder.providerSessionId).run();
+  `).bind(orderId, paidAt.toISOString(), null, obligationId, paidOrder.email ?? '', paidOrder.email ?? '', paidOrder.amountTotalCents, paidOrder.currency, paidOrder.providerSessionId).run();
   if ((updated.meta?.changes ?? 0) === 0) {
     const existing = await env.DB.prepare(`SELECT status,order_id FROM school_payment_obligations WHERE id=?`).bind(obligationId).first<{status:string;order_id:number|null}>();
     if (!(existing?.status === 'paid' && existing.order_id === orderId)) {
       // Do not silently attach a mismatched, cancelled, or stale checkout.
-      console.error(`Paid school obligation ${obligationId} could not be matched to order ${orderId}; manual reconciliation required.`);
-      return;
+      throw new Error(`Paid school obligation ${obligationId} could not be matched to order ${orderId}; manual reconciliation required.`);
     }
   }
 
-  // Mirror enrollment/monthly payments into the existing school access ledger.
-  // This keeps the enrollment checklist and period-based access rules in sync.
   const obligation = await env.DB.prepare(`
-    SELECT student_email,fee_type,validity_months,amount_cents,currency,title_snapshot
+    SELECT student_email,fee_type,validity_months,amount_cents,currency,title_snapshot,
+           paid_at,modality_valid_until,subprogram_schedule_id
       FROM school_payment_obligations WHERE id=? AND status='paid' AND order_id=?
   `).bind(obligationId, orderId).first<{
     student_email:string;fee_type:string;validity_months:number;amount_cents:number;currency:string;title_snapshot:string;
+    paid_at:string;modality_valid_until:string|null;subprogram_schedule_id:string|null;
   }>();
   if (!obligation || !['enrollment','monthly'].includes(obligation.fee_type)) return;
+  // Legacy obligations use the existing enrollment and period ledger.
   const feeId = crypto.randomUUID();
   const validMonths = Math.max(1, Math.min(36, Number(obligation.validity_months) || 1));
   const statements = [env.DB.prepare(`
     INSERT INTO school_fee_payments
       (id,student_email,fee_type,amount_cents,currency,order_id,paid_at,valid_until,recorded_by,note,obligation_id)
-    VALUES (?,?,?,?,?,?,strftime('%Y-%m-%dT%H:%M:%fZ','now'),date('now','+' || ? || ' months'),'stripe',?,?)
+    VALUES (?,?,?,?,?,?,?,COALESCE(?,date(?,'+' || ? || ' months')),?,?,?)
     ON CONFLICT(obligation_id) DO NOTHING
-  `).bind(feeId,obligation.student_email,obligation.fee_type,obligation.amount_cents,obligation.currency,orderId,validMonths,`Pago en línea: ${obligation.title_snapshot}`,obligationId)];
+  `).bind(feeId,obligation.student_email,obligation.fee_type,obligation.amount_cents,obligation.currency,orderId,obligation.paid_at,
+    obligation.subprogram_schedule_id ? (obligation.modality_valid_until?.slice(0, 10) ?? '9999-12-31') : null,
+    obligation.paid_at,
+    validMonths,paymentMethod,`Pago en línea: ${obligation.title_snapshot}`,obligationId)];
   if (obligation.fee_type === 'monthly') {
     // This condition is true only until the period for THIS fee row is created.
     // On webhook retries the period already exists, so the active period is not
@@ -99,9 +115,9 @@ async function settleSchoolObligation(
     obligation.student_email,
     'Pago confirmado',
     `${obligation.title_snapshot} fue pagado correctamente.`,
-    ``,
+    `${obligation.title_snapshot} fue pagado correctamente.`,
     obligation.student_email,
-    `${obligation.title_snapshot} fue pagado correctamente.`,''));
+    `${obligation.title_snapshot} fue pagado correctamente.`));
   await env.DB.batch(statements);
 }
 
@@ -210,7 +226,7 @@ export async function recordPaidWebhookOrder(
   if (!orderId) {
     const existing = await getOrderByProviderSessionId(env.DB, paidOrder.providerSessionId);
     if (existing) {
-      await settleSchoolObligation(paidOrder, existing.id);
+      await settleSchoolObligation(paidOrder, existing.id, paymentMethod);
       await markPending();
       // The redelivery IS the safety net: if the first delivery recorded the
       // order but died before its emails went out, this retry finishes them.
@@ -220,7 +236,7 @@ export async function recordPaidWebhookOrder(
     }
     throw new Error(`Could not settle inventory reservation ${paidOrder.reservationId ?? 'legacy'}.`);
   }
-  await settleSchoolObligation(paidOrder, orderId);
+  await settleSchoolObligation(paidOrder, orderId, paymentMethod);
 
   // Orders built from a pending payment settle it inside the batch above
   // (settlePaymentHash); the separate round trip is only for results that

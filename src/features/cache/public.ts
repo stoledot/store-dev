@@ -8,7 +8,6 @@ export function isPublicCatalogApi(pathname: string): boolean {
 /** Storefront routes whose HTML is identical for every shopper. */
 export function isPublicStorefrontPath(pathname: string): boolean {
   return (
-    pathname === '/' ||
     pathname === '/products' ||
     pathname.startsWith('/product/') ||
     pathname === '/search' ||
@@ -29,6 +28,7 @@ export function isPublicStorefrontPath(pathname: string): boolean {
  */
 export function isPrivatePath(pathname: string): boolean {
   return (
+    pathname === '/' ||
     pathname === '/admin' ||
     pathname.startsWith('/admin/') ||
     pathname === '/api/admin' ||

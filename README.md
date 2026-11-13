@@ -61,6 +61,8 @@ MCP dependencies. Use `--no-install` to only scaffold the files, or
 - **Discount codes** — promo-code field enabled from Admin; codes are created/managed in the Stripe Dashboard, and the applied discount is captured onto the order
 - **Tax** — sales tax / VAT via Stripe Tax (off by default — **activate Stripe Tax in the Dashboard first**); computed from the customer address and captured onto the order
 - **Order email** — confirmation email behind an `EmailProvider` seam with two adapters: **Resend** (HTTPS API, works on the Workers free plan) or **Cloudflare Email** (binding, paid plan); configured in Admin and a safe no-op until a provider is ready
+- **Conferences** — a paid product linked to a managed conference enrolls the buyer and includes the registration confirmation and access details in the order receipt, even if sessions are not scheduled yet. Configure an email provider in Admin; failed conference receipts use the notification outbox's limited retries.
+- **School programs** — `/admin/programas` manages subprograms, linked courses, diagnostic questions, payment modalities, and optional required enrollment. Configure private payment products in `/admin/escuela/pagos` and review submissions in `/admin/escuela/diagnosticos-subprogramas`. Approval assigns the selected modality and schedules the next 12 months of charges; due charges appear in the student's account. Configure an email provider and the store URL for approval emails. The scheduled Worker reconciles future charges and retries emails; demo payments are simulated and labeled. Apply migrations through `0077_school_subprogram_journey.sql` before using the workflow.
 - **Pages** — merchant-authored Markdown pages at `/pages/<slug>`, with a split-view editor, live preview, and layout presets (see [Pages](#pages))
 - **Media library** — one place that owns every uploaded file; products, pages, and the logo record how each is used (see [Media library](#media-library))
 - **Images** — uploaded to R2, served through the app (no public bucket required)
@@ -73,7 +75,7 @@ A few decisions in here are worth reading even if you never deploy a store:
 - **Payments sit behind a port.** Checkout and webhook routes depend on a `PaymentProvider` interface rather than any one vendor. Stripe, Lightning (phoenixd or LNbits), OpenNode, and the demo rail are adapters, so adding a rail is one adapter plus its webhook route. Storage works the same way (`StorageProvider`, with R2 as the adapter).
 - **HTML first, JS as enhancement.** Pages render on the server and ship near-zero client JavaScript. Cart, search, and checkout all work with JS disabled; the cart drawer and live search are progressive enhancements layered on plain forms.
 - **Search without a search service.** Full-text search runs on SQLite FTS5 inside D1, with bm25 ranking, prefix matching, and typo correction. Semantic search (Workers AI + Vectorize) is an optional flag, not a dependency.
-- **Cache invalidation follows what shoppers can see.** Cached pages carry `shell`, `catalog`, and per-product tags. Admin writes purge only the affected tags, and stock changes purge a product only when it crosses In stock / Low stock / Sold out, not on every checkout reservation. The page shell stays shared even for cookied shoppers because the one personal detail, the cart count, loads from a small private fragment.
+- **Cache invalidation follows what shoppers can see.** Cached pages carry `shell`, `catalog`, and per-product tags. Admin writes purge only the affected tags, and stock changes purge a product only when it crosses In stock / Low stock / Sold out. The personalized home page is private and is not shared-cached.
 - **Provider keys are write-only.** Stripe, Lightning, and email credentials are entered in Admin, encrypted under a KEK before they reach D1, and never displayed again. The Worker itself needs exactly two secrets.
 - **Refactors are gated by equivalence tests.** The Vitest suite (70 test files) renders `.astro` components through AstroContainer and includes contract tests plus rendering baselines, so template extractions have to prove they didn't change the output a customer sees.
 - **The same store serves people and agents.** Catalog and checkout are exposed as HTML, as JSON (`/api/products`, `/api/checkout`), and over MCP — all three reach the same checkout, so an agent can browse the catalog and settle a Lightning invoice with no human in the loop.
@@ -201,10 +203,10 @@ The Worker also applies native edge rate limits to anonymous login POSTs (10/min
 
 Workers Caching uses its native entrypoint + path/query key, so tracking parameters
 create separate entries; keep internal links canonical and measure fragmentation
-before adding a gateway solely for key normalization. The shell remains shared
-even when a shopper has cookies. Its only customer-specific header value, the
-cart count, loads from a tiny private fragment; the complete cart stays on
-private, `no-store` routes and is fetched only when opened.
+before adding a gateway solely for key normalization. The home page is private,
+`no-store` because it displays account-specific courses and notices. Other
+cacheable storefront pages retain a shared shell; the cart count loads from a
+private fragment, and the complete cart stays on private routes.
 
 Caching is deployment-controlled and disabled in the generic config. It is not
 an Admin setting because cache lookup occurs before the Worker runs. Enable it

@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { accountsEnabled, getCustomerEmail } from '../../../../../../../features/auth/customer';
 import { ensureCustomerAccount } from '../../../../../../../features/auth/customerIdentity';
+import { subprogramCourseAccessSql } from '../../../../../../../features/school/subprogramAccess';
 
 export const prerender = false;
 
@@ -25,9 +26,10 @@ export const GET: APIRoute = async ({ params, cookies }) => {
           AND d.attempt_no=(SELECT MAX(d2.attempt_no) FROM school_area_diagnostics d2 WHERE d2.student_email=d.student_email COLLATE NOCASE AND d2.area_id=d.area_id))
         AND EXISTS(SELECT 1 FROM school_fee_payments f WHERE f.student_email=x.student_email COLLATE NOCASE AND f.fee_type='enrollment' AND f.valid_until>=date('now'))
         AND EXISTS(SELECT 1 FROM school_fee_payments f WHERE f.student_email=x.student_email COLLATE NOCASE AND f.fee_type='monthly' AND f.valid_until>=date('now')))
+      OR ${subprogramCourseAccessSql}
       OR EXISTS(SELECT 1 FROM school_classroom_students rs JOIN school_students st ON st.student_number=rs.student_number JOIN school_classrooms cr ON cr.id=rs.classroom_id JOIN school_academic_cycles cy ON cy.id=cr.cycle_id
         WHERE cr.course_id=c.id AND st.client_number=? AND st.status='active' AND rs.status='active' AND cr.status='active' AND date('now') BETWEEN cr.starts_on AND cr.ends_on AND cy.status='active'))
-    LIMIT 1`).bind(courseSlug, email, email, email, email, clientNumber).first<{course_id:string;omitted_activities_allowed:number}>();
+    LIMIT 1`).bind(courseSlug, email, email, email, email, clientNumber, clientNumber).first<{course_id:string;omitted_activities_allowed:number}>();
   if (!access) return new Response('Construcción no encontrada.', { status: 404 });
 
   const lesson = await env.DB.prepare(`SELECT sequence_no,assessment_json FROM school_lessons WHERE course_id=? AND slug=? AND status='published' LIMIT 1`)

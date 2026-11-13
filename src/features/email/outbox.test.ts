@@ -6,8 +6,12 @@ import type { D1Database } from '@cloudflare/workers-types';
 // The SQL itself runs for real in test/integration/reservations.mjs (row birth in
 // the order batch) and the wrangler integration gate.
 vi.mock('./index', () => ({ getEmailProvider: vi.fn() }));
+vi.mock('../conferences/access.ts', () => ({
+  ensureConferenceAccessForOrder: vi.fn(),
+  markOrderConferenceParticipantsInvited: vi.fn(),
+}));
 vi.mock('../orders/db', () => ({ getOrder: vi.fn(), listOrderItemsWithImages: vi.fn() }));
-vi.mock('../settings/db', () => ({ getStoreSettings: vi.fn() }));
+vi.mock('../settings/db', () => ({ getStoreSettings: vi.fn(), getSetting: vi.fn(), setSetting: vi.fn() }));
 vi.mock('./orderConfirmation', () => ({
   orderConfirmationEmail: vi.fn(() => ({ to: 'c@x', subject: 'r', html: '', text: '' })),
   orderNotificationEmail: vi.fn(() => ({ to: 'o@x', subject: 'n', html: '', text: '' })),
@@ -21,6 +25,8 @@ import { deliverOrderNotifications } from './outbox';
 import { getEmailProvider } from './index';
 import { getOrder, listOrderItemsWithImages } from '../orders/db';
 import { getGuestAccess } from '../orders/guestAccess.ts';
+import { ensureConferenceAccessForOrder, markOrderConferenceParticipantsInvited } from '../conferences/access.ts';
+import { orderConfirmationEmail } from './orderConfirmation';
 
 interface Row {
   order_id: number;
@@ -157,6 +163,8 @@ describe('deliverOrderNotifications', () => {
     vi.mocked(getEmailProvider).mockResolvedValue({ send });
     vi.mocked(getOrder).mockResolvedValue(ORDER as never);
     vi.mocked(listOrderItemsWithImages).mockResolvedValue([] as never);
+    vi.mocked(ensureConferenceAccessForOrder).mockResolvedValue([]);
+    vi.mocked(markOrderConferenceParticipantsInvited).mockResolvedValue(undefined);
     send.mockResolvedValue(undefined);
   });
 
@@ -204,6 +212,33 @@ describe('deliverOrderNotifications', () => {
     await deliverOrderNotifications(fakeDb(rows), 7, 'https://x', SETTINGS);
     expect(rows.map((r) => r.state)).toEqual(['skipped', 'skipped']);
     expect(send).not.toHaveBeenCalled();
+  });
+
+  it('retries a conference receipt when email is disabled, then marks the participant invited', async () => {
+    const access = [{ conference_id: 3, access_key: 'KEY' }] as never;
+    vi.mocked(ensureConferenceAccessForOrder).mockResolvedValue(access);
+    vi.mocked(getEmailProvider).mockResolvedValue(null);
+    const rows = freshRows();
+    const db = fakeDb(rows);
+    await deliverOrderNotifications(db, 7, 'https://x', SETTINGS);
+    expect(rows[0]).toMatchObject({ state: 'pending', last_error: 'Email provider unavailable' });
+    expect(markOrderConferenceParticipantsInvited).not.toHaveBeenCalled();
+
+    vi.mocked(getEmailProvider).mockResolvedValue({ send });
+    await deliverOrderNotifications(db, 7, 'https://x', SETTINGS);
+    expect(rows[0].state).toBe('sent');
+    expect(orderConfirmationEmail).toHaveBeenCalledWith(
+      expect.anything(), expect.anything(), 'https://x', 'Test Shop', 'original', null, access,
+    );
+    expect(markOrderConferenceParticipantsInvited).toHaveBeenCalledWith(db, 7);
+  });
+
+  it('retries the receipt if the participant status cannot be saved', async () => {
+    vi.mocked(ensureConferenceAccessForOrder).mockResolvedValue([{ conference_id: 3 }] as never);
+    vi.mocked(markOrderConferenceParticipantsInvited).mockRejectedValueOnce(new Error('database unavailable'));
+    const rows = freshRows();
+    await deliverOrderNotifications(fakeDb(rows), 7, 'https://x', SETTINGS);
+    expect(rows[0]).toMatchObject({ state: 'pending', last_error: 'database unavailable' });
   });
 
   it('releases a failed send back to pending with the error recorded', async () => {

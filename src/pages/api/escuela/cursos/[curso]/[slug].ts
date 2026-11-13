@@ -4,6 +4,7 @@ import { accountsEnabled, getCustomerEmail } from '../../../../../features/auth/
 import { ensureCustomerAccount } from '../../../../../features/auth/customerIdentity';
 import { validateLatexDraft } from '../../../../../features/mathTexts/latexDraft';
 import { checkXmlLessonStart } from '../../../../../features/school/xmlLessonLimits';
+import { subprogramCourseAccessSql } from '../../../../../features/school/subprogramAccess';
 
 export const prerender = false;
 const json = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), {
@@ -44,8 +45,9 @@ export const POST: APIRoute = async ({ request, cookies, params, url, locals }) 
       EXISTS (SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE oi.school_course_id=c.id AND lower(trim(o.email))=lower(trim(?)) AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents)
       OR EXISTS (SELECT 1 FROM content_subscription_courses sc JOIN school_subscriptions ss ON ss.content_subscription_id=sc.subscription_id WHERE sc.course_id=c.id AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now')))
       OR EXISTS (SELECT 1 FROM school_course_assignments x WHERE x.course_id=c.id AND x.student_email=? COLLATE NOCASE AND x.status='active' AND EXISTS(SELECT 1 FROM school_area_diagnostics d WHERE d.student_email=x.student_email COLLATE NOCASE AND d.area_id=c.area_id AND d.status='approved' AND d.approved_level=c.level_code AND d.attempt_no=(SELECT MAX(d2.attempt_no) FROM school_area_diagnostics d2 WHERE d2.student_email=d.student_email COLLATE NOCASE AND d2.area_id=d.area_id)) AND EXISTS (SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='enrollment' AND p.valid_until>=date('now')) AND EXISTS (SELECT 1 FROM school_fee_payments p WHERE p.student_email=x.student_email COLLATE NOCASE AND p.fee_type='monthly' AND p.valid_until>=date('now')))
+      OR ${subprogramCourseAccessSql}
       OR EXISTS (SELECT 1 FROM school_classroom_students rs JOIN school_students st ON st.student_number=rs.student_number JOIN school_classrooms cr ON cr.id=rs.classroom_id JOIN school_academic_cycles cy ON cy.id=cr.cycle_id WHERE cr.course_id=c.id AND st.client_number=? AND st.status='active' AND rs.status='active' AND cr.status='active' AND date('now') BETWEEN cr.starts_on AND cr.ends_on AND cy.status='active')
-    ) LIMIT 1`).bind(params.curso ?? '', email, email, email, email, clientNumber).first<{course_id:string;omitted_activities_allowed:number}>();
+    ) LIMIT 1`).bind(params.curso ?? '', email, email, email, email, clientNumber, clientNumber).first<{course_id:string;omitted_activities_allowed:number}>();
   if (!access) return json({ error: 'No tienes acceso vigente a este curso.' }, 403);
 
   const blocked = await env.DB.prepare(`SELECT SUM(CASE WHEN l.lesson_type='reading' THEN 1 ELSE 0 END) AS pending_readings,SUM(CASE WHEN l.lesson_type<>'reading' AND l.required_to_complete=1 THEN 1 ELSE 0 END) AS pending_activities FROM school_lessons l LEFT JOIN school_lesson_progress p ON p.lesson_id=l.id AND p.student_email=? COLLATE NOCASE WHERE l.course_id=? AND l.status='published' AND l.required_to_complete=1 AND l.sequence_no<(SELECT sequence_no FROM school_lessons WHERE course_id=? AND slug=? AND status='published') AND COALESCE(p.status,'not_started')<>'completed'`).bind(email,access.course_id,access.course_id,params.slug??'').first<{pending_readings:number|null;pending_activities:number|null}>();
