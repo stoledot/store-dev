@@ -27,7 +27,8 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
       lesson_title: string | null; progress_status: string;
     }>(),
     db.prepare(`
-      SELECT d.subprogram_id,s.title,d.status,
+      SELECT d.subprogram_id,s.title,d.status,d.closed_at,
+        (SELECT e.status FROM school_subprogram_enrollments e WHERE e.diagnostic_id=d.id LIMIT 1) AS enrollment_status,
         (SELECT g.title FROM school_subprogram_enrollments e
           JOIN school_subprogram_group_members gm ON gm.enrollment_id=e.id
           JOIN school_subprogram_groups g ON g.id=gm.group_id AND g.subprogram_id=e.subprogram_id
@@ -38,28 +39,32 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
            WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active' AND m.requires_current_enrollment=1
         ) THEN 1 ELSE 0 END AS enrollment_required,
         EXISTS(SELECT 1 FROM school_payment_obligations o JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
-          JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id JOIN orders paid ON paid.id=o.order_id
+          JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id JOIN orders paid ON paid.id=COALESCE(o.order_id,o.bundle_order_id)
           WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active'
             AND o.modality_payment_type='enrollment' AND o.status='paid' AND paid.status='paid'
             AND COALESCE(paid.refunded_cents,0)<paid.amount_total_cents AND datetime(o.paid_at)<=datetime('now')
+            AND (o.modality_valid_from IS NULL OR datetime(o.modality_valid_from)<=datetime('now'))
             AND (o.modality_valid_until IS NULL OR datetime(o.modality_valid_until)>datetime('now'))) AS enrollment_valid,
         EXISTS(SELECT 1 FROM school_payment_obligations o JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
-          JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id JOIN orders paid ON paid.id=o.order_id
+          JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id JOIN orders paid ON paid.id=COALESCE(o.order_id,o.bundle_order_id)
           WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active' AND ps.status='active'
             AND ps.modality_id=e.modality_id AND o.status='paid' AND paid.status='paid'
             AND COALESCE(paid.refunded_cents,0)<paid.amount_total_cents AND datetime(o.paid_at)<=datetime('now')
+            AND (o.modality_valid_from IS NULL OR datetime(o.modality_valid_from)<=datetime('now'))
             AND (o.modality_valid_until IS NULL OR datetime(o.modality_valid_until)>datetime('now'))) AS modality_valid,
         (SELECT COUNT(*) FROM school_payment_obligations o
           JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
           JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id
           WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active'
-            AND o.status='pending' AND (o.available_at IS NULL OR date(o.available_at)<=date('now'))) AS due_count,
+            AND o.status='pending' AND ((o.available_from IS NOT NULL AND datetime(o.available_from)<=datetime('now'))
+              OR (o.available_from IS NULL AND (o.available_at IS NULL OR date(o.available_at)<=date('now'))))) AS due_count,
         (SELECT COUNT(*) FROM school_payment_obligations o
           JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
           JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id
           WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active'
             AND o.modality_payment_type='enrollment' AND o.status='pending'
-            AND (o.available_at IS NULL OR date(o.available_at)<=date('now'))) AS enrollment_due_count
+            AND ((o.available_from IS NOT NULL AND datetime(o.available_from)<=datetime('now'))
+              OR (o.available_from IS NULL AND (o.available_at IS NULL OR date(o.available_at)<=date('now'))))) AS enrollment_due_count
       FROM school_subprogram_diagnostics d JOIN school_subprograms s ON s.id=d.subprogram_id
       WHERE d.client_number=? AND d.id=(SELECT d2.id FROM school_subprogram_diagnostics d2
         WHERE d2.client_number=d.client_number AND d2.subprogram_id=d.subprogram_id
@@ -67,7 +72,8 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
       ORDER BY CASE WHEN d.status='rejected' THEN 0 WHEN d.status='pending' THEN 1 WHEN due_count>0 THEN 2 ELSE 3 END,
         d.submitted_at DESC,d.rowid DESC
     `).bind(clientNumber).all<{
-      subprogram_id: string; title: string; status: string; due_count: number; enrollment_due_count: number; group_title: string | null;
+      subprogram_id: string; title: string; status: string; closed_at:string|null; enrollment_status:string|null;
+      due_count: number; enrollment_due_count: number; group_title: string | null;
       enrollment_required: number; enrollment_valid: number; modality_valid: number;
     }>(),
     db.prepare(`SELECT id,title,COALESCE(NULLIF(message,''),body) AS message FROM school_notifications

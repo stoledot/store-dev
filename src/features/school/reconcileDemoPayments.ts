@@ -14,7 +14,7 @@ export async function reconcileDemoSchoolPayments(db: D1Database): Promise<void>
          (ob.status='paid' AND ob.subprogram_schedule_id IS NOT NULL AND NOT EXISTS (
            SELECT 1 FROM school_notifications n WHERE n.id='subprogram-payment-' || ob.id
          )) OR
-         (ob.status='paid' AND ob.subprogram_schedule_id IS NULL AND ob.fee_type IN ('enrollment','monthly') AND NOT EXISTS (
+         (ob.status='paid' AND ob.subprogram_schedule_id IS NULL AND ob.group_access_only=0 AND ob.fee_type IN ('enrollment','monthly') AND NOT EXISTS (
            SELECT 1 FROM school_fee_payments fp
             WHERE fp.obligation_id=ob.id AND (ob.fee_type<>'monthly'
               OR EXISTS (SELECT 1 FROM school_periods sp WHERE sp.fee_payment_id=fp.id))

@@ -32,6 +32,10 @@ const input = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2';
     <label class="block text-sm">Duración
       <input name="duration_description" value={subprogram?.duration_description} class={input} />
     </label>
+    <label class="block text-sm">Días de atraso para baja temporal
+      <input type="number" name="suspension_after_days" min="0" max="3650" step="1" value={subprogram?.suspension_after_days ?? ''} class={input} />
+      <span class="text-xs text-muted">Vacío: desactivada. 0 o 1: primer día después del vencimiento. Solo aplica a pagos de clases.</span>
+    </label>
   </div>
   <label class="block text-sm">Descripción
     <textarea name="description" rows="3" class={input}>{subprogram?.description}</textarea>

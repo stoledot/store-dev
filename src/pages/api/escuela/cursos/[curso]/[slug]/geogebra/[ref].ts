@@ -3,6 +3,7 @@ import { env } from 'cloudflare:workers';
 import { accountsEnabled, getCustomerEmail } from '../../../../../../../features/auth/customer';
 import { ensureCustomerAccount } from '../../../../../../../features/auth/customerIdentity';
 import { subprogramCourseAccessSql } from '../../../../../../../features/school/subprogramAccess';
+import { courseAccessNotBlockedSql } from '../../../../../../../features/school/courseAccess';
 
 export const prerender = false;
 
@@ -18,7 +19,7 @@ export const GET: APIRoute = async ({ params, cookies }) => {
 
   // Comprobar compra, asignación académica con cuotas vigentes o matrícula en aula activa.
   const access = await env.DB.prepare(`SELECT c.id AS course_id,c.omitted_activities_allowed FROM school_courses c
-    WHERE c.slug=? AND c.status='published' AND c.content_kind IN ('course','reading') AND NOT EXISTS(SELECT 1 FROM school_course_access_overrides ov WHERE ov.course_id=c.id AND ov.student_email=? COLLATE NOCASE AND ov.expires_at<date('now')) AND (
+    WHERE c.slug=? AND c.status='published' AND c.content_kind IN ('course','reading') AND ${courseAccessNotBlockedSql} AND (
       EXISTS(SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE oi.school_course_id=c.id AND lower(trim(o.email))=lower(trim(?)) AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents)
       OR EXISTS(SELECT 1 FROM content_subscription_courses sc JOIN school_subscriptions ss ON ss.content_subscription_id=sc.subscription_id WHERE sc.course_id=c.id AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now')))
       OR EXISTS(SELECT 1 FROM school_course_assignments x WHERE x.course_id=c.id AND x.student_email=? COLLATE NOCASE AND x.status='active'

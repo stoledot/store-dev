@@ -4,11 +4,20 @@ import { env } from 'cloudflare:workers';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { saveSchoolGroupAction } from '../../../features/school/groups';
 import { enrollmentPaymentValidSql } from '../../../features/school/enrollmentEligibility';
+import { withdrawEnrollment } from '../../../features/school/withdrawals';
+import { mediaUrl } from '../../../features/media/url';
+import { getConfig } from '../../../config';
 
 let error = '';
 if (Astro.request.method === 'POST') {
   try {
-    await saveSchoolGroupAction(env.DB, await Astro.request.formData());
+    const form = await Astro.request.formData();
+    if (form.get('action') === 'withdraw') {
+      if (form.get('confirm_withdrawal') !== '1') throw new Error('Confirma la baja definitiva.');
+      await withdrawEnrollment(env.DB, String(form.get('enrollment_id') ?? '').trim());
+    } else {
+      await saveSchoolGroupAction(env.DB, form);
+    }
     return Astro.redirect('/admin/escuela/grupos?guardado=1', 303);
   } catch (cause) {
     console.error('No se pudo guardar el grupo escolar:', cause);
@@ -17,25 +26,26 @@ if (Astro.request.method === 'POST') {
     Astro.response.status = 400;
   }
 }
-const [subprograms, groups, courses, links, conferences, enrollments] = await Promise.all([
+const [subprograms, groups, courses, links, conferences, enrollments, media] = await Promise.all([
   env.DB.prepare("SELECT id,title FROM school_subprograms WHERE status='active' ORDER BY title").all<{id:string;title:string}>(),
   env.DB.prepare(`SELECT g.*,s.title AS subprogram_title FROM school_subprogram_groups g
-    JOIN school_subprograms s ON s.id=g.subprogram_id ORDER BY g.status,g.title`).all<{id:string;subprogram_id:string;title:string;subprogram_title:string;status:string;conference_id:number|null}>(),
+    JOIN school_subprograms s ON s.id=g.subprogram_id ORDER BY g.status,g.title`).all<{id:string;subprogram_id:string;title:string;subprogram_title:string;status:string;conference_id:number|null;image_key:string|null;description:string;schedule:string;rules:string;evaluation_description:string}>(),
   env.DB.prepare(`SELECT sc.subprogram_id,c.id,c.title FROM school_subprogram_courses sc
     JOIN school_courses c ON c.id=sc.course_id WHERE c.status<>'archived' ORDER BY c.title`).all<{subprogram_id:string;id:string;title:string}>(),
   env.DB.prepare(`SELECT gc.group_id,c.id,c.title FROM school_subprogram_group_courses gc
     JOIN school_courses c ON c.id=gc.course_id ORDER BY c.title`).all<{group_id:string;id:string;title:string}>(),
   env.DB.prepare("SELECT id,title FROM conferences WHERE status IN ('draft','published') ORDER BY title").all<{id:number;title:string}>(),
-  env.DB.prepare(`SELECT e.id,e.subprogram_id,e.client_number,c.email,s.title AS subprogram_title,
+  env.DB.prepare(`SELECT e.id,e.subprogram_id,e.client_number,e.status,e.suspension_reason,e.suspended_at,c.email,s.title AS subprogram_title,
       member.group_id,g.title AS group_title,CASE WHEN ${enrollmentPaymentValidSql} THEN 1 ELSE 0 END AS eligible
     FROM school_subprogram_enrollments e JOIN customer_accounts c ON c.client_number=e.client_number
     JOIN school_subprograms s ON s.id=e.subprogram_id
     LEFT JOIN school_subprogram_group_members member ON member.enrollment_id=e.id
     LEFT JOIN school_subprogram_groups g ON g.id=member.group_id
-    WHERE e.status='active' ORDER BY s.title,c.email`).all<{
+    WHERE e.status IN ('active','suspended') ORDER BY s.title,c.email`).all<{
       id:string;subprogram_id:string;client_number:string;email:string;subprogram_title:string;
-      group_id:string|null;group_title:string|null;eligible:number;
+      group_id:string|null;group_title:string|null;eligible:number;status:string;suspension_reason:string|null;suspended_at:string|null;
     }>(),
+  env.DB.prepare("SELECT image_key,original_name FROM media WHERE mime_type LIKE 'image/%' OR mime_type IS NULL ORDER BY original_name,id").all<{image_key:string;original_name:string}>(),
 ]);
 ---
 <AdminLayout title="Grupos escolares" active="school-programs">
@@ -59,10 +69,11 @@ const [subprograms, groups, courses, links, conferences, enrollments] = await Pr
     <section class="mt-8">
       <h2 class="font-serif text-2xl">Asignar alumnos</h2>
       <p class="mt-2 text-sm text-muted">La asignación se conserva si vence un pago, pero el acceso al grupo queda suspendido hasta regularizarlo.</p>
+      <p class="mt-1 text-sm text-muted">La baja temporal por atraso se reactiva al pagar los adeudos vencidos. La baja definitiva retira al alumno del grupo y exige un nuevo diagnóstico y nuevos pagos.</p>
       <div class="mt-4 space-y-3">
         {enrollments.results.length === 0 && <p class="text-sm text-muted">Aún no hay alumnos aprobados.</p>}
         {enrollments.results.map(e => <article class="rounded-2xl border border-line p-4">
-          <div class="flex flex-wrap justify-between gap-2"><div><h3 class="font-semibold">{e.email}</h3><p class="text-sm text-muted">Cliente {e.client_number} · {e.subprogram_title}</p></div><span class="text-sm">{e.eligible ? 'Pagos vigentes' : 'Pagos no vigentes'}{e.group_title && ` · ${e.group_title}`}</span></div>
+          <div class="flex flex-wrap justify-between gap-2"><div><h3 class="font-semibold">{e.email}</h3><p class="text-sm text-muted">Cliente {e.client_number} · {e.subprogram_title}</p></div><span class="text-sm">{e.status==='suspended' ? 'Baja temporal' : e.eligible ? 'Pagos vigentes' : 'Pagos no vigentes'}{e.group_title && ` · ${e.group_title}`}</span></div>
           <div class="mt-3 flex flex-wrap gap-3">
             <form method="POST" class="flex flex-wrap gap-2">
               <input type="hidden" name="action" value="assign" /><input type="hidden" name="enrollment_id" value={e.id} />
@@ -71,6 +82,13 @@ const [subprograms, groups, courses, links, conferences, enrollments] = await Pr
             </form>
             {e.group_id && <form method="POST"><input type="hidden" name="action" value="remove-member" /><input type="hidden" name="enrollment_id" value={e.id} /><input type="hidden" name="group_id" value={e.group_id} /><button class="px-2 py-2 text-sm text-brand underline">Retirar del grupo</button></form>}
           </div>
+          {e.status==='suspended' && e.suspension_reason==='overdue' && <form method="POST" class="mt-4 rounded-lg border border-red-200 p-3 text-sm">
+            <input type="hidden" name="action" value="withdraw" /><input type="hidden" name="enrollment_id" value={e.id} />
+            <label class="flex items-start gap-2"><input type="checkbox" name="confirm_withdrawal" value="1" required />
+              Confirmo la baja definitiva: retirar del grupo, cancelar cobros pendientes y exigir un nuevo proceso de ingreso.</label>
+            <button class="mt-2 rounded border border-red-700 px-3 py-2 font-semibold text-red-700">Dar baja definitiva</button>
+            <p class="mt-2 text-xs text-muted">Si hay un checkout abierto, espera a que termine o venza.</p>
+          </form>}
         </article>)}
       </div>
     </section>
@@ -78,10 +96,26 @@ const [subprograms, groups, courses, links, conferences, enrollments] = await Pr
       <h2 class="font-serif text-2xl">Grupos y contenido</h2>
       <p class="mt-2 text-sm text-muted">Los cursos deben estar vinculados al subprograma. Una modalidad que limite el acceso a un curso sigue aplicando esa limitación.</p>
       <div class="mt-4 grid gap-4 lg:grid-cols-2">
-        {groups.results.map(g => <article class="rounded-2xl border border-line p-5">
+        {groups.results.map(g => <article id={`grupo-${g.id}`} class="rounded-2xl border border-line p-5">
+          {g.image_key && <img src={mediaUrl(g.image_key,getConfig().images.baseUrl)} alt="" class="mb-4 aspect-square w-full rounded-xl object-cover" />}
           <div class="flex flex-wrap justify-between gap-2"><div><h3 class="text-lg font-semibold">{g.title}</h3><p class="text-sm text-muted">{g.subprogram_title} · {g.status === 'active' ? 'Activo' : 'Archivado'}</p></div>
             <form method="POST"><input type="hidden" name="action" value="status" /><input type="hidden" name="group_id" value={g.id} /><input type="hidden" name="status" value={g.status === 'active' ? 'archived' : 'active'} /><button class="text-sm text-brand underline">{g.status === 'active' ? 'Archivar' : 'Activar'}</button></form>
           </div>
+          <details class="mt-4 rounded-lg border border-line p-3"><summary class="cursor-pointer text-sm font-semibold">Editar información del grupo</summary>
+            <form method="POST" class="mt-3 space-y-3">
+              <input type="hidden" name="action" value="details" /><input type="hidden" name="group_id" value={g.id} />
+              <label class="block text-sm">Nombre<input name="title" value={g.title} required maxlength="160" class="mt-1 block w-full rounded-lg border border-line bg-surface p-2" /></label>
+              <label class="block text-sm">Imagen de portada<select name="image_key" class="mt-1 block w-full rounded-lg border border-line bg-surface p-2">
+                <option value="">Sin imagen</option>{media.results.map(item => <option value={item.image_key} selected={item.image_key===g.image_key}>{item.original_name}</option>)}
+              </select></label>
+              <p class="text-xs text-muted">Sube imágenes en <a href="/admin/media" class="text-brand underline">Media</a> y selecciónalas aquí.</p>
+              <label class="block text-sm">Descripción<textarea name="description" rows="3" maxlength="10000" class="mt-1 block w-full rounded-lg border border-line bg-surface p-2">{g.description}</textarea></label>
+              <label class="block text-sm">Horarios y días<textarea name="schedule" rows="3" maxlength="10000" class="mt-1 block w-full rounded-lg border border-line bg-surface p-2">{g.schedule}</textarea></label>
+              <label class="block text-sm">Reglas<textarea name="rules" rows="3" maxlength="10000" class="mt-1 block w-full rounded-lg border border-line bg-surface p-2">{g.rules}</textarea></label>
+              <label class="block text-sm">Descripción de la evaluación<textarea name="evaluation_description" rows="3" maxlength="10000" class="mt-1 block w-full rounded-lg border border-line bg-surface p-2">{g.evaluation_description}</textarea></label>
+              <button class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-on-brand">Guardar información</button>
+            </form>
+          </details>
           <form method="POST" class="mt-4 flex flex-wrap items-end gap-2"><input type="hidden" name="action" value="conference" /><input type="hidden" name="group_id" value={g.id} />
             <label class="min-w-48 flex-1 text-sm">Conferencia<select name="conference_id" class="mt-1 block w-full rounded-lg border border-line bg-surface p-2"><option value="">Sin conferencia</option>{conferences.results.map(c => <option value={c.id} selected={g.conference_id===c.id}>{c.title}</option>)}</select></label><button class="rounded-lg border border-line px-3 py-2 text-sm">Guardar</button>
           </form>

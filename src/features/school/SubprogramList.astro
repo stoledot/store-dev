@@ -34,7 +34,7 @@ const { results: subprograms } = await env.DB.prepare(`
     <div class="mt-6 grid gap-5 sm:grid-cols-2">
       {subprograms.map((subprogram) => (
         <article class="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface">
-          {subprogram.image_url && <img src={subprogram.image_url} alt="" loading="lazy" decoding="async" class="aspect-[16/9] w-full object-cover" />}
+          {subprogram.image_url && <img src={subprogram.image_url} alt="" loading="lazy" decoding="async" class="aspect-square w-full object-cover" />}
           <div class="flex flex-1 flex-col p-6">
             {subprogram.education_level && <p class="text-xs font-semibold uppercase tracking-wider text-brand">{subprogram.education_level}</p>}
             <h3 class="mt-2 font-serif text-2xl">{subprogram.title}</h3>

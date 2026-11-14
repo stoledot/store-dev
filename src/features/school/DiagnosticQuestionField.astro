@@ -1,0 +1,16 @@
+---
+import { questionOptions, type DiagnosticQuestion } from './subprogramDiagnostics';
+interface Props { question: DiagnosticQuestion }
+const { question } = Astro.props;
+---
+<fieldset class="space-y-2 text-sm">
+  <legend class="font-medium">{question.prompt}{question.required===1 && <span aria-hidden="true"> *</span>}</legend>
+  {question.answer_type==='choice' ? <>
+    {question.choice_mode==='multiple' && <p class="text-xs text-muted">Selecciona todas las respuestas que consideres correctas.</p>}
+    {questionOptions(question).map(option => <label class="flex items-start gap-2 rounded-xl border border-line p-3">
+      <input type={question.choice_mode==='multiple' ? 'checkbox' : 'radio'} name={`question_${question.id}`} value={option}
+        required={question.required===1 && question.choice_mode==='single'} class="mt-1" />
+      <span class="min-w-0 whitespace-pre-wrap">{option}</span>
+    </label>)}
+  </> : <textarea name={`question_${question.id}`} required={question.required===1} maxlength="5000" rows="4" class="block w-full rounded-xl border border-line bg-background p-3"></textarea>}
+</fieldset>

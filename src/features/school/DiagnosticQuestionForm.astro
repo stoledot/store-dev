@@ -1,0 +1,35 @@
+---
+import type { DiagnosticQuestion, DiagnosticSection } from './subprogramDiagnostics';
+
+interface Props {
+  subprogramId: string;
+  sections: DiagnosticSection[];
+  question?: DiagnosticQuestion;
+}
+const { subprogramId, sections, question } = Astro.props;
+const input = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2';
+const options: string[] = question ? JSON.parse(question.options_json) : [];
+const correct: string[] = question ? JSON.parse(question.correct_options_json) : [];
+---
+<form method="POST" class="space-y-3">
+  <input type="hidden" name="action" value={question ? 'save-diagnostic-question' : 'add-diagnostic-question'} />
+  <input type="hidden" name="subprogram_id" value={subprogramId} />
+  {question && <input type="hidden" name="question_id" value={question.id} />}
+  <label class="block text-sm">Pregunta<textarea name="prompt" required maxlength="1000" rows="2" class={input}>{question?.prompt}</textarea></label>
+  <div class="grid gap-3 sm:grid-cols-2">
+    <label class="block text-sm">Sección<select name="section_id" class={input}>
+      <option value="">Sin sección</option>{sections.map(section => <option value={section.id} selected={question?.section_id===section.id}>{section.title}</option>)}
+    </select></label>
+    <label class="block text-sm">Orden<input type="number" name="position" min="0" max="10000" value={question?.position ?? 0} class={input} /></label>
+    <label class="block text-sm">Tipo<select name="answer_type" class={input}><option value="text" selected={!question || question.answer_type==='text'}>Texto libre</option><option value="choice" selected={question?.answer_type==='choice'}>Opción múltiple</option></select></label>
+    <label class="block text-sm">Forma de responder<select name="choice_mode" class={input}>
+      <option value="single" selected={!question || question.choice_mode==='single'}>Elegir una opción válida</option>
+      <option value="multiple" selected={question?.choice_mode==='multiple'}>Seleccionar todas las correctas</option>
+    </select></label>
+  </div>
+  <label class="block text-sm">Opciones (una por línea)<textarea name="options" rows="3" class={input}>{options.join('\n')}</textarea></label>
+  <label class="block text-sm">Respuestas correctas (una por línea, exactamente como las opciones)<textarea name="correct_options" rows="3" class={input}>{correct.join('\n')}</textarea></label>
+  <p class="text-xs text-gray-600">Deja las respuestas correctas vacías para revisar manualmente. En preguntas y opciones puedes escribir fórmulas con $...$ o $$...$$.</p>
+  <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="required" value="1" checked={!question || question.required===1} /> Obligatoria</label>
+  <button class="rounded bg-brand px-4 py-2 text-sm font-semibold text-white">{question ? 'Guardar pregunta' : 'Agregar pregunta'}</button>
+</form>

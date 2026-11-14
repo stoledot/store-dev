@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { enrollmentPaymentValidSql } from '../school/enrollmentEligibility.ts';
+import { manualGroupPaymentValidSql } from '../school/manualGroupPayment.ts';
 
 export interface Conference {
   id: number;
@@ -245,19 +246,34 @@ export async function setProductConference(
  */
 
 const conferenceEntitlementSql = `(
+  NOT EXISTS (SELECT 1 FROM school_extended_manual_access a JOIN customer_accounts account ON account.client_number=a.client_number
+    WHERE account.email=? COLLATE NOCASE AND a.resource_type='conference' AND a.resource_id=CAST(c.id AS TEXT)
+      AND a.decision='deny' AND (a.expires_at IS NULL OR date(a.expires_at)>=date('now')))
+  AND (
+  (c.status='published' AND EXISTS (SELECT 1 FROM school_extended_manual_access a JOIN customer_accounts account ON account.client_number=a.client_number
+    WHERE account.email=? COLLATE NOCASE AND a.resource_type='conference' AND a.resource_id=CAST(c.id AS TEXT)
+      AND a.decision='allow' AND (a.expires_at IS NULL OR date(a.expires_at)>=date('now'))))
+  OR
   EXISTS (SELECT 1 FROM conference_participants cp WHERE cp.conference_id=c.id
     AND lower(trim(cp.email))=lower(trim(?)) AND (cp.source_order_id IS NULL OR cp.manual_invitation=1))
   OR EXISTS (SELECT 1 FROM conference_access ca JOIN orders o ON o.id=ca.order_id
     WHERE ca.conference_id=c.id AND lower(trim(o.email))=lower(trim(?))
       AND o.status='paid' AND COALESCE(o.refunded_cents,0)<o.amount_total_cents)
   OR (c.status='published' AND EXISTS (
-    SELECT 1 FROM school_subprogram_groups g
-    JOIN school_subprogram_group_members member ON member.group_id=g.id
-    JOIN school_subprogram_enrollments e ON e.id=member.enrollment_id AND e.subprogram_id=g.subprogram_id
-    JOIN customer_accounts account ON account.client_number=e.client_number
-    WHERE g.conference_id=c.id AND g.status='active' AND account.email=? COLLATE NOCASE
-      AND ${enrollmentPaymentValidSql}
-  ))
+    SELECT 1 FROM school_subprogram_groups g JOIN customer_accounts account ON account.email=? COLLATE NOCASE
+    WHERE g.conference_id=c.id AND g.status='active'
+      AND ${manualGroupPaymentValidSql('account.client_number', 'g.id')}
+      AND NOT EXISTS (SELECT 1 FROM school_manual_access deny WHERE deny.client_number=account.client_number
+        AND deny.decision='deny' AND ((deny.resource_type='group' AND deny.resource_id=g.id)
+          OR (deny.resource_type='subprogram' AND deny.resource_id=g.subprogram_id))
+        AND (deny.expires_at IS NULL OR date(deny.expires_at)>=date('now')))
+      AND (EXISTS (SELECT 1 FROM school_manual_access a WHERE a.client_number=account.client_number
+        AND a.resource_type='group' AND a.resource_id=g.id AND a.decision='allow'
+        AND (a.expires_at IS NULL OR date(a.expires_at)>=date('now')))
+      OR EXISTS (SELECT 1 FROM school_subprogram_group_members member
+        JOIN school_subprogram_enrollments e ON e.id=member.enrollment_id AND e.subprogram_id=g.subprogram_id
+        WHERE member.group_id=g.id AND e.client_number=account.client_number AND ${enrollmentPaymentValidSql}))
+  )))
 )`;
 
 export async function getUserConferences(
@@ -271,7 +287,7 @@ export async function getUserConferences(
       WHERE ${conferenceEntitlementSql}
       ORDER BY c.title COLLATE NOCASE,c.id
     `)
-    .bind(email, email, email)
+    .bind(email, email, email, email, email)
     .all<Conference>()
     .then(result => result.results ?? []);
 }
@@ -288,7 +304,7 @@ export async function getUserConferencesSessions(
       WHERE ${conferenceEntitlementSql}
       ORDER BY s.starts_at,s.id
       `)
-    .bind(email, email, email)
+    .bind(email, email, email, email, email)
     .all<ConferenceSession>()
     .then(result => result.results ?? []);
 }

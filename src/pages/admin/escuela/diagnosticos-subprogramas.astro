@@ -12,9 +12,11 @@ if (Astro.request.method === 'POST') {
   const decision = String(form.get('decision') ?? '');
   const modalityId = String(form.get('modality_id') ?? '').trim();
   const notes = String(form.get('notes') ?? '').trim();
+  const entryPeriod = String(form.get('entry_period') ?? '');
   try {
     if (!diagnosticId || (decision !== 'approved' && decision !== 'rejected')) throw new Error('Selecciona una decisión válida.');
-    await reviewSubprogramDiagnostic(env.DB, diagnosticId, decision, modalityId, notes);
+    if (decision === 'approved' && entryPeriod !== 'current' && entryPeriod !== 'next') throw new Error('Selecciona el período de ingreso.');
+    await reviewSubprogramDiagnostic(env.DB, diagnosticId, decision, modalityId, notes, new Date(), entryPeriod === 'next' ? 'next' : 'current');
     return Astro.redirect('/admin/escuela/diagnosticos-subprogramas?guardado=1', 303);
   } catch (cause) {
     console.error('No se pudo revisar el diagnóstico:', cause);
@@ -55,7 +57,15 @@ import { formatPrice } from '../../../config';
             <h2 class="text-xl font-semibold">{diagnostic.title}</h2>
             <p class="mt-1 text-sm text-gray-600">{diagnostic.email} · Cliente {diagnostic.client_number} · {diagnostic.submitted_at}</p>
             <dl class="mt-4 space-y-3">
-              {answers.map((answer) => <div><dt class="text-sm font-semibold">{answer.question}</dt><dd class="mt-1 whitespace-pre-wrap text-sm text-gray-700">{answer.answer || 'Sin respuesta'}</dd></div>)}
+              {answers.map((answer) => <div>
+                {answer.section && <p class="text-xs font-medium text-gray-500">{answer.section}</p>}
+                <dt class="text-sm font-semibold">{answer.question}</dt>
+                <dd class="mt-1 whitespace-pre-wrap text-sm text-gray-700">{answer.answer || 'Sin respuesta'}</dd>
+                {answer.correct === true && <p class="mt-1 text-sm font-semibold text-green-700">Correcta</p>}
+                {answer.correct === false && <p class="mt-1 text-sm font-semibold text-red-700">Incorrecta</p>}
+                {answer.correct === false && answer.correctAnswers && <p class="mt-1 whitespace-pre-wrap text-sm text-gray-600">Respuesta(s) correcta(s): {answer.correctAnswers.join(' · ')}</p>}
+                {answer.correct === null && <p class="mt-1 text-sm text-gray-600">Sin respuesta</p>}
+              </div>)}
             </dl>
             <form method="POST" class="mt-5 space-y-3 border-t border-line pt-4">
               <input type="hidden" name="diagnostic_id" value={diagnostic.id} />
@@ -66,6 +76,12 @@ import { formatPrice } from '../../../config';
                 </select>
               </label>
               {options.length === 0 && <p class="text-sm text-gray-600">Configura primero una modalidad de pago activa para este subprograma.</p>}
+              <label class="block text-sm">Período de ingreso
+                <select name="entry_period" class="mt-1 block w-full rounded border border-line bg-white px-3 py-2">
+                  <option value="current">Período actual (prorrateado si ya comenzó)</option>
+                  <option value="next">Siguiente período completo</option>
+                </select>
+              </label>
               <label class="block text-sm">Nota administrativa<textarea name="notes" maxlength="2000" rows="2" class="mt-1 block w-full rounded border border-line bg-white px-3 py-2"></textarea></label>
               <div class="flex flex-wrap gap-3">
                 <button name="decision" value="approved" disabled={options.length === 0} class="rounded bg-brand px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Aprobar y asignar pagos</button>

@@ -1,0 +1,25 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../layouts/Layout.astro';
+import { contactNetworks, getContactConfig } from '../features/settings/contact';
+const contact = await getContactConfig(env.DB);
+const networks = contactNetworks.filter(network => contact[network.key]);
+---
+<Layout title="Contacto">
+  <main class="mx-auto max-w-5xl px-4 py-12">
+    <p class="text-sm font-semibold uppercase tracking-widest text-brand">Estamos para ayudarte</p>
+    <h1 class="mt-3 font-serif text-4xl">Contacto</h1>
+    <p class="mt-4 max-w-2xl text-muted">Elige el canal que prefieras para comunicarte con nosotros.</p>
+    <div class="mt-8 grid gap-4 sm:grid-cols-2">
+      <a href="/account/messages" class="rounded-2xl border border-line bg-surface p-6 hover:border-brand"><h2 class="text-xl font-semibold">Buzón escolar</h2><p class="mt-2 text-sm text-muted">Envía y consulta tus mensajes desde tu cuenta.</p><span class="mt-4 block text-sm font-semibold text-brand">Abrir buzón →</span></a>
+      {contact.whatsapp && <a href={contact.whatsapp} target="_blank" rel="noopener noreferrer" class="rounded-2xl border border-line bg-surface p-6 hover:border-brand"><h2 class="text-xl font-semibold">WhatsApp</h2><p class="mt-2 text-sm text-muted">Escríbenos por WhatsApp.</p><span class="mt-4 block text-sm font-semibold text-brand">Abrir WhatsApp ↗</span></a>}
+    </div>
+    <section class="mt-12" aria-labelledby="redes">
+      <h2 id="redes" class="font-serif text-3xl">Redes sociales</h2>
+      {networks.length ? <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {networks.map(network => <a href={contact[network.key]} target="_blank" rel="noopener noreferrer" class="flex items-center justify-between rounded-2xl border border-line bg-surface p-5 font-semibold transition hover:border-brand hover:text-brand"><span>{network.label}</span><span aria-hidden="true">↗</span></a>)}
+      </div> : <p class="mt-4 text-sm text-muted">Próximamente compartiremos nuestras redes sociales.</p>}
+    </section>
+  </main>
+</Layout>

@@ -5,6 +5,7 @@ import { getPaymentProvider, isMethodAvailable } from '../../../../features/paym
 import { getStoreSettings } from '../../../../features/settings/db';
 import { claimOrderIdentity } from '../../../../features/orders/guestAccess';
 import { claimSchoolCheckout } from '../../../../features/school/schoolCheckout';
+import { claimPaymentBundle, linkPaymentBundle, releasePaymentBundle } from '../../../../features/school/paymentBundles';
 
 export const prerender = false;
 export const POST: APIRoute = async ({ request, cookies, url, redirect }) => {
@@ -27,20 +28,25 @@ export const POST: APIRoute = async ({ request, cookies, url, redirect }) => {
   }
 
   const lockToken = crypto.randomUUID();
-  const obligation = await claimSchoolCheckout(env.DB, id, email, lockToken);
+  const target = await env.DB.prepare(`SELECT subprogram_schedule_id FROM school_payment_obligations
+    WHERE id=? AND student_email=? COLLATE NOCASE`).bind(id, email).first<{subprogram_schedule_id:string|null}>();
+  const isBundle = Boolean(target?.subprogram_schedule_id);
+  const obligation = isBundle
+    ? await claimPaymentBundle(env.DB, id, email, lockToken)
+    : await claimSchoolCheckout(env.DB, id, email, lockToken);
   if (!obligation) return redirect('/account/payments?error=Este%20pago%20no%20está%20disponible%2C%20requiere%20inscripción%20vigente%20o%20ya%20se%20está%20procesando.',303);
 
+  let providerSessionCreated = false;
   try {
     const identity = method === 'demo' ? await claimOrderIdentity(env.DB) : null;
     const publicId = identity?.publicId ?? crypto.randomUUID();
     const provider = await getPaymentProvider(method);
     const errorMsg = encodeURIComponent('El pago no se completó. Puedes intentarlo nuevamente.');
-    const items = JSON.stringify([{
-      id: null, q: 1, n: obligation.title_snapshot, p: obligation.amount_cents, v: null
-    }]);
+    const title = 'title_snapshot' in obligation ? obligation.title_snapshot : 'Pago escolar agrupado';
+    const items = JSON.stringify([{ id: null, q: 1, n: title, p: obligation.amount_cents, v: null }]);
     const result = await provider.createCheckout({
       lineItems: [{
-        name: obligation.title_snapshot,
+        name: title,
         amountCents: obligation.amount_cents,
         currency: obligation.currency.toLowerCase(),
         quantity: 1
@@ -59,12 +65,20 @@ export const POST: APIRoute = async ({ request, cookies, url, redirect }) => {
     });
 
     if (!result.providerSessionId) throw new Error('El proveedor no devolvió el identificador de sesión.');
-    const linked = await env.DB.prepare(`UPDATE school_payment_obligations SET checkout_session_id=?,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND checkout_lock_token=?`).bind(result.providerSessionId, obligation.id, lockToken).run();
-    if ((linked.meta?.changes ?? 0) === 0) throw new Error('La sesión de pago ya no pudo vincularse con la obligación.');
+    providerSessionCreated = true;
+    if (isBundle) {
+      await linkPaymentBundle(env.DB, lockToken, obligation.id, result.providerSessionId);
+    } else {
+      const linked = await env.DB.prepare(`UPDATE school_payment_obligations SET checkout_session_id=?,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND checkout_lock_token=?`).bind(result.providerSessionId, obligation.id, lockToken).run();
+      if ((linked.meta?.changes ?? 0) === 0) throw new Error('La sesión de pago ya no pudo vincularse con la obligación.');
+    }
     // Keep the lock token until the signed webhook confirms payment or expiry.
     return redirect(result.url,303);
   } catch (error) {
-    await env.DB.prepare(`UPDATE school_payment_obligations SET checkout_lock_token=NULL,checkout_locked_at=NULL,checkout_session_id=NULL,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND checkout_lock_token=?`).bind(obligation.id,lockToken).run();
+    if (!providerSessionCreated) {
+      if (isBundle) await releasePaymentBundle(env.DB, lockToken, 'failed', null);
+      else await env.DB.prepare(`UPDATE school_payment_obligations SET checkout_lock_token=NULL,checkout_locked_at=NULL,checkout_session_id=NULL,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? AND checkout_lock_token=?`).bind(obligation.id,lockToken).run();
+    }
     console.error('School payment checkout failed:', error);
     return redirect('/account/payments?error=No%20se%20pudo%20iniciar%20el%20pago.%20Intenta%20de%20nuevo.',303);
   }

@@ -16,6 +16,7 @@ import { mediaUsage, mediaUsageForIds, isUnused } from '../../src/features/media
 import { uploadMedia } from '../../src/features/media/upload.ts';
 import { savePageBody } from '../../src/features/pages/save.ts';
 import { resolveHomePath, homeTargetIsValid } from '../../src/features/settings/home.ts';
+import { saveSchoolGroupAction } from '../../src/features/school/groups.ts';
 
 // Media lifecycle against a real D1. The properties under test are the ones a
 // mocked database cannot show: that the guarded DELETE and the guarded
@@ -126,6 +127,9 @@ try {
        key TEXT PRIMARY KEY,
        value TEXT NOT NULL,
        updated_at TEXT NOT NULL DEFAULT (datetime('now')))`,
+    `CREATE TABLE school_subprogram_groups (
+       id TEXT PRIMARY KEY,title TEXT NOT NULL,image_key TEXT,description TEXT NOT NULL DEFAULT '',
+       schedule TEXT NOT NULL DEFAULT '',rules TEXT NOT NULL DEFAULT '',evaluation_description TEXT NOT NULL DEFAULT '')`,
   ]) {
     await db.prepare(sql).run();
   }
@@ -137,6 +141,33 @@ try {
       mime_type: 'image/png',
       size_bytes: 10,
     });
+
+  await check('group cover uses media ownership and cannot be deleted while referenced', async () => {
+    const cover = await newMedia('groups/square.png');
+    await db.prepare("INSERT INTO school_subprogram_groups(id,title) VALUES ('g-cover','Grupo prueba')").run();
+    const details = new FormData();
+    for (const [key,value] of Object.entries({ action:'details', group_id:'g-cover', title:'Grupo prueba',
+      image_key:cover.image_key, description:'Descripción', schedule:'Lunes', rules:'Reglas', evaluation_description:'Examen' })) details.set(key,value);
+    await saveSchoolGroupAction(db, details);
+    assert.equal((await mediaUsage(db,cover.id)).schoolGroups[0].id, 'g-cover');
+    assert.equal(await deleteMediaRecord(db,cover.id), null);
+    details.set('image_key','missing-image');
+    await assert.rejects(() => saveSchoolGroupAction(db,details));
+    details.set('image_key','');
+    await saveSchoolGroupAction(db,details);
+    assert.equal(await deleteMediaRecord(db,cover.id), cover.image_key);
+  });
+
+  await check('concurrent group cover assignment and deletion cannot leave a dangling reference', async () => {
+    const cover = await newMedia('groups/race.png');
+    await db.prepare("INSERT INTO school_subprogram_groups(id,title) VALUES ('g-race','Grupo')").run();
+    const details = new FormData();
+    for (const [key,value] of Object.entries({ action:'details', group_id:'g-race',title:'Grupo',image_key:cover.image_key })) details.set(key,value);
+    await Promise.allSettled([saveSchoolGroupAction(db,details),deleteMediaRecord(db,cover.id)]);
+    const group = await db.prepare("SELECT image_key FROM school_subprogram_groups WHERE id='g-race'").first();
+    const rows = await findMediaByKeys(db,[cover.image_key]);
+    assert.ok(group.image_key !== cover.image_key || rows.length === 1);
+  });
 
   console.log('\nexisting-image backfill (migration 0026)');
 

@@ -6,6 +6,7 @@ import { isLegacyPublicId } from '../../../../features/ids/publicId.ts';
 import { isAccessToken } from '../../../../features/ids/token.ts';
 import { resolveAccessToken } from '../../../../features/orders/guestAccess.ts';
 import { renderMathText } from '../../../../features/mathTexts/render.ts';
+import { blockedOrderItemIds } from '../../../../features/orders/courseRestrictions.ts';
 
 const { token, itemPublicId } = Astro.params;
 let order = null;
@@ -21,6 +22,7 @@ if (!order || order.status !== 'paid' || order.refunded_cents >= order.amount_to
 const items = await listOrderItems(env.DB, order.id);
 const item = items.find((it) => it.public_id === itemPublicId && it.math_text_source && it.math_text_title);
 if (!item) return new Response('Not found', { status: 404 });
+if ((await blockedOrderItemIds(env.DB, order.id, order.email)).has(item.id)) return new Response('Not found', { status: 404 });
 const sections = renderMathText(item.math_text_source!);
 const firstSectionId = sections[0]?.id ?? 'math-reader';
 ---

@@ -5,6 +5,7 @@ import { parsePublicId } from '../../../../features/ids/publicId.ts';
 import { resolveAccessToken } from '../../../../features/orders/guestAccess.ts';
 import { getOrderByPublicId } from '../../../../features/orders/db.ts';
 import { getFileStorage } from '../../../../features/storage/index.ts';
+import { blockedOrderItemIds } from '../../../../features/orders/courseRestrictions.ts';
 
 export const prerender = false;
 
@@ -47,6 +48,9 @@ export const GET: APIRoute = async ({ params }) => {
     .bind(order.id, itemPublicId)
     .first<{ id: number; file_key: string; file_name: string | null; file_mime: string | null }>();
   if (!item) return new Response('Not found', { status: 404, headers: PRIVATE_HEADERS });
+  if ((await blockedOrderItemIds(env.DB, order.id, order.email)).has(item.id)) {
+    return new Response('Contenido no disponible', { status: 403, headers: PRIVATE_HEADERS });
+  }
   const stored = await getFileStorage().get(item.file_key);
   if (!stored) return new Response('File unavailable', { status: 404, headers: PRIVATE_HEADERS });
   await env.DB.prepare('UPDATE order_items SET downloads = downloads + 1 WHERE id = ?').bind(item.id).run();

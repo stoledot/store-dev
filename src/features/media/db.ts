@@ -138,6 +138,9 @@ export async function deleteMediaRecord(
             SELECT 1 FROM settings
              WHERE settings.key = 'logo_image_key' AND settings.value = media.image_key
           )
+          AND NOT EXISTS (
+            SELECT 1 FROM school_subprogram_groups WHERE school_subprogram_groups.image_key = media.image_key
+          )
         RETURNING image_key`,
     )
     .bind(id)
