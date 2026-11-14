@@ -44,11 +44,16 @@ export async function ensureConferenceAccessForOrder(db:D1Database, orderId:numb
         .bind(orderId,line.id,seat,seat===1 ? key : '',key,key,fallbackKey,zoomUrl,instructions, existing?.conference_id ?? linked?.id ?? null).run();
     }
   }
-  const {results} = await db.prepare('SELECT * FROM conference_access WHERE order_id=? ORDER BY order_item_id,seat_number').bind(orderId).all<ConferenceAccess>();
-  return results ?? [];
+  return listConferenceAccessForOrder(db, orderId);
 }
 export async function listConferenceAccessForOrder(db:D1Database,orderId:number):Promise<ConferenceAccess[]> {
-  const {results}=await db.prepare('SELECT * FROM conference_access WHERE order_id=? ORDER BY order_item_id,seat_number').bind(orderId).all<ConferenceAccess>();
+  const {results}=await db.prepare(`SELECT ca.* FROM conference_access ca JOIN orders o ON o.id=ca.order_id
+    WHERE ca.order_id=? AND NOT EXISTS (
+      SELECT 1 FROM school_extended_manual_access a JOIN customer_accounts account ON account.client_number=a.client_number
+      WHERE account.email=COALESCE((SELECT current_email FROM customer_email_aliases WHERE old_email=o.email COLLATE NOCASE),o.email) COLLATE NOCASE
+        AND a.resource_type='conference' AND a.resource_id=CAST(ca.conference_id AS TEXT)
+        AND a.decision='deny' AND (a.expires_at IS NULL OR date(a.expires_at)>=date('now'))
+    ) ORDER BY ca.order_item_id,ca.seat_number`).bind(orderId).all<ConferenceAccess>();
   const accessRows = results ?? [];
   // Read session details from the conference, not the mutable product catalog.
   // Rescheduling and session deletion therefore update historical order views.

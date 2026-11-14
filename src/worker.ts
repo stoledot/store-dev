@@ -9,6 +9,7 @@ import { sendAdvertisingInquiryNotifications } from './features/advertising/noti
 import { reconcileEnrollmentPolicies, reconcileSubprogramSchedules } from './features/school/subprogramBilling';
 import { sendSubprogramApprovalEmails } from './features/school/subprogramApprovalEmail';
 import { reconcileDemoSchoolPayments } from './features/school/reconcileDemoPayments';
+import { reconcileOverdueReactivations, reconcileOverdueSuspensions } from './features/school/withdrawals';
 
 /**
  * Worker entrypoint.
@@ -78,6 +79,12 @@ async function runScheduledSweeps(): Promise<void> {
     await reconcileSubprogramSchedules(db);
   } catch (err) {
     console.error('Scheduled subprogram billing failed:', err);
+  }
+  try {
+    await reconcileOverdueReactivations(db);
+    await reconcileOverdueSuspensions(db);
+  } catch (err) {
+    console.error('Scheduled school withdrawal reconciliation failed:', err);
   }
   try {
     await sendSubprogramApprovalEmails(db);

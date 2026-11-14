@@ -56,8 +56,12 @@ export async function settleDemoCheckout(
          WHERE id=? AND (student_email=? COLLATE NOCASE OR EXISTS (
            SELECT 1 FROM customer_email_aliases a WHERE a.old_email=? COLLATE NOCASE
              AND a.current_email=school_payment_obligations.student_email COLLATE NOCASE)) AND status='pending'
-           AND checkout_session_id=? AND amount_cents=? AND lower(currency)=lower(?)
-      `).bind(pending.school_payment_obligation_id, email, email, pending.payment_hash, pending.amount_total_cents, pending.currency).first<{id:string}>();
+           AND checkout_session_id=? AND lower(currency)=lower(?)
+           AND (amount_cents=? AND checkout_bundle_id IS NULL OR EXISTS (
+             SELECT 1 FROM school_payment_bundles b WHERE b.id=school_payment_obligations.checkout_bundle_id
+               AND b.status='pending' AND b.leader_obligation_id=school_payment_obligations.id
+               AND b.checkout_session_id=school_payment_obligations.checkout_session_id AND b.amount_cents=?))
+      `).bind(pending.school_payment_obligation_id, email, email, pending.payment_hash, pending.currency, pending.amount_total_cents, pending.amount_total_cents).first<{id:string}>();
       if (!obligation) return { declined: 'Este pago ya no está disponible.' };
     }
     const order = { ...pendingToPaidOrder(pending), email };

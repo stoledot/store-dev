@@ -1,0 +1,50 @@
+<div class="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-3 px-4 py-6 text-sm">
+  <a href="/contacto" class="rounded-full border border-line px-4 py-2 hover:text-brand">Contacto y redes</a>
+  <button type="button" data-fullscreen hidden class="rounded-full border border-line px-4 py-2 hover:text-brand">Pantalla completa</button>
+  <button type="button" data-install-app hidden class="rounded-full border border-line px-4 py-2 hover:text-brand">Instalar app</button>
+  <details data-install-help class="relative">
+    <summary class="cursor-pointer rounded-full border border-line px-4 py-2 hover:text-brand">Agregar a pantalla de inicio</summary>
+    <div class="absolute bottom-full right-0 mb-2 w-72 rounded-xl border border-line bg-paper p-4 shadow-lg">
+      En iPhone o iPad, abre esta página en Safari, pulsa Compartir y elige «Agregar a pantalla de inicio». En otros navegadores, busca «Instalar aplicación» o «Agregar a pantalla de inicio» en el menú.
+    </div>
+  </details>
+  <p data-app-message role="status" class="basis-full text-center text-muted"></p>
+</div>
+<script>
+  interface InstallPromptEvent extends Event {
+    prompt(): Promise<void>;
+  }
+  const fullscreen = document.querySelector<HTMLButtonElement>('[data-fullscreen]');
+  const install = document.querySelector<HTMLButtonElement>('[data-install-app]');
+  const message = document.querySelector<HTMLElement>('[data-app-message]');
+  let promptEvent: InstallPromptEvent | undefined;
+  if (fullscreen && document.documentElement.requestFullscreen) {
+    fullscreen.hidden = false;
+    const update = () => { fullscreen.textContent = document.fullscreenElement ? 'Salir de pantalla completa' : 'Pantalla completa'; };
+    document.addEventListener('fullscreenchange', update);
+    fullscreen.addEventListener('click', async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await document.documentElement.requestFullscreen();
+      } catch {
+        if (message) message.textContent = 'La pantalla completa no está disponible en este navegador.';
+      }
+    });
+  }
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    promptEvent = event as InstallPromptEvent;
+    if (install) install.hidden = false;
+  });
+  install?.addEventListener('click', async () => {
+    if (!promptEvent) return;
+    try {
+      await promptEvent.prompt();
+    } catch {
+      if (message) message.textContent = 'No se pudo abrir la instalación. Usa las instrucciones para agregar a la pantalla de inicio.';
+    }
+    promptEvent = undefined;
+    install.hidden = true;
+  });
+  window.addEventListener('appinstalled', () => { if (install) install.hidden = true; });
+</script>

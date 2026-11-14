@@ -10,6 +10,9 @@ interface Props {
 }
 const { subprogramId, courses, products, modality } = Astro.props;
 const input = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2';
+const weekdays: number[] = JSON.parse(modality?.class_weekdays ?? '[]');
+const added: string[] = JSON.parse(modality?.class_dates_added ?? '[]');
+const excluded: string[] = JSON.parse(modality?.class_dates_excluded ?? '[]');
 ---
 <form method="POST" class="space-y-3">
   <input type="hidden" name="action" value="save-modality" />
@@ -52,16 +55,19 @@ const input = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2';
     <label class="block text-sm">Clases por pago (vacío = sin límite)
       <input type="number" name="classes_per_payment" min="1" step="1" value={modality?.classes_per_payment ?? ''} class={input} />
     </label>
-    <label class="block text-sm">Vigencia: cantidad (vacío = sin caducidad)
-      <input type="number" name="validity_count" min="1" step="1" value={modality?.validity_count ?? ''} class={input} />
+    <label class="block text-sm">Inicio del primer período de clases
+      <input type="date" name="period_start_on" required value={modality?.period_start_on ?? ''} class={input} />
     </label>
-    <label class="block text-sm">Vigencia: unidad
-      <select name="validity_unit" class={input}>
-        <option value="">Sin caducidad</option>
-        <option value="day" selected={modality?.validity_unit === 'day'}>Días</option>
-        <option value="week" selected={modality?.validity_unit === 'week'}>Semanas</option>
-        <option value="month" selected={modality?.validity_unit === 'month'}>Meses</option>
-        <option value="year" selected={modality?.validity_unit === 'year'}>Años</option>
+    <label class="block text-sm">Fin del primer período (día incluido)
+      <input type="date" name="period_end_on" required value={modality?.period_end_on ?? ''} class={input} />
+    </label>
+    <label class="block text-sm">Días de anticipación para pagar
+      <input type="number" name="advance_days" min="0" max="366" step="1" required value={modality?.advance_days ?? 0} class={input} />
+    </label>
+    <label class="block text-sm">Prorratear ingreso al período actual por
+      <select name="proration_method" class={input}>
+        <option value="days" selected={!modality || modality.proration_method === 'days'}>Días calendario</option>
+        <option value="classes" selected={modality?.proration_method === 'classes'}>Clases programadas</option>
       </select>
     </label>
     <label class="block text-sm">Estado
@@ -72,6 +78,23 @@ const input = 'mt-1 block w-full rounded border border-line bg-white px-3 py-2';
       </select>
     </label>
   </div>
+  <fieldset class="space-y-2 text-sm">
+    <legend class="font-semibold">Calendario para prorratear por clases</legend>
+    <div class="flex flex-wrap gap-3">
+      {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((day, index) =>
+        <label class="flex items-center gap-1"><input type="checkbox" name="class_weekdays" value={index} checked={weekdays.includes(index)} />{day}</label>
+      )}
+    </div>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label>Fechas adicionales (AAAA-MM-DD, una por línea)
+        <textarea name="class_dates_added" rows="3" class={input}>{added.join('\n')}</textarea>
+      </label>
+      <label>Fechas excluidas (AAAA-MM-DD, una por línea)
+        <textarea name="class_dates_excluded" rows="3" class={input}>{excluded.join('\n')}</textarea>
+      </label>
+    </div>
+  </fieldset>
+  <p class="text-xs text-muted">Las fechas se interpretan en la zona horaria de Ciudad de México. El período se repite según la frecuencia; el día final está incluido. Al prorratear por clases, no se generan cobros para períodos sin clases programadas.</p>
   <label class="flex items-center gap-2 text-sm">
     <input type="checkbox" name="requires_current_enrollment" value="1" checked={modality?.requires_current_enrollment === 1} />
     Requiere inscripción vigente (no aplica a pagos de inscripción)

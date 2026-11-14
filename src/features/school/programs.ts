@@ -1,5 +1,7 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import { saveDiagnosticQuestion } from './subprogramDiagnostics.ts';
+import { removeDiagnosticSection, saveDiagnosticQuestion, saveDiagnosticSection } from './subprogramDiagnostics.ts';
+import { calendarPeriods, parseSchoolDate, type CalendarPolicy } from './paymentPeriods.ts';
+import type { FrequencyUnit } from './scheduleDates.ts';
 
 export interface Program {
   slug: string;
@@ -24,6 +26,7 @@ export interface Subprogram {
   duration_description: string;
   status: string;
   enrollment_modality_id?: string | null;
+  suspension_after_days: number | null;
 }
 
 export interface Modality {
@@ -38,6 +41,13 @@ export interface Modality {
   course_id: string | null;
   validity_count: number | null;
   validity_unit: string | null;
+  period_start_on: string | null;
+  period_end_on: string | null;
+  advance_days: number;
+  proration_method: string;
+  class_weekdays: string;
+  class_dates_added: string;
+  class_dates_excluded: string;
   requires_current_enrollment: number;
   status: string;
 }
@@ -54,6 +64,14 @@ export interface PaymentProduct {
   amount_cents: number;
   currency: string;
   active: number;
+}
+
+export interface SubprogramFaq {
+  id: string;
+  subprogram_id: string;
+  question: string;
+  answer: string;
+  position: number;
 }
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? '').trim();
@@ -97,6 +115,37 @@ export function parseModality(form: FormData) {
   if (paymentType === 'enrollment' && requiresEnrollment) {
     throw new Error('Una inscripción no puede exigir una inscripción vigente.');
   }
+  const start = required(form, 'period_start_on', 'El inicio del período');
+  const end = required(form, 'period_end_on', 'El fin del período');
+  parseSchoolDate(start);
+  parseSchoolDate(end);
+  const advanceText = text(form, 'advance_days');
+  if (!/^\d+$/.test(advanceText) || Number(advanceText) > 366) throw new Error('La anticipación debe ser de 0 a 366 días.');
+  const proration = choice(form, 'proration_method', ['days', 'classes'], 'El prorrateo') as 'days' | 'classes';
+  const weekdayValues = form.getAll('class_weekdays').map(String);
+  if (weekdayValues.some((day) => !/^[0-6]$/.test(day)) || new Set(weekdayValues).size !== weekdayValues.length) {
+    throw new Error('Los días de clase no son válidos.');
+  }
+  const weekdays = weekdayValues.map(Number);
+  const dates = (key: string) => {
+    const values = text(form, key).split(/[\s,]+/).filter(Boolean);
+    if (values.length > 1000) throw new Error('Hay demasiadas fechas de clase.');
+    values.forEach(parseSchoolDate);
+    return [...new Set(values)].sort();
+  };
+  const added = dates('class_dates_added');
+  const excluded = dates('class_dates_excluded');
+  if (added.some((day) => excluded.includes(day))) throw new Error('Una fecha no puede estar incluida y excluida a la vez.');
+  if (proration === 'classes' && weekdays.length === 0 && added.length === 0) throw new Error('Configura los días o las fechas de clase.');
+  const policy: CalendarPolicy = {
+    period_start_on: start, period_end_on: end, frequency_unit: frequencyUnit as FrequencyUnit,
+    frequency_count: frequencyCount, advance_days: Number(advanceText), proration_method: proration,
+    class_weekdays: weekdays, class_dates_added: added, class_dates_excluded: excluded,
+  };
+  if ((parseSchoolDate(end).getTime() - parseSchoolDate(start).getTime()) / 86400000 > 366) {
+    throw new Error('El período no puede durar más de 367 días.');
+  }
+  calendarPeriods(policy, start);
   return {
     title: required(form, 'title', 'El nombre'),
     product: required(form, 'payment_product_id', 'El producto de pago'),
@@ -107,6 +156,8 @@ export function parseModality(form: FormData) {
     course: text(form, 'course_id') || null,
     validity: validity ? positiveInteger(validity, 'La vigencia') : null,
     validityUnit: validityUnit || null,
+    start, end, advanceDays: policy.advance_days, proration,
+    weekdays: JSON.stringify(weekdays), added: JSON.stringify(added), excluded: JSON.stringify(excluded),
     requiresEnrollment,
     status: choice(form, 'status', ['draft', 'active', 'archived'], 'El estado'),
   };
@@ -114,8 +165,40 @@ export function parseModality(form: FormData) {
 
 export async function saveProgramAction(db: D1Database, form: FormData): Promise<void> {
   const action = text(form, 'action');
-  if (action === 'add-diagnostic-question') {
+  if (action === 'save-subprogram-faq') {
+    const subprogram = required(form, 'subprogram_id', 'El subprograma');
+    const id = text(form, 'faq_id');
+    const question = required(form, 'question', 'La pregunta');
+    const answer = required(form, 'answer', 'La respuesta');
+    const position = Number(text(form, 'position') || '0');
+    if (question.length > 1000 || answer.length > 10000 || !Number.isSafeInteger(position) || position < 0 || position > 10000) {
+      throw new Error('Revisa la pregunta, respuesta y orden de la pregunta frecuente.');
+    }
+    const result = id
+      ? await db.prepare('UPDATE school_subprogram_faqs SET question=?,answer=?,position=? WHERE id=? AND subprogram_id=?')
+        .bind(question, answer, position, id, subprogram).run()
+      : await db.prepare(`INSERT INTO school_subprogram_faqs(id,subprogram_id,question,answer,position)
+          SELECT ?,id,?,?,? FROM school_subprograms WHERE id=?`)
+        .bind(crypto.randomUUID(), question, answer, position, subprogram).run();
+    if (!result.meta.changes) throw new Error('La pregunta frecuente o el subprograma no existe.');
+    return;
+  }
+  if (action === 'remove-subprogram-faq') {
+    const result = await db.prepare('DELETE FROM school_subprogram_faqs WHERE id=? AND subprogram_id=?')
+      .bind(required(form, 'faq_id', 'La pregunta'), required(form, 'subprogram_id', 'El subprograma')).run();
+    if (!result.meta.changes) throw new Error('La pregunta frecuente no existe.');
+    return;
+  }
+  if (action === 'add-diagnostic-question' || action === 'save-diagnostic-question') {
     await saveDiagnosticQuestion(db, form);
+    return;
+  }
+  if (action === 'save-diagnostic-section') {
+    await saveDiagnosticSection(db, form);
+    return;
+  }
+  if (action === 'remove-diagnostic-section') {
+    await removeDiagnosticSection(db, required(form, 'subprogram_id', 'El subprograma'), required(form, 'section_id', 'La sección'));
     return;
   }
   if (action === 'remove-diagnostic-question') {
@@ -139,7 +222,8 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
       const requiredByAssigned = await db.prepare(`
         SELECT e.id FROM school_subprogram_enrollments e
         JOIN school_payment_modalities m ON m.id=e.modality_id
-        WHERE e.subprogram_id=? AND e.status='active' AND m.requires_current_enrollment=1 LIMIT 1
+        WHERE e.subprogram_id=? AND e.status IN ('active','suspended')
+          AND (m.requires_current_enrollment=1 OR e.reenrollment_required=1) LIMIT 1
       `).bind(subprogram).first<{ id: string }>();
       if (requiredByAssigned) throw new Error('Primero desactiva el requisito de inscripción en las modalidades asignadas a alumnos activos.');
     }
@@ -151,7 +235,8 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
              AND m.status='active' AND p.active=1
         ) OR ? IS NULL AND NOT EXISTS (
           SELECT 1 FROM school_subprogram_enrollments e JOIN school_payment_modalities m ON m.id=e.modality_id
-           WHERE e.subprogram_id=school_subprograms.id AND e.status='active' AND m.requires_current_enrollment=1
+           WHERE e.subprogram_id=school_subprograms.id AND e.status IN ('active','suspended')
+             AND (m.requires_current_enrollment=1 OR e.reenrollment_required=1)
         ))
     `).bind(modality || null, subprogram, modality || null, modality || null, modality || null).run();
     if (!result.meta.changes) throw new Error('El subprograma o la configuración cambiaron. Vuelve a intentarlo.');
@@ -172,19 +257,24 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
       throw new Error('El identificador debe contener letras minúsculas, números y guiones.');
     }
+    const suspension = text(form, 'suspension_after_days');
+    if (suspension && (!/^\d+$/.test(suspension) || Number(suspension) > 3650)) {
+      throw new Error('El plazo de baja temporal debe estar entre 0 y 3650 días.');
+    }
     const values = [program, slug, required(form, 'title', 'El nombre'), text(form, 'description'),
       text(form, 'education_level'), text(form, 'image_url'), text(form, 'objectives'),
       text(form, 'methodology'), text(form, 'terms_md'), text(form, 'policies_md'),
-      text(form, 'duration_description'), choice(form, 'status', ['draft', 'active', 'archived'], 'El estado')];
+      text(form, 'duration_description'), choice(form, 'status', ['draft', 'active', 'archived'], 'El estado'),
+      suspension ? Number(suspension) : null];
     if (id) {
       const result = await db.prepare(`UPDATE school_subprograms SET program_slug=?, slug=?, title=?, description=?,
         education_level=?, image_url=?, objectives=?, methodology=?, terms_md=?, policies_md=?,
-        duration_description=?, status=? WHERE id=?`).bind(...values, id).run();
+        duration_description=?, status=?, suspension_after_days=? WHERE id=?`).bind(...values, id).run();
       if (!result.meta.changes) throw new Error('Subprograma no encontrado.');
     } else {
       await db.prepare(`INSERT INTO school_subprograms (program_slug, slug, title, description, education_level,
-        image_url, objectives, methodology, terms_md, policies_md, duration_description, status, id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(...values, crypto.randomUUID()).run();
+        image_url, objectives, methodology, terms_md, policies_md, duration_description, status, suspension_after_days, id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(...values, crypto.randomUUID()).run();
     }
     return;
   }
@@ -206,11 +296,13 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
     const subprogram = required(form, 'subprogram_id', 'El subprograma');
     const data = parseModality(form);
     const values = [data.title, data.product, data.paymentType, data.frequencyUnit, data.frequencyCount,
-      data.classes, data.course, data.validity, data.validityUnit, data.requiresEnrollment, data.status];
+      data.classes, data.course, data.validity, data.validityUnit, data.requiresEnrollment, data.status,
+      data.start, data.end, data.advanceDays, data.proration, data.weekdays, data.added, data.excluded];
     if (id) {
       const results = await db.batch([db.prepare(`UPDATE school_payment_modalities SET billing_revision=billing_revision+1, title=?, payment_product_id=?, payment_type=?,
         frequency_unit=?, frequency_count=?, classes_per_payment=?, course_id=?, validity_count=?, validity_unit=?,
-        requires_current_enrollment=?, status=? WHERE id=? AND subprogram_id=?
+        requires_current_enrollment=?, status=?, period_start_on=?, period_end_on=?, advance_days=?, proration_method=?,
+        class_weekdays=?, class_dates_added=?, class_dates_excluded=? WHERE id=? AND subprogram_id=?
         AND (payment_type=? OR (NOT EXISTS (SELECT 1 FROM school_subprogram_payment_schedules s WHERE s.modality_id=school_payment_modalities.id)
           AND NOT EXISTS (SELECT 1 FROM school_subprograms p WHERE p.enrollment_modality_id=school_payment_modalities.id)))
         AND (?=0 OR EXISTS (SELECT 1 FROM school_subprograms p WHERE p.id=school_payment_modalities.subprogram_id AND p.enrollment_modality_id IS NOT NULL))`)
@@ -220,7 +312,8 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
     } else {
       await db.prepare(`INSERT INTO school_payment_modalities (title, payment_product_id, payment_type, frequency_unit,
         frequency_count, classes_per_payment, course_id, validity_count, validity_unit, requires_current_enrollment,
-        status, id, subprogram_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        status, period_start_on, period_end_on, advance_days, proration_method, class_weekdays, class_dates_added,
+        class_dates_excluded, id, subprogram_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
         .bind(...values, crypto.randomUUID(), subprogram).run();
     }
     return;

@@ -14,6 +14,7 @@ import {
 import { markPendingSettled } from '../payments/lightning/pending';
 import { purgeStockProductCache } from '../cache/purge';
 import { settleSubprogramObligation } from '../school/subprogramSettlement';
+import { releaseExpiredPaymentBundle, settlePaymentBundle } from '../school/paymentBundles';
 
 /**
  * Persist a verified paid-webhook order (idempotent on the provider session id)
@@ -42,10 +43,11 @@ export async function settleSchoolObligation(
 ): Promise<void> {
   const obligationId = paidOrder.schoolPaymentObligationId;
   if (!obligationId) return;
+  if (await settlePaymentBundle(env.DB, paidOrder, orderId, paymentMethod)) return;
   const validity = await env.DB.prepare(`
-    SELECT modality_validity_count,modality_validity_unit,subprogram_schedule_id
+    SELECT modality_validity_count,modality_validity_unit,subprogram_schedule_id,group_access_only
       FROM school_payment_obligations WHERE id=?
-  `).bind(obligationId).first<{modality_validity_count:number|null;modality_validity_unit:string|null;subprogram_schedule_id:string|null}>();
+  `).bind(obligationId).first<{modality_validity_count:number|null;modality_validity_unit:string|null;subprogram_schedule_id:string|null;group_access_only:number}>();
   if (validity?.subprogram_schedule_id) {
     await settleSubprogramObligation(env.DB, paidOrder, orderId, paymentMethod, validity);
     return;
@@ -76,7 +78,7 @@ export async function settleSchoolObligation(
     student_email:string;fee_type:string;validity_months:number;amount_cents:number;currency:string;title_snapshot:string;
     paid_at:string;modality_valid_until:string|null;subprogram_schedule_id:string|null;
   }>();
-  if (!obligation || !['enrollment','monthly'].includes(obligation.fee_type)) return;
+  if (!obligation || validity?.group_access_only === 1 || !['enrollment','monthly'].includes(obligation.fee_type)) return;
   // Legacy obligations use the existing enrollment and period ledger.
   const feeId = crypto.randomUUID();
   const validMonths = Math.max(1, Math.min(36, Number(obligation.validity_months) || 1));
@@ -147,7 +149,8 @@ export async function recordPaidWebhookOrder(
 
   // A signed Stripe expiry/failure event releases the private school checkout lock.
   if (result.schoolObligationId && result.schoolCheckoutSessionId && !result.order) {
-    await env.DB.prepare(`UPDATE school_payment_obligations
+    const releasedBundle = await releaseExpiredPaymentBundle(env.DB, result.schoolObligationId, result.schoolCheckoutSessionId);
+    if (!releasedBundle) await env.DB.prepare(`UPDATE school_payment_obligations
       SET checkout_lock_token=NULL, checkout_locked_at=NULL, checkout_session_id=NULL,
           updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
       WHERE id=? AND checkout_session_id=? AND status='pending'`)

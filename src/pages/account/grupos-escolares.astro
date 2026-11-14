@@ -1,0 +1,35 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail } from '../../features/auth/customer';
+import { ensureCustomerAccount } from '../../features/auth/customerIdentity';
+import { listStudentSchoolGroups } from '../../features/school/groups';
+import { mediaUrl } from '../../features/media/url';
+import { getConfig } from '../../config';
+
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+if (!(await accountsEnabled())) return Astro.redirect('/', 303);
+const email = await getCustomerEmail(Astro.cookies);
+if (!email) return Astro.redirect('/account/login?next=%2Faccount%2Fgrupos-escolares', 303);
+const clientNumber = await ensureCustomerAccount(env.DB, email);
+const groups = await listStudentSchoolGroups(env.DB, clientNumber);
+---
+<Layout title="Mis grupos escolares">
+  <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <a href="/account" class="text-sm text-brand underline">← Mi cuenta</a>
+    <h1 class="mt-5 font-serif text-3xl">Mis grupos escolares</h1>
+    <p class="mt-2 text-sm text-muted">Información de los grupos que tienes asignados y activos.</p>
+    {groups.length===0 ? <p class="mt-6 rounded-2xl border border-dashed border-line p-6 text-sm text-muted">No tienes grupos escolares disponibles en este momento.</p> :
+      <div class="mt-6 grid gap-5 md:grid-cols-2">{groups.map(group => <article class="overflow-hidden rounded-2xl border border-line bg-surface">
+        {group.image_key && <img src={mediaUrl(group.image_key,getConfig().images.baseUrl)} alt="" class="aspect-square w-full object-cover" />}
+        <div class="space-y-4 p-5">
+          <header><p class="text-xs font-semibold uppercase tracking-wide text-muted">{group.subprogram_title}</p><h2 class="mt-1 font-serif text-2xl">{group.title}</h2></header>
+          {group.description && <p class="whitespace-pre-wrap text-sm leading-6">{group.description}</p>}
+          {group.schedule && <section><h3 class="font-semibold">Horarios y días</h3><p class="mt-1 whitespace-pre-wrap text-sm text-muted">{group.schedule}</p></section>}
+          {group.rules && <section><h3 class="font-semibold">Reglas</h3><p class="mt-1 whitespace-pre-wrap text-sm text-muted">{group.rules}</p></section>}
+          {group.evaluation_description && <section><h3 class="font-semibold">Evaluación</h3><p class="mt-1 whitespace-pre-wrap text-sm text-muted">{group.evaluation_description}</p></section>}
+        </div>
+      </article>)}</div>}
+  </main>
+</Layout>

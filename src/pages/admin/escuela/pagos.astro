@@ -3,6 +3,7 @@ export const prerender = false;
 import { env } from 'cloudflare:workers';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { formatPrice, toMajorUnits, toMinorUnits } from '../../../config';
+import { groupBundleCandidates, listBundleCandidates } from '../../../features/school/paymentBundles';
 const cleanEmail=(v:unknown)=>String(v??'').trim().toLowerCase().slice(0,254);
 const validEmail=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const validDate=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -60,7 +61,16 @@ if(Astro.request.method==='POST'){
   }catch(e){const msg=e instanceof Error?e.message:'No se pudo guardar.';return Astro.redirect(`/admin/escuela/pagos?error=${encodeURIComponent(msg.slice(0,180))}`,303);}
 }
 const {results:products=[]}=await env.DB.prepare(`SELECT id,title,description,amount_cents,currency,fee_type,validity_months,active,created_at FROM school_payment_products ORDER BY active DESC,title COLLATE NOCASE`).all<{id:string;title:string;description:string;amount_cents:number;currency:string;fee_type:string;validity_months:number;active:number;created_at:string}>();
-const {results:obligations=[]}=await env.DB.prepare(`SELECT o.id,o.student_email,o.title_snapshot,o.amount_cents,o.currency,o.due_at,o.available_at,o.status,o.paid_at,o.order_id,o.checkout_session_id,o.checkout_lock_token,p.title AS product_title FROM school_payment_obligations o LEFT JOIN school_payment_products p ON p.id=o.payment_product_id ORDER BY CASE o.status WHEN 'pending' THEN 0 WHEN 'paid' THEN 1 ELSE 2 END,o.due_at DESC LIMIT 200`).all<{id:string;student_email:string;title_snapshot:string;amount_cents:number;currency:string;due_at:string;available_at:string|null;status:string;paid_at:string|null;order_id:number|null;checkout_session_id:string|null;checkout_lock_token:string|null;product_title:string|null}>();
+const {results:obligations=[]}=await env.DB.prepare(`SELECT o.id,o.student_email,o.title_snapshot,o.amount_cents,o.currency,o.due_at,o.available_at,o.status,o.paid_at,COALESCE(o.order_id,o.bundle_order_id) AS order_id,o.checkout_session_id,o.checkout_lock_token,p.title AS product_title FROM school_payment_obligations o LEFT JOIN school_payment_products p ON p.id=o.payment_product_id ORDER BY CASE o.status WHEN 'pending' THEN 0 WHEN 'paid' THEN 1 ELSE 2 END,o.due_at DESC LIMIT 200`).all<{id:string;student_email:string;title_snapshot:string;amount_cents:number;currency:string;due_at:string;available_at:string|null;status:string;paid_at:string|null;order_id:number|null;checkout_session_id:string|null;checkout_lock_token:string|null;product_title:string|null}>();
+const paymentGroups=groupBundleCandidates(await listBundleCandidates(env.DB,null));
+const {results:paidBundles=[]}=await env.DB.prepare(`SELECT b.id,b.student_email,b.currency,b.amount_cents,b.order_id,s.title AS subprogram_title
+  FROM school_payment_bundles b JOIN school_subprogram_enrollments e ON e.id=b.enrollment_id
+  JOIN school_subprograms s ON s.id=e.subprogram_id WHERE b.status='paid' ORDER BY b.created_at DESC LIMIT 100`)
+  .all<{id:string;student_email:string;currency:string;amount_cents:number;order_id:number|null;subprogram_title:string}>();
+const {results:paidBundleItems=[]}=await env.DB.prepare(`SELECT i.bundle_id,i.title_snapshot,i.amount_cents,i.currency,i.due_at
+  FROM school_payment_bundle_items i JOIN school_payment_bundles b ON b.id=i.bundle_id
+  WHERE b.status='paid' AND b.id IN (SELECT id FROM school_payment_bundles WHERE status='paid' ORDER BY created_at DESC LIMIT 100)
+  ORDER BY i.due_at,i.obligation_id`).all<{bundle_id:string;title_snapshot:string;amount_cents:number;currency:string;due_at:string}>();
 const money=formatPrice;
 const fmt=(s:string|null)=>s?new Intl.DateTimeFormat('es-MX',{dateStyle:'medium'}).format(new Date(`${s.slice(0,10)}T12:00:00`)):'—';
 ---
@@ -107,6 +117,18 @@ const fmt=(s:string|null)=>s?new Intl.DateTimeFormat('es-MX',{dateStyle:'medium'
           </label>
         </label>
         </div>
+        <section class="mt-8 rounded-2xl border border-line p-5">
+          <h2 class="text-xl font-semibold">Desglose de pagos agrupados</h2>
+          {paymentGroups.length===0 && paidBundles.length===0 && <p class="mt-3 text-sm text-muted">No hay pagos agrupados disponibles ni confirmados.</p>}
+          {paymentGroups.map(group=><details class="mt-3 border-t border-line pt-3">
+            <summary class="cursor-pointer font-semibold">{group[0].student_email} · {group[0].subprogram_title} · pendiente {money(group.reduce((sum,item)=>sum+item.amount_cents,0),group[0].currency)}</summary>
+            <ul class="mt-2 space-y-1 text-sm">{group.map(item=><li>{item.title_snapshot} · {fmt(item.due_at)} · {money(item.amount_cents,item.currency)}{item.overdue===1?' · Vencido':''}</li>)}</ul>
+          </details>)}
+          {paidBundles.map(bundle=><details class="mt-3 border-t border-line pt-3">
+            <summary class="cursor-pointer font-semibold">{bundle.student_email} · {bundle.subprogram_title} · pagado {money(bundle.amount_cents,bundle.currency)} · Pedido #{bundle.order_id}</summary>
+            <ul class="mt-2 space-y-1 text-sm">{paidBundleItems.filter(item=>item.bundle_id===bundle.id).map(item=><li>{item.title_snapshot} · {fmt(item.due_at)} · {money(item.amount_cents,item.currency)}</li>)}</ul>
+          </details>)}
+        </section>
         <button class="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand">Crear producto</button>
       </form>
       <div class="mt-6 border-t border-line pt-4">

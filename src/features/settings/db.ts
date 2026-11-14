@@ -42,6 +42,7 @@ export type SettingKey =
   | 'home_page' // what / renders: 'page:<id>' | 'product:<id>'; absent = the catalog list
   | 'announcement' // storefront announcement bar text; absent/empty = bar hidden
   | 'announcement_href' // optional link for the announcement bar
+  | 'contact_config' // public contact and social links
   | 'donations_draft' // draft amounts and legal text; never enables payments
   | 'email_from' // sender address; absent = build-time default
   | 'store_url' // origin last seen serving a settlement, so the cron can build order links

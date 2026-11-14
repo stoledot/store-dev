@@ -1,6 +1,7 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import type { WebhookResult } from '../payments/provider';
 import { validityEnd } from './scheduleDates.ts';
+import { reactivateOverdueEnrollment } from './withdrawals.ts';
 
 export async function settleSubprogramObligation(
   db: D1Database,
@@ -16,7 +17,7 @@ export async function settleSubprogramObligation(
   const result = await db.batch([
     db.prepare(`
       UPDATE school_payment_obligations
-         SET status='paid',order_id=?,paid_at=?,modality_valid_until=?,checkout_lock_token=NULL,checkout_locked_at=NULL,
+         SET status='paid',order_id=?,paid_at=?,modality_valid_until=COALESCE(modality_valid_until,?),checkout_lock_token=NULL,checkout_locked_at=NULL,
              updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
        WHERE id=? AND subprogram_schedule_id IS NOT NULL AND status='pending'
          AND (student_email=? COLLATE NOCASE OR EXISTS (
@@ -47,4 +48,9 @@ export async function settleSubprogramObligation(
       throw new Error(`Paid school obligation ${obligationId} could not be matched to order ${orderId}; manual reconciliation required.`);
     }
   }
+  const enrollment = await db.prepare(`SELECT s.enrollment_id FROM school_payment_obligations o
+    JOIN school_subprogram_payment_schedules s ON s.id=o.subprogram_schedule_id WHERE o.id=?`)
+    .bind(obligationId).first<{ enrollment_id: string }>();
+  if (!enrollment) throw new Error('No se encontró la inscripción del pago escolar.');
+  await reactivateOverdueEnrollment(db, enrollment.enrollment_id, paidAt);
 }

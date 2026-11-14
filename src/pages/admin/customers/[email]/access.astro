@@ -1,0 +1,127 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { ensureCustomerAccount, getClientNumber } from '../../../../features/auth/customerIdentity';
+import { saveManualAccess } from '../../../../features/school/manualAccess';
+import { assignManualPayment, cancelManualPayment } from '../../../../features/school/manualPayments';
+import { setScholarship } from '../../../../features/school/scholarships';
+import { formatPrice } from '../../../../config';
+import { isForbiddenFormOrigin } from '../../../../features/auth/formOrigin';
+
+const email = decodeURIComponent(Astro.params.email ?? '').trim().toLowerCase();
+if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return new Response('Correo inválido', { status: 400 });
+const base = `/admin/customers/${encodeURIComponent(email)}/access`;
+let error = '';
+if (Astro.request.method === 'POST') {
+  if (isForbiddenFormOrigin(Astro.request, Astro.url)) return new Response('Origen no permitido', { status: 403 });
+  try {
+    const form = await Astro.request.formData();
+    const action = String(form.get('action') ?? '');
+    if (action === 'assign-payment') {
+      const client = form.get('group_id') ? await ensureCustomerAccount(env.DB, email) : undefined;
+      await assignManualPayment(env.DB, email, form, client);
+    }
+    else if (action === 'cancel-payment') await cancelManualPayment(env.DB, email, String(form.get('obligation_id') ?? ''));
+    else if (action === 'scholarship') {
+      const client = await getClientNumber(env.DB, email);
+      const raw = String(form.get('percent') ?? '').trim();
+      if (!client || !/^\d{1,3}$/.test(raw)) throw new Error('Selecciona una inscripción y un porcentaje válido.');
+      await setScholarship(env.DB, client, String(form.get('enrollment_id') ?? ''), Number(raw));
+    }
+    else if (action === 'access') await saveManualAccess(env.DB, await ensureCustomerAccount(env.DB, email), form);
+    else throw new Error('Acción no reconocida.');
+    return Astro.redirect(`${base}?guardado=1`, 303);
+  } catch (cause) {
+    console.error('No se pudo actualizar el acceso individual:', cause);
+    error = cause instanceof Error && !/D1_ERROR|SQLITE_|constraint failed/i.test(cause.message)
+      ? cause.message : 'No se pudo actualizar el acceso individual.';
+    Astro.response.status = 400;
+  }
+}
+const client = await getClientNumber(env.DB, email);
+const [courses, subprograms, groups, magazines, conferences, overrides, products, payments, enrollments] = await Promise.all([
+  env.DB.prepare("SELECT id,title FROM school_courses WHERE status='published' ORDER BY title").all<{id:string;title:string}>(),
+  env.DB.prepare("SELECT id,title FROM school_subprograms WHERE status='active' ORDER BY title").all<{id:string;title:string}>(),
+  env.DB.prepare("SELECT g.id,g.title,s.title AS subprogram FROM school_subprogram_groups g JOIN school_subprograms s ON s.id=g.subprogram_id WHERE g.status='active' ORDER BY s.title,g.title").all<{id:string;title:string;subprogram:string}>(),
+  env.DB.prepare("SELECT id,title FROM math_magazines WHERE status='published' ORDER BY title").all<{id:string;title:string}>(),
+  env.DB.prepare("SELECT id,title FROM conferences WHERE status='published' ORDER BY title").all<{id:number;title:string}>(),
+  client ? env.DB.prepare(`SELECT resource_type,resource_id,decision,expires_at FROM school_manual_access WHERE client_number=?
+    UNION ALL SELECT resource_type,resource_id,decision,expires_at FROM school_extended_manual_access WHERE client_number=?
+    ORDER BY resource_type,resource_id`)
+    .bind(client,client).all<{resource_type:string;resource_id:string;decision:string;expires_at:string|null}>()
+    : Promise.resolve({results:[]}),
+  env.DB.prepare("SELECT id,title,amount_cents,currency FROM school_payment_products WHERE active=1 ORDER BY title").all<{id:string;title:string;amount_cents:number;currency:string}>(),
+  env.DB.prepare(`SELECT id,title_snapshot,amount_cents,currency,due_at,status,checkout_lock_token,checkout_session_id,checkout_bundle_id
+    FROM school_payment_obligations WHERE student_email=? COLLATE NOCASE ORDER BY created_at DESC LIMIT 200`)
+    .bind(email).all<{id:string;title_snapshot:string;amount_cents:number;currency:string;due_at:string;status:string;checkout_lock_token:string|null;checkout_session_id:string|null;checkout_bundle_id:string|null}>(),
+  client ? env.DB.prepare(`SELECT e.id,e.scholarship_percent,e.status,s.title FROM school_subprogram_enrollments e
+    JOIN school_subprograms s ON s.id=e.subprogram_id WHERE e.client_number=? AND e.status IN ('active','suspended') ORDER BY s.title`)
+    .bind(client).all<{id:string;scholarship_percent:number;status:string;title:string}>() : Promise.resolve({results:[]}),
+]);
+const categories = [
+  { type:'subprogram', title:'Subprograma', items:subprograms.results },
+  { type:'group', title:'Grupo', items:groups.results.map(group => ({id:group.id,title:`${group.subprogram} · ${group.title}`})) },
+  { type:'course', title:'Curso o lectura', items:courses.results },
+  { type:'magazine', title:'Revista', items:magazines.results },
+  { type:'conference', title:'Conferencia', items:conferences.results.map(conference => ({id:String(conference.id),title:conference.title})) },
+];
+---
+<AdminLayout title="Accesos individuales" active="customers">
+  <a href={`/admin/customers/${encodeURIComponent(email)}`} class="text-sm text-brand underline">← Cliente</a>
+  <h1 class="mt-4 font-serif text-3xl">Accesos individuales</h1>
+  <p class="mt-2 break-all text-sm text-muted">{email}{client && ` · Cliente ${client}`}</p>
+  <p class="mt-3 max-w-3xl text-sm text-muted">Conceder omite los requisitos habituales del recurso. Bloquear impide el acceso aunque exista una compra; no cancela pagos ni emite reembolsos. Restablecer devuelve el comportamiento normal.</p>
+  <p class="mt-2 text-sm text-muted">Guardar un acceso manual al grupo elimina su condición de pago anterior; el cargo pendiente no se cancela automáticamente.</p>
+  <p class="mt-2 text-sm text-muted">Bloquear una conferencia oculta sus datos en la plataforma, pero no revoca enlaces o claves de Zoom que ya se hayan compartido.</p>
+  {error && <p role="alert" class="mt-4 rounded border border-red-200 p-3 text-red-700">{error}</p>}
+  {Astro.url.searchParams.has('guardado') && <p role="status" class="mt-4 text-green-700">Acceso actualizado.</p>}
+  <div class="mt-6 grid gap-4 lg:grid-cols-2">
+    {categories.map(category => <section class="rounded-xl border border-line p-5">
+      <h2 class="text-lg font-semibold">{category.title}</h2>
+      <form method="POST" class="mt-4 space-y-3">
+        <input type="hidden" name="action" value="access" />
+        <input type="hidden" name="resource_type" value={category.type} />
+        <label class="block text-sm">Recurso<select name="resource_id" required class="mt-1 block w-full rounded border border-line p-2"><option value="">Selecciona</option>{category.items.map(item => <option value={item.id}>{item.title}</option>)}</select></label>
+        <label class="block text-sm">Acción<select name="decision" class="mt-1 block w-full rounded border border-line p-2"><option value="allow">Conceder</option><option value="deny">Bloquear</option><option value="clear">Restablecer acceso normal</option></select></label>
+        <label class="block text-sm">Vigencia hasta (opcional)<input type="date" name="expires_at" class="mt-1 block w-full rounded border border-line p-2" /></label>
+        <button class="rounded bg-brand px-4 py-2 font-semibold text-white">Guardar</button>
+      </form>
+    </section>)}
+  </div>
+  <section class="mt-8"><h2 class="text-xl font-semibold">Excepciones actuales</h2>
+    {overrides.results.length ? <ul class="mt-3 space-y-2">{overrides.results.map(item => {
+      const category=categories.find(entry => entry.type===item.resource_type);
+      const title=category?.items.find(entry => entry.id===item.resource_id)?.title ?? item.resource_id;
+      return <li class="rounded border border-line p-3 text-sm">{category?.title ?? item.resource_type}: {title} · {item.decision==='allow'?'Concedido':'Bloqueado'}{item.expires_at && ` · hasta ${item.expires_at}`}</li>;
+    })}</ul> : <p class="mt-3 text-sm text-muted">No hay excepciones configuradas.</p>}
+  </section>
+  <section class="mt-8 rounded-xl border border-line p-5"><h2 class="text-xl font-semibold">Beca de clases</h2>
+    <p class="mt-2 text-sm text-muted">El porcentaje se aplica solo a nuevos cargos de clases que todavía no se han generado. Los cargos ya existentes no se modifican; pueden estar programados hasta con 12 meses de anticipación. Una beca del 100 % cubre los nuevos períodos de clases, pero no la inscripción ni adeudos anteriores.</p>
+    {enrollments.results.length ? enrollments.results.map(enrollment => <form method="POST" class="mt-4 flex flex-wrap items-end gap-3 border-t border-line pt-4">
+      <input type="hidden" name="action" value="scholarship" /><input type="hidden" name="enrollment_id" value={enrollment.id} />
+      <label class="block text-sm">{enrollment.title} · {enrollment.status}<span class="block text-xs text-muted">Porcentaje de beca</span><input type="number" name="percent" min="0" max="100" step="1" value={enrollment.scholarship_percent} required class="mt-1 block w-28 rounded border border-line p-2" /></label>
+      <button class="rounded bg-brand px-4 py-2 font-semibold text-white">Guardar beca</button>
+    </form>) : <p class="mt-3 text-sm text-muted">No hay inscripciones activas para configurar una beca periódica.</p>}
+  </section>
+  <section class="mt-8 rounded-xl border border-line p-5"><h2 class="text-xl font-semibold">Asignar pago individual</h2>
+    <p class="mt-2 text-sm text-muted">Este es un cargo único; no modifica la programación de una modalidad. Si eliges un grupo, su acceso dependerá de que este pago esté confirmado y no reembolsado.</p>
+    <form method="POST" class="mt-4 grid gap-3 sm:grid-cols-2">
+      <input type="hidden" name="action" value="assign-payment" />
+      <label class="block text-sm">Concepto<select name="product_id" required class="mt-1 block w-full rounded border border-line p-2"><option value="">Selecciona</option>{products.results.map(product => <option value={product.id}>{product.title} · {formatPrice(product.amount_cents,product.currency)}</option>)}</select></label>
+      <label class="block text-sm">Importe personalizado (opcional)<input name="amount" type="number" min="0.001" step="any" class="mt-1 block w-full rounded border border-line p-2" /><span class="text-xs text-muted">Usa la moneda del concepto; vacío conserva el importe normal.</span></label>
+      <label class="block text-sm">Grupo condicionado al pago (opcional)<select name="group_id" class="mt-1 block w-full rounded border border-line p-2"><option value="">Sin grupo</option>{groups.results.map(group => <option value={group.id}>{group.subprogram} · {group.title}</option>)}</select></label>
+      <label class="block text-sm">Vencimiento<input name="due_at" type="date" required class="mt-1 block w-full rounded border border-line p-2" /></label>
+      <label class="block text-sm">Disponible desde (opcional)<input name="available_at" type="date" class="mt-1 block w-full rounded border border-line p-2" /></label>
+      <label class="block text-sm sm:col-span-2">Nota visible para el alumno<textarea name="notes" maxlength="500" rows="2" class="mt-1 block w-full rounded border border-line p-2"></textarea></label>
+      <button class="rounded bg-brand px-4 py-2 font-semibold text-white">Asignar pago</button>
+    </form>
+  </section>
+  <section class="mt-8"><h2 class="text-xl font-semibold">Pagos del cliente</h2>
+    <p class="mt-2 text-sm text-muted">Cancelar un cargo no cancela pagos futuros de la modalidad. Los pagos con checkout abierto no pueden cancelarse aquí.</p>
+    {payments.results.length ? <ul class="mt-3 space-y-2">{payments.results.map(payment => <li class="flex flex-wrap items-center justify-between gap-3 rounded border border-line p-3 text-sm">
+      <span>{payment.title_snapshot} · {formatPrice(payment.amount_cents,payment.currency)} · vence {payment.due_at} · {payment.status}</span>
+      {payment.status==='pending' && !payment.checkout_lock_token && !payment.checkout_session_id && !payment.checkout_bundle_id && <form method="POST"><input type="hidden" name="action" value="cancel-payment" /><input type="hidden" name="obligation_id" value={payment.id} /><button class="text-red-700 underline">Cancelar cargo</button></form>}
+    </li>)}</ul> : <p class="mt-3 text-sm text-muted">No hay pagos asignados.</p>}
+  </section>
+</AdminLayout>

@@ -9,6 +9,7 @@ import {
 } from '../../../features/orders/reservations.ts';
 import { purgeStockProductCache } from '../../../features/cache/purge.ts';
 import { listConferenceAccessForOrder } from '../../../features/conferences/access.ts';
+import { blockedOrderItemIds } from '../../../features/orders/courseRestrictions.ts';
 
 export const prerender = false;
 
@@ -38,6 +39,7 @@ export const GET: APIRoute = async ({ params, request }) => {
   const order = await getOrderByPublicId(env.DB, access.order_public_id);
   if (order) {
     const items = await listOrderItems(env.DB, order.id);
+    const blockedItems = await blockedOrderItemIds(env.DB, order.id, order.email);
     const fullyRefunded = order.refunded_cents >= order.amount_total_cents;
     const base = new URL(request.url).origin;
     return new Response(
@@ -50,7 +52,7 @@ export const GET: APIRoute = async ({ params, request }) => {
           name: item.name,
           quantity: item.quantity,
           price_cents: item.price_cents,
-          ...(!fullyRefunded && item.public_id && item.file_key
+          ...(!fullyRefunded && !blockedItems.has(item.id) && item.public_id && item.file_key
             ? { download_url: `${base}/order/${token}/download/${item.public_id}` }
             : {}),
         })),

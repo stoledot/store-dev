@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { enrollmentPaymentValidSql } from './enrollmentEligibility.ts';
+import { manualGroupPaymentValidSql } from './manualGroupPayment.ts';
 
 function value(form: FormData, key: string): string {
   return String(form.get(key) ?? '').trim();
@@ -20,6 +21,24 @@ export async function saveSchoolGroupAction(db: D1Database, form: FormData): Pro
     return;
   }
   if (!groupId) throw new Error('Selecciona un grupo.');
+  if (action === 'details') {
+    const title = value(form, 'title');
+    const imageKey = value(form, 'image_key') || null;
+    const description = value(form, 'description');
+    const schedule = value(form, 'schedule');
+    const rules = value(form, 'rules');
+    const evaluation = value(form, 'evaluation_description');
+    if (!title || title.length > 160 || (imageKey && imageKey.length > 500)
+      || [description, schedule, rules, evaluation].some(item => item.length > 10000)) {
+      throw new Error('Revisa el nombre, la imagen y la información del grupo.');
+    }
+    const result = await db.prepare(`UPDATE school_subprogram_groups
+      SET title=?,image_key=?,description=?,schedule=?,rules=?,evaluation_description=?
+      WHERE id=? AND (? IS NULL OR EXISTS (SELECT 1 FROM media WHERE image_key=?))`)
+      .bind(title, imageKey, description, schedule, rules, evaluation, groupId, imageKey, imageKey).run();
+    if (!result.meta.changes) throw new Error('El grupo o la imagen ya no existe.');
+    return;
+  }
   if (action === 'conference') {
     const raw = value(form, 'conference_id');
     const conferenceId = raw ? Number(raw) : null;
@@ -31,6 +50,7 @@ export async function saveSchoolGroupAction(db: D1Database, form: FormData): Pro
     if (!result.meta.changes) throw new Error('Grupo o conferencia no disponibles.');
     return;
   }
+
   if (action === 'status') {
     const status = value(form, 'status');
     if (status !== 'active' && status !== 'archived') throw new Error('Estado de grupo inválido.');
@@ -75,4 +95,28 @@ export async function saveSchoolGroupAction(db: D1Database, form: FormData): Pro
     return;
   }
   throw new Error('Acción no reconocida.');
+}
+
+export async function listStudentSchoolGroups(db: D1Database, clientNumber: string) {
+  return (await db.prepare(`SELECT g.id,g.title,g.image_key,g.description,g.schedule,g.rules,g.evaluation_description,
+      s.title AS subprogram_title
+    FROM school_subprogram_groups g
+    JOIN school_subprograms s ON s.id=g.subprogram_id
+    JOIN customer_accounts account ON account.client_number=?
+    WHERE g.status='active' AND s.id=g.subprogram_id
+      AND ${manualGroupPaymentValidSql('account.client_number', 'g.id')}
+      AND NOT EXISTS (SELECT 1 FROM school_manual_access deny WHERE deny.client_number=account.client_number
+        AND deny.decision='deny' AND ((deny.resource_type='group' AND deny.resource_id=g.id)
+          OR (deny.resource_type='subprogram' AND deny.resource_id=g.subprogram_id))
+        AND (deny.expires_at IS NULL OR date(deny.expires_at)>=date('now')))
+      AND (EXISTS (SELECT 1 FROM school_manual_access allow_group WHERE allow_group.client_number=account.client_number
+            AND allow_group.resource_type='group' AND allow_group.resource_id=g.id AND allow_group.decision='allow'
+            AND (allow_group.expires_at IS NULL OR date(allow_group.expires_at)>=date('now')))
+        OR EXISTS (SELECT 1 FROM school_subprogram_enrollments e
+          JOIN school_subprogram_group_members member ON member.enrollment_id=e.id AND member.group_id=g.id
+          WHERE e.client_number=account.client_number AND e.subprogram_id=g.subprogram_id AND ${enrollmentPaymentValidSql}))
+    ORDER BY s.title,g.title`).bind(clientNumber).all<{
+      id:string;title:string;image_key:string|null;description:string;schedule:string;rules:string;
+      evaluation_description:string;subprogram_title:string;
+    }>()).results;
 }

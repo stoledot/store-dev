@@ -4,15 +4,16 @@ import type { D1Database } from '@cloudflare/workers-types';
 export interface MediaUsage {
   products: Array<{ id: number; public_id: string | null; name: string }>;
   pages: Array<{ id: number; public_id: string | null; title: string }>;
+  schoolGroups: Array<{ id: string; title: string }>;
   logo: boolean;
 }
 
 export function emptyUsage(): MediaUsage {
-  return { products: [], pages: [], logo: false };
+  return { products: [], pages: [], schoolGroups: [], logo: false };
 }
 
 export function isUnused(usage: MediaUsage): boolean {
-  return usage.products.length === 0 && usage.pages.length === 0 && !usage.logo;
+  return usage.products.length === 0 && usage.pages.length === 0 && usage.schoolGroups.length === 0 && !usage.logo;
 }
 
 /**
@@ -58,10 +59,12 @@ export async function mediaUsageForIds(
   if (ids.length === 0) return usage;
 
   const placeholders = ids.map(() => '?').join(', ');
-  const [products, pages, logo] = await db.batch<Record<string, unknown>>([
+  const [products, pages, logo, schoolGroups] = await db.batch<Record<string, unknown>>([
     db.prepare(PRODUCT_USAGE_SQL.replace('%IDS%', placeholders)).bind(...ids),
     db.prepare(PAGE_USAGE_SQL.replace('%IDS%', placeholders)).bind(...ids),
     db.prepare("SELECT value FROM settings WHERE key = 'logo_image_key'"),
+    db.prepare(`SELECT m.id AS media_id,g.id,g.title FROM media m
+      JOIN school_subprogram_groups g ON g.image_key=m.image_key WHERE m.id IN (${placeholders}) ORDER BY g.title`).bind(...ids),
   ]);
 
   for (const row of (products.results ?? []) as Array<{
@@ -73,6 +76,9 @@ export async function mediaUsageForIds(
     usage
       .get(row.media_id)
       ?.products.push({ id: row.product_id, public_id: row.product_public_id, name: row.product_name });
+  }
+  for (const row of schoolGroups.results as Array<{media_id:number;id:string;title:string}>) {
+    usage.get(row.media_id)?.schoolGroups.push({ id: row.id, title: row.title });
   }
   for (const row of (pages.results ?? []) as Array<{
     media_id: number;
@@ -108,7 +114,7 @@ export async function mediaUsage(db: D1Database, id: number): Promise<MediaUsage
 export interface UsageLink {
   href: string;
   label: string;
-  kind: 'product' | 'page' | 'logo';
+  kind: 'product' | 'page' | 'logo' | 'school-group';
   /** Tooltip. Per-kind rather than templated: "the logo that uses this image"
    *  reads wrong, because the logo IS the use rather than a thing having one. */
   title: string;
@@ -132,6 +138,12 @@ export function usageLinks(usage: MediaUsage): UsageLink[] {
       label: p.title,
       kind: 'page' as const,
       title: `Edit the ${p.title} page`,
+    })),
+    ...usage.schoolGroups.map(group => ({
+      href: `/admin/escuela/grupos#grupo-${encodeURIComponent(group.id)}`,
+      label: group.title,
+      kind: 'school-group' as const,
+      title: `Editar grupo ${group.title}`,
     })),
     // The logo is a setting, not a row, so it links to where it is chosen.
     ...(usage.logo
@@ -165,5 +177,6 @@ export function describeUsage(usage: MediaUsage): string {
     );
   }
   if (usage.logo) parts.push('the store logo');
+  if (usage.schoolGroups.length > 0) parts.push(`grupos escolares (${usage.schoolGroups.map(group => group.title).join(', ')})`);
   return parts.join(' and ');
 }

@@ -1,0 +1,32 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { contactNetworks, getContactConfig, saveContactConfig } from '../../features/settings/contact';
+import { isForbiddenFormOrigin } from '../../features/auth/formOrigin';
+
+let error = '';
+if (Astro.request.method === 'POST') {
+  if (isForbiddenFormOrigin(Astro.request, Astro.url)) return new Response('Origen no permitido', { status: 403 });
+  try {
+    await saveContactConfig(env.DB, await Astro.request.formData());
+    return Astro.redirect('/admin/contacto?guardado=1', 303);
+  } catch (cause) {
+    console.error('No se pudo guardar contacto:', cause);
+    error = cause instanceof Error ? cause.message : 'No se pudo guardar contacto.';
+    Astro.response.status = 400;
+  }
+}
+const contact = await getContactConfig(env.DB);
+---
+<AdminLayout title="Contacto y redes" active="settings">
+  <h1 class="font-serif text-3xl">Contacto y redes sociales</h1>
+  <p class="mt-2 text-sm text-muted">Configura los enlaces públicos. Deja vacío lo que no quieras mostrar.</p>
+  {error && <p role="alert" class="mt-4 text-red-700">{error}</p>}
+  {Astro.url.searchParams.has('guardado') && <p role="status" class="mt-4 text-green-700">Cambios guardados.</p>}
+  <form method="POST" class="mt-6 max-w-2xl space-y-4 rounded-xl border border-line p-6">
+    <label class="block text-sm">URL de WhatsApp<input type="url" name="whatsapp" value={contact.whatsapp} placeholder="https://wa.me/..." class="mt-1 block w-full rounded border border-line p-2" /></label>
+    {contactNetworks.map(network => <label class="block text-sm">{network.label}<input type="url" name={network.key} value={contact[network.key]} placeholder="https://..." class="mt-1 block w-full rounded border border-line p-2" /></label>)}
+    <button class="rounded bg-brand px-5 py-3 font-semibold text-white">Guardar</button>
+  </form>
+</AdminLayout>

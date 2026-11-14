@@ -10,6 +10,7 @@ import { resolveAccessToken } from '../../features/orders/guestAccess.ts';
 import { clearCart } from '../../features/cart/cart';
 import { catalogPath } from '../../features/settings/home';
 import { ensureConferenceAccessForOrder, listConferenceAccessForOrder, type ConferenceAccess } from '../../features/conferences/access.ts';
+import { blockedOrderItemIds } from '../../features/orders/courseRestrictions.ts';
 
 // Guest access: new orders are addressed ONLY by their otk_ access token
 // (resolved through the registry); legacy orders keep their pre-cutover
@@ -36,6 +37,7 @@ Astro.response.headers.set('referrer-policy', 'no-referrer');
 // and the header badge can't survive the purchase.
 if (order) clearCart(Astro.cookies);
 const items = order ? await listOrderItems(env.DB, order.id) : [];
+const blockedItems = order ? await blockedOrderItemIds(env.DB, order.id, order.email) : new Set<number>();
 let conferenceAccess: ConferenceAccess[] = [];
 if (order) {
   try {
@@ -113,7 +115,7 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
               {items.filter((item) => item.math_text_source && item.public_id).map((item) => (
                 <li class="flex flex-wrap items-center justify-between gap-3">
                   <strong>{item.math_text_title ?? item.name}</strong>
-                  {order.refunded_cents >= order.amount_total_cents ? <span class="text-sm text-muted">No disponible después del reembolso</span> : <a href={`/order/${token}/text/${item.public_id}`} class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-on-brand hover:bg-brand-hover">Leer texto</a>}
+                  {order.refunded_cents >= order.amount_total_cents || blockedItems.has(item.id) ? <span class="text-sm text-muted">Contenido no disponible</span> : <a href={`/order/${token}/text/${item.public_id}`} class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-on-brand hover:bg-brand-hover">Leer texto</a>}
                 </li>
               ))}
             </ul>
@@ -133,8 +135,8 @@ const shopHref = catalogPath(Astro.locals.settings?.homePage);
                       <small class="ml-2 text-muted">{Math.ceil(item.file_size_bytes / 1024)} KB</small>
                     )}
                   </span>
-                  {order.refunded_cents >= order.amount_total_cents ? (
-                    <span class="text-sm text-muted">Unavailable after refund</span>
+                  {order.refunded_cents >= order.amount_total_cents || blockedItems.has(item.id) ? (
+                    <span class="text-sm text-muted">Contenido no disponible</span>
                   ) : (
                     <a
                       href={`/order/${token}/download/${item.public_id}`}
