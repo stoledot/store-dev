@@ -25,6 +25,7 @@ const upcomingSessions = schoolSummary && studentEmail
 const socialGroups=studentEmail?((await env.DB.prepare('SELECT g.id,g.title FROM social_groups g JOIN social_group_members m ON m.group_id=g.id WHERE m.email=? COLLATE NOCASE AND g.status=\'active\' ORDER BY g.title').bind(studentEmail).all<any>()).results??[]):[];
 const subscriptionContent=studentEmail?((await env.DB.prepare(`SELECT DISTINCT c.title,c.slug,c.summary,c.content_kind,(SELECT l.slug FROM school_lessons l WHERE l.course_id=c.id AND l.status='published' ORDER BY l.sequence_no LIMIT 1) AS first_lesson FROM school_courses c JOIN content_subscription_courses sc ON sc.course_id=c.id JOIN school_subscriptions ss ON ss.content_subscription_id=sc.subscription_id WHERE c.status='published' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now')) ORDER BY c.content_kind,c.title COLLATE NOCASE`).bind(studentEmail).all<any>()).results??[]):[];
 const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.description,m.cover_image_key,(SELECT i.title FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_title,(SELECT i.slug FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_slug,(SELECT CASE WHEN MAX(CASE WHEN cs.magazine_access='all' THEN 1 ELSE 0 END)=1 THEN 'all' WHEN COUNT(*)>0 THEN 'latest' ELSE '' END FROM school_subscriptions ss JOIN content_subscriptions cs ON cs.id=ss.content_subscription_id WHERE cs.magazine_id=m.id AND cs.status='active' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AS access_mode FROM math_magazines m WHERE m.status='published' ORDER BY m.title COLLATE NOCASE LIMIT 12`).bind(studentEmail??'').all<any>()).results??[];
+const schoolPrograms = (await env.DB.prepare(`SELECT p.slug,p.title,p.description,p.image_url FROM school_programs p WHERE p.status='published' ORDER BY p.title COLLATE NOCASE LIMIT 12`).all<any>()).results??[];
 ---
 
 <Layout title="Aprende matemáticas y lectura" description="Programas de matemáticas y lectura con una ruta clara, contenidos accesibles y acompañamiento para aprender a tu ritmo.">
@@ -62,30 +63,50 @@ const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.descript
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3 sm:gap-4 ">
-        <a href="/programas/matematicas" 
-            class="group flex min-h-44 flex-col justify-between 
-            rounded-2xl border 
-            border-line bg-azul-cielo-eri p-5 shadow-sm transition 
-            hover:-translate-y-1 hover:border-brand sm:min-h-52 sm:p-6">
-          <span 
-            class="flex h-11 w-11 items-center 
-              justify-center rounded-xl 
-              bg-brand/10 
-              text-xl text-black" aria-hidden="true">
-            ∑
-          </span>
-          <span>
-            <span class="block text-lg text-black font-semibold tracking-tight">Matemáticas</span>
-            <span class="mt-1 block text-sm leading-5 text-black text-muted">Comprende conceptos y resuelve problemas.</span>
-            <span class="mt-4 inline-flex text-sm font-semibold text-black text-brand">Ver programa →</span>
-          </span>
-        </a>
-        <a href="/programas/lectura" class="group mt-7 flex min-h-44 flex-col justify-between rounded-2xl border border-line bg-azul-cielo-eri p-5 shadow-sm transition hover:-translate-y-1 hover:border-brand sm:mt-10 sm:min-h-52 sm:p-6">
-          <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-xl text-black" aria-hidden="true">Aa</span>
-          <span><span class="block text-lg text-black font-semibold tracking-tight">Lectura</span><span class="mt-1 block text-sm leading-5 text-black text-muted">Lee con atención, interpreta y comunica.</span><span class="mt-4 inline-flex text-sm font-semibold text-black text-brand">Ver programa →</span></span>
-        </a>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+  {schoolPrograms.map(program => (
+    <a 
+      href={`/programas/${program.slug}`} 
+      class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-md"
+    >
+      <!-- Imagen de portada con zoom sutil en hover -->
+      <div class="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+        {program.cover_image_key ? (
+          <img 
+            src={program.image_url} 
+            alt={program.title}
+            class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div class="flex h-full w-full items-center justify-center bg-azul-cielo-eri/40 text-3xl">
+            📘
+          </div>
+        )}
       </div>
+
+      <!-- Contenido de la tarjeta -->
+      <div class="flex flex-1 flex-col justify-between p-5 sm:p-6">
+        <div>
+          <h3 class="text-lg font-semibold tracking-tight text-slate-900 transition-colors group-hover:text-brand">
+            {program.title}
+          </h3>
+          <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-600">
+            {program.description}
+          </p>
+        </div>
+
+        <div class="mt-5 flex items-center text-sm font-semibold text-brand">
+          <span>Ver programa</span>
+          <span class="ml-1.5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true">
+            →
+          </span>
+        </div>
+      </div>
+    </a>
+  ))}
+</div>
+
     </div>
   </section>
 
