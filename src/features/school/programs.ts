@@ -49,6 +49,8 @@ export interface Modality {
   class_dates_added: string;
   class_dates_excluded: string;
   requires_current_enrollment: number;
+  test_mode: number;
+  concept_mode: number;
   status: string;
 }
 
@@ -112,8 +114,12 @@ export function parseModality(form: FormData) {
     throw new Error('La unidad de vigencia no es válida.');
   }
   const requiresEnrollment = form.get('requires_current_enrollment') === '1' ? 1 : 0;
+  const testMode = form.get('test_mode') === '1' ? 1 : 0;
   if (paymentType === 'enrollment' && requiresEnrollment) {
     throw new Error('Una inscripción no puede exigir una inscripción vigente.');
+  }
+  if (paymentType === 'enrollment' && testMode) {
+    throw new Error('El esquema de prueba debe seleccionarse como esquema principal, no como inscripción obligatoria.');
   }
   const start = required(form, 'period_start_on', 'El inicio del período');
   const end = required(form, 'period_end_on', 'El fin del período');
@@ -158,7 +164,7 @@ export function parseModality(form: FormData) {
     validityUnit: validityUnit || null,
     start, end, advanceDays: policy.advance_days, proration,
     weekdays: JSON.stringify(weekdays), added: JSON.stringify(added), excluded: JSON.stringify(excluded),
-    requiresEnrollment,
+    requiresEnrollment, testMode,
     status: choice(form, 'status', ['draft', 'active', 'archived'], 'El estado'),
   };
 }
@@ -217,7 +223,12 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
         WHERE m.id=? AND m.subprogram_id=? AND m.payment_type='enrollment'
           AND m.status='active' AND p.active=1
       `).bind(modality, subprogram).first<{ id: string }>();
-      if (!valid) throw new Error('Selecciona una modalidad de inscripción activa del subprograma.');
+      if (!valid) throw new Error('Selecciona un esquema de inscripción activo del subprograma.');
+      const concepts = await db.prepare(`SELECT m.id FROM school_payment_modalities m
+        WHERE m.subprogram_id=? AND m.concept_mode=1 AND (m.status<>'archived' OR EXISTS (
+          SELECT 1 FROM school_subprogram_enrollments e WHERE e.modality_id=m.id AND e.status IN ('active','suspended'))) LIMIT 1`)
+        .bind(subprogram).first<{id:string}>();
+      if (concepts) throw new Error('No se puede exigir la inscripción anterior mientras haya esquemas de conceptos disponibles o asignados.');
     } else {
       const requiredByAssigned = await db.prepare(`
         SELECT e.id FROM school_subprogram_enrollments e
@@ -225,7 +236,7 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
         WHERE e.subprogram_id=? AND e.status IN ('active','suspended')
           AND (m.requires_current_enrollment=1 OR e.reenrollment_required=1) LIMIT 1
       `).bind(subprogram).first<{ id: string }>();
-      if (requiredByAssigned) throw new Error('Primero desactiva el requisito de inscripción en las modalidades asignadas a alumnos activos.');
+      if (requiredByAssigned) throw new Error('Primero desactiva el requisito de inscripción en los esquemas asignados a alumnos activos.');
     }
     const result = await db.prepare(`
       UPDATE school_subprograms SET enrollment_modality_id=? WHERE id=?
@@ -238,7 +249,10 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
            WHERE e.subprogram_id=school_subprograms.id AND e.status IN ('active','suspended')
              AND (m.requires_current_enrollment=1 OR e.reenrollment_required=1)
         ))
-    `).bind(modality || null, subprogram, modality || null, modality || null, modality || null).run();
+        AND (? IS NULL OR NOT EXISTS (SELECT 1 FROM school_payment_modalities m
+          WHERE m.subprogram_id=school_subprograms.id AND m.concept_mode=1 AND (m.status<>'archived' OR EXISTS (
+            SELECT 1 FROM school_subprogram_enrollments e WHERE e.modality_id=m.id AND e.status IN ('active','suspended')))))
+    `).bind(modality || null, subprogram, modality || null, modality || null, modality || null, modality || null).run();
     if (!result.meta.changes) throw new Error('El subprograma o la configuración cambiaron. Vuelve a intentarlo.');
     return;
   }
@@ -296,24 +310,28 @@ export async function saveProgramAction(db: D1Database, form: FormData): Promise
     const subprogram = required(form, 'subprogram_id', 'El subprograma');
     const data = parseModality(form);
     const values = [data.title, data.product, data.paymentType, data.frequencyUnit, data.frequencyCount,
-      data.classes, data.course, data.validity, data.validityUnit, data.requiresEnrollment, data.status,
+      data.classes, data.course, data.validity, data.validityUnit, data.requiresEnrollment, data.testMode, data.status,
       data.start, data.end, data.advanceDays, data.proration, data.weekdays, data.added, data.excluded];
     if (id) {
       const results = await db.batch([db.prepare(`UPDATE school_payment_modalities SET billing_revision=billing_revision+1, title=?, payment_product_id=?, payment_type=?,
         frequency_unit=?, frequency_count=?, classes_per_payment=?, course_id=?, validity_count=?, validity_unit=?,
-        requires_current_enrollment=?, status=?, period_start_on=?, period_end_on=?, advance_days=?, proration_method=?,
+        requires_current_enrollment=?, test_mode=?, status=?, period_start_on=?, period_end_on=?, advance_days=?, proration_method=?,
         class_weekdays=?, class_dates_added=?, class_dates_excluded=? WHERE id=? AND subprogram_id=?
         AND (payment_type=? OR (NOT EXISTS (SELECT 1 FROM school_subprogram_payment_schedules s WHERE s.modality_id=school_payment_modalities.id)
+          AND NOT EXISTS (SELECT 1 FROM school_subprogram_enrollments e WHERE e.modality_id=school_payment_modalities.id)
           AND NOT EXISTS (SELECT 1 FROM school_subprograms p WHERE p.enrollment_modality_id=school_payment_modalities.id)))
-        AND (?=0 OR EXISTS (SELECT 1 FROM school_subprograms p WHERE p.id=school_payment_modalities.subprogram_id AND p.enrollment_modality_id IS NOT NULL))`)
-          .bind(...values, id, subprogram, data.paymentType, data.requiresEnrollment),
+        AND (?=0 OR EXISTS (SELECT 1 FROM school_subprograms p WHERE p.id=school_payment_modalities.subprogram_id AND p.enrollment_modality_id IS NOT NULL))
+        AND (test_mode=? OR (NOT EXISTS (SELECT 1 FROM school_subprogram_payment_schedules s WHERE s.modality_id=school_payment_modalities.id)
+          AND NOT EXISTS (SELECT 1 FROM school_subprogram_enrollments e WHERE e.modality_id=school_payment_modalities.id)))
+        AND (concept_mode=0 OR (?<>'enrollment' AND ?=0))`)
+          .bind(...values, id, subprogram, data.paymentType, data.requiresEnrollment, data.testMode, data.paymentType, data.requiresEnrollment),
         db.prepare(`UPDATE school_subprogram_payment_schedules SET next_check_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE modality_id=?`).bind(id)]);
-      if (!results[0].meta.changes) throw new Error('No se puede cambiar el tipo de una modalidad asignada ni exigir una inscripción no configurada.');
+      if (!results[0].meta.changes) throw new Error('No se puede cambiar el tipo o modo de prueba de un esquema asignado ni exigir una inscripción no configurada.');
     } else {
       await db.prepare(`INSERT INTO school_payment_modalities (title, payment_product_id, payment_type, frequency_unit,
-        frequency_count, classes_per_payment, course_id, validity_count, validity_unit, requires_current_enrollment,
+        frequency_count, classes_per_payment, course_id, validity_count, validity_unit, requires_current_enrollment, test_mode,
         status, period_start_on, period_end_on, advance_days, proration_method, class_weekdays, class_dates_added,
-        class_dates_excluded, id, subprogram_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        class_dates_excluded, id, subprogram_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
         .bind(...values, crypto.randomUUID(), subprogram).run();
     }
     return;

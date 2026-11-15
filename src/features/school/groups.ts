@@ -79,17 +79,17 @@ export async function saveSchoolGroupAction(db: D1Database, form: FormData): Pro
   if (action === 'assign') {
     const enrollmentId = value(form, 'enrollment_id');
     const result = await db.prepare(`
-      INSERT INTO school_subprogram_group_members(enrollment_id,group_id,assigned_at)
+      INSERT INTO school_subprogram_group_memberships(enrollment_id,group_id,assigned_at)
       SELECT e.id,g.id,strftime('%Y-%m-%dT%H:%M:%fZ','now')
         FROM school_subprogram_enrollments e JOIN school_subprogram_groups g ON g.subprogram_id=e.subprogram_id
        WHERE e.id=? AND g.id=? AND g.status='active' AND ${enrollmentPaymentValidSql}
-      ON CONFLICT(enrollment_id) DO UPDATE SET group_id=excluded.group_id,assigned_at=excluded.assigned_at
+      ON CONFLICT(enrollment_id,group_id) DO NOTHING
     `).bind(enrollmentId, groupId).run();
-    if (!result.meta.changes) throw new Error('El alumno necesita pagos vigentes y un grupo activo de su subprograma.');
+    if (!result.meta.changes) throw new Error('El alumno ya pertenece al grupo o necesita pagos vigentes y un grupo activo de su subprograma.');
     return;
   }
   if (action === 'remove-member') {
-    const result = await db.prepare('DELETE FROM school_subprogram_group_members WHERE enrollment_id=? AND group_id=?')
+    const result = await db.prepare('DELETE FROM school_subprogram_group_memberships WHERE enrollment_id=? AND group_id=?')
       .bind(value(form, 'enrollment_id'), groupId).run();
     if (!result.meta.changes) throw new Error('La asignación ya no existe.');
     return;
@@ -113,7 +113,7 @@ export async function listStudentSchoolGroups(db: D1Database, clientNumber: stri
             AND allow_group.resource_type='group' AND allow_group.resource_id=g.id AND allow_group.decision='allow'
             AND (allow_group.expires_at IS NULL OR date(allow_group.expires_at)>=date('now')))
         OR EXISTS (SELECT 1 FROM school_subprogram_enrollments e
-          JOIN school_subprogram_group_members member ON member.enrollment_id=e.id AND member.group_id=g.id
+          JOIN school_subprogram_group_memberships member ON member.enrollment_id=e.id AND member.group_id=g.id
           WHERE e.client_number=account.client_number AND e.subprogram_id=g.subprogram_id AND ${enrollmentPaymentValidSql}))
     ORDER BY s.title,g.title`).bind(clientNumber).all<{
       id:string;title:string;image_key:string|null;description:string;schedule:string;rules:string;

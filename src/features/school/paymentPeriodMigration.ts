@@ -27,7 +27,7 @@ export async function migrateLegacyPaymentPeriods(db: D1Database, now = new Date
         .bind(start, now.toISOString(), modality.id, modality.id, modality.id, token),
     ]);
     if (results[0].meta.changes && results[1].meta.changes) {
-      console.warn(`Se cancelaron ${results[1].meta.changes} cobros futuros de prueba de la modalidad ${modality.id}.`);
+      console.warn(`Se cancelaron ${results[1].meta.changes} cobros futuros de prueba del esquema de pago ${modality.id}.`);
     }
   }
 }

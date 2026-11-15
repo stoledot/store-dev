@@ -9,6 +9,8 @@ import { sendAdvertisingInquiryNotifications } from './features/advertising/noti
 import { reconcileEnrollmentPolicies, reconcileSubprogramSchedules } from './features/school/subprogramBilling';
 import { sendSubprogramApprovalEmails } from './features/school/subprogramApprovalEmail';
 import { reconcileDemoSchoolPayments } from './features/school/reconcileDemoPayments';
+import { reconcileConceptSchemes } from './features/school/conceptBilling';
+import { cancelExpiredConceptPayments } from './features/school/conceptBundles';
 import { reconcileOverdueReactivations, reconcileOverdueSuspensions } from './features/school/withdrawals';
 
 /**
@@ -79,6 +81,16 @@ async function runScheduledSweeps(): Promise<void> {
     await reconcileSubprogramSchedules(db);
   } catch (err) {
     console.error('Scheduled subprogram billing failed:', err);
+  }
+  try {
+    await reconcileConceptSchemes(db);
+  } catch (err) {
+    console.error('Scheduled concept synchronization failed:', err);
+  }
+  try {
+    await cancelExpiredConceptPayments(db, null);
+  } catch (err) {
+    console.error('Scheduled concept cancellation failed:', err);
   }
   try {
     await reconcileOverdueReactivations(db);

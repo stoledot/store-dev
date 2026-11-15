@@ -125,18 +125,25 @@ export async function withdrawEnrollment(db: D1Database, enrollmentId: string, n
                 AND (o.checkout_bundle_id IS NULL OR NOT EXISTS (
                   SELECT 1 FROM school_payment_bundles b JOIN pending_payments p ON p.payment_hash=b.checkout_session_id
                    WHERE b.id=o.checkout_bundle_id AND p.backend='demo' AND p.status='pending'
-                     AND datetime(p.expires_at)<=datetime(?))))))`)
+                     AND datetime(p.expires_at)<=datetime(?))))))
+        AND NOT EXISTS (SELECT 1 FROM school_concept_occurrence_charges cc JOIN school_payment_obligations o ON o.id=cc.obligation_id
+          WHERE cc.enrollment_id=school_subprogram_enrollments.id AND o.status='pending'
+            AND (o.checkout_bundle_id IS NOT NULL OR o.checkout_lock_token IS NOT NULL OR o.checkout_session_id IS NOT NULL))`)
       .bind(timestamp, token, enrollmentId, timestamp, timestamp, timestamp, timestamp, timestamp),
     db.prepare(`UPDATE school_subprogram_diagnostics SET closed_at=?
       WHERE id=(SELECT diagnostic_id FROM school_subprogram_enrollments WHERE id=? AND withdrawal_token=?)`)
       .bind(timestamp, enrollmentId, token),
-    db.prepare(`DELETE FROM school_subprogram_group_members
+    db.prepare(`DELETE FROM school_subprogram_group_memberships
       WHERE enrollment_id=? AND EXISTS (SELECT 1 FROM school_subprogram_enrollments
         WHERE id=? AND status='withdrawn' AND withdrawal_token=?)`).bind(enrollmentId, enrollmentId, token),
     db.prepare(`UPDATE school_payment_obligations SET status='cancelled',checkout_lock_token=NULL,
       checkout_locked_at=NULL,updated_at=?
       WHERE status='pending' AND subprogram_schedule_id IN
         (SELECT id FROM school_subprogram_payment_schedules WHERE enrollment_id=?)
+        AND EXISTS (SELECT 1 FROM school_subprogram_enrollments WHERE id=? AND withdrawal_token=?)`)
+      .bind(timestamp, enrollmentId, enrollmentId, token),
+    db.prepare(`UPDATE school_payment_obligations SET status='cancelled',updated_at=?
+      WHERE status='pending' AND id IN (SELECT obligation_id FROM school_concept_occurrence_charges WHERE enrollment_id=?)
         AND EXISTS (SELECT 1 FROM school_subprogram_enrollments WHERE id=? AND withdrawal_token=?)`)
       .bind(timestamp, enrollmentId, enrollmentId, token),
     db.prepare(`UPDATE school_subprogram_payment_schedules SET status='inactive'

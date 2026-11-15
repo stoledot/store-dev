@@ -9,6 +9,7 @@ import { ensureCustomerAccount } from '../../features/auth/customerIdentity';
 import { listDiagnosticQuestions, listDiagnosticSections, submitSubprogramDiagnostic } from '../../features/school/subprogramDiagnostics';
 import DiagnosticQuestionField from '../../features/school/DiagnosticQuestionField.astro';
 import type { SubprogramFaq } from '../../features/school/programs';
+import { listAssignedPaymentPlans } from '../../features/school/assignedPaymentPlans';
 import { formatPrice } from '../../config';
 
 const { id } = Astro.params;
@@ -49,16 +50,7 @@ const courses = (await env.DB.prepare(`
   WHERE sc.subprogram_id = ? AND c.status = 'published'
   ORDER BY c.title COLLATE NOCASE
 `).bind(subprogram.id).all<{ title: string }>()).results;
-const modalities = (await env.DB.prepare(`
-  SELECT m.title,m.payment_type,m.frequency_unit,m.frequency_count,m.classes_per_payment,
-         m.validity_count,m.validity_unit,p.amount_cents,p.currency
-    FROM school_payment_modalities m JOIN school_payment_products p ON p.id=m.payment_product_id
-   WHERE m.subprogram_id=? AND m.status='active' AND p.active=1 ORDER BY m.title COLLATE NOCASE
-`).bind(subprogram.id).all<{
-  title:string;payment_type:string;frequency_unit:string;frequency_count:number;
-  classes_per_payment:number|null;validity_count:number|null;validity_unit:string|null;
-  amount_cents:number;currency:string;
-}>()).results;
+const modalities = await listAssignedPaymentPlans(env.DB, subprogram.id, clientNumber);
 const units: Record<string, string> = { week: 'semana(s)', month: 'mes(es)', year: 'año(s)' };
 const validityUnits: Record<string, string> = { day: 'día(s)', ...units };
 ---
@@ -80,7 +72,7 @@ const validityUnits: Record<string, string> = { day: 'día(s)', ...units };
       {subprogram.methodology && <section class="rounded-2xl border border-line p-6"><h2 class="font-serif text-2xl">Metodología</h2><p class="mt-3 whitespace-pre-line text-sm leading-6 text-muted">{subprogram.methodology}</p></section>}
     </div>
     {courses.length > 0 && <section class="mt-8"><h2 class="font-serif text-2xl">Cursos incluidos</h2><ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-muted">{courses.map((course) => <li>{course.title}</li>)}</ul></section>}
-    {modalities.length > 0 && <section class="mt-8"><h2 class="font-serif text-2xl">Modalidades de pago</h2><p class="mt-2 text-sm text-muted">La escuela asignará la modalidad correspondiente al aprobar tu diagnóstico.</p><div class="mt-4 grid gap-3 sm:grid-cols-2">{modalities.map((modality) => <article class="rounded-2xl border border-line p-5"><h3 class="font-semibold">{modality.title}</h3><p class="mt-2 text-xl font-semibold">{formatPrice(modality.amount_cents, modality.currency)}</p><p class="mt-2 text-sm text-muted">{modality.frequency_unit === 'once' ? 'Pago único' : `Cada ${modality.frequency_count} ${units[modality.frequency_unit]}`}</p>{modality.classes_per_payment && <p class="mt-1 text-sm text-muted">{modality.classes_per_payment} clases por pago</p>}{modality.validity_count && modality.validity_unit && <p class="mt-1 text-sm text-muted">Vigencia: {modality.validity_count} {validityUnits[modality.validity_unit]}</p>}</article>)}</div></section>}
+    {modalities.length > 0 && <section class="mt-8"><h2 class="font-serif text-2xl">Esquemas de pago asignados</h2><div class="mt-4 grid gap-3 sm:grid-cols-2">{modalities.map((modality) => <article class="rounded-2xl border border-line p-5"><h3 class="font-semibold">{modality.title}{modality.test_mode === 1 && ' · Prueba'}</h3>{modality.concept_mode === 1 ? <p class="mt-2 text-sm text-muted">Consulta los conceptos y sus importes en <a class="text-brand underline" href="/account/payments">Mis pagos</a>.</p> : <><p class="mt-2 text-xl font-semibold">{formatPrice(modality.amount_cents, modality.currency)}</p><p class="mt-2 text-sm text-muted">{modality.frequency_unit === 'once' ? 'Pago único' : `Cada ${modality.frequency_count} ${units[modality.frequency_unit]}`}</p>{modality.classes_per_payment && <p class="mt-1 text-sm text-muted">{modality.classes_per_payment} clases por pago</p>}{modality.validity_count && modality.validity_unit && <p class="mt-1 text-sm text-muted">Vigencia: {modality.validity_count} {validityUnits[modality.validity_unit]}</p>}</>}</article>)}</div></section>}
     {subprogram.terms_md && <section class="mt-8"><h2 class="font-serif text-2xl">Términos</h2><div class="prose mt-3 max-w-none" set:html={renderMarkdown(subprogram.terms_md)} /></section>}
     {subprogram.policies_md && <section class="mt-8"><h2 class="font-serif text-2xl">Políticas</h2><div class="prose mt-3 max-w-none" set:html={renderMarkdown(subprogram.policies_md)} /></section>}
     {faqs.length > 0 && <section class="mt-8"><h2 class="font-serif text-2xl">Preguntas frecuentes</h2><div class="mt-4 space-y-3">
