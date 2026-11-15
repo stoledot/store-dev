@@ -10,6 +10,7 @@ import { getSchoolHomeSummary } from '../features/school/homeSummary';
 import StudentHome from '../features/school/StudentHome.astro';
 import { getUserConferencesSessions } from '../features/conferences/db';
 import { formatConferenceSession, sessionStart, sortConferenceSessions } from '../features/conferences/dates';
+import AppControls from '../components/AppControls.astro';
 
 const config = getConfig();
 const configuredName = Astro.locals.settings?.storeName ?? config.storeName;
@@ -27,6 +28,8 @@ const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.descript
 ---
 
 <Layout title="Aprende matemáticas y lectura" description="Programas de matemáticas y lectura con una ruta clara, contenidos accesibles y acompañamiento para aprender a tu ritmo.">
+
+
   {schoolSummary && <StudentHome summary={schoolSummary} />}
   {schoolSummary && upcomingSessions.length > 0 && <section aria-labelledby="upcoming-conferences" class="my-5 rounded-3xl border border-line bg-surface p-6 sm:p-8">
     <div class="flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-[0.16em] text-brand">Tu agenda</p><h2 id="upcoming-conferences" class="mt-1 font-serif text-2xl">Próximas conferencias</h2></div><a href="/account/conferences" class="text-sm font-semibold text-brand underline underline-offset-4">Ver todas →</a></div>
@@ -44,16 +47,18 @@ const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.descript
         <h3  class="mt-3 max-w-2xl text-white font-serif text-3xl leading-[1.08] tracking-tight sm:text-4xl lg:text-5xl">Las matemáticas y la lectura, a tu ritmo y con sentido.</h3>
         <p class="mt-5 max-w-2xl leading-7 text-white sm:text-lg sm:leading-8">Aprende paso a paso, comprende las ideas de fondo y construye confianza con programas pensados para acompañarte desde donde estás.</p>
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <a href="/account/profile"
+          <a href="#programas"
             class="inline-flex min-h-14 items-center justify-center rounded-full bg-red-600 px-8 py-4 text-lg font-bold text-white shadow-md transition-all duration-200 hover:bg-red-700 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
-              Iniciar proceso de Inscripción
+              Conocer programas
               <span aria-hidden="true" class="ml-2">↗</span>
           </a>
+          <!--
           <a href="#programas" 
             class="inline-flex min-h-12 
               items-center justify-center 
               rounded-full border border-line 
               bg-azul-cielo-eri px-6 py-3 text-sm font-semibold transition hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">Conocer los programas</a>
+          -->
         </div>
       </div>
 
@@ -122,4 +127,6 @@ const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.descript
     <a href="/donar" class="mt-4 inline-flex rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 sm:mt-0">Conocer las donaciones →</a>
   </section>
   
+    <AppControls />
+
 </Layout>
