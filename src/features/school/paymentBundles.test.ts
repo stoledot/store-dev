@@ -3,7 +3,7 @@ import { groupBundleCandidates, selectBundleItems, type BundleCandidate } from '
 
 function charge(id: string, due: string, overdue: number, enrollment = 'e1', currency = 'mxn', type = 'classes'): BundleCandidate {
   return { id, due_at: due, overdue, enrollment_id: enrollment, currency, modality_payment_type: type,
-    student_email: 'student@example.test', subprogram_title: 'Clases', title_snapshot: id, amount_cents: 100 };
+    student_email: 'student@example.test', subprogram_title: 'Clases', title_snapshot: id, amount_cents: 100, test_mode: 0 };
 }
 
 describe('school payment grouping', () => {

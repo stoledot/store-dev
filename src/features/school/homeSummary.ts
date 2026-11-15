@@ -1,5 +1,6 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { courseAccessSql } from './courseAccess.ts';
+import { enrollmentPaymentValidSql } from './enrollmentEligibility.ts';
 
 export async function getSchoolHomeSummary(db: D1Database, email: string) {
   const account = await db.prepare('SELECT client_number FROM customer_accounts WHERE email=? COLLATE NOCASE')
@@ -29,8 +30,8 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
     db.prepare(`
       SELECT d.subprogram_id,s.title,d.status,d.closed_at,
         (SELECT e.status FROM school_subprogram_enrollments e WHERE e.diagnostic_id=d.id LIMIT 1) AS enrollment_status,
-        (SELECT g.title FROM school_subprogram_enrollments e
-          JOIN school_subprogram_group_members gm ON gm.enrollment_id=e.id
+        (SELECT GROUP_CONCAT(g.title, ', ') FROM school_subprogram_enrollments e
+          JOIN school_subprogram_group_memberships gm ON gm.enrollment_id=e.id
           JOIN school_subprogram_groups g ON g.id=gm.group_id AND g.subprogram_id=e.subprogram_id
           WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active' AND g.status='active'
           LIMIT 1) AS group_title,
@@ -45,19 +46,28 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
             AND COALESCE(paid.refunded_cents,0)<paid.amount_total_cents AND datetime(o.paid_at)<=datetime('now')
             AND (o.modality_valid_from IS NULL OR datetime(o.modality_valid_from)<=datetime('now'))
             AND (o.modality_valid_until IS NULL OR datetime(o.modality_valid_until)>datetime('now'))) AS enrollment_valid,
-        EXISTS(SELECT 1 FROM school_payment_obligations o JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
+        (EXISTS(SELECT 1 FROM school_payment_obligations o JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
           JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id JOIN orders paid ON paid.id=COALESCE(o.order_id,o.bundle_order_id)
           WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active' AND ps.status='active'
             AND ps.modality_id=e.modality_id AND o.status='paid' AND paid.status='paid'
             AND COALESCE(paid.refunded_cents,0)<paid.amount_total_cents AND datetime(o.paid_at)<=datetime('now')
             AND (o.modality_valid_from IS NULL OR datetime(o.modality_valid_from)<=datetime('now'))
-            AND (o.modality_valid_until IS NULL OR datetime(o.modality_valid_until)>datetime('now'))) AS modality_valid,
-        (SELECT COUNT(*) FROM school_payment_obligations o
+            AND (o.modality_valid_until IS NULL OR datetime(o.modality_valid_until)>datetime('now')))
+          OR EXISTS(SELECT 1 FROM school_subprogram_enrollments e JOIN school_payment_modalities m ON m.id=e.modality_id
+            WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND m.concept_mode=1 AND ${enrollmentPaymentValidSql})) AS modality_valid,
+        ((SELECT COUNT(*) FROM school_payment_obligations o
           JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
           JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id
           WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active'
             AND o.status='pending' AND ((o.available_from IS NOT NULL AND datetime(o.available_from)<=datetime('now'))
-              OR (o.available_from IS NULL AND (o.available_at IS NULL OR date(o.available_at)<=date('now'))))) AS due_count,
+              OR (o.available_from IS NULL AND (o.available_at IS NULL OR date(o.available_at)<=date('now')))))
+          + (SELECT COUNT(*) FROM school_concept_occurrence_charges cc JOIN school_payment_obligations o ON o.id=cc.obligation_id
+            JOIN school_subprogram_enrollments e ON e.id=cc.enrollment_id
+            JOIN school_payment_modalities m ON m.id=e.modality_id
+            JOIN school_concept_assignments ca ON ca.enrollment_id=e.id AND ca.synced_revision=m.concept_revision
+            WHERE e.client_number=d.client_number AND e.subprogram_id=d.subprogram_id AND e.status='active'
+              AND cc.retired=0 AND o.status='pending' AND (cc.payment_cutoff IS NULL OR datetime(cc.payment_cutoff)>datetime('now'))
+              AND (o.available_from IS NULL OR datetime(o.available_from)<=datetime('now')))) AS due_count,
         (SELECT COUNT(*) FROM school_payment_obligations o
           JOIN school_subprogram_payment_schedules ps ON ps.id=o.subprogram_schedule_id
           JOIN school_subprogram_enrollments e ON e.id=ps.enrollment_id

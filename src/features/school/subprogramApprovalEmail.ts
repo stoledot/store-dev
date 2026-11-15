@@ -34,7 +34,7 @@ export async function sendSubprogramApprovalEmails(db: D1Database): Promise<void
     `).bind(token, now.toISOString(), row.diagnostic_id, now.toISOString(), new Date(now.getTime() - 20 * 60000).toISOString()).run();
     if (!claimed.meta.changes) continue;
     try {
-      const message = `Tu diagnóstico de ${row.title} fue aprobado. Consulta la modalidad y los pagos asignados en ${paymentsUrl.href}.`;
+      const message = `Tu diagnóstico de ${row.title} fue aprobado. Consulta el esquema de pago y los pagos asignados en ${paymentsUrl.href}.`;
       await mailer.send({
         to: row.email,
         subject: `Diagnóstico aprobado: ${row.title}`,

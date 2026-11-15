@@ -8,9 +8,14 @@ import { subprogramCourseAccessSql } from '../../src/features/school/subprogramA
 import { settleSubprogramObligation } from '../../src/features/school/subprogramSettlement.ts';
 import { migrateLegacyPaymentPeriods } from '../../src/features/school/paymentPeriodMigration.ts';
 import { reconcileOverdueSuspensions, reactivateOverdueEnrollment, withdrawEnrollment } from '../../src/features/school/withdrawals.ts';
-import { claimPaymentBundle, linkPaymentBundle, releaseExpiredDemoBundles, releaseExpiredPaymentBundle, settlePaymentBundle } from '../../src/features/school/paymentBundles.ts';
+import { claimPaymentBundle, linkPaymentBundle, releaseExpiredDemoBundles, releaseExpiredPaymentBundle, releasePaymentBundle, settlePaymentBundle } from '../../src/features/school/paymentBundles.ts';
 import { getSchoolHomeSummary } from '../../src/features/school/homeSummary.ts';
 import { listStudentSchoolGroups, saveSchoolGroupAction } from '../../src/features/school/groups.ts';
+import { listAssignedPaymentPlans } from '../../src/features/school/assignedPaymentPlans.ts';
+import { enableConceptScheme, reconcileConceptSchemes, syncConceptScheme } from '../../src/features/school/conceptBilling.ts';
+import { removePaymentConcept, savePaymentConcept } from '../../src/features/school/paymentConcepts.ts';
+import { cancelExpiredConceptPayments, claimConceptBundle, groupConceptBundleCandidates, listConceptBundleCandidates } from '../../src/features/school/conceptBundles.ts';
+import { enrollmentPaymentValidSql } from '../../src/features/school/enrollmentEligibility.ts';
 import { saveManualAccess } from '../../src/features/school/manualAccess.ts';
 import { courseAccessSql } from '../../src/features/school/courseAccess.ts';
 import { blockedOrderItemIds } from '../../src/features/orders/courseRestrictions.ts';
@@ -112,6 +117,51 @@ try {
   for (const sql of groupPaymentScopeMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
   const extendedAccessMigration = await readFile(new URL('../../migrations/0087_school_extended_manual_access.sql', import.meta.url), 'utf8');
   for (const sql of extendedAccessMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  await db.prepare("INSERT INTO school_subprogram_diagnostics(id,subprogram_id,client_number,answers_json,status) VALUES ('old-d','s1','0000000001','[]','rejected')").run();
+  await db.prepare("INSERT INTO school_subprogram_enrollments(id,client_number,subprogram_id,diagnostic_id,modality_id,status,starts_on) VALUES ('old-e','0000000001','s1','old-d','m1','completed','2026-01-01')").run();
+  await db.prepare("INSERT INTO school_subprogram_groups(id,subprogram_id,title) VALUES ('old-g','s1','Grupo anterior')").run();
+  await db.prepare("INSERT INTO school_subprogram_group_members(enrollment_id,group_id,assigned_at) VALUES ('old-e','old-g','2026-01-01')").run();
+  const membershipsMigration = await readFile(new URL('../../migrations/0088_school_multiple_group_memberships.sql', import.meta.url), 'utf8');
+  for (const sql of membershipsMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const testSchemesMigration = await readFile(new URL('../../migrations/0089_school_test_payment_schemes.sql', import.meta.url), 'utf8');
+  for (const sql of testSchemesMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptsMigration = await readFile(new URL('../../migrations/0090_school_payment_concepts.sql', import.meta.url), 'utf8');
+  for (const sql of conceptsMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const assignmentsMigration = await readFile(new URL('../../migrations/0091_school_concept_assignments.sql', import.meta.url), 'utf8');
+  for (const sql of assignmentsMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptCancellationMigration = await readFile(new URL('../../migrations/0092_school_concept_cancellation.sql', import.meta.url), 'utf8');
+  for (const sql of conceptCancellationMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  await db.prepare(`INSERT INTO school_payment_concepts
+    (id,modality_id,title,period_start_on,amount_cents,currency,allow_after_start,grace_days,required_for_access,recurrence_unit)
+    VALUES ('migration-concept','m1','Anterior','2026-01-01',1000,'mxn',1,0,1,'once')`).run();
+  await db.prepare(`INSERT INTO school_payment_obligations
+    (id,student_email,title_snapshot,description_snapshot,amount_cents,currency,fee_type,validity_months,due_at,period_start_on,status)
+    VALUES ('migration-charge','test@example.test','Anterior','',1000,'mxn','other',0,'2026-01-01','2026-01-01','paid')`).run();
+  await db.prepare("INSERT INTO school_concept_assignments(enrollment_id,synced_revision) VALUES ('old-e',1)").run();
+  await db.prepare(`INSERT INTO school_concept_charges(enrollment_id,concept_id,obligation_id,access_grace_until,payment_cutoff,auto_cancelled)
+    VALUES ('old-e','migration-concept','migration-charge','2026-01-01T06:00:00Z',NULL,0)`).run();
+  const conceptOccurrencesMigration = await readFile(new URL('../../migrations/0093_school_recurring_concept_charges.sql', import.meta.url), 'utf8');
+  for (const sql of conceptOccurrencesMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const retiredOccurrencesMigration = await readFile(new URL('../../migrations/0094_school_retired_concept_occurrences.sql', import.meta.url), 'utf8');
+  for (const sql of retiredOccurrencesMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptRetryMigration = await readFile(new URL('../../migrations/0095_school_concept_retry.sql', import.meta.url), 'utf8');
+  for (const sql of conceptRetryMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  assert.equal((await db.prepare("SELECT occurrence_start_on FROM school_concept_occurrence_charges WHERE obligation_id='migration-charge'").first()).occurrence_start_on, '2026-01-01');
+  await db.prepare("DELETE FROM school_concept_occurrence_charges WHERE obligation_id='migration-charge'").run();
+  await db.prepare("DELETE FROM school_concept_charges WHERE obligation_id='migration-charge'").run();
+  await db.prepare("DELETE FROM school_concept_assignments WHERE enrollment_id='old-e'").run();
+  await db.prepare("DELETE FROM school_payment_obligations WHERE id='migration-charge'").run();
+  await db.prepare("DELETE FROM school_payment_concepts WHERE id='migration-concept'").run();
+  assert.equal((await db.prepare("SELECT assigned_at FROM school_subprogram_group_memberships WHERE enrollment_id='old-e' AND group_id='old-g'").first()).assigned_at, '2026-01-01');
+  await db.prepare("DELETE FROM school_subprogram_group_memberships WHERE enrollment_id='old-e'").run();
+  await db.prepare("DELETE FROM school_subprogram_group_members WHERE enrollment_id='old-e'").run();
+  await db.prepare("DELETE FROM school_subprogram_groups WHERE id='old-g'").run();
+  await db.prepare("DELETE FROM school_subprogram_enrollments WHERE id='old-e'").run();
+  await db.prepare("DELETE FROM school_subprogram_diagnostics WHERE id='old-d'").run();
+  await db.prepare('ALTER TABLE school_payment_modalities ADD COLUMN classes_per_payment INTEGER').run();
+  await db.prepare("ALTER TABLE school_payment_modalities ADD COLUMN title TEXT NOT NULL DEFAULT ''").run();
+  assert.deepEqual(await listAssignedPaymentPlans(db, 's1', null), []);
+  assert.deepEqual(await listAssignedPaymentPlans(db, 's1', '0000000001'), []);
   await db.prepare("UPDATE school_payment_modalities SET period_start_on='2026-01-31',period_end_on=CASE id WHEN 'm1' THEN '2026-02-27' ELSE '2027-01-30' END").run();
   await db.prepare('ALTER TABLE school_notifications ADD COLUMN read_at TEXT').run();
   await db.prepare("ALTER TABLE school_notifications ADD COLUMN created_at TEXT NOT NULL DEFAULT ''").run();
@@ -133,6 +183,8 @@ try {
   await db.prepare("UPDATE school_subprograms SET enrollment_modality_id='m2' WHERE id='s1'").run();
   const pending = await db.prepare("SELECT id FROM school_subprogram_diagnostics WHERE status='pending'").first();
   await reviewSubprogramDiagnostic(db, pending.id, 'approved', 'm1', '', new Date('2026-01-31T12:00:00Z'));
+  assert.equal((await listAssignedPaymentPlans(db, 's1', '0000000001')).length, 2);
+  assert.deepEqual(await listAssignedPaymentPlans(db, 's1', 'other'), []);
   const initial = (await db.prepare("SELECT * FROM school_payment_obligations ORDER BY due_at").all()).results;
   assert.equal(initial.length, 13);
   assert.equal(initial.filter((row) => row.modality_payment_type === 'enrollment').length, 1);
@@ -189,14 +241,15 @@ try {
   await saveSchoolGroupAction(db, form({ action: 'create', subprogram_id: 's1', title: 'Grupo B' }));
   const groupB = await db.prepare("SELECT id FROM school_subprogram_groups WHERE title='Grupo B'").first();
   await saveSchoolGroupAction(db, form({ action: 'assign', group_id: groupB.id, enrollment_id: studentEnrollment.id }));
-  assert.equal(await canAccess('0000000001', 'c1'), null);
-  assert.equal((await getUserConferences(db, 'test@example.test')).length, 0);
-  await saveSchoolGroupAction(db, form({ action: 'assign', group_id: group.id, enrollment_id: studentEnrollment.id }));
+  assert.ok(await canAccess('0000000001', 'c1'));
+  assert.equal((await getUserConferences(db, 'test@example.test')).length, 1);
+  assert.equal((await listStudentSchoolGroups(db, '0000000001')).length, 2);
+  await saveSchoolGroupAction(db, form({ action: 'remove-member', group_id: groupB.id, enrollment_id: studentEnrollment.id }));
   const futureCharge = initial.find(row => row.id !== classes.id && row.id !== enrollmentCharge.id);
   await db.prepare("UPDATE school_payment_obligations SET status='pending',due_at=date('now','-1 day'),overdue_from=datetime('now','-1 day') WHERE id=?").bind(futureCharge.id).run();
   assert.equal(await canAccess('0000000001', 'c1'), null);
   assert.equal((await getUserConferences(db, 'test@example.test')).length, 0);
-  assert.equal((await db.prepare('SELECT group_id FROM school_subprogram_group_members WHERE enrollment_id=?').bind(studentEnrollment.id).first()).group_id, group.id);
+  assert.equal((await db.prepare('SELECT group_id FROM school_subprogram_group_memberships WHERE enrollment_id=?').bind(studentEnrollment.id).first()).group_id, group.id);
   await db.prepare("UPDATE school_payment_obligations SET status='cancelled',due_at=?,overdue_from=? WHERE id=?").bind(futureCharge.due_at, futureCharge.overdue_from, futureCharge.id).run();
   assert.ok(await canAccess('0000000001', 'c1'));
   await db.prepare("UPDATE school_subprograms SET enrollment_modality_id=NULL WHERE id='s1'").run();
@@ -325,7 +378,7 @@ try {
   await db.prepare("UPDATE school_payment_obligations SET checkout_session_id='early-session' WHERE id=?").bind(firstNext.id).run();
   await db.prepare("INSERT INTO orders VALUES (3,'paid',0,3100,'next@example.test')").run();
   const nextEnrollment = await db.prepare("SELECT id FROM school_subprogram_enrollments WHERE client_number='0000000003'").first();
-  await db.prepare("INSERT INTO school_subprogram_group_members(enrollment_id,group_id) VALUES (?,?)").bind(nextEnrollment.id, group.id).run();
+  await db.prepare("INSERT INTO school_subprogram_group_memberships(enrollment_id,group_id) VALUES (?,?)").bind(nextEnrollment.id, group.id).run();
   await settleSubprogramObligation(db, { schoolPaymentObligationId: firstNext.id, email: 'next@example.test',
     amountTotalCents: 3100, currency: 'mxn', providerSessionId: 'early-session' }, 3, 'demo',
     { modality_validity_count: null, modality_validity_unit: null });
@@ -365,13 +418,13 @@ try {
   assert.deepEqual(migrated, { frequency_unit: 'month', frequency_count: 1, period_start_on: '2026-02-01', period_end_on: '2026-02-28' });
 
   const currentEnrollment = await db.prepare("SELECT id FROM school_subprogram_enrollments WHERE client_number='0000000002'").first();
-  await db.prepare("INSERT INTO school_subprogram_group_members(enrollment_id,group_id) VALUES (?,?)").bind(currentEnrollment.id, group.id).run();
+  await db.prepare("INSERT INTO school_subprogram_group_memberships(enrollment_id,group_id) VALUES (?,?)").bind(currentEnrollment.id, group.id).run();
   await db.prepare("UPDATE school_subprograms SET suspension_after_days=3 WHERE id='s1'").run();
   await reconcileOverdueSuspensions(db, new Date('2026-01-03T12:00:00Z'));
   assert.equal((await db.prepare("SELECT status FROM school_subprogram_enrollments WHERE id=?").bind(currentEnrollment.id).first()).status, 'active');
   await reconcileOverdueSuspensions(db, new Date('2026-01-04T12:00:00Z'));
   assert.equal((await db.prepare("SELECT status FROM school_subprogram_enrollments WHERE id=?").bind(currentEnrollment.id).first()).status, 'suspended');
-  assert.ok(await db.prepare("SELECT group_id FROM school_subprogram_group_members WHERE enrollment_id=?").bind(currentEnrollment.id).first());
+  assert.ok(await db.prepare("SELECT group_id FROM school_subprogram_group_memberships WHERE enrollment_id=?").bind(currentEnrollment.id).first());
   await db.prepare("UPDATE school_payment_modalities SET proration_method='days' WHERE id='m3'").run();
   await reconcileSubprogramSchedules(db, new Date('2026-02-20T12:00:00Z'));
   assert.ok(await db.prepare("SELECT id FROM school_payment_obligations WHERE student_email='current@example.test' AND due_at='2027-02-01' AND status='pending'").first());
@@ -386,12 +439,12 @@ try {
   await db.prepare("UPDATE school_payment_obligations SET checkout_session_id=NULL,checkout_lock_token=NULL WHERE id=?").bind(firstCurrent.id).run();
   await withdrawEnrollment(db, currentEnrollment.id, new Date('2026-01-04T12:00:00Z'));
   assert.equal((await db.prepare("SELECT status FROM school_subprogram_enrollments WHERE id=?").bind(currentEnrollment.id).first()).status, 'withdrawn');
-  assert.equal(await db.prepare("SELECT group_id FROM school_subprogram_group_members WHERE enrollment_id=?").bind(currentEnrollment.id).first(), null);
+  assert.equal(await db.prepare("SELECT group_id FROM school_subprogram_group_memberships WHERE enrollment_id=?").bind(currentEnrollment.id).first(), null);
   assert.equal((await db.prepare("SELECT status FROM school_payment_obligations WHERE id=?").bind(firstCurrent.id).first()).status, 'cancelled');
   assert.ok((await db.prepare("SELECT closed_at FROM school_subprogram_diagnostics WHERE id='d-current'").first()).closed_at);
   await submitSubprogramDiagnostic(db, '0000000002', 's1', form({ [`question_${text.id}`]: 'Reingreso', [`question_${choice.id}`]: 'Inicial' }));
   const reentryDiagnostic = await db.prepare("SELECT id FROM school_subprogram_diagnostics WHERE client_number='0000000002' AND status='pending'").first();
-  await assert.rejects(() => reviewSubprogramDiagnostic(db, reentryDiagnostic.id, 'approved', 'm3', '', approvalDate, 'next'), /inscripción activa/);
+  await assert.rejects(() => reviewSubprogramDiagnostic(db, reentryDiagnostic.id, 'approved', 'm3', '', approvalDate, 'next'), /esquema de inscripción activo/);
   await db.prepare("UPDATE school_subprograms SET enrollment_modality_id='m2' WHERE id='s1'").run();
   await db.prepare("UPDATE school_payment_modalities SET proration_method='days',billing_revision=billing_revision+1 WHERE id='m3'").run();
   await reviewSubprogramDiagnostic(db, reentryDiagnostic.id, 'approved', 'm3', '', approvalDate, 'next');
@@ -415,9 +468,14 @@ try {
       VALUES (?, 'bundle@example.test',?,'',?,?,'other',0,date('now',?),date('now','-50 days'),?,?)`)
       .bind(id, id, amount, currency, due, schedule, type).run();
   }
+  await db.prepare("UPDATE school_payment_modalities SET test_mode=1 WHERE id='m3'").run();
+  const testPlans = await listAssignedPaymentPlans(db, 's1', '0000000009');
+  assert.equal(testPlans.length, 2);
+  assert.ok(testPlans.every(plan => plan.test_mode === 1));
+  assert.equal(await claimPaymentBundle(db, 'b-old-1', 'bundle@example.test', 'real-attempt', 'stripe'), null);
   const [firstBundle, competing] = await Promise.all([
-    claimPaymentBundle(db, 'b-old-1', 'bundle@example.test', 'bundle-lock-1'),
-    claimPaymentBundle(db, 'b-old-1', 'bundle@example.test', 'bundle-lock-race'),
+    claimPaymentBundle(db, 'b-old-1', 'bundle@example.test', 'bundle-lock-1', 'demo'),
+    claimPaymentBundle(db, 'b-old-1', 'bundle@example.test', 'bundle-lock-race', 'demo'),
   ]);
   const claimed = firstBundle ?? competing;
   assert.ok(claimed);
@@ -431,12 +489,12 @@ try {
   await db.prepare("INSERT INTO pending_payments(id,payment_hash,backend,status,expires_at) VALUES ('pending-bundle','demo_bundle','demo','pending',datetime('now','-1 day'))").run();
   await releaseExpiredDemoBundles(db, 'bundle@example.test');
   assert.equal((await db.prepare("SELECT checkout_lock_token FROM school_payment_obligations WHERE id='b-old-2'").first()).checkout_lock_token, null);
-  const secondBundle = await claimPaymentBundle(db, 'b-old-2', 'bundle@example.test', 'bundle-lock-2');
+  const secondBundle = await claimPaymentBundle(db, 'b-old-2', 'bundle@example.test', 'bundle-lock-2', 'demo');
   assert.ok(secondBundle);
   await linkPaymentBundle(db, 'bundle-lock-2', secondBundle.id, 'cs_bundle');
   assert.equal(await releaseExpiredPaymentBundle(db, secondBundle.id, 'cs_wrong'), false);
   assert.equal(await releaseExpiredPaymentBundle(db, secondBundle.id, 'cs_bundle'), true);
-  const thirdBundle = await claimPaymentBundle(db, 'b-old-1', 'bundle@example.test', 'bundle-lock-3');
+  const thirdBundle = await claimPaymentBundle(db, 'b-old-1', 'bundle@example.test', 'bundle-lock-3', 'demo');
   assert.ok(thirdBundle);
   await linkPaymentBundle(db, 'bundle-lock-3', thirdBundle.id, 'cs_final');
   await db.prepare("INSERT INTO orders VALUES (4,'paid',0,1100,'bundle@example.test')").run();
@@ -450,7 +508,7 @@ try {
   assert.equal((await db.prepare("SELECT status FROM school_payment_obligations WHERE id='b-later'").first()).status, 'pending');
   assert.equal((await db.prepare("SELECT status FROM school_payment_obligations WHERE id='b-usd'").first()).status, 'pending');
   assert.equal((await db.prepare("SELECT status FROM school_subprogram_enrollments WHERE id='e-bundle'").first()).status, 'active');
-  await db.prepare("INSERT INTO school_subprogram_group_members(enrollment_id,group_id) VALUES ('e-bundle',?)").bind(group.id).run();
+  await db.prepare("INSERT INTO school_subprogram_group_memberships(enrollment_id,group_id) VALUES ('e-bundle',?)").bind(group.id).run();
   assert.ok(await canAccess('0000000009', 'c1'));
   await db.prepare("INSERT INTO media VALUES (1,'groups/test.png','test.png','image/png')").run();
   await saveSchoolGroupAction(db, form({ action:'details', group_id:group.id, title:'Grupo de prueba', image_key:'groups/test.png',
@@ -605,10 +663,213 @@ try {
   await db.prepare("UPDATE school_payment_obligations SET status='cancelled' WHERE subprogram_schedule_id='s-scholar' AND status='pending'").run();
   await db.prepare("UPDATE school_subprograms SET enrollment_modality_id=NULL WHERE id='s1'").run();
   await db.prepare("UPDATE school_payment_modalities SET requires_current_enrollment=0 WHERE id='m3'").run();
-  await db.prepare("INSERT INTO school_subprogram_group_members(enrollment_id,group_id) VALUES ('e-scholar',?)").bind(group.id).run();
+  await db.prepare("INSERT INTO school_subprogram_group_memberships(enrollment_id,group_id) VALUES ('e-scholar',?)").bind(group.id).run();
   assert.ok(await canAccess('0000000013','c1'));
   await db.prepare("UPDATE school_subprogram_scholarship_periods SET status='cancelled' WHERE schedule_id='s-scholar'").run();
   assert.equal(await canAccess('0000000013','c1'),null);
+
+  await db.prepare("INSERT INTO school_subprograms(id,program_slug,title,status) VALUES ('s2','matematicas','Lectura','active')").run();
+  await db.prepare(`INSERT INTO school_payment_modalities
+    (id,subprogram_id,payment_product_id,payment_type,frequency_unit,frequency_count,requires_current_enrollment,status,
+     period_start_on,period_end_on) VALUES ('m-s2','s2','p1','classes','month',1,0,'active','2026-01-01','2026-01-31')`).run();
+  await db.prepare("INSERT INTO school_subprogram_diagnostics(id,subprogram_id,client_number,answers_json,status) VALUES ('d-s2','s2','0000000013','[]','pending')").run();
+  await reviewSubprogramDiagnostic(db, 'd-s2', 'approved', 'm-s2', '', new Date('2026-03-15T12:00:00Z'));
+  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM school_subprogram_enrollments WHERE client_number='0000000013' AND status='active'").first()).n, 2);
+  assert.equal((await listAssignedPaymentPlans(db, 's2', '0000000013')).length, 1);
+  assert.deepEqual(await listAssignedPaymentPlans(db, 's2', '0000000001'), []);
+
+  await db.prepare("INSERT INTO school_subprograms(id,program_slug,title,status) VALUES ('s3','matematicas','Conceptos','active')").run();
+  await db.prepare(`INSERT INTO school_payment_modalities
+    (id,subprogram_id,payment_product_id,payment_type,frequency_unit,frequency_count,requires_current_enrollment,status,
+     period_start_on,period_end_on,test_mode) VALUES ('m-concepts','s3','p1','classes','once',1,0,'active','2027-01-01','2027-12-31',1)`).run();
+  const conceptForm = { title:'Inscripción', period_start_on:'2027-01-01', period_end_on:'2027-12-31',
+    amount:'50', currency:'mxn', recurrence_unit:'once', grace_days:'3', allow_after_start:'0', required_for_access:'1', group_name:'Primer pago' };
+  await savePaymentConcept(db, 'm-concepts', form(conceptForm));
+  await savePaymentConcept(db, 'm-concepts', form({ ...conceptForm, title:'Material', amount:'20' }));
+  await savePaymentConcept(db, 'm-concepts', form({ ...conceptForm, title:'Futuro', amount:'30', advance_days:'0' }));
+  await enableConceptScheme(db, 'm-concepts');
+  await db.prepare("INSERT INTO school_subprogram_diagnostics(id,subprogram_id,client_number,answers_json,status) VALUES ('d-concepts','s3','0000000013','[]','pending')").run();
+  await reviewSubprogramDiagnostic(db, 'd-concepts', 'approved', 'm-concepts', '', new Date('2026-12-01T12:00:00Z'));
+  const conceptCharges = (await db.prepare(`SELECT o.title_snapshot,o.amount_cents,o.status,o.modality_valid_from,
+    o.modality_valid_until,cc.access_grace_until,cc.payment_cutoff
+    FROM school_concept_occurrence_charges cc JOIN school_payment_obligations o ON o.id=cc.obligation_id
+    JOIN school_subprogram_enrollments e ON e.id=cc.enrollment_id WHERE e.diagnostic_id='d-concepts' ORDER BY o.amount_cents`).all()).results;
+  assert.equal(conceptCharges.length, 3);
+  assert.equal(conceptCharges[0].amount_cents, 2000);
+  assert.equal(conceptCharges[0].status, 'pending');
+  assert.equal(conceptCharges[0].payment_cutoff, '2027-01-01T06:00:00.000Z');
+  assert.equal(conceptCharges[0].access_grace_until, '2027-01-04T06:00:00.000Z');
+  await db.prepare(`UPDATE school_concept_occurrence_charges SET payment_cutoff=NULL WHERE enrollment_id IN
+    (SELECT id FROM school_subprogram_enrollments WHERE diagnostic_id='d-concepts')`).run();
+  await db.prepare("UPDATE school_payment_obligations SET available_from=datetime('now','+1 day') WHERE title_snapshot='Futuro' AND student_email='scholar@example.test'").run();
+  const availableConcepts = await listConceptBundleCandidates(db, 'scholar@example.test');
+  assert.equal(availableConcepts.length, 2);
+  let conceptSummary = (await getSchoolHomeSummary(db, 'scholar@example.test')).diagnostics.find(row => row.subprogram_id === 's3');
+  assert.equal(conceptSummary.due_count, 2);
+  assert.equal(conceptSummary.modality_valid, 1);
+  assert.equal(await claimSchoolCheckout(db, availableConcepts[0].id, 'scholar@example.test', 'wrong-path'), null);
+  assert.equal(await claimConceptBundle(db, availableConcepts[0].id, 'scholar@example.test', 'test-stripe', 'stripe'), null);
+  const conceptBundle = await claimConceptBundle(db, availableConcepts[0].id, 'scholar@example.test', 'concept-lock', 'demo');
+  assert.equal(conceptBundle.amount_cents, 7000);
+  assert.equal(conceptBundle.items.length, 2);
+  assert.equal(await claimConceptBundle(db, availableConcepts[1].id, 'scholar@example.test', 'concept-race', 'demo'), null);
+  await linkPaymentBundle(db, 'concept-lock', conceptBundle.id, 'demo-concept');
+  await assert.rejects(() => savePaymentConcept(db, 'm-concepts', form({ ...conceptForm, title:'Nuevo' })), /pagos en curso/);
+  await db.prepare(`UPDATE school_concept_occurrence_charges SET payment_cutoff=datetime('now','-1 day')
+    WHERE obligation_id IN (SELECT obligation_id FROM school_payment_bundle_items WHERE bundle_id='concept-lock')`).run();
+  await cancelExpiredConceptPayments(db, 'scholar@example.test');
+  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM school_payment_obligations WHERE checkout_bundle_id='concept-lock' AND status='pending'").first()).n, 2);
+  await db.prepare("INSERT INTO orders VALUES (99,'paid',0,7000,'scholar@example.test')").run();
+  await settlePaymentBundle(db, { schoolPaymentObligationId:conceptBundle.id, providerSessionId:'demo-concept',
+    email:'scholar@example.test', amountTotalCents:7000, currency:'mxn' }, 99, 'demo');
+  assert.equal((await db.prepare("SELECT COUNT(*) AS n FROM school_payment_obligations WHERE bundle_order_id=99 AND status='paid'").first()).n, 2);
+  await db.prepare(`UPDATE school_concept_occurrence_charges SET payment_cutoff=datetime('now','-1 day') WHERE obligation_id IN
+    (SELECT id FROM school_payment_obligations WHERE title_snapshot='Futuro' AND student_email='scholar@example.test')`).run();
+  await cancelExpiredConceptPayments(db, 'scholar@example.test');
+  assert.equal((await db.prepare("SELECT status FROM school_payment_obligations WHERE title_snapshot='Futuro' AND student_email='scholar@example.test'").first()).status, 'cancelled');
+  const conceptAccess = () => db.prepare(`SELECT id FROM school_subprogram_enrollments e WHERE e.diagnostic_id='d-concepts' AND ${enrollmentPaymentValidSql}`).first();
+  await db.prepare(`UPDATE school_payment_obligations SET modality_valid_from=datetime('now','-1 day'),modality_valid_until=datetime('now','+1 day')
+    WHERE id IN (SELECT cc.obligation_id FROM school_concept_occurrence_charges cc JOIN school_subprogram_enrollments e
+      ON e.id=cc.enrollment_id WHERE e.diagnostic_id='d-concepts')`).run();
+  await db.prepare(`UPDATE school_concept_occurrence_charges SET access_grace_until=datetime('now','-1 day') WHERE enrollment_id IN
+    (SELECT id FROM school_subprogram_enrollments WHERE diagnostic_id='d-concepts')`).run();
+  await db.prepare(`UPDATE school_concept_occurrence_charges SET access_grace_until=datetime('now','+1 day') WHERE obligation_id IN
+    (SELECT id FROM school_payment_obligations WHERE title_snapshot='Futuro' AND student_email='scholar@example.test')`).run();
+  assert.ok(await conceptAccess());
+  await db.prepare(`UPDATE school_concept_occurrence_charges SET access_grace_until=datetime('now','-1 day') WHERE obligation_id IN
+    (SELECT id FROM school_payment_obligations WHERE title_snapshot='Futuro' AND student_email='scholar@example.test')`).run();
+  assert.equal(await conceptAccess(), null);
+  conceptSummary = (await getSchoolHomeSummary(db, 'scholar@example.test')).diagnostics.find(row => row.subprogram_id === 's3');
+  assert.equal(conceptSummary.modality_valid, 0);
+  await db.prepare("UPDATE school_payment_obligations SET modality_valid_from=datetime('now','+1 day') WHERE title_snapshot='Futuro' AND student_email='scholar@example.test'").run();
+  assert.ok(await conceptAccess());
+  await db.prepare("UPDATE orders SET refunded_cents=7000 WHERE id=99").run();
+  assert.equal(await conceptAccess(), null);
+  await db.prepare("UPDATE orders SET refunded_cents=0 WHERE id=99").run();
+  await db.prepare("UPDATE school_concept_assignments SET synced_revision=synced_revision+100 WHERE enrollment_id IN (SELECT id FROM school_subprogram_enrollments WHERE diagnostic_id='d-concepts')").run();
+  assert.equal(await conceptAccess(), null);
+  const futureConcept = await db.prepare("SELECT id FROM school_payment_concepts WHERE modality_id='m-concepts' AND title='Futuro'").first();
+  await savePaymentConcept(db, 'm-concepts', form({ ...conceptForm, concept_id:futureConcept.id,
+    title:'Futuro', amount:'35', allow_after_start:'1' }));
+  assert.equal((await listConceptBundleCandidates(db, 'scholar@example.test')).length, 0);
+  await syncConceptScheme(db, 'm-concepts', new Date('2026-12-01T12:00:00Z'));
+  const updatedFuture = await db.prepare("SELECT id,amount_cents,status FROM school_payment_obligations WHERE title_snapshot='Futuro' AND student_email='scholar@example.test'").first();
+  assert.equal(updatedFuture.amount_cents, 3500);
+  assert.equal(updatedFuture.status, 'pending');
+  assert.equal((await db.prepare("SELECT SUM(amount_cents) AS n FROM school_payment_obligations WHERE bundle_order_id=99").first()).n, 7000);
+  await removePaymentConcept(db, 'm-concepts', futureConcept.id);
+  await syncConceptScheme(db, 'm-concepts', new Date('2026-12-01T12:00:00Z'));
+  assert.equal((await db.prepare('SELECT status FROM school_payment_obligations WHERE id=?').bind(updatedFuture.id).first()).status, 'cancelled');
+
+  await savePaymentConcept(db, 'm-concepts', form({ ...conceptForm, title:'Pendiente', allow_after_start:'1' }));
+  await syncConceptScheme(db, 'm-concepts', new Date('2026-12-01T12:00:00Z'));
+  const pendingConcept = (await listConceptBundleCandidates(db, 'scholar@example.test')).find(row => row.title_snapshot === 'Pendiente');
+  const lockedConcept = await claimConceptBundle(db, pendingConcept.id, 'scholar@example.test', 'withdraw-concept-lock', 'demo');
+  assert.ok(lockedConcept);
+  const conceptEnrollment = await db.prepare("SELECT id FROM school_subprogram_enrollments WHERE diagnostic_id='d-concepts'").first();
+  await db.prepare("UPDATE school_subprogram_enrollments SET status='suspended',suspension_reason='overdue' WHERE id=?").bind(conceptEnrollment.id).run();
+  await assert.rejects(() => withdrawEnrollment(db, conceptEnrollment.id), /pagos en curso/);
+  await releasePaymentBundle(db, 'withdraw-concept-lock', 'failed', null);
+  await withdrawEnrollment(db, conceptEnrollment.id);
+  assert.equal((await db.prepare('SELECT status FROM school_payment_obligations WHERE id=?').bind(pendingConcept.id).first()).status, 'cancelled');
+
+  await db.prepare("INSERT INTO school_subprograms(id,program_slug,title,status) VALUES ('s-recurring','matematicas','Recurrente','active')").run();
+  await db.prepare(`INSERT INTO school_payment_modalities
+    (id,subprogram_id,payment_product_id,payment_type,frequency_unit,frequency_count,requires_current_enrollment,status,
+     period_start_on,period_end_on,test_mode) VALUES ('m-recurring','s-recurring','p1','classes','once',1,0,'active','2027-01-01','2027-12-31',1)`).run();
+  const recurringForm = { title:'Anual', period_start_on:'2027-01-01', duration_count:'1', duration_unit:'year',
+    amount:'10', currency:'mxn', recurrence_unit:'year', recurrence_count:'1', grace_days:'3',
+    allow_after_start:'1', required_for_access:'1' };
+  await savePaymentConcept(db, 'm-recurring', form(recurringForm));
+  await enableConceptScheme(db, 'm-recurring');
+  await db.prepare("INSERT INTO school_subprogram_diagnostics(id,subprogram_id,client_number,answers_json,status) VALUES ('d-recurring','s-recurring','0000000013','[]','pending')").run();
+  await reviewSubprogramDiagnostic(db, 'd-recurring', 'approved', 'm-recurring', '', new Date('2026-12-01T12:00:00Z'));
+  const recurringCharges = () => db.prepare(`SELECT cc.occurrence_start_on,o.id,o.amount_cents,o.status
+    FROM school_concept_occurrence_charges cc JOIN school_payment_obligations o ON o.id=cc.obligation_id
+    JOIN school_subprogram_enrollments e ON e.id=cc.enrollment_id
+    WHERE e.diagnostic_id='d-recurring' ORDER BY cc.occurrence_start_on`).all().then(result => result.results);
+  assert.deepEqual((await recurringCharges()).map(row => row.occurrence_start_on), ['2027-01-01']);
+  const firstRecurring = (await recurringCharges())[0];
+  const recurringBundle = await claimConceptBundle(db, firstRecurring.id, 'scholar@example.test', 'recurring-lock', 'demo');
+  assert.equal(recurringBundle.amount_cents, 1000);
+  await linkPaymentBundle(db, 'recurring-lock', firstRecurring.id, 'demo-recurring');
+  await db.prepare("INSERT INTO orders VALUES (100,'paid',0,1000,'scholar@example.test')").run();
+  await settlePaymentBundle(db, { schoolPaymentObligationId:firstRecurring.id, providerSessionId:'demo-recurring',
+    email:'scholar@example.test', amountTotalCents:1000, currency:'mxn' }, 100, 'demo');
+  await syncConceptScheme(db, 'm-recurring', new Date('2027-12-01T12:00:00Z'));
+  await syncConceptScheme(db, 'm-recurring', new Date('2027-12-01T12:00:00Z'));
+  assert.deepEqual((await recurringCharges()).map(row => [row.occurrence_start_on, row.status]),
+    [['2027-01-01','paid'], ['2028-01-01','pending']]);
+  const recurringConcept = await db.prepare("SELECT id FROM school_payment_concepts WHERE modality_id='m-recurring'").first();
+  await assert.rejects(() => savePaymentConcept(db, 'm-recurring', form({ ...recurringForm, concept_id:recurringConcept.id,
+    recurrence_count:'2' })), /pagos realizados/);
+  await savePaymentConcept(db, 'm-recurring', form({ ...recurringForm, concept_id:recurringConcept.id, amount:'15' }));
+  await syncConceptScheme(db, 'm-recurring', new Date('2027-12-01T12:00:00Z'));
+  assert.deepEqual((await recurringCharges()).map(row => [row.amount_cents, row.status]), [[1000,'paid'], [1500,'pending']]);
+  await Promise.all([
+    syncConceptScheme(db, 'm-recurring', new Date('2028-12-01T12:00:00Z')),
+    syncConceptScheme(db, 'm-recurring', new Date('2028-12-01T12:00:00Z')),
+  ]);
+  assert.deepEqual((await recurringCharges()).map(row => row.occurrence_start_on),
+    ['2027-01-01', '2028-01-01', '2029-01-01']);
+  const recurringPending = (await listConceptBundleCandidates(db, 'scholar@example.test'))
+    .filter(row => row.subprogram_title === 'Recurrente');
+  assert.equal(groupConceptBundleCandidates(recurringPending).length, 2);
+  const nextBundle = await claimConceptBundle(db, recurringPending[0].id, 'scholar@example.test', 'recurring-next', 'demo');
+  assert.equal(nextBundle.amount_cents, 1500);
+  assert.equal(nextBundle.items.length, 1);
+  await releasePaymentBundle(db, 'recurring-next', 'failed', null);
+  const movingForm = { ...recurringForm, title:'Fecha editable', period_start_on:'2026-01-01' };
+  await savePaymentConcept(db, 'm-recurring', form(movingForm));
+  await syncConceptScheme(db, 'm-recurring', new Date('2027-12-01T12:00:00Z'));
+  const movingConcept = await db.prepare("SELECT id FROM school_payment_concepts WHERE modality_id='m-recurring' AND title='Fecha editable'").first();
+  await savePaymentConcept(db, 'm-recurring', form({ ...movingForm, concept_id:movingConcept.id, period_start_on:'2026-02-01' }));
+  await syncConceptScheme(db, 'm-recurring', new Date('2027-12-01T12:00:00Z'));
+  const retired = await db.prepare(`SELECT cc.retired,o.status FROM school_concept_occurrence_charges cc
+    JOIN school_payment_obligations o ON o.id=cc.obligation_id
+    WHERE cc.concept_id=? AND cc.occurrence_start_on='2026-01-01'`).bind(movingConcept.id).first();
+  assert.deepEqual(retired, { retired:1, status:'cancelled' });
+  await db.prepare(`UPDATE school_concept_occurrence_charges SET access_grace_until=datetime('now','+1 day')
+    WHERE concept_id=? AND retired=0`).bind(movingConcept.id).run();
+  assert.ok(await db.prepare(`SELECT id FROM school_subprogram_enrollments e WHERE e.diagnostic_id='d-recurring'
+    AND ${enrollmentPaymentValidSql}`).first());
+  await savePaymentConcept(db, 'm-recurring', form({ ...movingForm, concept_id:movingConcept.id }));
+  await syncConceptScheme(db, 'm-recurring', new Date('2027-12-01T12:00:00Z'));
+  const restored = await db.prepare(`SELECT cc.retired,o.status FROM school_concept_occurrence_charges cc
+    JOIN school_payment_obligations o ON o.id=cc.obligation_id
+    WHERE cc.concept_id=? AND cc.occurrence_start_on='2026-01-01'`).bind(movingConcept.id).first();
+  assert.deepEqual(restored, { retired:0, status:'pending' });
+  const dailyForm = { ...recurringForm, title:'Diario', period_start_on:'2026-12-01', duration_unit:'day',
+    recurrence_unit:'day', recurrence_end_on:'2026-12-03', allow_after_start:'0', advance_days:'0' };
+  await savePaymentConcept(db, 'm-recurring', form(dailyForm));
+  await syncConceptScheme(db, 'm-recurring', new Date('2026-12-01T12:00:00Z'));
+  const daily = (await db.prepare(`SELECT cc.occurrence_start_on,cc.payment_cutoff,cc.access_grace_until,o.status
+    FROM school_concept_occurrence_charges cc JOIN school_payment_obligations o ON o.id=cc.obligation_id
+    JOIN school_payment_concepts c ON c.id=cc.concept_id WHERE c.title='Diario' ORDER BY cc.occurrence_start_on`).all()).results;
+  assert.deepEqual(daily.map(row => [row.occurrence_start_on,row.status]),
+    [['2026-12-01','cancelled'], ['2026-12-02','pending'], ['2026-12-03','pending']]);
+  assert.equal(daily[0].payment_cutoff, '2026-12-01T06:00:00.000Z');
+  assert.equal(daily[0].access_grace_until, '2026-12-04T06:00:00.000Z');
+  await reconcileConceptSchemes(db, new Date('2029-12-01T12:00:00Z'));
+  assert.ok((await recurringCharges()).some(row => row.occurrence_start_on === '2030-01-01'));
+  await db.prepare("UPDATE school_payment_concepts SET required_for_access=0 WHERE modality_id='m-recurring'").run();
+  await db.prepare(`UPDATE school_payment_concepts SET required_for_access=1,recurrence_end_on=date('now','-2 days')
+    WHERE id=?`).bind(movingConcept.id).run();
+  await db.prepare(`UPDATE school_payment_obligations SET modality_valid_until=datetime('now','-5 days') WHERE id IN
+    (SELECT obligation_id FROM school_concept_occurrence_charges WHERE concept_id=?)`).bind(movingConcept.id).run();
+  await db.prepare(`UPDATE school_concept_assignments SET generated_until=datetime('now','-1 day')
+    WHERE enrollment_id=(SELECT id FROM school_subprogram_enrollments WHERE diagnostic_id='d-recurring')`).run();
+  const recurringAccess = () => db.prepare(`SELECT id FROM school_subprogram_enrollments e
+    WHERE e.diagnostic_id='d-recurring' AND ${enrollmentPaymentValidSql}`).first();
+  assert.ok(await recurringAccess());
+  await db.prepare("UPDATE school_payment_concepts SET recurrence_end_on=NULL WHERE id=?").bind(movingConcept.id).run();
+  assert.equal(await recurringAccess(), null);
+  await db.prepare("UPDATE school_payment_concepts SET required_for_access=0 WHERE id=?").bind(movingConcept.id).run();
+  assert.ok(await recurringAccess());
+  await db.prepare("UPDATE school_payment_concepts SET required_for_access=1 WHERE id=?").bind(movingConcept.id).run();
+  await db.prepare(`UPDATE school_concept_assignments SET generated_until=NULL
+    WHERE enrollment_id=(SELECT id FROM school_subprogram_enrollments WHERE diagnostic_id='d-recurring')`).run();
+  assert.equal(await recurringAccess(), null);
   console.log('School subprogram diagnostics integration passed.');
 } finally {
   await mf.dispose();

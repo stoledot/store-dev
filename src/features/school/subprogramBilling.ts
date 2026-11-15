@@ -3,6 +3,7 @@ import { type FrequencyUnit } from './scheduleDates.ts';
 import { calendarPeriods, hasScheduledClasses, proratedAmount, schoolMidnight, schoolToday, type CalendarPolicy, type PaymentPeriod } from './paymentPeriods.ts';
 import { migrateLegacyPaymentPeriods } from './paymentPeriodMigration.ts';
 import { scholarshipAmount } from './scholarships.ts';
+import { approveConceptDiagnostic } from './conceptBilling.ts';
 
 type Modality = {
   id: string;
@@ -24,6 +25,7 @@ type Modality = {
   class_weekdays: string;
   class_dates_added: string;
   class_dates_excluded: string;
+  concept_mode: number;
 };
 
 function policyFor(modality: Pick<Modality, 'period_start_on' | 'period_end_on' | 'frequency_unit' | 'frequency_count'
@@ -35,7 +37,7 @@ function policyFor(modality: Pick<Modality, 'period_start_on' | 'period_end_on' 
     || !Array.isArray(added) || !added.every((value) => typeof value === 'string')
     || !Array.isArray(excluded) || !excluded.every((value) => typeof value === 'string')
     || !['days', 'classes'].includes(modality.proration_method)) {
-    throw new Error('El calendario de clases de la modalidad no es válido.');
+    throw new Error('El calendario de clases del esquema de pago no es válido.');
   }
   return { ...modality, class_weekdays: weekdays, class_dates_added: added, class_dates_excluded: excluded };
 }
@@ -46,7 +48,7 @@ async function activeModality(db: D1Database, id: string, subprogramId: string):
            m.requires_current_enrollment,m.status,p.active AS product_active,p.fee_type,
            m.billing_revision AS modality_revision,p.billing_revision AS product_revision,p.amount_cents,
            m.period_start_on,m.period_end_on,m.advance_days,m.proration_method,
-           m.class_weekdays,m.class_dates_added,m.class_dates_excluded
+           m.class_weekdays,m.class_dates_added,m.class_dates_excluded,m.concept_mode
       FROM school_payment_modalities m JOIN school_payment_products p ON p.id=m.payment_product_id
      WHERE m.id=? AND m.subprogram_id=? AND m.status='active' AND p.active=1
   `).bind(id, subprogramId).first<Modality>();
@@ -158,16 +160,21 @@ export async function reviewSubprogramDiagnostic(
     WHERE client_number=? AND subprogram_id=? AND status='withdrawn' LIMIT 1`)
     .bind(diagnostic.client_number, diagnostic.subprogram_id).first<{ id: string }>();
   if (previousWithdrawal && !diagnostic.enrollment_modality_id) {
-    throw new Error('Para el reingreso, configura primero una modalidad de inscripción activa.');
+    throw new Error('Para el reingreso, configura primero un esquema de inscripción activo.');
   }
   const selected = await activeModality(db, modalityId, diagnostic.subprogram_id);
-  if (!selected || selected.payment_type === 'enrollment') throw new Error('Selecciona una modalidad de pago activa del subprograma.');
+  if (!selected || selected.payment_type === 'enrollment') throw new Error('Selecciona un esquema de pago activo del subprograma.');
+  if (selected.concept_mode === 1) {
+    if (entryPeriod !== 'current') throw new Error('Los conceptos utilizan sus propias fechas; selecciona el período actual.');
+    await approveConceptDiagnostic(db, diagnosticId, modalityId, notes, now);
+    return;
+  }
   let enrollment: Modality | null = null;
   if (diagnostic.enrollment_modality_id) {
     enrollment = await activeModality(db, diagnostic.enrollment_modality_id, diagnostic.subprogram_id);
-    if (!enrollment || enrollment.payment_type !== 'enrollment') throw new Error('La modalidad de inscripción obligatoria no está disponible.');
+    if (!enrollment || enrollment.payment_type !== 'enrollment') throw new Error('El esquema de inscripción obligatoria no está disponible.');
   }
-  if (selected.requires_current_enrollment && !enrollment) throw new Error('La modalidad requiere inscripción, pero el subprograma no tiene una modalidad de inscripción configurada.');
+  if (selected.requires_current_enrollment && !enrollment) throw new Error('El esquema requiere inscripción, pero el subprograma no tiene un esquema de inscripción configurado.');
   const enrollmentId = crypto.randomUUID();
   const today = schoolToday(now);
   const plans = [selected, ...(enrollment ? [enrollment] : [])].map((modality) => {
@@ -303,7 +310,7 @@ export async function reconcileSubprogramSchedules(db: D1Database, now = new Dat
         || row.calendar_revision !== row.modality_revision) {
         const current = allPeriods.find((period) => period.start <= today && period.end >= today)
           ?? allPeriods.find((period) => period.start > today);
-        if (!current) throw new Error('No hay períodos futuros en la modalidad.');
+        if (!current) throw new Error('No hay períodos futuros en el esquema de pago.');
         anchor = current.start > row.anchor_on ? current.start : row.anchor_on;
         const changed = await db.batch([
           db.prepare(`
@@ -397,7 +404,8 @@ export async function reconcileEnrollmentPolicies(db: D1Database, now = new Date
         const enrollments = (await db.prepare(`
           SELECT e.id,e.subprogram_id,p.enrollment_modality_id
             FROM school_subprogram_enrollments e JOIN school_subprograms p ON p.id=e.subprogram_id
-           WHERE e.status='active' AND e.policy_next_check_at<=? AND (
+            JOIN school_payment_modalities chosen ON chosen.id=e.modality_id
+           WHERE e.status='active' AND chosen.concept_mode=0 AND e.policy_next_check_at<=? AND (
              EXISTS (SELECT 1 FROM school_subprogram_payment_schedules s
                      JOIN school_payment_modalities m ON m.id=s.modality_id
                      WHERE s.enrollment_id=e.id AND s.status='active' AND m.payment_type='enrollment'
@@ -412,7 +420,7 @@ export async function reconcileEnrollmentPolicies(db: D1Database, now = new Date
             const desired = enrollment.enrollment_modality_id
               ? await activeModality(db, enrollment.enrollment_modality_id, enrollment.subprogram_id) : null;
             if (enrollment.enrollment_modality_id && (!desired || desired.payment_type !== 'enrollment')) {
-              throw new Error('La modalidad de inscripción configurada no está activa.');
+              throw new Error('El esquema de inscripción configurado no está activo.');
             }
             const desiredPeriods = desired ? calendarPeriods(policyFor(desired), today) : [];
             const desiredPeriod = desiredPeriods.find((period) => period.start <= today && period.end >= today)

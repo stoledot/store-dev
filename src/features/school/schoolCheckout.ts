@@ -21,6 +21,7 @@ export async function claimSchoolCheckout(
        SET checkout_lock_token=?, checkout_session_id=NULL, checkout_locked_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),
            updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')
      WHERE id=? AND student_email=? COLLATE NOCASE AND status='pending' AND checkout_bundle_id IS NULL
+       AND NOT EXISTS (SELECT 1 FROM school_concept_occurrence_charges cc WHERE cc.obligation_id=school_payment_obligations.id)
        AND ((available_from IS NOT NULL AND datetime(available_from)<=datetime('now'))
          OR (available_from IS NULL AND (available_at IS NULL OR date(available_at)<=date('now'))))
        AND (checkout_lock_token IS NULL OR (checkout_session_id IS NULL AND datetime(checkout_locked_at)<datetime('now','-25 hours'))

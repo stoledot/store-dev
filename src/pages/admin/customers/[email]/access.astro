@@ -105,7 +105,7 @@ const categories = [
     </form>) : <p class="mt-3 text-sm text-muted">No hay inscripciones activas para configurar una beca periódica.</p>}
   </section>
   <section class="mt-8 rounded-xl border border-line p-5"><h2 class="text-xl font-semibold">Asignar pago individual</h2>
-    <p class="mt-2 text-sm text-muted">Este es un cargo único; no modifica la programación de una modalidad. Si eliges un grupo, su acceso dependerá de que este pago esté confirmado y no reembolsado.</p>
+    <p class="mt-2 text-sm text-muted">Este es un cargo único; no modifica la programación de un esquema de pago. Si eliges un grupo, su acceso dependerá de que este pago esté confirmado y no reembolsado.</p>
     <form method="POST" class="mt-4 grid gap-3 sm:grid-cols-2">
       <input type="hidden" name="action" value="assign-payment" />
       <label class="block text-sm">Concepto<select name="product_id" required class="mt-1 block w-full rounded border border-line p-2"><option value="">Selecciona</option>{products.results.map(product => <option value={product.id}>{product.title} · {formatPrice(product.amount_cents,product.currency)}</option>)}</select></label>
@@ -118,7 +118,7 @@ const categories = [
     </form>
   </section>
   <section class="mt-8"><h2 class="text-xl font-semibold">Pagos del cliente</h2>
-    <p class="mt-2 text-sm text-muted">Cancelar un cargo no cancela pagos futuros de la modalidad. Los pagos con checkout abierto no pueden cancelarse aquí.</p>
+    <p class="mt-2 text-sm text-muted">Cancelar un cargo no cancela pagos futuros del esquema de pago. Los pagos con checkout abierto no pueden cancelarse aquí.</p>
     {payments.results.length ? <ul class="mt-3 space-y-2">{payments.results.map(payment => <li class="flex flex-wrap items-center justify-between gap-3 rounded border border-line p-3 text-sm">
       <span>{payment.title_snapshot} · {formatPrice(payment.amount_cents,payment.currency)} · vence {payment.due_at} · {payment.status}</span>
       {payment.status==='pending' && !payment.checkout_lock_token && !payment.checkout_session_id && !payment.checkout_bundle_id && <form method="POST"><input type="hidden" name="action" value="cancel-payment" /><input type="hidden" name="obligation_id" value={payment.id} /><button class="text-red-700 underline">Cancelar cargo</button></form>}

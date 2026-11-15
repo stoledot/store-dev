@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { Miniflare } from 'miniflare';
 import { saveProgramAction } from '../../src/features/school/programs.ts';
+import { listPaymentConcepts, savePaymentConcept, removePaymentConcept } from '../../src/features/school/paymentConcepts.ts';
 
 const mf = new Miniflare({
   modules: true,
@@ -23,7 +24,8 @@ try {
     'CREATE TABLE school_courses (id TEXT PRIMARY KEY, title TEXT NOT NULL)',
     'CREATE TABLE school_payment_products (id TEXT PRIMARY KEY, title TEXT NOT NULL)',
     'CREATE TABLE school_subprogram_payment_schedules (modality_id TEXT, next_check_at TEXT)',
-    'CREATE TABLE school_payment_obligations (id TEXT)',
+    'CREATE TABLE school_subprogram_enrollments (id TEXT PRIMARY KEY, modality_id TEXT)',
+    'CREATE TABLE school_payment_obligations (id TEXT PRIMARY KEY, status TEXT, checkout_lock_token TEXT, checkout_session_id TEXT, checkout_bundle_id TEXT)',
     "INSERT INTO school_programs (slug, title) VALUES ('matematicas', 'Matemáticas'), ('lectura', 'Lectura')",
     "INSERT INTO school_courses VALUES ('c1','Curso 1'), ('c2','Curso 2')",
     "INSERT INTO school_payment_products VALUES ('p1','Pago')",
@@ -36,6 +38,20 @@ try {
   await db.prepare('ALTER TABLE school_subprograms ADD COLUMN enrollment_modality_id TEXT').run();
   const periodsMigration = await readFile(new URL('../../migrations/0079_school_payment_periods.sql', import.meta.url), 'utf8');
   for (const sql of periodsMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const testSchemesMigration = await readFile(new URL('../../migrations/0089_school_test_payment_schemes.sql', import.meta.url), 'utf8');
+  for (const sql of testSchemesMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptsMigration = await readFile(new URL('../../migrations/0090_school_payment_concepts.sql', import.meta.url), 'utf8');
+  for (const sql of conceptsMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptAssignmentsMigration = await readFile(new URL('../../migrations/0091_school_concept_assignments.sql', import.meta.url), 'utf8');
+  for (const sql of conceptAssignmentsMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptCancellationMigration = await readFile(new URL('../../migrations/0092_school_concept_cancellation.sql', import.meta.url), 'utf8');
+  for (const sql of conceptCancellationMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptOccurrencesMigration = await readFile(new URL('../../migrations/0093_school_recurring_concept_charges.sql', import.meta.url), 'utf8');
+  for (const sql of conceptOccurrencesMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const retiredOccurrencesMigration = await readFile(new URL('../../migrations/0094_school_retired_concept_occurrences.sql', import.meta.url), 'utf8');
+  for (const sql of retiredOccurrencesMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
+  const conceptRetryMigration = await readFile(new URL('../../migrations/0095_school_concept_retry.sql', import.meta.url), 'utf8');
+  for (const sql of conceptRetryMigration.split(';').map((part) => part.trim()).filter(Boolean)) await db.prepare(sql).run();
   await db.prepare('ALTER TABLE school_subprograms ADD COLUMN suspension_after_days INTEGER').run();
   await db.prepare('CREATE TABLE school_subprogram_groups (id TEXT PRIMARY KEY)').run();
   await db.prepare('CREATE TABLE school_subprogram_questions (id TEXT PRIMARY KEY)').run();
@@ -61,9 +77,23 @@ try {
   await saveProgramAction(db, form(modality));
   const saved = await db.prepare('SELECT * FROM school_payment_modalities').first();
   assert.equal(saved.course_id, 'c1');
+  const concept = { title:'Inscripción', period_start_on:'2027-01-01', period_end_on:'2027-12-31',
+    amount:'125.50', currency:'mxn', recurrence_unit:'once', grace_days:'3', group_name:'Primer pago', allow_after_start:'1', required_for_access:'1' };
+  await savePaymentConcept(db, saved.id, form(concept));
+  const [storedConcept] = await listPaymentConcepts(db, saved.id);
+  assert.equal(storedConcept.amount_cents, 12550);
+  await assert.rejects(() => savePaymentConcept(db, saved.id, form({ ...concept, currency:'usd', group_name:'primer pago' })), /moneda/);
+  await savePaymentConcept(db, saved.id, form({ ...concept, concept_id:storedConcept.id, amount:'150' }));
+  assert.equal((await listPaymentConcepts(db, saved.id))[0].amount_cents, 15000);
+  await removePaymentConcept(db, saved.id, storedConcept.id);
+  assert.deepEqual(await listPaymentConcepts(db, saved.id), []);
   await assert.rejects(() => saveProgramAction(db, form({ action: 'remove-course', subprogram_id: sub.id, course_id: 'c1' })));
   await assert.rejects(() => saveProgramAction(db, form({ ...modality, course_id: 'c2' })));
   await saveProgramAction(db, form({ ...modality, id: saved.id, course_id: '', validity_count: '', validity_unit: '' }));
+  await saveProgramAction(db, form({ ...modality, id: saved.id, course_id: '', validity_count: '', validity_unit: '', test_mode: '1' }));
+  assert.equal((await db.prepare('SELECT test_mode FROM school_payment_modalities WHERE id=?').bind(saved.id).first()).test_mode, 1);
+  await db.prepare("INSERT INTO school_subprogram_payment_schedules(modality_id,next_check_at) VALUES (?, '')").bind(saved.id).run();
+  await assert.rejects(() => saveProgramAction(db, form({ ...modality, id: saved.id, course_id: '', validity_count: '', validity_unit: '' })), /modo de prueba/);
   await saveProgramAction(db, form({ action: 'remove-course', subprogram_id: sub.id, course_id: 'c1' }));
   assert.equal((await db.prepare('SELECT COUNT(*) AS n FROM school_subprogram_courses').first()).n, 0);
   console.log('School programs integration passed.');

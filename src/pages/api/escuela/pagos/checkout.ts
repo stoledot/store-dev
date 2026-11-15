@@ -6,6 +6,7 @@ import { getStoreSettings } from '../../../../features/settings/db';
 import { claimOrderIdentity } from '../../../../features/orders/guestAccess';
 import { claimSchoolCheckout } from '../../../../features/school/schoolCheckout';
 import { claimPaymentBundle, linkPaymentBundle, releasePaymentBundle } from '../../../../features/school/paymentBundles';
+import { claimConceptBundle } from '../../../../features/school/conceptBundles';
 
 export const prerender = false;
 export const POST: APIRoute = async ({ request, cookies, url, redirect }) => {
@@ -28,12 +29,22 @@ export const POST: APIRoute = async ({ request, cookies, url, redirect }) => {
   }
 
   const lockToken = crypto.randomUUID();
-  const target = await env.DB.prepare(`SELECT subprogram_schedule_id FROM school_payment_obligations
-    WHERE id=? AND student_email=? COLLATE NOCASE`).bind(id, email).first<{subprogram_schedule_id:string|null}>();
-  const isBundle = Boolean(target?.subprogram_schedule_id);
-  const obligation = isBundle
-    ? await claimPaymentBundle(env.DB, id, email, lockToken)
-    : await claimSchoolCheckout(env.DB, id, email, lockToken);
+  const target = await env.DB.prepare(`SELECT o.subprogram_schedule_id,cc.concept_id,COALESCE(m.test_mode,0) AS test_mode
+    FROM school_payment_obligations o
+    LEFT JOIN school_subprogram_payment_schedules s ON s.id=o.subprogram_schedule_id
+    LEFT JOIN school_concept_occurrence_charges cc ON cc.obligation_id=o.id
+    LEFT JOIN school_subprogram_enrollments e ON e.id=COALESCE(s.enrollment_id,cc.enrollment_id)
+    LEFT JOIN school_payment_modalities m ON m.id=e.modality_id
+    WHERE o.id=? AND o.student_email=? COLLATE NOCASE`).bind(id, email).first<{subprogram_schedule_id:string|null;concept_id:string|null;test_mode:number}>();
+  if (target?.test_mode === 1 && method !== 'demo') {
+    return redirect('/account/payments?error=Este%20esquema%20de%20prueba%20solo%20acepta%20pagos%20demo.',303);
+  }
+  const isBundle = Boolean(target?.subprogram_schedule_id || target?.concept_id);
+  const obligation = target?.concept_id
+    ? await claimConceptBundle(env.DB, id, email, lockToken, method)
+    : isBundle
+      ? await claimPaymentBundle(env.DB, id, email, lockToken, method)
+      : await claimSchoolCheckout(env.DB, id, email, lockToken);
   if (!obligation) return redirect('/account/payments?error=Este%20pago%20no%20está%20disponible%2C%20requiere%20inscripción%20vigente%20o%20ya%20se%20está%20procesando.',303);
 
   let providerSessionCreated = false;

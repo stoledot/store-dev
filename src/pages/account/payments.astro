@@ -7,20 +7,26 @@ import { enabledMethods } from '../../features/payments';
 import { getStoreSettings } from '../../features/settings/db';
 import { formatPrice } from '../../config';
 import { SCHOOL_TIME_ZONE } from '../../features/school/paymentPeriods';
-import { groupBundleCandidates, listBundleCandidates } from '../../features/school/paymentBundles';
+import { groupBundleCandidates, listBundleCandidates, releaseExpiredDemoBundles } from '../../features/school/paymentBundles';
+import { cancelExpiredConceptPayments, groupConceptBundleCandidates, listConceptBundleCandidates } from '../../features/school/conceptBundles';
 
 Astro.response.headers.set('Cache-Control', 'private, no-store');
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 const email = await getCustomerEmail(Astro.cookies);
 if (!email) return Astro.redirect('/account/login', 303);
 const paymentMethods = enabledMethods(Astro.locals.settings ?? await getStoreSettings(env.DB));
+await releaseExpiredDemoBundles(env.DB, email);
+await cancelExpiredConceptPayments(env.DB, email);
 
 const { results: rows = [] } = await env.DB.prepare(`
   SELECT o.id, o.title_snapshot, o.description_snapshot, o.amount_cents, o.currency,
          o.due_at, o.available_at, o.status, o.paid_at, COALESCE(o.order_id,o.bundle_order_id) AS order_id, o.notes, o.checkout_locked_at,o.subprogram_schedule_id,
          o.period_start_on,o.period_end_on,o.modality_valid_from,o.modality_valid_until,o.available_from,o.overdue_from,o.scholarship_percent_snapshot,
-         ord.payment_method
+         ord.payment_method,cc.concept_id AS assigned_concept_id,cc.payment_cutoff,cc.access_grace_until,
+         c.required_for_access
     FROM school_payment_obligations o LEFT JOIN orders ord ON ord.id=COALESCE(o.order_id,o.bundle_order_id)
+    LEFT JOIN school_concept_occurrence_charges cc ON cc.obligation_id=o.id
+    LEFT JOIN school_payment_concepts c ON c.id=cc.concept_id
    WHERE o.student_email = ? COLLATE NOCASE
    ORDER BY CASE o.status WHEN 'pending' THEN 0 WHEN 'paid' THEN 1 ELSE 2 END,
             o.due_at ASC, o.created_at DESC
@@ -31,9 +37,14 @@ const { results: rows = [] } = await env.DB.prepare(`
   period_start_on:string|null; period_end_on:string|null; modality_valid_from:string|null;
   modality_valid_until:string|null; available_from:string|null; overdue_from:string|null;
   subprogram_schedule_id:string|null;
+  assigned_concept_id:string|null;
+  payment_cutoff:string|null; access_grace_until:string|null; required_for_access:number|null;
   scholarship_percent_snapshot:number;
 }>();
-const paymentGroups = groupBundleCandidates(await listBundleCandidates(env.DB, email));
+const paymentGroups = [
+  ...groupBundleCandidates(await listBundleCandidates(env.DB, email)),
+  ...groupConceptBundleCandidates(await listConceptBundleCandidates(env.DB, email)),
+];
 const { results: paidBundles = [] } = await env.DB.prepare(`SELECT b.id,b.currency,b.amount_cents,b.order_id,s.title AS subprogram_title
   FROM school_payment_bundles b JOIN school_subprogram_enrollments e ON e.id=b.enrollment_id
   JOIN school_subprograms s ON s.id=e.subprogram_id WHERE b.status='paid' AND b.student_email=? COLLATE NOCASE
@@ -60,7 +71,9 @@ const items = rows.map(r => {
   const due = dateOnly(r.due_at);
   const availableDate = dateOnly(r.available_at);
   const isAvailable = r.available_from ? new Date(r.available_from) <= now : !availableDate || availableDate <= now.toISOString().slice(0,10);
-  const overdue = r.overdue_from ? new Date(r.overdue_from) <= now : Boolean(due && due < now.toISOString().slice(0,10));
+  const overdue = r.assigned_concept_id
+    ? r.required_for_access === 1 && r.access_grace_until !== null && new Date(r.access_grace_until) <= now
+    : r.overdue_from ? new Date(r.overdue_from) <= now : Boolean(due && due < now.toISOString().slice(0,10));
   const state = r.status === 'paid' ? 'paid' : r.status === 'cancelled' ? 'cancelled' : (!isAvailable ? 'upcoming' : (overdue ? 'overdue' : 'pending'));
   return {...r, state, canPay: state === 'pending' || state === 'overdue'};
 });
@@ -82,31 +95,31 @@ const success = Astro.url.searchParams.get('success');
       <h1 class="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Mis pagos</h1>
       <p class="mt-2 max-w-2xl text-sm leading-6 text-muted">Aquí aparecen únicamente los pagos que la escuela te ha asignado. Puedes consultar su fecha y pagar desde tu cuenta.</p>
     </header>
-    {success && <p class="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">Regresaste del proceso de pago. El estado se actualizará cuando Stripe confirme el pago.</p>}
+    {success && <p class="mb-4 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">Regresaste del proceso de pago. El estado se actualizará cuando se confirme el pago.</p>}
     {error && <p class="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
     <section class="mb-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Por cubrir</p><p class="mt-1 text-2xl font-semibold">{pending.length}</p></div>
       <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Pagados</p><p class="mt-1 text-2xl font-semibold">{paid.length}</p></div>
       <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Último pago</p><p class="mt-1 text-base font-semibold">{date(lastPayment)}</p></div>
-      <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Próximo vencimiento</p><p class="mt-1 text-base font-semibold">{date(nextPayment)}</p></div>
+      <div class="rounded-2xl border border-line bg-surface p-4"><p class="text-xs text-muted">Próxima fecha</p><p class="mt-1 text-base font-semibold">{date(nextPayment)}</p></div>
     </section>
     <div class="mb-5 flex flex-wrap gap-2"><a href="/account/calendar" class="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-brand">Ver calendario →</a><a href="/account/courses" class="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-brand">Mis cursos →</a></div>
     {paymentGroups.length > 0 && <section class="mb-8 space-y-3">
       <h2 class="text-xl font-semibold">Pagos agrupados disponibles</h2>
-      <p class="text-sm text-muted">Cada pago reúne los adeudos vencidos y el siguiente cargo disponible del mismo subprograma y moneda.</p>
+      <p class="text-sm text-muted">Los conceptos agrupados se cobran juntos cuando están disponibles. Los esquemas anteriores conservan su forma de agrupación.</p>
       {paymentGroups.map(group => <article class="rounded-2xl border border-line bg-surface p-5">
-        <h3 class="font-semibold">{group[0].subprogram_title} · {group[0].currency.toUpperCase()}</h3>
+        <h3 class="font-semibold">{group[0].subprogram_title} · {group[0].currency.toUpperCase()}{'group_name' in group[0] && group[0].group_name && ` · ${group[0].group_name}`}{group[0].test_mode === 1 && ' · Esquema de prueba'}</h3>
         <ul class="mt-3 space-y-2 text-sm">{group.map(charge => <li class="flex justify-between gap-4">
-          <span>{charge.title_snapshot} · vence {date(charge.due_at)}{charge.overdue === 1 && ' · Vencido'}</span>
+          <span>{charge.title_snapshot} · {'concept_id' in charge ? 'cobertura desde' : 'vence'} {date(charge.due_at)}{!('concept_id' in charge) && charge.overdue === 1 && ' · Vencido'}</span>
           <span class="font-medium tabular-nums">{formatPrice(charge.amount_cents, charge.currency)}</span>
         </li>)}</ul>
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
           <strong>Total: {formatPrice(group.reduce((sum, charge) => sum + charge.amount_cents, 0), group[0].currency)}</strong>
           <form method="POST" action="/api/escuela/pagos/checkout">
             <input type="hidden" name="obligation_id" value={group[0].id} />
-            {paymentMethods.includes('stripe') && <button name="method" value="stripe" class="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand">Pagar todo ↗</button>}
+            {group[0].test_mode !== 1 && paymentMethods.includes('stripe') && <button name="method" value="stripe" class="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand">Pagar todo ↗</button>}
             {paymentMethods.includes('demo') && <button name="method" value="demo" class="rounded-full border border-amber-500 bg-amber-50 px-5 py-2.5 text-sm font-semibold text-amber-900">Pago demo (simulado)</button>}
-            {!paymentMethods.includes('stripe') && !paymentMethods.includes('demo') && <p class="text-xs text-muted">El pago en línea no está disponible.</p>}
+            {!paymentMethods.includes('demo') && (group[0].test_mode === 1 || !paymentMethods.includes('stripe')) && <p class="text-xs text-muted">El pago en línea no está disponible.</p>}
           </form>
         </div>
       </article>)}
@@ -116,7 +129,7 @@ const success = Astro.url.searchParams.get('success');
       {paidBundles.map(bundle => <details class="rounded-2xl border border-line bg-surface p-5">
         <summary class="cursor-pointer font-semibold">{bundle.subprogram_title} · {formatPrice(bundle.amount_cents,bundle.currency)} · Pedido #{bundle.order_id}</summary>
         <ul class="mt-3 space-y-2 text-sm">{paidBundleItems.filter(item => item.bundle_id===bundle.id).map(item =>
-          <li class="flex justify-between gap-4"><span>{item.title_snapshot} · vence {date(item.due_at)}</span><span>{formatPrice(item.amount_cents,item.currency)}</span></li>)}</ul>
+          <li class="flex justify-between gap-4"><span>{item.title_snapshot} · fecha {date(item.due_at)}</span><span>{formatPrice(item.amount_cents,item.currency)}</span></li>)}</ul>
       </details>)}
     </section>}
     <section class="space-y-3">
@@ -134,8 +147,13 @@ const success = Astro.url.searchParams.get('success');
           </div>
           {item.description_snapshot && <p class="mt-1 text-sm text-muted">{item.description_snapshot}</p>}
           {item.scholarship_percent_snapshot > 0 && <p class="mt-1 text-sm text-muted">Incluye beca del {item.scholarship_percent_snapshot} %.</p>}
-          <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted"><span>Vence: <strong class="text-ink">{date(item.due_at)}</strong></span>{item.paid_at && <span>Pagado: <strong class="text-ink">{date(item.paid_at)}</strong></span>}{item.order_id && <span>Pedido: #{item.order_id}</span>}</div>
-          {item.period_start_on && item.period_end_on && item.modality_valid_from && item.modality_valid_until &&
+          <div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted"><span>{item.assigned_concept_id ? 'Cobertura desde' : 'Vence'}: <strong class="text-ink">{date(item.due_at)}</strong></span>{item.paid_at && <span>Pagado: <strong class="text-ink">{date(item.paid_at)}</strong></span>}{item.order_id && <span>Pedido: #{item.order_id}</span>}</div>
+          {item.assigned_concept_id && item.period_start_on && <div class="mt-2 text-xs text-muted">
+            <p>Período de cobertura: {date(item.period_start_on)}{item.period_end_on ? ` al ${date(item.period_end_on)}, inclusive` : ' en adelante'} (Ciudad de México).</p>
+            {item.payment_cutoff && <p>Pago disponible antes de {schoolTime(item.payment_cutoff)} (Ciudad de México).</p>}
+            {item.required_for_access === 1 && item.access_grace_until && <p>Gracia de acceso hasta antes de {schoolTime(item.access_grace_until)} (Ciudad de México).</p>}
+          </div>}
+          {!item.assigned_concept_id && item.period_start_on && item.period_end_on && item.modality_valid_from && item.modality_valid_until &&
             <div class="mt-2 text-xs text-muted">
               <p>Período: {date(item.period_start_on)} al {date(item.period_end_on)}, inclusive (Ciudad de México).</p>
               <p>Inicio: {schoolTime(item.modality_valid_from)} · Fin exclusivo: {schoolTime(item.modality_valid_until)} (Ciudad de México).</p>
@@ -148,7 +166,7 @@ const success = Astro.url.searchParams.get('success');
           {item.notes && <p class="mt-2 text-xs text-muted">{item.notes}</p>}
         </div>
         <div class="mt-4 flex shrink-0 items-center justify-between gap-4 sm:mt-0 sm:flex-col sm:items-end"><p class="text-xl font-semibold tabular-nums">{formatPrice(item.amount_cents,item.currency)}</p>
-          {item.canPay && !item.subprogram_schedule_id &&
+          {item.canPay && !item.subprogram_schedule_id && !item.assigned_concept_id &&
           <form method="POST" action="/api/escuela/pagos/checkout">
             <input type="hidden" name="obligation_id" value={item.id}/>
             {paymentMethods.includes('stripe') && <button type="submit" name="method" value="stripe"

@@ -14,6 +14,7 @@ export interface BundleCandidate {
   due_at: string;
   modality_payment_type: string | null;
   overdue: number;
+  test_mode: number;
 }
 
 export function selectBundleItems(rows: BundleCandidate[]): BundleCandidate[] {
@@ -30,12 +31,13 @@ const availableSql = `((o.available_from IS NOT NULL AND datetime(o.available_fr
 export async function listBundleCandidates(db: D1Database, email: string | null): Promise<BundleCandidate[]> {
   return (await db.prepare(`
     SELECT o.id,s.enrollment_id,sub.title AS subprogram_title,o.student_email,o.title_snapshot,o.amount_cents,o.currency,o.due_at,
-           o.modality_payment_type,
+           o.modality_payment_type,m.test_mode,
            CASE WHEN (o.overdue_from IS NOT NULL AND datetime(o.overdue_from)<=datetime('now'))
              OR (o.overdue_from IS NULL AND date(o.due_at)<date('now')) THEN 1 ELSE 0 END AS overdue
       FROM school_payment_obligations o
       JOIN school_subprogram_payment_schedules s ON s.id=o.subprogram_schedule_id
       JOIN school_subprogram_enrollments e ON e.id=s.enrollment_id
+      JOIN school_payment_modalities m ON m.id=e.modality_id
       JOIN school_subprograms sub ON sub.id=e.subprogram_id
      WHERE (? IS NULL OR o.student_email=? COLLATE NOCASE) AND o.status='pending' AND ${availableSql}
        AND (e.status='active' OR (e.status='suspended' AND e.suspension_reason='overdue'))
@@ -71,12 +73,13 @@ export async function releaseExpiredDemoBundles(db: D1Database, email: string): 
 }
 
 export async function claimPaymentBundle(
-  db: D1Database, anchorId: string, email: string, token: string,
+  db: D1Database, anchorId: string, email: string, token: string, method: 'stripe' | 'demo',
 ): Promise<{ id: string; student_email: string; currency: string; amount_cents: number; items: BundleCandidate[] } | null> {
   await releaseExpiredDemoBundles(db, email);
   const candidates = await listBundleCandidates(db, email);
   const anchor = candidates.find(row => row.id === anchorId);
   if (!anchor) return null;
+  if (anchor.test_mode === 1 && method !== 'demo') return null;
   const scope = candidates.filter(row => row.enrollment_id === anchor.enrollment_id
     && row.currency.toLowerCase() === anchor.currency.toLowerCase());
   const selected = selectBundleItems(scope);
@@ -90,7 +93,9 @@ export async function claimPaymentBundle(
       INSERT INTO school_payment_bundles(id,leader_obligation_id,enrollment_id,student_email,currency,amount_cents,item_count,status,created_at)
       SELECT ?,?,?,?,?,?,?,'pending',strftime('%Y-%m-%dT%H:%M:%fZ','now')
        WHERE EXISTS (SELECT 1 FROM school_subprogram_enrollments e
-         WHERE e.id=? AND (e.status='active' OR (e.status='suspended' AND e.suspension_reason='overdue')))
+         JOIN school_payment_modalities selected ON selected.id=e.modality_id
+         WHERE e.id=? AND (e.status='active' OR (e.status='suspended' AND e.suspension_reason='overdue'))
+           AND (?='demo' OR selected.test_mode=0))
          AND (SELECT count(*) FROM school_payment_obligations o JOIN school_subprogram_payment_schedules s ON s.id=o.subprogram_schedule_id
            WHERE s.enrollment_id=? AND o.student_email=? COLLATE NOCASE AND lower(o.currency)=lower(?)
              AND o.status='pending' AND ${availableSql})=json_array_length(?)
@@ -136,7 +141,7 @@ export async function claimPaymentBundle(
                  AND (fee.modality_valid_until IS NULL OR datetime(fee.modality_valid_until)>
                    CASE WHEN datetime(o.modality_valid_from)>datetime('now') THEN datetime(o.modality_valid_from) ELSE datetime('now') END)))
     `).bind(token, leader.id, anchor.enrollment_id, email, anchor.currency.toLowerCase(), total, selected.length,
-      anchor.enrollment_id, anchor.enrollment_id, email, anchor.currency, allJson,
+      anchor.enrollment_id, method, anchor.enrollment_id, email, anchor.currency, allJson,
       allJson, anchor.enrollment_id, email, anchor.currency, selectedJson, selectedJson, selectedJson),
     db.prepare(`UPDATE school_payment_obligations SET checkout_bundle_id=?,checkout_lock_token=?,
       checkout_locked_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),checkout_session_id=NULL,

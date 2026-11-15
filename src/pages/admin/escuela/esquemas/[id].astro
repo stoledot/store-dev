@@ -1,0 +1,59 @@
+---
+export const prerender = false;
+import { env } from 'cloudflare:workers';
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import PaymentConceptForm from '../../../../features/school/PaymentConceptForm.astro';
+import { listPaymentConcepts, removePaymentConcept, savePaymentConcept } from '../../../../features/school/paymentConcepts';
+import { enableConceptScheme, syncConceptScheme } from '../../../../features/school/conceptBilling';
+import { formatPrice } from '../../../../config';
+
+const id = Astro.params.id ?? '';
+const scheme = await env.DB.prepare(`SELECT m.id,m.title,m.subprogram_id,m.concept_mode,p.currency
+  FROM school_payment_modalities m JOIN school_payment_products p ON p.id=m.payment_product_id WHERE m.id=?`)
+  .bind(id).first<{id:string;title:string;subprogram_id:string;concept_mode:number;currency:string}>();
+if (!scheme) return new Response('Esquema no encontrado', { status: 404 });
+let error = '';
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  let changed = false;
+  try {
+    const action = String(form.get('action') ?? '');
+    if (action === 'save') { await savePaymentConcept(env.DB, id, form); changed = true; }
+    else if (action === 'remove') { await removePaymentConcept(env.DB, id, String(form.get('concept_id') ?? '').trim()); changed = true; }
+    else if (action === 'enable') await enableConceptScheme(env.DB, id);
+    else throw new Error('Acción no reconocida.');
+    if (changed) await syncConceptScheme(env.DB, id);
+    return Astro.redirect(`/admin/escuela/esquemas/${encodeURIComponent(id)}?guardado=1`, 303);
+  } catch (cause) {
+    console.error('No se pudo guardar el concepto de pago:', cause);
+    error = changed ? 'El cambio se guardó, pero no se sincronizaron todas las asignaciones. Los pagos y el acceso afectados quedan bloqueados hasta completar la sincronización.'
+      : cause instanceof Error && !/D1_ERROR|SQLITE_|constraint failed/i.test(cause.message)
+      ? cause.message : 'No se pudo guardar el concepto. Inténtalo nuevamente.';
+    Astro.response.status = 400;
+  }
+}
+const concepts = await listPaymentConcepts(env.DB, id);
+---
+<AdminLayout title="Conceptos de pago" active="school-programs">
+  <main class="mx-auto max-w-4xl">
+    <a href={`/admin/programas#subprograma-${encodeURIComponent(scheme.subprogram_id)}`} class="text-sm text-brand underline">← Programas</a>
+    <h1 class="mt-4 font-serif text-3xl">Conceptos de {scheme.title}</h1>
+    {scheme.concept_mode === 1 ? <p role="status" class="mt-4 rounded border border-green-300 bg-green-50 p-4 text-sm text-green-900">Los conceptos generan cobros y controlan el acceso. Los recurrentes se programan hasta 12 meses hacia adelante. Los cambios se aplican a los pagos pendientes; no se pueden editar mientras haya un checkout abierto ni cambiar las fechas o la recurrencia de conceptos con pagos realizados.</p>
+      : <div class="mt-4 rounded border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"><p>Estos conceptos aún no generan cobros. Puedes activar un esquema nuevo, sin asignaciones ni inscripción previa requerida. El reingreso con conceptos aún no está disponible; los esquemas ya asignados conservan su funcionamiento anterior.</p>
+        <form method="POST" class="mt-3"><input type="hidden" name="action" value="enable" /><button class="rounded border border-amber-700 px-3 py-2 font-semibold">Activar esquema de conceptos</button></form></div>}
+    {error && <p role="alert" class="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+    {Astro.url.searchParams.has('guardado') && <p role="status" class="mt-4 rounded border border-green-200 bg-green-50 p-3 text-sm text-green-700">Cambios guardados.</p>}
+    <section class="mt-6 space-y-3">
+      {concepts.map(concept => <details class="rounded border border-line p-4">
+        <summary class="cursor-pointer font-semibold">{concept.title} · {formatPrice(concept.amount_cents, concept.currency)}{concept.group_name && ` · ${concept.group_name}`}</summary>
+        <div class="mt-4"><PaymentConceptForm concept={concept} currency={scheme.currency} /></div>
+        <form method="POST" class="mt-4"><input type="hidden" name="action" value="remove" /><input type="hidden" name="concept_id" value={concept.id} /><button class="text-sm text-red-700 underline">Eliminar concepto</button></form>
+      </details>)}
+      {concepts.length === 0 && <p class="text-sm text-muted">Aún no hay conceptos configurados.</p>}
+    </section>
+    <section class="mt-6 rounded border border-line p-4">
+      <h2 class="mb-4 text-xl font-semibold">Agregar concepto</h2>
+      <PaymentConceptForm currency={scheme.currency} />
+    </section>
+  </main>
+</AdminLayout>

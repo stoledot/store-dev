@@ -4,6 +4,7 @@ import { env } from 'cloudflare:workers';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { formatPrice, toMajorUnits, toMinorUnits } from '../../../config';
 import { groupBundleCandidates, listBundleCandidates } from '../../../features/school/paymentBundles';
+import { cancelExpiredConceptPayments, groupConceptBundleCandidates, listConceptBundleCandidates } from '../../../features/school/conceptBundles';
 const cleanEmail=(v:unknown)=>String(v??'').trim().toLowerCase().slice(0,254);
 const validEmail=(v:string)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 const validDate=(v:string)=>/^\d{4}-\d{2}-\d{2}$/.test(v);
@@ -60,9 +61,10 @@ if(Astro.request.method==='POST'){
     throw new Error('Acción no reconocida.');
   }catch(e){const msg=e instanceof Error?e.message:'No se pudo guardar.';return Astro.redirect(`/admin/escuela/pagos?error=${encodeURIComponent(msg.slice(0,180))}`,303);}
 }
+await cancelExpiredConceptPayments(env.DB, null);
 const {results:products=[]}=await env.DB.prepare(`SELECT id,title,description,amount_cents,currency,fee_type,validity_months,active,created_at FROM school_payment_products ORDER BY active DESC,title COLLATE NOCASE`).all<{id:string;title:string;description:string;amount_cents:number;currency:string;fee_type:string;validity_months:number;active:number;created_at:string}>();
 const {results:obligations=[]}=await env.DB.prepare(`SELECT o.id,o.student_email,o.title_snapshot,o.amount_cents,o.currency,o.due_at,o.available_at,o.status,o.paid_at,COALESCE(o.order_id,o.bundle_order_id) AS order_id,o.checkout_session_id,o.checkout_lock_token,p.title AS product_title FROM school_payment_obligations o LEFT JOIN school_payment_products p ON p.id=o.payment_product_id ORDER BY CASE o.status WHEN 'pending' THEN 0 WHEN 'paid' THEN 1 ELSE 2 END,o.due_at DESC LIMIT 200`).all<{id:string;student_email:string;title_snapshot:string;amount_cents:number;currency:string;due_at:string;available_at:string|null;status:string;paid_at:string|null;order_id:number|null;checkout_session_id:string|null;checkout_lock_token:string|null;product_title:string|null}>();
-const paymentGroups=groupBundleCandidates(await listBundleCandidates(env.DB,null));
+const paymentGroups=[...groupBundleCandidates(await listBundleCandidates(env.DB,null)),...groupConceptBundleCandidates(await listConceptBundleCandidates(env.DB,null))];
 const {results:paidBundles=[]}=await env.DB.prepare(`SELECT b.id,b.student_email,b.currency,b.amount_cents,b.order_id,s.title AS subprogram_title
   FROM school_payment_bundles b JOIN school_subprogram_enrollments e ON e.id=b.enrollment_id
   JOIN school_subprograms s ON s.id=e.subprogram_id WHERE b.status='paid' ORDER BY b.created_at DESC LIMIT 100`)

@@ -19,7 +19,7 @@ const excluded: string[] = JSON.parse(modality?.class_dates_excluded ?? '[]');
   <input type="hidden" name="subprogram_id" value={subprogramId} />
   {modality && <input type="hidden" name="id" value={modality.id} />}
   <div class="grid gap-3 sm:grid-cols-2">
-    <label class="block text-sm">Nombre de la modalidad
+    <label class="block text-sm">Nombre del esquema de pago
       <input name="title" required value={modality?.title} class={input} />
     </label>
     <label class="block text-sm">Producto de pago
@@ -99,5 +99,9 @@ const excluded: string[] = JSON.parse(modality?.class_dates_excluded ?? '[]');
     <input type="checkbox" name="requires_current_enrollment" value="1" checked={modality?.requires_current_enrollment === 1} />
     Requiere inscripción vigente (no aplica a pagos de inscripción)
   </label>
-  <button class="rounded bg-brand px-4 py-2 text-sm font-semibold text-white" disabled={products.length === 0}>{modality ? 'Guardar modalidad' : 'Crear modalidad'}</button>
+  <label class="flex items-center gap-2 text-sm">
+    <input type="checkbox" name="test_mode" value="1" checked={modality?.test_mode === 1} />
+    Esquema de prueba: solo acepta pagos demo. Los pagos simulados pueden habilitar el acceso; úsalo con alumnos de prueba. No se puede cambiar después de asignarlo.
+  </label>
+  <button class="rounded bg-brand px-4 py-2 text-sm font-semibold text-white" disabled={products.length === 0}>{modality ? 'Guardar esquema' : 'Crear esquema'}</button>
 </form>

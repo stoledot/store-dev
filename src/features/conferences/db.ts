@@ -270,7 +270,7 @@ const conferenceEntitlementSql = `(
       AND (EXISTS (SELECT 1 FROM school_manual_access a WHERE a.client_number=account.client_number
         AND a.resource_type='group' AND a.resource_id=g.id AND a.decision='allow'
         AND (a.expires_at IS NULL OR date(a.expires_at)>=date('now')))
-      OR EXISTS (SELECT 1 FROM school_subprogram_group_members member
+      OR EXISTS (SELECT 1 FROM school_subprogram_group_memberships member
         JOIN school_subprogram_enrollments e ON e.id=member.enrollment_id AND e.subprogram_id=g.subprogram_id
         WHERE member.group_id=g.id AND e.client_number=account.client_number AND ${enrollmentPaymentValidSql}))
   )))

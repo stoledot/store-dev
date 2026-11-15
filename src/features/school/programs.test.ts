@@ -34,18 +34,21 @@ describe('parseModality', () => {
 
   it('rejects enrollment that requires enrollment and invalid statuses', () => {
     expect(() => parseModality(form({ payment_type: 'enrollment', requires_current_enrollment: '1' }))).toThrow();
+    expect(() => parseModality(form({ payment_type: 'enrollment', test_mode: '1' }))).toThrow();
+    expect(parseModality(form({ test_mode: '1' })).testMode).toBe(1);
     expect(() => parseModality(form({ status: 'published' }))).toThrow();
   });
 
   it('validates calendar dates, overlapping periods and class calendars', () => {
-    for (const fields of [
+    const invalid: Record<string, string>[] = [
       { period_end_on: '2026-02-01' },
       { period_start_on: '2026-02-30' },
       { advance_days: '-1' },
       { class_weekdays: '' },
       { proration_method: 'classes' },
       { class_dates_added: '2026-01-01', class_dates_excluded: '2026-01-01' },
-    ]) expect(() => parseModality(form(fields))).toThrow();
+    ];
+    for (const fields of invalid) expect(() => parseModality(form(fields))).toThrow();
     expect(parseModality(form({ proration_method: 'classes', class_dates_added: '2026-01-05' })))
       .toMatchObject({ added: '["2026-01-05"]', advanceDays: 5 });
   });
