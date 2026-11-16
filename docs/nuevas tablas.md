@@ -27,12 +27,15 @@
 A cada grupo quiero ponerles:
     pago de inscripcion necesaria o no
     pago de mensualidad necesaria o no
-
+    
 ## Tabla
     school_grupos_pagos_necesarios
 
 
-## Tabla para almacenar los parametros de cada cliente denteo de la plataforma
+## Tabla
+
+Para almacenar los parametros de cada cliente denteo de la plataforma
+
     customer_parameters
 
 
