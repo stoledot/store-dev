@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lectura>
+  <meta>
+    <title>Porquería Matemática: guía de supervivencia</title>
+    <author>Brillinury y Samuel</author>
+    <date>2026-11-15</date>
+    <summary>Guía de supervivencia matemática con explicaciones, ejemplos, errores frecuentes, ejercicios y fórmulas de consulta.</summary>
+  </meta>
+  <section id="presentacion" title="Presentación">
+    <p>{ PORQUERÍA\\[3mm] MATEMÁTICA}</p>
+    <p>{ Guía de supervivencia escolar}</p>
+    <p>width=.85, colback=gris,colframe=tinta, arc=2mm,boxrule=1pt ] Una guía rápida de matemáticas para sobrevivir a la primaria, secundaria y preparatoria.</p>
+    <p>Sin revelaciones profundas. Sin discursos inspiradores. Con fórmulas, ejemplos y lo estrictamente necesario.</p>
+    <p></p>
+    <p>{ Autores: Brillinury y Samuel}</p>
+    <p>{ Edición de consulta y regularización}</p>
+  </section>
+  <section id="antes-de-empezar" title="Antes de empezar">
+    <p>Este documento es un acordeón ampliado. No sustituye un curso completo ni garantiza que aparezcan todos los temas de tu examen. Los programas cambian según el grado, la escuela y el subsistema de bachillerato.</p>
+    <p>La estrategia es sencilla:</p>
+    <ol>
+      <li>
+        <p>Identifica qué tipo de problema tienes.</p>
+        <p>Busca la fórmula correspondiente.</p>
+        <p>Sustituye los datos.</p>
+        <p>Haz las operaciones.</p>
+        <p>Comprueba que el resultado tenga sentido.</p>
+      </li>
+      <p>Las matemáticas no siempre son difíciles. A veces solamente están escritas de una forma poco amable.</p>
+      <ul>
+        <li>
+          <p><strong>Suma:</strong> juntar cantidades.</p>
+          <p><strong>Resta:</strong> calcular una diferencia.</p>
+          <p><strong>Multiplicación:</strong> sumar repetidamente una cantidad.</p>
+          <p><strong>División:</strong> repartir o calcular cuántas veces cabe algo.</p>
+        </li>
+        <example title="Ejemplo">
+          <p>\[ a+b, a-b, a b, (a)/(b) \] En una división, $b 0$. Dividir entre cero no está definido.</p>
+        </example>
+        <example title="Ejemplo">
+          <p>Calcula $18+4(3-1)$.</p>
+          <p>Primero el paréntesis: $3-1=2$.</p>
+          <p>Después la multiplicación: $4(2)=8$.</p>
+          <p>Finalmente: $18+8=26$.</p>
+        </example>
+        <p>El orden usual es:</p>
+        <ol>
+          <li>
+            <p>Paréntesis y otros signos de agrupación.</p>
+            <p>Potencias y raíces.</p>
+            <p>Multiplicaciones y divisiones, de izquierda a derecha.</p>
+            <p>Sumas y restas, de izquierda a derecha.</p>
+          </li>
+          <warning title="Advertencia">
+            <p>No se resuelve necesariamente todo de izquierda a derecha. La jerarquía existe precisamente para evitar ese desastre.</p>
+          </warning>
+          <p>Un número es divisible entre otro si la división da un entero sin residuo.</p>
+          <remark title="tabularx">
+            <p>Divisor &amp; Regla rápida\\ 2 &amp; Termina en 0, 2, 4, 6 u 8.\\ 3 &amp; La suma de sus cifras es múltiplo de 3.\\ 5 &amp; Termina en 0 o 5.\\ 9 &amp; La suma de sus cifras es múltiplo de 9.\\ 10 &amp; Termina en 0.\\</p>
+          </remark>
+        </ol>
+        <p>Un número primo tiene exactamente dos divisores positivos: 1 y él mismo. El 1 no es primo.</p>
+        <p>El <strong>MCM</strong> es el menor múltiplo positivo común. El <strong>MCD</strong> es el mayor divisor positivo común.</p>
+        <p>Ejemplo: para 12 y 18, \[ 12=2^23, 18=23^2. \] \[ {MCD}(12,18)=23=6 \] \[ {MCM}(12,18)=2^23^2=36. \]</p>
+        <p>Para el MCD se toman los exponentes menores; para el MCM, los mayores.</p>
+        <p>Una fracción representa partes de un todo: \[ (a)/(b), b0. \] $a$ es el numerador y $b$ el denominador.</p>
+        <example title="Ejemplo">
+          <p>\[ (a)/(b)+(c)/(d)=(ad+bc)/(bd) \] \[ (a)/(b)(c)/(d)=(ac)/(bd) \] \[ (a)/(b)(c)/(d)=(a)/(b)(d)/(c) \] En la división también se requiere $c0$.</p>
+        </example>
+        <example title="Ejemplo">
+          <p>Calcula $(1)/(2)+(1)/(3)$.</p>
+          <p>El denominador común puede ser 6: \[ (1)/(2)+(1)/(3) =(3)/(6)+(2)/(6) =(5)/(6). \]</p>
+        </example>
+        <warning title="Advertencia">
+          <p>No sumes los denominadores. En general, $12+1325$.</p>
+        </warning>
+        <p>Multiplicar o dividir numerador y denominador por el mismo número distinto de cero conserva el valor: \[ (2)/(4)=(1)/(2)=(5)/(10). \]</p>
+        <p>Simplifica dividiendo arriba y abajo entre un divisor común.</p>
+        <p>Para sumar y restar, alinea los puntos decimales. Para multiplicar, multiplica como si fueran enteros y luego coloca tantas cifras decimales como haya en total en los factores.</p>
+        <example title="Ejemplo">
+          <p>\[ 2.40.3=0.72. \] Como $243=72$ y hay dos cifras decimales en total, el resultado es $0.72$.</p>
+        </example>
+        <p>Porcentaje significa ``por cada cien&#x27;&#x27;.</p>
+        <example title="Ejemplo">
+          <p>\[ p%=(p)/(100), p% de N=(p)/(100)N. \]</p>
+        </example>
+        <example title="Ejemplo">
+          <p>¿Cuánto es el 15% de 800? \[ 0.15(800)=120. \]</p>
+        </example>
+        <p>Para aumentar una cantidad en $p%$, multiplica por $1+(p)/(100)$. Para disminuirla, multiplica por $1-(p)/(100)$.</p>
+        <p>Una razón compara cantidades. Una proporción afirma que dos razones son iguales: \[ (a)/(b)=(c)/(d) ad=bc. \]</p>
+        <example title="Ejemplo">
+          <p>Si 3 cuadernos cuestan 45 pesos, ¿cuánto cuestan 5 al mismo precio unitario? \[ x=(5(45))/(3)=75. \]</p>
+        </example>
+        <p>La regla de tres directa sirve cuando ambas cantidades aumentan o disminuyen juntas en la misma proporción. Si una aumenta y la otra disminuye, revisa si se trata de proporcionalidad inversa.</p>
+        <p>En la recta numérica, los números a la derecha son mayores.</p>
+        <p>\[ -5&lt;-2&lt;0&lt;3&lt;7. \]</p>
+        <p>Reglas de signos para multiplicar o dividir:</p>
+        <remark title="tabular">
+          <p>Operación de signos &amp; Resultado\\ $++$ &amp; $+$\\ $+-$ &amp; $-$\\ $-+$ &amp; $-$\\ $--$ &amp; $+$</p>
+        </remark>
+      </ul>
+      <p>Sumar un negativo equivale a restar. Restar un negativo equivale a sumar.</p>
+      <p>\[ a^n={a a a}_{n factores}. \]</p>
+      <example title="Ejemplo">
+        <p>Para las bases y exponentes donde las expresiones estén definidas: \[ a^m a^n=a^{m+n}, (a^m)/(a^n)=a^{m-n} (a0), \] \[ (a^m)^n=a^{mn}, (ab)^n=a^nb^n, \] \[ a^0=1 (a0), a^{-n}=(1)/(a^n) (a0). \]</p>
+      </example>
+      <p>La raíz cuadrada principal de un número no negativo es el número no negativo cuyo cuadrado da el original: \[ raíz(49)=7, raíz(a^2)=|a|. \]</p>
+      <example title="Ejemplo">
+        <p>\[ raíz(72)=raíz(362)=62. \]</p>
+      </example>
+      <p>No se puede separar una suma bajo una raíz de esta manera: \[ raíz(a+b) a+ b \] en general.</p>
+      <p>Se escribe un número como \[ a10^n, 1 |a|&lt;10. \]</p>
+      <p>Ejemplos: \[ 450000=4.510^5, 0.00032=3.210^{-4}. \]</p>
+      <p>En $3x+5$, la letra $x$ representa un número. El número 3 es el coeficiente; 5 es el término constante.</p>
+      <p>Solo se reducen términos semejantes: \[ 3x+5x=8x, 3x+58x. \]</p>
+      <example title="Ejemplo">
+        <p>\[ a(b+c)=ab+ac \] \[ a(b-c)=ab-ac \]</p>
+      </example>
+      <example title="Ejemplo">
+        <p>\[ 3(x+4)=3x+12. \]</p>
+      </example>
+      <example title="Ejemplo">
+        <p>\[ (a+b)^2=a^2+2ab+b^2 \] \[ (a-b)^2=a^2-2ab+b^2 \] \[ (a+b)(a-b)=a^2-b^2 \] \[ (a+b)^3=a^3+3a^2b+3ab^2+b^3 \]</p>
+      </example>
+      <warning title="Advertencia">
+        <p>$(a+b)^2$ no es $a^2+b^2$. Falta el término $2ab$.</p>
+      </warning>
+      <p>Factorizar es expresar una suma como producto.</p>
+      <example title="Ejemplo">
+        <p>\[ ab+ac=a(b+c) \] \[ a^2-b^2=(a-b)(a+b) \] \[ x^2+(m+n)x+mn=(x+m)(x+n) \]</p>
+      </example>
+      <p>Ejemplo: \[ x^2+5x+6=(x+2)(x+3). \] Se buscan dos números que sumen 5 y multipliquen 6.</p>
+      <p>Una ecuación afirma que dos expresiones son iguales. Resolverla consiste en encontrar los valores que la hacen cierta.</p>
+      <example title="Ejemplo">
+        <p>Resuelve $3x+5=20$. \[ 3x=20-5=15, x=5. \]</p>
+      </example>
+      <p>La operación que haces en un lado debes hacerla también en el otro. La igualdad no es decoración.</p>
+      <p>Ejemplo: \[ 2(x-3)=10 \] \[ 2x-6=10, 2x=16, x=8. \]</p>
+      <p>Si aparecen fracciones, puedes multiplicar toda la ecuación por el mínimo común múltiplo de los denominadores, siempre respetando las restricciones del problema.</p>
+      <p>Un sistema contiene dos o más ecuaciones con las mismas incógnitas.</p>
+      <example title="Ejemplo">
+        <p>\[</p>
+        <remark title="cases">
+          <p>x+y=7\\ x-y=1</p>
+        </remark>
+        <p>\]</p>
+        <p>Sumamos las ecuaciones: \[ 2x=8 x=4. \] Sustituimos: \[ 4+y=7 y=3. \]</p>
+      </example>
+      <p>Métodos frecuentes: sustitución, igualación y reducción.</p>
+      <p>Forma general: \[ ax^2+bx+c=0, a0. \]</p>
+      <example title="Ejemplo">
+        <p>\[ x={-bíz(b^2-4ac)}{2a}. \]</p>
+      </example>
+      <p>El discriminante es $=b^2-4ac$:</p>
+      <ul>
+        <li>
+          <p>$&gt;0$: dos soluciones reales distintas.</p>
+          <p>$=0$: una solución real doble.</p>
+          <p>$&lt;0$: no hay soluciones reales.</p>
+        </li>
+        <example title="Ejemplo">
+          <p>Resuelve $x^2-5x+6=0$. \[ (x-2)(x-3)=0. \] Por tanto, $x=2$ o $x=3$.</p>
+        </example>
+        <p>Los signos son $&lt;$, $&gt;$, $$ y $$.</p>
+        <p>Al multiplicar o dividir una desigualdad por un número negativo, se invierte el signo.</p>
+        <example title="Ejemplo">
+          <p>\[ -2x&gt;6 x&lt;-3. \]</p>
+        </example>
+        <p>Un punto se escribe $(x,y)$. El eje horizontal es $x$; el vertical es $y$.</p>
+        <p>Los cuadrantes se numeran comenzando por el superior derecho y siguiendo en sentido contrario a las agujas del reloj.</p>
+        <p>Una función asigna a cada entrada válida exactamente una salida. Se escribe $y=f(x)$.</p>
+        <example title="Ejemplo">
+          <p>Si $f(x)=2x+1$, entonces \[ f(3)=2(3)+1=7. \]</p>
+        </example>
+        <p>La forma pendiente-intersección es \[ y=mx+b, \] donde $m$ es la pendiente y $b$ el corte con el eje $y$.</p>
+        <p>Con dos puntos:</p>
+        <example title="Ejemplo">
+          <p>\[ m=(y_2-y_1)/(x_2-x_1), x_2 x_1. \]</p>
+        </example>
+        <p>Una sucesión es una lista ordenada de números.</p>
+        <p>Aritmética: se suma siempre la misma diferencia $d$. \[ a_n=a_1+(n-1)d. \]</p>
+        <p>Geométrica: se multiplica siempre por la misma razón $r$. \[ a_n=a_1r^{n-1}. \]</p>
+        <p>Ejemplo aritmético: $3,7,11,15,$ tiene diferencia 4.</p>
+        <ul>
+          <li>
+            <p>Agudo: menor que $90^$.</p>
+            <p>Recto: $90^$.</p>
+            <p>Obtuso: mayor que $90^$ y menor que $180^$.</p>
+            <p>Llano: $180^$.</p>
+            <p>Completo: $360^$.</p>
+          </li>
+          <p>Los ángulos interiores de un triángulo suman $180^$. Los de un cuadrilátero suman $360^$.</p>
+          <remark title="tabularx">
+            <p>Figura &amp; Perímetro &amp; Área\\ Cuadrado de lado $l$ &amp; $4l$ &amp; $l^2$\\ Rectángulo &amp; $2(b+h)$ &amp; $bh$\\ Triángulo &amp; suma de lados &amp; $(bh)/(2)$\\ Paralelogramo &amp; $2(a+b)$ &amp; $bh$\\ Trapecio &amp; suma de lados &amp; $((B+b)h)/(2)$\\ Círculo &amp; $2 r$ &amp; $ r^2$\\</p>
+          </remark>
+        </ul>
+        <p>En las fórmulas, $b$ suele representar base, $h$ altura, $r$ radio y $B$ base mayor. Revisa la figura antes de sustituir.</p>
+        <p>Para un triángulo rectángulo: \[ a^2+b^2=c^2, \] donde $c$ es la hipotenusa, el lado opuesto al ángulo recto.</p>
+        <example title="Ejemplo">
+          <p>Si los catetos miden 3 y 4: \[ c=raíz(3^2+4^2)=raíz(25)=5. \]</p>
+        </example>
+        <p>No se aplica directamente a cualquier triángulo.</p>
+        <p>Los triángulos semejantes tienen ángulos correspondientes iguales y lados correspondientes proporcionales.</p>
+        <p>Si las longitudes se escalan por un factor $k$: \[ longitudes k, áreas k^2. \]</p>
+        <p>El teorema de Tales permite establecer proporciones cuando rectas paralelas cortan transversales. Identifica primero los segmentos correspondientes.</p>
+        <p>\[ C=2 r= d, A= r^2, d=2r. \]</p>
+        <p>Una circunferencia es el borde; el círculo es la región interior. La terminología importa en los ejercicios.</p>
+        <remark title="tabularx">
+          <p>Cuerpo &amp; Volumen\\ Cubo &amp; $V=l^3$\\ Prisma &amp; $V=A_bh$\\ Cilindro &amp; $V= r^2h$\\ Pirámide &amp; $V=13A_bh$\\ Cono &amp; $V=13 r^2h$\\ Esfera &amp; $V=43 r^3$\\</p>
+        </remark>
+      </ul>
+      <p>$A_b$ es el área de la base y $h$ la altura perpendicular.</p>
+      <p>En el sistema métrico: \[ 1 km=1000 m, 1 m=100 cm, 1 kg=1000 g. \]</p>
+      <p>Para áreas, el factor de conversión se eleva al cuadrado; para volúmenes, al cubo.</p>
+      <p>\[ 1 m^2=10000 cm^2, 1 m^3=1000000 cm^3. \]</p>
+      <example title="Ejemplo">
+        <p>\[ v=(d)/(t), d=vt, t=(d)/(v). \]</p>
+      </example>
+      <p>Asegúrate de que las unidades sean compatibles. Kilómetros por hora y metros por segundo no son lo mismo.</p>
+      <p>En un triángulo rectángulo, respecto al ángulo $$:</p>
+      <example title="Ejemplo">
+        <p>\[ {sen}=(cateto opuesto)/(hipotenusa) \] \[ =(cateto adyacente)/(hipotenusa) \] \[ =(cateto opuesto)/(cateto adyacente) \]</p>
+      </example>
+      <example title="Ejemplo">
+        <p>Si el cateto opuesto mide 3 y la hipotenusa 5: \[ {sen}=35=0.6. \]</p>
+      </example>
+      <p>\[ {sen}^2+^2=1. \]</p>
+      <p>En una calculadora, revisa si el modo está en grados o radianes. Un resultado correcto con la unidad equivocada sigue siendo un resultado inútil.</p>
+      <p>Para un triángulo con lados $a,b,c$ opuestos a ángulos $A,B,C$: \[ {a}{{sen} A}={b}{{sen} B}={c}{{sen} C}. \]</p>
+      <p>Ley de cosenos: \[ c^2=a^2+b^2-2ab C. \]</p>
+      <p>Sirven para triángulos que no necesariamente son rectángulos.</p>
+      <p>\[ d=raíz((x_2-x_1)^2+(y_2-y_1)^2). \]</p>
+      <p>\[ M=((x_1+x_2)/(2),(y_1+y_2)/(2)). \]</p>
+      <p>Con centro $(h,k)$ y radio $r$: \[ (x-h)^2+(y-k)^2=r^2. \]</p>
+      <p>Una forma común de parábola vertical es \[ y=a(x-h)^2+k. \]</p>
+      <p>La elipse y la hipérbola tienen otras ecuaciones canónicas. En un examen, identifica primero la forma de la ecuación y después qué información pide el problema.</p>
+      <p>Datos: $2,3,3,4,8$.</p>
+      <p>Media: \[ {x}=(suma de los datos)/(número de datos) =(20)/(5)=4. \]</p>
+      <p>Mediana: el dato central al ordenar la lista. Aquí es 3.</p>
+      <p>Moda: el valor más frecuente. Aquí es 3.</p>
+      <p>\[ Rango=máximo-mínimo. \]</p>
+      <p>La varianza mide dispersión respecto a la media. Para una población: \[ ^2={_{i=1}^n(x_i-)^2}{n}. \]</p>
+      <p>La desviación estándar es la raíz cuadrada de la varianza. En muestras, la fórmula usual de varianza muestral divide entre $n-1$.</p>
+      <ul>
+        <li>
+          <p>Barras: comparar categorías.</p>
+          <p>Histograma: mostrar una distribución numérica agrupada.</p>
+          <p>Circular: mostrar proporciones de un total.</p>
+          <p>Línea: observar cambios a lo largo del tiempo.</p>
+          <p>Dispersión: observar la relación entre dos variables.</p>
+        </li>
+        <p>Una gráfica puede ser correcta y aun así inducir a error si el eje está recortado o las escalas no son comparables.</p>
+        <p>Cuando todos los resultados son igualmente probables: \[ {P}(A)=(casos favorables)/(casos posibles). \]</p>
+        <p>La probabilidad está entre 0 y 1.</p>
+        <example title="Ejemplo">
+          <p>Al lanzar un dado justo, la probabilidad de obtener un 6 es \[ {P}(6)=16. \]</p>
+        </example>
+        <p>\[ {P}(A^c)=1-{P}(A). \]</p>
+        <p>Si la probabilidad de que llueva es 0.3, la de que no llueva es 0.7, suponiendo que son los únicos dos resultados.</p>
+        <p>Si una decisión tiene $m$ opciones y otra tiene $n$ opciones, y ambas se pueden combinar libremente, hay $mn$ combinaciones.</p>
+        <p>Permutaciones de $n$ objetos distintos: \[ n!=n(n-1)(n-2)21. \]</p>
+        <p>Arreglos de $r$ elementos tomados de $n$: \[ P(n,r)=(n!)/((n-r)!). \]</p>
+        <p>Combinaciones, cuando el orden no importa: \[ nr=(n!)/(r!(n-r)!). \]</p>
+        <p>\[ y=a^x, a&gt;0, a1. \]</p>
+        <p>Si $a&gt;1$, la función es creciente. Si $0&lt;a&lt;1$, es decreciente.</p>
+        <p>El logaritmo responde: ¿a qué exponente hay que elevar la base para obtener cierto número?</p>
+        <p>\[ _a x=y a^y=x. \]</p>
+        <p>Condiciones: $a&gt;0$, $a1$ y $x&gt;0$.</p>
+        <example title="Ejemplo">
+          <p>\[ _a(xy)=_a x+_a y \] \[ _a((x)/(y))=_a x-_a y \] \[ _a(x^r)=r_a x \]</p>
+        </example>
+        <p>Cambio de base: \[ _a x=(_b x)/(_b a). \]</p>
+        <p>No existe una regla que convierta automáticamente $(x+y)$ en $ x+ y$.</p>
+        <p>Un límite describe el valor al que se aproxima una función cuando la variable se acerca a cierto punto.</p>
+        <p>\[ _{x a}f(x)=L. \]</p>
+        <p>Si la función es continua en $a$, normalmente basta con sustituir $x=a$. Si aparece una indeterminación como $0/0$, hace falta simplificar o aplicar otro método.</p>
+        <example title="Ejemplo">
+          <p>\[ _{x2}(x^2+1)=2^2+1=5. \]</p>
+        </example>
+        <p>La derivada representa una tasa de cambio instantánea. Geométricamente, es la pendiente de la recta tangente.</p>
+        <example title="Ejemplo">
+          <p>Reglas básicas: \[ (d)/(dx)(c)=0, (d)/(dx)(x^n)=nx^{n-1} \] \[ (d)/(dx)(cf)=cf&#x27;, (d)/(dx)(f+g)=f&#x27;+g&#x27; \] \[ (fg)&#x27;=f&#x27;g+fg&#x27; \] \[ ( fg)&#x27;= (f&#x27;g-fg&#x27;)/(g^2), g0. \]</p>
+        </example>
+        <example title="Ejemplo">
+          <p>Si $f(x)=3x^2+2x-4$: \[ f&#x27;(x)=6x+2. \]</p>
+        </example>
+        <p>La integral definida puede representar área con signo bajo una curva y acumular cantidades.</p>
+        <example title="Ejemplo">
+          <p>\[ x^n dx={x^{n+1}}{n+1}+C, n-1. \] \[ _a^b f(x) dx=F(b)-F(a), F&#x27;=f. \]</p>
+        </example>
+        <example title="Ejemplo">
+          <p>\[ _0^2 x dx =[(x^2)/(2)]_0^2 =2. \]</p>
+        </example>
+        <p>Estos temas suelen pertenecer al bachillerato avanzado o a cursos introductorios de cálculo; no todos los planes de preparatoria los incluyen.</p>
+        <ol>
+          <li>
+            <p>Sumar fracciones sumando también los denominadores.</p>
+            <p>Olvidar la jerarquía de operaciones.</p>
+            <p>Cambiar un signo al pasar términos de una ecuación.</p>
+            <p>Olvidar invertir una desigualdad al dividir entre un negativo.</p>
+            <p>Confundir radio con diámetro.</p>
+            <p>Usar área cuando el problema pide perímetro.</p>
+            <p>Usar grados cuando la calculadora está en radianes.</p>
+            <p>Confundir una relación proporcional con una relación cualquiera.</p>
+            <p>Redondear demasiado pronto.</p>
+            <p>Dar una respuesta sin unidades cuando sí hacen falta.</p>
+            <p>Dividir entre cero.</p>
+            <p>Afirmar que $raíz(a+b)= a+ b$.</p>
+          </li>
+          <p>La comprobación más barata es sustituir el resultado en el problema original. Hazla antes de entregar.</p>
+          <p></p>
+          <p><strong>Porcentaje</strong> \[ p% de N=(pN)/(100) \]</p>
+          <p><strong>Proporción</strong> \[ ab= cd{R}ightarrow ad=bc \]</p>
+          <p><strong>Pitágoras</strong> \[ a^2+b^2=c^2 \]</p>
+          <p><strong>Recta</strong> \[ y=mx+b \]</p>
+          <p><strong>Pendiente</strong> \[ m=(y_2-y_1)/(x_2-x_1) \]</p>
+          <p><strong>Cuadrática</strong> \[ x={-bíz(b^2-4ac)}{2a} \]</p>
+          <p><strong>Círculo</strong> \[ A= r^2, C=2 r \]</p>
+          <p><strong>Triángulo</strong> \[ A=(bh)/(2) \]</p>
+          <p><strong>Rectángulo</strong> \[ A=bh, P=2b+2h \]</p>
+          <p><strong>Prisma</strong> \[ V=A_bh \]</p>
+          <p><strong>Cilindro</strong> \[ V= r^2h \]</p>
+          <p><strong>Cono</strong> \[ V=13 r^2h \]</p>
+          <p><strong>Rapidez</strong> \[ v= dt \]</p>
+          <p><strong>Media</strong> \[ {x}=( x_i)/(n) \]</p>
+          <p><strong>Probabilidad clásica</strong> \[ {P}(A)=(F)/(N) \]</p>
+          <p><strong>Sucesión aritmética</strong> \[ a_n=a_1+(n-1)d \]</p>
+          <p><strong>Sucesión geométrica</strong> \[ a_n=a_1r^{n-1} \]</p>
+          <p><strong>Trigonometría</strong> \[ {sen}=(CO)/(H) \] \[ =(CA)/(H) \] \[ =(CO)/(CA) \]</p>
+          <p><strong>Derivada de potencia</strong> \[ (x^n)&#x27;=nx^{n-1} \]</p>
+          <p><strong>Integral de potencia</strong> \[ x^n dx={x^{n+1}}{n+1}+C \]</p>
+        </ol>
+        <p></p>
+        <p>Intenta resolver sin mirar las respuestas.</p>
+        <ol>
+          <li>
+            <p>Calcula $12-2(3+1)$.</p>
+            <p>Simplifica $(18)/(24)$.</p>
+            <p>Calcula el 20% de 350.</p>
+            <p>Resuelve $5x-7=18$.</p>
+            <p>Factoriza $x^2-9$.</p>
+            <p>Calcula la hipotenusa con catetos 6 y 8.</p>
+            <p>Calcula el área de un círculo de radio 3.</p>
+            <p>Encuentra la media de 4, 6, 8 y 10.</p>
+            <p>Calcula la pendiente entre $(1,2)$ y $(3,8)$.</p>
+            <p>Deriva $f(x)=4x^3$.</p>
+          </li>
+          <ol>
+            <li>
+              <p>$4$.</p>
+              <p>$34$.</p>
+              <p>$70$.</p>
+              <p>$x=5$.</p>
+              <p>$(x-3)(x+3)$.</p>
+              <p>$10$.</p>
+              <p>$9$ unidades cuadradas.</p>
+              <p>$7$.</p>
+              <p>$m=3$.</p>
+              <p>$f&#x27;(x)=12x^2$.</p>
+            </li>
+            <p><strong>Fin.</strong></p>
+            <p>Ya tienes las fórmulas. El resto es identificar cuál te están pidiendo y no pelearte con los signos.</p>
+          </ol>
+        </ol>
+      </ul>
+    </ol>
+  </section>
+  <section id="aritm-tica-los-n-meros-y-sus-problemas" title="Aritmética: los números y sus problemas">
+    <subsection id="las-cuatro-operaciones" title="Las cuatro operaciones"></subsection>
+    <subsection id="jerarqu-a-de-operaciones" title="Jerarquía de operaciones"></subsection>
+    <subsection id="divisibilidad-y-n-meros-primos" title="Divisibilidad y números primos"></subsection>
+    <subsection id="m-nimo-com-n-m-ltiplo-y-m-ximo-com-n-divisor" title="Mínimo común múltiplo y máximo común divisor"></subsection>
+  </section>
+  <section id="fracciones-decimales-y-porcentajes" title="Fracciones, decimales y porcentajes">
+    <subsection id="fracciones" title="Fracciones"></subsection>
+    <subsection id="fracciones-equivalentes-y-simplificaci-n" title="Fracciones equivalentes y simplificación"></subsection>
+    <subsection id="decimales" title="Decimales"></subsection>
+    <subsection id="porcentajes" title="Porcentajes"></subsection>
+    <subsection id="razones-proporciones-y-regla-de-tres" title="Razones, proporciones y regla de tres"></subsection>
+  </section>
+  <section id="enteros-potencias-y-ra-ces" title="Enteros, potencias y raíces">
+    <subsection id="n-meros-negativos" title="Números negativos"></subsection>
+    <subsection id="potencias" title="Potencias"></subsection>
+    <subsection id="ra-ces" title="Raíces"></subsection>
+    <subsection id="notaci-n-cient-fica" title="Notación científica"></subsection>
+  </section>
+  <section id="lgebra-letras-que-representan-n-meros" title="Álgebra: letras que representan números">
+    <subsection id="expresiones-algebraicas" title="Expresiones algebraicas"></subsection>
+    <subsection id="propiedad-distributiva" title="Propiedad distributiva"></subsection>
+    <subsection id="productos-notables" title="Productos notables"></subsection>
+    <subsection id="factorizaci-n" title="Factorización"></subsection>
+    <subsection id="ecuaciones-lineales" title="Ecuaciones lineales"></subsection>
+    <subsection id="ecuaciones-con-par-ntesis-y-fracciones" title="Ecuaciones con paréntesis y fracciones"></subsection>
+    <subsection id="sistemas-de-ecuaciones" title="Sistemas de ecuaciones"></subsection>
+    <subsection id="ecuaciones-cuadr-ticas" title="Ecuaciones cuadráticas"></subsection>
+    <subsection id="desigualdades" title="Desigualdades"></subsection>
+  </section>
+  <section id="funciones-sucesiones-y-gr-ficas" title="Funciones, sucesiones y gráficas">
+    <subsection id="plano-cartesiano" title="Plano cartesiano"></subsection>
+    <subsection id="funciones" title="Funciones"></subsection>
+    <subsection id="rectas" title="Rectas"></subsection>
+    <subsection id="sucesiones" title="Sucesiones"></subsection>
+  </section>
+  <section id="geometr-a-plana" title="Geometría plana">
+    <subsection id="ngulos" title="Ángulos"></subsection>
+    <subsection id="per-metros-y-reas" title="Perímetros y áreas"></subsection>
+    <subsection id="teorema-de-pit-goras" title="Teorema de Pitágoras"></subsection>
+    <subsection id="semejanza-y-teorema-de-tales" title="Semejanza y teorema de Tales"></subsection>
+    <subsection id="circunferencia" title="Circunferencia"></subsection>
+  </section>
+  <section id="geometr-a-espacial-y-unidades" title="Geometría espacial y unidades">
+    <subsection id="vol-menes" title="Volúmenes"></subsection>
+    <subsection id="conversiones" title="Conversiones"></subsection>
+    <subsection id="rapidez-distancia-y-tiempo" title="Rapidez, distancia y tiempo"></subsection>
+  </section>
+  <section id="trigonometr-a" title="Trigonometría">
+    <subsection id="razones-trigonom-tricas" title="Razones trigonométricas"></subsection>
+    <subsection id="identidad-fundamental" title="Identidad fundamental"></subsection>
+    <subsection id="ley-de-senos-y-ley-de-cosenos" title="Ley de senos y ley de cosenos"></subsection>
+  </section>
+  <section id="geometr-a-anal-tica" title="Geometría analítica">
+    <subsection id="distancia-entre-dos-puntos" title="Distancia entre dos puntos"></subsection>
+    <subsection id="punto-medio" title="Punto medio"></subsection>
+    <subsection id="ecuaci-n-de-la-circunferencia" title="Ecuación de la circunferencia"></subsection>
+    <subsection id="par-bola-y-otras-c-nicas" title="Parábola y otras cónicas"></subsection>
+  </section>
+  <section id="estad-stica-descriptiva" title="Estadística descriptiva">
+    <subsection id="media-mediana-y-moda" title="Media, mediana y moda"></subsection>
+    <subsection id="rango-y-dispersi-n" title="Rango y dispersión"></subsection>
+    <subsection id="gr-ficas" title="Gráficas"></subsection>
+  </section>
+  <section id="probabilidad-y-conteo" title="Probabilidad y conteo">
+    <subsection id="probabilidad-cl-sica" title="Probabilidad clásica"></subsection>
+    <subsection id="complemento" title="Complemento"></subsection>
+    <subsection id="principios-de-conteo" title="Principios de conteo"></subsection>
+  </section>
+  <section id="exponenciales-y-logaritmos" title="Exponenciales y logaritmos">
+    <subsection id="funci-n-exponencial" title="Función exponencial"></subsection>
+    <subsection id="logaritmos" title="Logaritmos"></subsection>
+  </section>
+  <section id="l-mites-derivadas-e-integrales" title="Límites, derivadas e integrales">
+    <subsection id="l-mites" title="Límites"></subsection>
+    <subsection id="derivadas" title="Derivadas"></subsection>
+    <subsection id="integral" title="Integral"></subsection>
+  </section>
+  <section id="errores-frecuentes" title="Errores frecuentes"></section>
+  <section id="formulario-expr-s" title="Formulario exprés"></section>
+  <section id="mini-examen-de-supervivencia" title="Mini examen de supervivencia">
+    <subsection id="respuestas" title="Respuestas"></subsection>
+  </section>
+</lectura>
