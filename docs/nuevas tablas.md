@@ -1,14 +1,13 @@
-#
-Tabla para esquemas de pago versión 2
+# Tabla para esquemas de pago versión 2
 
-Tabla
+## Tabla
     school_esquemas_pago
         id
         nombre
         descripcion
     
 
-Tabla
+## Tabla
     school_conceptos_pago
         id
         nombre
@@ -16,7 +15,7 @@ Tabla
         monto
         id_esquema_pago_v2
 
-Tabla 
+## Tabla 
     school_parametros_concetos_pago
         id
         id_concepto_pago
@@ -29,8 +28,15 @@ A cada grupo quiero ponerles:
     pago de inscripcion necesaria o no
     pago de mensualidad necesaria o no
 
-Tabla
+## Tabla
     school_grupos_pagos_necesarios
+
+
+## Tabla para almacenar los parametros de cada cliente denteo de la plataforma
+    customer_parameters
+
+
+
         
         
     
