@@ -10,6 +10,17 @@ function nextClientNumber():string {
   return String(1_000_000_000n+(random%9_000_000_000n));
 }
 
+async function ensureCustomerNew(db:D1Database,email:string, clientNumber:string):Promise<void>{
+  const normalized=normalizeEmail(email);
+  const existing=await db.prepare('SELECT 1 FROM customers WHERE email=? COLLATE NOCASE').bind(normalized).first();
+
+  if (existing) throw new Error('El cliente ya existe.');
+
+  const result=await db.prepare('INSERT INTO customers(email, client_number) VALUES(?, ?)').bind(normalized, clientNumber).run();
+  if(result.error)throw new Error('No se pudo crear el cliente. Inténtalo de nuevo.');
+  return;
+}
+
 /** Assign the permanent 10-digit account number after email ownership is verified. */
 export async function ensureCustomerAccount(db:D1Database,email:string):Promise<string>{
   const normalized=normalizeEmail(email);
@@ -20,7 +31,9 @@ export async function ensureCustomerAccount(db:D1Database,email:string):Promise<
     await db.prepare('INSERT OR IGNORE INTO customer_accounts(email,client_number) VALUES(?,?)').bind(normalized,number).run();
     const created=await db.prepare('SELECT client_number FROM customer_accounts WHERE email=? COLLATE NOCASE').bind(normalized).first<{client_number:string}>();
     if(created)return created.client_number;
+    await ensureCustomerNew(db, normalized, number);
   }
+
   throw new Error('No se pudo asignar un número de cliente. Inténtalo de nuevo.');
 }
 

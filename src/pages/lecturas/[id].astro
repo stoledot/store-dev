@@ -1,0 +1,917 @@
+---
+import { env } from 'cloudflare:workers';
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { accountsEnabled, getCustomerEmail} from '../../features/auth/customer';
+import { renderCourseTex } from '../../features/mathTexts/render';
+import { parseReadingXml } from '../../features/mathTexts/xmlReading';
+import { getCustomerByEmail } from '../../features/customers_new/db';
+import { getLecturasByCustomerId } from '../../features/lecturas/db';
+
+if (!(await accountsEnabled())) return Astro.redirect('/',303);
+
+const email=await getCustomerEmail(Astro.cookies); 
+if(!email) return Astro.redirect('/account/login',303);
+const customerId = (await getCustomerByEmail(env.DB, email))?.id;
+if (!customerId) return Astro.redirect('/account/login',303);
+
+const id = Astro.params.id;
+
+const readingXml = (await getLecturasByCustomerId(env.DB, customerId))[0]?.content_xml;
+
+interface Props {
+  xml: string;
+  backHref?: string;
+}
+
+const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
+---
+
+<div
+  id="xml-reading"
+  data-xml={xml}
+  data-back-href={backHref}
+  class="mx-auto max-w-7xl px-3 pb-28 pt-5 sm:px-6 sm:pb-12 sm:pt-8"
+>
+  <a
+    href={backHref}
+    class="inline-flex min-h-10 items-center text-sm font-medium text-muted underline underline-offset-4 hover:text-brand"
+  >
+    ← Volver a mis lecturas
+  </a>
+
+  <!-- PORTADA -->
+  <header id="reading-header" class="my-5 overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-paper to-surface p-6 shadow-sm sm:my-7 sm:p-9">
+    <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+      Biblioteca de aprendizaje
+    </p>
+
+    <h1 id="reading-title" class="mt-3 max-w-4xl break-words font-serif text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+      Cargando lectura...
+    </h1>
+
+    <div id="reading-meta" class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted"></div>
+
+    <p id="reading-summary" class="mt-5 max-w-3xl text-sm leading-7 text-muted sm:text-base"></p>
+  </header>
+
+  <!-- CONTENIDO -->
+  <div class="grid min-w-0 gap-5 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-8">
+
+    <!-- ÍNDICE -->
+    <aside class="min-w-0 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:self-start lg:overflow-y-auto">
+
+      <details class="group rounded-2xl border border-line bg-surface shadow-sm lg:hidden">
+        <summary class="flex min-h-12 list-none cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm font-semibold">
+          <span>☷ Índice del contenido</span>
+          <span class="text-muted transition-transform group-open:rotate-180">⌄</span>
+        </summary>
+
+        <nav class="border-t border-line px-3 py-3" aria-label="Índice móvil">
+          <ol id="reading-toc-mobile" class="max-h-[42dvh] space-y-1 overflow-y-auto text-sm"></ol>
+        </nav>
+      </details>
+
+      <nav class="hidden rounded-2xl border border-line bg-surface p-4 shadow-sm lg:block" aria-label="Índice de lectura">
+        <h2 class="mb-3 text-sm font-bold">En esta lectura</h2>
+        <ol id="reading-toc" class="space-y-1 text-sm"></ol>
+
+        <a href="#reading-header" class="mt-4 inline-flex text-xs font-semibold text-brand underline underline-offset-4">
+          ↑ Volver al inicio
+        </a>
+      </nav>
+    </aside>
+
+    <!-- LECTURA -->
+    <article id="reading-content" class="min-w-0 space-y-6 sm:space-y-8">
+      <div class="rounded-2xl border border-line bg-paper p-6 text-sm text-muted">
+        Preparando el contenido...
+      </div>
+    </article>
+  </div>
+
+  <div id="reading-error" class="hidden mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-sm leading-6 text-red-800" role="alert"></div>
+</div>
+
+<!-- NAVEGACIÓN MÓVIL -->
+<div id="reading-mobile-nav" class="reading-mobile-nav sm:hidden" role="region" aria-label="Navegación de lectura">
+  <a href="#reading-header" class="reading-nav-button" aria-label="Volver al inicio">↑</a>
+
+  <label class="sr-only" for="reading-section-select">Ir a una sección</label>
+  <select id="reading-section-select" class="reading-nav-select">
+    <option value="">Seleccionar tema</option>
+  </select>
+
+  <button type="button" id="reading-prev" class="reading-nav-button" disabled aria-label="Sección anterior">‹</button>
+  <button type="button" id="reading-next" class="reading-nav-button reading-nav-next" disabled aria-label="Sección siguiente">›</button>
+
+  <span id="reading-progress" class="sr-only" aria-live="polite"></span>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('#xml-reading');
+
+  if (root) {
+    const xmlSource = root.dataset.xml ?? '';
+    const backHref = root.dataset.backHref ?? '/account/lecturas';
+
+    const titleElement = document.querySelector<HTMLElement>('#reading-title')!;
+    const metaElement = document.querySelector<HTMLElement>('#reading-meta')!;
+    const summaryElement = document.querySelector<HTMLElement>('#reading-summary')!;
+    const contentElement = document.querySelector<HTMLElement>('#reading-content')!;
+    const tocElement = document.querySelector<HTMLElement>('#reading-toc')!;
+    const tocMobileElement = document.querySelector<HTMLElement>('#reading-toc-mobile')!;
+    const errorElement = document.querySelector<HTMLElement>('#reading-error')!;
+    const selectElement = document.querySelector<HTMLSelectElement>('#reading-section-select')!;
+    const prevButton = document.querySelector<HTMLButtonElement>('#reading-prev')!;
+    const nextButton = document.querySelector<HTMLButtonElement>('#reading-next')!;
+    const progressElement = document.querySelector<HTMLElement>('#reading-progress')!;
+
+    const structuralTags = new Set([
+      'section',
+      'subsection',
+      'subsubsection'
+    ]);
+
+    const environmentTags: Record<string, string> = {
+      theorem: 'Teorema',
+      definition: 'Definición',
+      example: 'Ejemplo',
+      remark: 'Observación',
+      corollary: 'Corolario',
+      lemma: 'Lema',
+      proposition: 'Proposición',
+      conjecture: 'Conjetura',
+      axiom: 'Axioma',
+      exercise: 'Ejercicio',
+      solution: 'Solución',
+      proof: 'Demostración'
+    };
+
+    const allowedHtml = new Set([
+      'p', 'br', 'hr',
+      'strong', 'b', 'em', 'i', 'u', 's',
+      'span', 'div',
+      'ul', 'ol', 'li',
+      'blockquote',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'code', 'pre',
+      'sub', 'sup',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'a', 'img'
+    ]);
+
+    const sections: HTMLElement[] = [];
+    const sectionData: Array<{ id: string; title: string; level: number }> = [];
+
+    const getText = (parent: Element, selector: string) =>
+      parent.querySelector(`:scope > ${selector}`)?.textContent?.trim() ?? '';
+
+    const makeId = (value: string, index: number) => {
+      const normalized = value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      return normalized || `apartado-${index + 1}`;
+    };
+
+    const appendSafeNodes = (parent: HTMLElement, source: Node) => {
+      source.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          parent.append(document.createTextNode(node.textContent ?? ''));
+          return;
+        }
+
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+        const element = node as Element;
+        const tag = element.tagName.toLowerCase();
+
+        // No se permite ejecutar scripts ni insertar contenido activo.
+        if (['script', 'style', 'iframe', 'object', 'embed', 'form'].includes(tag)) {
+          return;
+        }
+
+        // Ambientes matemáticos personalizados.
+        if (environmentTags[tag]) {
+          parent.append(renderEnvironment(element));
+          return;
+        }
+
+        if (tag === 'geogebragraphics') {
+          parent.append(renderGeoGebra(element));
+          return;
+        }
+
+        // Los elementos estructurales se renderizan en su propio nivel.
+        if (structuralTags.has(tag)) {
+          return;
+        }
+
+        if (!allowedHtml.has(tag)) {
+          appendSafeNodes(parent, element);
+          return;
+        }
+
+        const output = document.createElement(tag);
+
+        // Se admiten exclusivamente atributos HTML controlados.
+        for (const attribute of Array.from(element.attributes)) {
+          const name = attribute.name.toLowerCase();
+          const value = attribute.value;
+
+          if (name === 'class') {
+            output.className = value;
+          }
+
+          if (['title', 'alt'].includes(name)) {
+            output.setAttribute(name, value);
+          }
+
+          if (name === 'href' && tag === 'a') {
+            try {
+              const url = new URL(value, window.location.origin);
+              if (url.protocol === 'http:' || url.protocol === 'https:') {
+                output.setAttribute('href', url.href);
+                output.setAttribute('rel', 'noopener noreferrer');
+              }
+            } catch {
+              // Se descarta una URL no válida.
+            }
+          }
+
+          if (name === 'src' && tag === 'img') {
+            try {
+              const url = new URL(value, window.location.origin);
+              if (url.protocol === 'http:' || url.protocol === 'https:') {
+                output.setAttribute('src', url.href);
+              }
+            } catch {
+              // Se descarta una imagen no válida.
+            }
+          }
+        }
+
+        appendSafeNodes(output as HTMLElement, element);
+        parent.append(output);
+      });
+    };
+
+    const renderEnvironment = (element: Element) => {
+      const tag = element.tagName.toLowerCase();
+      const label = environmentTags[tag];
+      const title = element.getAttribute('title') || label;
+      const box = document.createElement('section');
+
+      box.className = `reading-environment reading-${tag}`;
+
+      const heading = document.createElement('div');
+      heading.className = 'reading-environment-heading';
+
+      const badge = document.createElement('span');
+      badge.className = 'reading-environment-type';
+      badge.textContent = label;
+
+      const headingTitle = document.createElement('strong');
+      headingTitle.textContent = title;
+
+      heading.append(badge, headingTitle);
+      box.append(heading);
+
+      // Teoremas: enunciado y demostración diferenciados.
+      if (tag === 'theorem') {
+        const statement = element.querySelector(':scope > statement');
+        const proof = element.querySelector(':scope > proof');
+
+        if (statement) {
+          const statementBox = document.createElement('div');
+          statementBox.className = 'reading-statement';
+          appendSafeNodes(statementBox, statement);
+          box.append(statementBox);
+        }
+
+        if (proof) {
+          const proofBox = document.createElement('div');
+          proofBox.className = 'reading-proof';
+
+          const proofTitle = document.createElement('strong');
+          proofTitle.textContent = 'Demostración';
+          proofBox.append(proofTitle);
+
+          appendSafeNodes(proofBox, proof);
+          box.append(proofBox);
+        }
+
+        return box;
+      }
+
+      appendSafeNodes(box, element);
+      return box;
+    };
+
+    const renderGeoGebra = (element: Element) => {
+      const box = document.createElement('div');
+      box.className = 'reading-geogebra';
+
+      const title = document.createElement('h4');
+      title.textContent = element.getAttribute('title') || 'Recurso interactivo GeoGebra';
+
+      const reference = element.getAttribute('ref') || '';
+
+      const description = document.createElement('p');
+      description.textContent = reference
+        ? `Referencia del recurso: ${reference}`
+        : 'Recurso de GeoGebra';
+
+      box.append(title, description);
+
+      // Solo se crea un enlace si ref contiene una URL HTTPS.
+      try {
+        const url = new URL(reference);
+
+        if (url.protocol === 'https:') {
+          const link = document.createElement('a');
+          link.href = url.href;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = 'Abrir recurso interactivo ↗';
+          box.append(link);
+        }
+      } catch {
+        // ref puede ser un identificador interno de GeoGebra.
+      }
+
+      appendSafeNodes(box, element);
+      return box;
+    };
+
+    const renderSection = (element: Element, level: number, index: number) => {
+      const tag = element.tagName.toLowerCase();
+      const title = element.getAttribute('title') || 'Sección sin título';
+      const id = makeId(element.getAttribute('id') || title, index);
+      const article = document.createElement('section');
+
+      article.id = id;
+      article.className = 'reading-section scroll-mt-24';
+      article.dataset.sectionIndex = String(sections.length);
+
+      sections.push(article);
+      sectionData.push({ id, title, level });
+
+      const header = document.createElement('header');
+      header.className = 'reading-section-header';
+
+      const number = document.createElement('span');
+      number.className = 'reading-section-number';
+      number.textContent = String(sections.length);
+
+      const headingContent = document.createElement('div');
+      headingContent.className = 'min-w-0';
+
+      const eyebrow = document.createElement('p');
+      eyebrow.className = 'reading-section-eyebrow';
+      eyebrow.textContent = level === 1
+        ? 'SECCIÓN'
+        : level === 2
+          ? 'SUBSECCIÓN'
+          : 'APARTADO';
+
+      const heading = document.createElement(`h${Math.min(level + 1, 6)}`);
+      heading.className = 'reading-section-title';
+      heading.textContent = title;
+
+      headingContent.append(eyebrow, heading);
+      header.append(number, headingContent);
+      article.append(header);
+
+      const body = document.createElement('div');
+      body.className = 'reading-section-content';
+
+      for (const child of Array.from(element.children)) {
+        const childTag = child.tagName.toLowerCase();
+
+        if (structuralTags.has(childTag)) continue;
+
+        appendSafeNodes(body, child);
+      }
+
+      if (body.childNodes.length) {
+        article.append(body);
+      }
+
+      // Apartados anidados.
+      const children = Array.from(element.children)
+        .filter(child => structuralTags.has(child.tagName.toLowerCase()));
+
+      children.forEach((child, childIndex) => {
+        article.append(renderSection(child, level + 1, childIndex));
+      });
+
+      // Navegación entre apartados.
+      const navigation = document.createElement('div');
+      navigation.className = 'reading-section-navigation';
+
+      const previousIndex = sections.length - 2;
+      const previous = previousIndex >= 0 ? sections[previousIndex] : null;
+
+      if (previous) {
+        const link = document.createElement('a');
+        link.href = `#${previous.id}`;
+        link.textContent = '← Apartado anterior';
+        link.className = 'reading-link-secondary';
+        navigation.append(link);
+      } else {
+        const label = document.createElement('span');
+        label.textContent = 'Inicio de la lectura';
+        navigation.append(label);
+      }
+
+      article.append(navigation);
+
+      return article;
+    };
+
+    const setError = (message: string) => {
+      errorElement.textContent = message;
+      errorElement.classList.remove('hidden');
+      contentElement.replaceChildren();
+    };
+
+    try {
+      if (!xmlSource.trim()) {
+        throw new Error('No se recibió contenido XML.');
+      }
+
+      const parser = new DOMParser();
+      const documentXml = parser.parseFromString(xmlSource, 'application/xml');
+
+      const parserError = documentXml.querySelector('parsererror');
+
+      if (parserError) {
+        throw new Error('El XML no es válido. Revisa las etiquetas, los atributos y el cierre de los elementos.');
+      }
+
+      const reading = documentXml.documentElement;
+
+      if (reading.tagName.toLowerCase() !== 'lectura') {
+        throw new Error('La raíz del documento debe ser <lectura>.');
+      }
+
+      const meta = reading.querySelector(':scope > meta');
+
+      if (!meta) {
+        throw new Error('El XML debe incluir el elemento <meta>.');
+      }
+
+      const title = getText(meta, 'title') || 'Lectura sin título';
+      const author = getText(meta, 'author');
+      const date = getText(meta, 'date');
+      const summary = getText(meta, 'summary');
+
+      titleElement.textContent = title;
+      document.title = title;
+
+      const metaItems = [
+        author ? `✍ ${author}` : '',
+        date ? `◷ ${date}` : ''
+      ].filter(Boolean);
+
+      metaElement.textContent = metaItems.join(' · ');
+      summaryElement.textContent = summary;
+
+      const rootSections = Array.from(reading.children)
+        .filter(child => structuralTags.has(child.tagName.toLowerCase()));
+
+      if (!rootSections.length) {
+        throw new Error('La lectura no contiene ninguna sección.');
+      }
+
+      contentElement.replaceChildren();
+
+      rootSections.forEach((section, index) => {
+        contentElement.append(renderSection(section, 1, index));
+      });
+
+      // Índice de escritorio y móvil.
+      const buildToc = (target: HTMLElement) => {
+        target.replaceChildren();
+
+        sectionData.forEach((section, index) => {
+          const item = document.createElement('li');
+          item.style.paddingLeft = `${Math.min((section.level - 1) * 10, 30)}px`;
+
+          const link = document.createElement('a');
+          link.href = `#${section.id}`;
+          link.dataset.sectionLink = String(index);
+          link.textContent = section.title;
+          link.className = 'reading-toc-link';
+
+          item.append(link);
+          target.append(item);
+        });
+      };
+
+      buildToc(tocElement);
+      buildToc(tocMobileElement);
+
+      // Selector móvil.
+      selectElement.replaceChildren();
+
+      sectionData.forEach(section => {
+        const option = document.createElement('option');
+        option.value = section.id;
+        option.textContent = `${section.title}`;
+        selectElement.append(option);
+      });
+
+      // Navegación.
+      let current = 0;
+
+      const setCurrent = (index: number) => {
+        current = Math.max(0, Math.min(sections.length - 1, index));
+
+        selectElement.value = sections[current].id;
+        prevButton.disabled = current === 0;
+        nextButton.disabled = current === sections.length - 1;
+        progressElement.textContent = `${current + 1} de ${sections.length}`;
+
+        document.querySelectorAll<HTMLAnchorElement>('[data-section-link]').forEach(link => {
+          if (Number(link.dataset.sectionLink) === current) {
+            link.setAttribute('aria-current', 'location');
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        });
+      };
+
+      const goTo = (index: number) => {
+        const bounded = Math.max(0, Math.min(sections.length - 1, index));
+
+        sections[bounded].scrollIntoView({
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+          block: 'start'
+        });
+
+        setCurrent(bounded);
+      };
+
+      selectElement.addEventListener('change', () => {
+        const index = sections.findIndex(section => section.id === selectElement.value);
+        if (index >= 0) goTo(index);
+      });
+
+      prevButton.addEventListener('click', () => goTo(current - 1));
+      nextButton.addEventListener('click', () => goTo(current + 1));
+
+      document.querySelectorAll<HTMLAnchorElement>('[data-section-link]').forEach(link => {
+        link.addEventListener('click', () => {
+          const index = Number(link.dataset.sectionLink);
+          if (Number.isInteger(index)) setCurrent(index);
+
+          const details = link.closest('details');
+          if (details) details.open = false;
+        });
+      });
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+          const visible = entries
+            .filter(entry => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+          if (visible) {
+            setCurrent(Number((visible.target as HTMLElement).dataset.sectionIndex));
+          }
+        }, {
+          rootMargin: '-18% 0px -62% 0px',
+          threshold: [0, 0.1, 0.25, 0.5]
+        });
+
+        sections.forEach(section => observer.observe(section));
+      }
+
+      setCurrent(0);
+
+      // Integración opcional con MathJax, si el proyecto lo tiene configurado.
+      const mathWindow = window as typeof window & {
+        MathJax?: {
+          typesetPromise?: (elements?: HTMLElement[]) => Promise<void>;
+        };
+      };
+
+      if (mathWindow.MathJax?.typesetPromise) {
+        await mathWindow.MathJax.typesetPromise([contentElement]);
+      }
+
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'No se pudo procesar la lectura.');
+    }
+  }
+</script>
+
+<style>
+  .reading-section {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-line, #ddd);
+    border-radius: 1.25rem;
+    background: var(--color-paper, white);
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgb(0 0 0 / .035);
+  }
+
+  @media (min-width: 640px) {
+    .reading-section { padding: 1.75rem; }
+  }
+
+  .reading-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: .85rem;
+    border-bottom: 1px solid var(--color-line, #ddd);
+    padding-bottom: 1rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .reading-section-number {
+    display: flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: .75rem;
+    background: color-mix(in srgb, var(--color-brand, #6366f1) 12%, transparent);
+    color: var(--color-brand, #6366f1);
+    font-weight: 800;
+  }
+
+  .reading-section-eyebrow {
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    color: var(--color-muted, #777);
+  }
+
+  .reading-section-title {
+    margin-top: .25rem;
+    overflow-wrap: anywhere;
+    font-family: Georgia, serif;
+    font-size: 1.4rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  .reading-section-content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 1rem;
+    line-height: 1.85;
+  }
+
+  .reading-section-content p {
+    margin-bottom: 1rem;
+  }
+
+  .reading-section-content ul,
+  .reading-section-content ol {
+    margin: .8rem 0 1.2rem 1.4rem;
+    padding-left: .25rem;
+    list-style: revert;
+  }
+
+  .reading-section-content li {
+    margin: .35rem 0;
+  }
+
+  .reading-section-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: .75rem;
+  }
+
+  .reading-section-content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+
+  .reading-section-content th,
+  .reading-section-content td {
+    border: 1px solid var(--color-line, #ddd);
+    padding: .65rem;
+  }
+
+  .reading-section-content a {
+    color: var(--color-brand, #6366f1);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .reading-section-content mjx-container {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .reading-environment {
+    margin: 1.4rem 0;
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--color-line, #ddd);
+    border-left: 4px solid var(--color-brand, #6366f1);
+    border-radius: .85rem;
+    background: color-mix(in srgb, var(--color-brand, #6366f1) 5%, var(--color-paper, white));
+    overflow-wrap: anywhere;
+  }
+
+  .reading-environment-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .85rem;
+  }
+
+  .reading-environment-type {
+    display: inline-flex;
+    padding: .25rem .6rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-brand, #6366f1) 12%, transparent);
+    color: var(--color-brand, #6366f1);
+    font-size: .7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .reading-environment-heading strong {
+    font-size: .95rem;
+  }
+
+  .reading-theorem,
+  .reading-lemma,
+  .reading-proposition,
+  .reading-corollary,
+  .reading-axiom {
+    border-left-color: #6366f1;
+  }
+
+  .reading-definition {
+    border-left-color: #0d9488;
+    background: color-mix(in srgb, #0d9488 5%, var(--color-paper, white));
+  }
+
+  .reading-example,
+  .reading-exercise {
+    border-left-color: #d97706;
+    background: color-mix(in srgb, #d97706 5%, var(--color-paper, white));
+  }
+
+  .reading-remark {
+    border-left-color: #0d9488;
+  }
+
+  .reading-solution,
+  .reading-proof {
+    border-left-color: #16a34a;
+    background: color-mix(in srgb, #16a34a 5%, var(--color-paper, white));
+  }
+
+  .reading-statement {
+    font-style: italic;
+  }
+
+  .reading-proof {
+    margin-top: 1rem;
+    padding: .9rem;
+    border-left: 3px solid #16a34a;
+    border-radius: .5rem;
+  }
+
+  .reading-proof > strong {
+    display: block;
+    margin-bottom: .5rem;
+  }
+
+  .reading-geogebra {
+    margin: 1.5rem 0;
+    padding: 1.2rem;
+    border: 1px solid var(--color-line, #ddd);
+    border-radius: 1rem;
+    background: var(--color-surface, white);
+  }
+
+  .reading-geogebra h4 {
+    font-weight: 750;
+    margin-bottom: .5rem;
+  }
+
+  .reading-geogebra p {
+    color: var(--color-muted, #777);
+    font-size: .85rem;
+    overflow-wrap: anywhere;
+  }
+
+  .reading-geogebra a {
+    display: inline-block;
+    margin-top: .8rem;
+    color: var(--color-brand, #6366f1);
+    font-size: .9rem;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  .reading-section-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: .7rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-line, #ddd);
+    font-size: .8rem;
+    color: var(--color-muted, #777);
+  }
+
+  .reading-link-secondary {
+    color: var(--color-brand, #6366f1);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .reading-toc-link {
+    display: block;
+    padding: .6rem .7rem;
+    border-radius: .6rem;
+    color: var(--color-muted, #777);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    transition: background .2s, color .2s;
+  }
+
+  .reading-toc-link:hover,
+  .reading-toc-link[aria-current="location"] {
+    background: color-mix(in srgb, var(--color-brand, #6366f1) 10%, transparent);
+    color: var(--color-brand, #6366f1);
+    font-weight: 700;
+  }
+
+  .reading-mobile-nav {
+    position: fixed;
+    z-index: 30;
+    inset-inline: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 42px 42px;
+    gap: .4rem;
+    align-items: center;
+    padding: .55rem .65rem calc(.55rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-line, #ddd);
+    background: color-mix(in srgb, var(--color-paper, white) 94%, transparent);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 -8px 24px rgb(0 0 0 / .07);
+  }
+
+  .reading-nav-button,
+  .reading-nav-select {
+    display: inline-flex;
+    height: 42px;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-line, #ddd);
+    border-radius: .8rem;
+    background: var(--color-paper, white);
+    color: var(--color-ink, #222);
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .reading-nav-select {
+    width: 100%;
+    padding: 0 .5rem;
+    font-size: .8rem;
+  }
+
+  .reading-nav-next {
+    border-color: transparent;
+    background: var(--color-brand, #4f46e5);
+    color: var(--color-on-brand, white);
+  }
+
+  .reading-nav-button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reading-toc-link { transition: none; }
+  }
+</style>

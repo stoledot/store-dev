@@ -1,6 +1,8 @@
 import type { D1Database } from '@cloudflare/workers-types';
 import { courseAccessSql } from './courseAccess.ts';
 import { enrollmentPaymentValidSql } from './enrollmentEligibility.ts';
+import { getCustomerByEmail } from '../customers_new/db.ts';
+import { getLecturasCustomerByCustomerId } from '../lecturas/db.ts';
 
 export async function getSchoolHomeSummary(db: D1Database, email: string) {
   const account = await db.prepare('SELECT client_number FROM customer_accounts WHERE email=? COLLATE NOCASE')
@@ -92,11 +94,18 @@ export async function getSchoolHomeSummary(db: D1Database, email: string) {
     db.prepare('SELECT COUNT(*) AS count FROM school_notifications WHERE student_email=? COLLATE NOCASE AND read_at IS NULL')
       .bind(email).first<{ count: number }>(),
   ]);
+  const customerId = (await getCustomerByEmail(db, email))?.id;
+  if (!customerId) {
+    throw new Error('Customer not found for the provided email');
+  }
+  const lecturasCustomer = (await getLecturasCustomerByCustomerId(db,customerId));
+
   return {
     courses: courses.results,
     courseCount: courses.results[0]?.total_courses ?? 0,
     diagnostics: diagnostics.results,
     notifications: notifications.results,
     unreadCount: unread?.count ?? 0,
+    lecturasCustomer: lecturasCustomer,
   };
 }

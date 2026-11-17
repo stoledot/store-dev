@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS customer_profiles (
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
 CREATE INDEX IF NOT EXISTS idx_customer_profiles_name ON customer_profiles(full_name COLLATE NOCASE);
 CREATE TABLE IF NOT EXISTS customer_email_aliases (
   old_email TEXT PRIMARY KEY COLLATE NOCASE,
