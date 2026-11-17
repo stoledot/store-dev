@@ -17,7 +17,9 @@ if (!customerId) return Astro.redirect('/account/login',303);
 
 const id = Astro.params.id;
 
-const readingXml = (await getLecturasByCustomerId(env.DB, customerId))[0]?.content_xml;
+const readingXml = (await getLecturaById(env.DB, id))?.content_xml ?? "";
+
+const tieneAcceso =((await getLecturasCustomerByCustomerId(env.DB,customerId)) ?? []).toSet()
 
 interface Props {
   xml: string;
