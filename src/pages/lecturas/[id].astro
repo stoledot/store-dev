@@ -6,7 +6,7 @@ import { accountsEnabled, getCustomerEmail} from '../../features/auth/customer';
 import { renderCourseTex } from '../../features/mathTexts/render';
 import { parseReadingXml } from '../../features/mathTexts/xmlReading';
 import { getCustomerByEmail } from '../../features/customers_new/db';
-import { getLecturasByCustomerId } from '../../features/lecturas/db';
+import { getLecturasByCustomerId, getLecturasCustomerByCustomerId, getLecturaById } from '../../features/lecturas/db';
 
 if (!(await accountsEnabled())) return Astro.redirect('/',303);
 
@@ -17,9 +17,15 @@ if (!customerId) return Astro.redirect('/account/login',303);
 
 const id = Astro.params.id;
 
-const readingXml = (await getLecturaById(env.DB, id))?.content_xml ?? "";
 
-const tieneAcceso =((await getLecturasCustomerByCustomerId(env.DB,customerId)) ?? []).toSet()
+const tieneAcceso = new Set(
+  ((await getLecturasCustomerByCustomerId(env.DB, customerId)) ?? []).map(
+    lectura => lectura.school_lectura_id,
+  ),
+).has(Number(id));
+if (!tieneAcceso) return Astro.redirect('/account/lecturas', 303);
+
+const readingXml = (await getLecturaById(env.DB, Number(id)))?.content_xml ?? "";
 
 interface Props {
   xml: string;
@@ -28,7 +34,7 @@ interface Props {
 
 const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
 ---
-
+<Layout title="Lectura">
 <div
   id="xml-reading"
   data-xml={xml}
@@ -124,7 +130,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
     const tocElement = document.querySelector<HTMLElement>('#reading-toc')!;
     const tocMobileElement = document.querySelector<HTMLElement>('#reading-toc-mobile')!;
     const errorElement = document.querySelector<HTMLElement>('#reading-error')!;
-    const selectElement = document.querySelector<HTMLSelectElement>('#reading-section-select')!;
+    const selectElement = document.getElementById('reading-section-select') as unknown as HTMLSelectElement;
     const prevButton = document.querySelector<HTMLButtonElement>('#reading-prev')!;
     const nextButton = document.querySelector<HTMLButtonElement>('#reading-next')!;
     const progressElement = document.querySelector<HTMLElement>('#reading-progress')!;
@@ -180,10 +186,10 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
       return normalized || `apartado-${index + 1}`;
     };
 
-    const appendSafeNodes = (parent: HTMLElement, source: Node) => {
+    const appendSafeNodes = (parent: HTMLElement, source: Node): void => {
       source.childNodes.forEach(node => {
         if (node.nodeType === Node.TEXT_NODE) {
-          parent.append(document.createTextNode(node.textContent ?? ''));
+          parent.append(node.textContent ?? '');
           return;
         }
 
@@ -199,12 +205,12 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
 
         // Ambientes matemáticos personalizados.
         if (environmentTags[tag]) {
-          parent.append(renderEnvironment(element));
+          parent.appendChild(renderEnvironment(element));
           return;
         }
 
         if (tag === 'geogebragraphics') {
-          parent.append(renderGeoGebra(element));
+          parent.appendChild(renderGeoGebra(element));
           return;
         }
 
@@ -258,11 +264,11 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
         }
 
         appendSafeNodes(output as HTMLElement, element);
-        parent.append(output);
+        parent.appendChild(output);
       });
     };
 
-    const renderEnvironment = (element: Element) => {
+    const renderEnvironment = (element: Element): HTMLElement => {
       const tag = element.tagName.toLowerCase();
       const label = environmentTags[tag];
       const title = element.getAttribute('title') || label;
@@ -280,8 +286,9 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
       const headingTitle = document.createElement('strong');
       headingTitle.textContent = title;
 
-      heading.append(badge, headingTitle);
-      box.append(heading);
+      heading.appendChild(badge);
+      heading.appendChild(headingTitle);
+      box.appendChild(heading);
 
       // Teoremas: enunciado y demostración diferenciados.
       if (tag === 'theorem') {
@@ -292,7 +299,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
           const statementBox = document.createElement('div');
           statementBox.className = 'reading-statement';
           appendSafeNodes(statementBox, statement);
-          box.append(statementBox);
+          box.appendChild(statementBox);
         }
 
         if (proof) {
@@ -301,10 +308,10 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
 
           const proofTitle = document.createElement('strong');
           proofTitle.textContent = 'Demostración';
-          proofBox.append(proofTitle);
+          proofBox.appendChild(proofTitle);
 
           appendSafeNodes(proofBox, proof);
-          box.append(proofBox);
+          box.appendChild(proofBox);
         }
 
         return box;
@@ -314,7 +321,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
       return box;
     };
 
-    const renderGeoGebra = (element: Element) => {
+    const renderGeoGebra = (element: Element): HTMLElement => {
       const box = document.createElement('div');
       box.className = 'reading-geogebra';
 
@@ -328,7 +335,8 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
         ? `Referencia del recurso: ${reference}`
         : 'Recurso de GeoGebra';
 
-      box.append(title, description);
+      box.appendChild(title);
+      box.appendChild(description);
 
       // Solo se crea un enlace si ref contiene una URL HTTPS.
       try {
@@ -340,7 +348,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           link.textContent = 'Abrir recurso interactivo ↗';
-          box.append(link);
+          box.appendChild(link);
         }
       } catch {
         // ref puede ser un identificador interno de GeoGebra.
@@ -385,9 +393,11 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
       heading.className = 'reading-section-title';
       heading.textContent = title;
 
-      headingContent.append(eyebrow, heading);
-      header.append(number, headingContent);
-      article.append(header);
+      headingContent.appendChild(eyebrow);
+      headingContent.appendChild(heading);
+      header.appendChild(number);
+      header.appendChild(headingContent);
+      article.appendChild(header);
 
       const body = document.createElement('div');
       body.className = 'reading-section-content';
@@ -401,7 +411,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
       }
 
       if (body.childNodes.length) {
-        article.append(body);
+        article.appendChild(body);
       }
 
       // Apartados anidados.
@@ -409,7 +419,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
         .filter(child => structuralTags.has(child.tagName.toLowerCase()));
 
       children.forEach((child, childIndex) => {
-        article.append(renderSection(child, level + 1, childIndex));
+        article.appendChild(renderSection(child, level + 1, childIndex));
       });
 
       // Navegación entre apartados.
@@ -424,14 +434,14 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
         link.href = `#${previous.id}`;
         link.textContent = '← Apartado anterior';
         link.className = 'reading-link-secondary';
-        navigation.append(link);
+        navigation.appendChild(link);
       } else {
         const label = document.createElement('span');
         label.textContent = 'Inicio de la lectura';
-        navigation.append(label);
+        navigation.appendChild(label);
       }
 
-      article.append(navigation);
+      article.appendChild(navigation);
 
       return article;
     };
@@ -494,7 +504,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
       contentElement.replaceChildren();
 
       rootSections.forEach((section, index) => {
-        contentElement.append(renderSection(section, 1, index));
+        contentElement.appendChild(renderSection(section, 1, index));
       });
 
       // Índice de escritorio y móvil.
@@ -511,8 +521,8 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
           link.textContent = section.title;
           link.className = 'reading-toc-link';
 
-          item.append(link);
-          target.append(item);
+          item.appendChild(link);
+          target.appendChild(item);
         });
       };
 
@@ -526,7 +536,7 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
         const option = document.createElement('option');
         option.value = section.id;
         option.textContent = `${section.title}`;
-        selectElement.append(option);
+        selectElement.appendChild(option);
       });
 
       // Navegación.
@@ -917,3 +927,5 @@ const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
     .reading-toc-link { transition: none; }
   }
 </style>
+
+</Layout>

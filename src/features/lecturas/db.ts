@@ -53,6 +53,18 @@ export const getLecturaByIdFromXml = async (
   return lectura ?? null;
 };
 
+export const getLecturaById = async (
+  db: D1Database,
+  id: number
+): Promise<Lectura | null> => {
+  const lectura = await db
+    .prepare('SELECT * FROM school_lecturas WHERE id = ?')
+    .bind(id)
+    .first<Lectura>();
+
+  return lectura ?? null;
+};
+
 export const getAllLecturas = async (
   db: D1Database
 ): Promise<Lectura[]> => {

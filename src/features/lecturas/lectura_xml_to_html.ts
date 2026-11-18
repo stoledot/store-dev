@@ -31,7 +31,7 @@ const BLOCK_LABELS: Record<string, string> = {
 };
 
 const META_TAGS = ["title", "author", "date", "summary"];
-function parseXml(xml: string): { doc?: Document; error?: string } {
+export function parseXml(xml: string): { doc?: Document; error?: string } {
   let parseErrorMessage = "";
 
   const parser = new DOMParser({
@@ -50,6 +50,7 @@ function parseXml(xml: string): { doc?: Document; error?: string } {
 
   return { doc };
 }
+
 function children(el: Element): Element[] {
   return Array.from(el.children);
 }
