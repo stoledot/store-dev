@@ -96,7 +96,9 @@ export const getLecturasByCustomerId = async (
 ): Promise<Lectura[]> => {
   const lecturas = await db
     .prepare(
-      'SELECT l.* FROM school_lecturas l INNER JOIN school_lecturas_customers slc ON l.id = slc.school_lectura_id WHERE slc.customer_id = ?'
+      'SELECT l.* FROM school_lecturas l ' +
+      'INNER JOIN school_lecturas_customers slc ' +
+      'ON l.id = slc.school_lectura_id WHERE slc.customer_id = ?'
     )
     .bind(customer_id)
     .all<Lectura>();

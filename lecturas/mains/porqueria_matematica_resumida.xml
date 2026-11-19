@@ -1,0 +1,944 @@
+<?xml version='1.0' encoding='utf-8'?>
+<lectura>
+  <meta>
+    <title>Porquería Matemática: guía de supervivencia escolar</title>
+    <author>Brillinury y Samuel</author>
+    <summary>Conversión estructural del documento LaTeX a XML. Se conserva la organización, los ejemplos, las fórmulas, los avisos y los ejercicios del original.</summary>
+    <source>porqueria_matematica.tex</source>
+  </meta>
+  <section id="introduccion" data-title="Introducción">
+    <sub-section id="antes-de-empezar" data-title="Antes de empezar">
+      <sub-sub-section id="antes-de-empezar-contenido" data-title="Orientaciones iniciales">
+        <p>Este documento es un acordeón ampliado. No sustituye un curso
+	completo ni garantiza que aparezcan todos los temas de tu examen.
+	Los programas cambian según el grado, la escuela y el subsistema
+	de bachillerato.</p>
+        <p>La estrategia es sencilla:</p>
+        <ol>
+          <li>
+            <p>Identifica qué tipo de problema tienes.</p>
+          </li>
+          <li>
+            <p>Busca la fórmula correspondiente.</p>
+          </li>
+          <li>
+            <p>Sustituye los datos.</p>
+          </li>
+          <li>
+            <p>Haz las operaciones.</p>
+          </li>
+          <li>
+            <p>Comprueba que el resultado tenga sentido.</p>
+          </li>
+        </ol>
+        <p>Las matemáticas no siempre son difíciles. A veces solamente
+	están escritas de una forma poco amable.</p>
+      </sub-sub-section>
+    </sub-section>
+  </section>
+
+  <section id="primaria" data-title="Primaria">
+    <sub-section id="capitulo-01-aritm-tica-los-n-meros-y-sus-problemas" data-title="Aritmética: los números y sus problemas">
+      <sub-sub-section id="capitulo-01-apartado-01-las-cuatro-operaciones" data-title="Las cuatro operaciones">
+        <ul>
+          <li>
+            <p>Suma: juntar cantidades.</p>
+          </li>
+          <li>
+            <p>Resta: calcular una diferencia.</p>
+          </li>
+          <li>
+            <p>Multiplicación: sumar repetidamente una cantidad.</p>
+          </li>
+          <li>
+            <p>División: repartir o calcular cuántas veces cabe algo.</p>
+          </li>
+        </ul>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[a+b,\qquad a-b,\qquad a\cdot b,\qquad \frac{a}{b}\]</math-display>
+          <p>En una división, \(b\neq 0\). Dividir entre cero no está definido.</p>
+        </math-formula>
+        <math-examples>
+          <math-example id="c1-s1-ejemplo-3" data-title="Ejemplo resuelto">
+            <p>Calcula \(18+4(3-1)\).</p>
+            <p>Primero el paréntesis: \(3-1=2\).</p>
+            <p>Después la multiplicación: \(4(2)=8\).</p>
+            <p>Finalmente: \(18+8=26\).</p>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-01-apartado-02-jerarqu-a-de-operaciones" data-title="Jerarquía de operaciones">
+        <p>El orden usual es:</p>
+        <ol>
+          <li>
+            <p>Paréntesis y otros signos de agrupación.</p>
+          </li>
+          <li>
+            <p>Potencias y raíces.</p>
+          </li>
+          <li>
+            <p>Multiplicaciones y divisiones, de izquierda a derecha.</p>
+          </li>
+          <li>
+            <p>Sumas y restas, de izquierda a derecha.</p>
+          </li>
+        </ol>
+        <math-remark data-title="Advertencia">
+          <p>No se resuelve necesariamente todo de izquierda a derecha.
+		La jerarquía existe precisamente para evitar ese desastre.</p>
+        </math-remark>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-01-apartado-03-divisibilidad-y-n-meros-primos" data-title="Divisibilidad y números primos">
+        <p>Un número es divisible entre otro si la división da un entero
+	sin residuo.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Divisor</th>
+              <th>Regla rápida</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Termina en 0, 2, 4, 6 u 8.</td>
+              <td>Es divisible entre 2.</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>La suma de sus cifras es múltiplo de 3.</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>Termina en 0 o 5.</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td>La suma de sus cifras es múltiplo de 9.</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td>Termina en 0.</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Un número primo tiene exactamente dos divisores positivos:
+	1 y él mismo. El 1 no es primo.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-01-apartado-04-m-nimo-com-n-m-ltiplo-y-m-ximo-com-n-divisor" data-title="Mínimo común múltiplo y máximo común divisor">
+        <p>El MCM es el menor múltiplo positivo común.
+	El MCD es el mayor divisor positivo común.</p>
+        <p>Ejemplo: para 12 y 18,</p>
+        <math-display>\[12=2^2\cdot3,\qquad 18=2\cdot3^2.\]</math-display>
+        <math-display>\[\operatorname{MCD}(12,18)=2\cdot3=6\]</math-display>
+        <math-display>\[\operatorname{MCM}(12,18)=2^2\cdot3^2=36.\]</math-display>
+        <p>Para el MCD se toman los exponentes menores; para el MCM,
+	los mayores.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-02-fracciones-decimales-y-porcentajes" data-title="Fracciones, decimales y porcentajes">
+      <sub-sub-section id="capitulo-02-apartado-01-fracciones" data-title="Fracciones">
+        <p>Una fracción representa partes de un todo:</p>
+        <math-display>\[\frac{a}{b},\qquad b\neq0.\]</math-display>
+        <p>\(a\) es el numerador y \(b\) el denominador.</p>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[\frac{a}{b}+\frac{c}{d}=\frac{ad+bc}{bd}\]</math-display>
+          <math-display>\[\frac{a}{b}\cdot\frac{c}{d}=\frac{ac}{bd}\]</math-display>
+          <math-display>\[\frac{a}{b}\div\frac{c}{d}=\frac{a}{b}\cdot\frac{d}{c}\]</math-display>
+          <p>En la división también se requiere \(c\neq0\).</p>
+        </math-formula>
+        <math-examples>
+          <math-example id="c2-s1-ejemplo-2" data-title="Ejemplo resuelto">
+            <p>Calcula \(\frac{1}{2}+\frac{1}{3}\).</p>
+            <p>El denominador común puede ser 6:</p>
+            <math-display>\[\frac{1}{2}+\frac{1}{3}
+		=\frac{3}{6}+\frac{2}{6}
+		=\frac{5}{6}.\]</math-display>
+          </math-example>
+        </math-examples>
+        <math-remark data-title="Advertencia">
+          <p>No sumes los denominadores. En general,
+		\(\frac12+\frac13\neq\frac25\).</p>
+        </math-remark>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-02-apartado-02-fracciones-equivalentes-y-simplificaci-n" data-title="Fracciones equivalentes y simplificación">
+        <p>Multiplicar o dividir numerador y denominador por el mismo
+	número distinto de cero conserva el valor:</p>
+        <math-display>\[\frac{2}{4}=\frac{1}{2}=\frac{5}{10}.\]</math-display>
+        <p>Simplifica dividiendo arriba y abajo entre un divisor común.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-02-apartado-03-decimales" data-title="Decimales">
+        <p>Para sumar y restar, alinea los puntos decimales.
+	Para multiplicar, multiplica como si fueran enteros y luego
+	coloca tantas cifras decimales como haya en total en los factores.</p>
+        <math-examples>
+          <math-example id="c2-s3-ejemplo-1" data-title="Ejemplo resuelto">
+            <math-display>\[2.4\times0.3=0.72.\]</math-display>
+            <p>Como \(24\times3=72\) y hay dos cifras decimales en total,
+		el resultado es \(0.72\).</p>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-02-apartado-04-porcentajes" data-title="Porcentajes">
+        <p>Porcentaje significa “por cada cien”.</p>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[p\%=\frac{p}{100},\qquad
+		p%\text{ de }N=\frac{p}{100}N.\]</math-display>
+        </math-formula>
+        <math-examples>
+          <math-example id="c2-s4-ejemplo-2" data-title="Ejemplo resuelto">
+            <p>¿Cuánto es el 15% de 800?</p>
+            <math-display>\[0.15(800)=120.\]</math-display>
+          </math-example>
+        </math-examples>
+        <p>Para aumentar una cantidad en \(p\%\), multiplica por
+	\(1+\frac{p}{100}\). Para disminuirla, multiplica por
+	\(1-\frac{p}{100}\).</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-02-apartado-05-razones-proporciones-y-regla-de-tres" data-title="Razones, proporciones y regla de tres">
+        <p>Una razón compara cantidades. Una proporción afirma que
+	dos razones son iguales:</p>
+        <math-display>\[\frac{a}{b}=\frac{c}{d}
+	\quad\Longrightarrow\quad ad=bc.\]</math-display>
+        <math-examples>
+          <math-example id="c2-s5-ejemplo-1" data-title="Ejemplo resuelto">
+            <p>Si 3 cuadernos cuestan 45 pesos, ¿cuánto cuestan 5 al mismo
+		precio unitario?</p>
+            <math-display>\[x=\frac{5(45)}{3}=75.\]</math-display>
+          </math-example>
+        </math-examples>
+        <p>La regla de tres directa sirve cuando ambas cantidades aumentan
+	o disminuyen juntas en la misma proporción. Si una aumenta y
+	la otra disminuye, revisa si se trata de proporcionalidad inversa.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-03-enteros-potencias-y-ra-ces" data-title="Enteros, potencias y raíces">
+      <sub-sub-section id="capitulo-03-apartado-01-n-meros-negativos" data-title="Números negativos">
+        <p>En la recta numérica, los números a la derecha son mayores.</p>
+        <math-display>\[-5&lt;-2&lt;0&lt;3&lt;7.\]</math-display>
+        <p>Reglas de signos para multiplicar o dividir:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Operación de signos</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>\(+\)</td>
+              <td>\(+\)</td>
+            </tr>
+            <tr>
+              <td>\(+\cdot-\)</td>
+              <td>\(-\)</td>
+            </tr>
+            <tr>
+              <td>\(-\cdot+\)</td>
+              <td>\(-\)</td>
+            </tr>
+            <tr>
+              <td>\(-\cdot-\)</td>
+              <td>\(+\)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>Sumar un negativo equivale a restar. Restar un negativo
+	equivale a sumar.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-03-apartado-02-potencias" data-title="Potencias">
+        <math-display>\[a^n=\underbrace{a\cdot a\cdots a}_{n\text{ factores}}.\]</math-display>
+        <math-formula data-title="Fórmulas">
+          <p>Para las bases y exponentes donde las expresiones estén definidas:</p>
+          <math-display>\[a^m a^n=a^{m+n},\qquad
+		\frac{a^m}{a^n}=a^{m-n}\quad(a\neq0),\]</math-display>
+          <math-display>\[(a^m)^n=a^{mn},\qquad
+		(ab)^n=a^nb^n,\]</math-display>
+          <math-display>\[a^0=1\quad(a\neq0),\qquad
+		a^{-n}=\frac{1}{a^n}\quad(a\neq0).\]</math-display>
+        </math-formula>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-03-apartado-03-ra-ces" data-title="Raíces">
+        <p>La raíz cuadrada principal de un número no negativo es el número
+	no negativo cuyo cuadrado da el original:</p>
+        <math-display>\[\sqrt{49}=7,\qquad \sqrt{a^2}=|a|.\]</math-display>
+        <math-examples>
+          <math-example id="c3-s3-ejemplo-1" data-title="Ejemplo resuelto">
+            <math-display>\[\sqrt{72}=\sqrt{36\cdot2}=6\sqrt2.\]</math-display>
+          </math-example>
+        </math-examples>
+        <p>No se puede separar una suma bajo una raíz de esta manera:</p>
+        <math-display>\[\sqrt{a+b}\neq\sqrt a+\sqrt b\]</math-display>
+        <p>en general.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-03-apartado-04-notaci-n-cient-fica" data-title="Notación científica">
+        <p>Se escribe un número como</p>
+        <math-display>\[a\times10^n,\qquad 1\leq |a|&lt;10.\]</math-display>
+        <p>Ejemplos:</p>
+        <math-display>\[450000=4.5\times10^5,\qquad
+	0.00032=3.2\times10^{-4}.\]</math-display>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-06-geometr-a-plana" data-title="Geometría plana">
+      <sub-sub-section id="capitulo-06-apartado-01-ngulos" data-title="Ángulos">
+        <ul>
+          <li>
+            <p>Agudo: menor que \(90^\circ\).</p>
+          </li>
+          <li>
+            <p>Recto: \(90^\circ\).</p>
+          </li>
+          <li>
+            <p>Obtuso: mayor que \(90^\circ\) y menor que \(180^\circ\).</p>
+          </li>
+          <li>
+            <p>Llano: \(180^\circ\).</p>
+          </li>
+          <li>
+            <p>Completo: \(360^\circ\).</p>
+          </li>
+        </ul>
+        <p>Los ángulos interiores de un triángulo suman \(180^\circ\).
+	Los de un cuadrilátero suman \(360^\circ\).</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-06-apartado-02-per-metros-y-reas" data-title="Perímetros y áreas">
+        <table>
+          <thead>
+            <tr>
+              <th>Figura</th>
+              <th>Perímetro</th>
+              <th>Área</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cuadrado</td>
+              <td>\(4l\)</td>
+              <td>\(l^2\)</td>
+            </tr>
+            <tr>
+              <td>Rectángulo</td>
+              <td>\(2(b+h)\)</td>
+              <td>\(bh\)</td>
+            </tr>
+            <tr>
+              <td>Triángulo</td>
+              <td>suma de lados</td>
+              <td>\(\frac{bh}{2}\)</td>
+            </tr>
+            <tr>
+              <td>Paralelogramo</td>
+              <td>\(2(a+b)\)</td>
+              <td>\(bh\)</td>
+            </tr>
+            <tr>
+              <td>Trapecio</td>
+              <td>suma de lados</td>
+              <td>\(\frac{(B+b)h}{2}\)</td>
+            </tr>
+            <tr>
+              <td>Círculo</td>
+              <td>\(2\pi r\)</td>
+              <td>\(\pi r^2\)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>En las fórmulas, \(b\) suele representar base, \(h\) altura,
+	\(r\) radio y \(B\) base mayor. Revisa la figura antes de sustituir.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-06-apartado-03-teorema-de-pit-goras" data-title="Teorema de Pitágoras">
+        <p>Para un triángulo rectángulo:</p>
+        <math-display>\[a^2+b^2=c^2,\]</math-display>
+        <p>donde \(c\) es la hipotenusa, el lado opuesto al ángulo recto.</p>
+        <math-examples>
+          <math-example id="c6-s3-ejemplo-1" data-title="Ejemplo resuelto">
+            <p>Si los catetos miden 3 y 4:</p>
+            <math-display>\[c=\sqrt{3^2+4^2}=\sqrt{25}=5.\]</math-display>
+          </math-example>
+        </math-examples>
+        <p>No se aplica directamente a cualquier triángulo.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-06-apartado-04-semejanza-y-teorema-de-tales" data-title="Semejanza y teorema de Tales">
+        <p>Los triángulos semejantes tienen ángulos correspondientes
+	iguales y lados correspondientes proporcionales.</p>
+        <p>Si las longitudes se escalan por un factor \(k\):</p>
+        <math-display>\[\text{longitudes}\times k,\qquad
+	\text{áreas}\times k^2.\]</math-display>
+        <p>El teorema de Tales permite establecer proporciones cuando
+	rectas paralelas cortan transversales. Identifica primero
+	los segmentos correspondientes.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-06-apartado-05-circunferencia" data-title="Circunferencia">
+        <math-display>\[C=2\pi r=\pi d,\qquad A=\pi r^2,\qquad d=2r.\]</math-display>
+        <p>Una circunferencia es el borde; el círculo es la región interior.
+	La terminología importa en los ejercicios.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-07-geometr-a-espacial-y-unidades" data-title="Geometría espacial y unidades">
+      <sub-sub-section id="capitulo-07-apartado-01-vol-menes" data-title="Volúmenes">
+        <table>
+          <thead>
+            <tr>
+              <th>Cuerpo</th>
+              <th>Volumen</th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>{lX}
+			
+			Cuerpo</td>
+            <td>Volumen</td>
+          </tr>
+          <tr>
+            <td>\(V=l^3\)</td>
+          </tr>
+          <tr>
+            <td>Prisma</td>
+            <td>\(V=A_bh\)</td>
+          </tr>
+          <tr>
+            <td>Cilindro</td>
+            <td>\(V=\pi r^2h\)</td>
+          </tr>
+          <tr>
+            <td>Pirámide</td>
+            <td>\(V=\frac13A_bh\)</td>
+          </tr>
+          <tr>
+            <td>Cono</td>
+            <td>\(V=\frac13\pi r^2h\)</td>
+          </tr>
+          <tr>
+            <td>Esfera</td>
+            <td>\(V=\frac43\pi r^3\)</td>
+          </tr>
+          </tbody>
+        </table>
+        <p>\(A_b\) es el área de la base y \(h\) la altura perpendicular.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-07-apartado-02-conversiones" data-title="Conversiones">
+        <p>En el sistema métrico:</p>
+        <math-display>\[1\text{ km}=1000\text{ m},\qquad
+	1\text{ m}=100\text{ cm},\qquad
+	1\text{ kg}=1000\text{ g}.\]</math-display>
+        <p>Para áreas, el factor de conversión se eleva al cuadrado;
+	para volúmenes, al cubo.</p>
+        <math-display>\[1\text{ m}^2=10000\text{ cm}^2,\qquad
+	1\text{ m}^3=1000000\text{ cm}^3.\]</math-display>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-07-apartado-03-rapidez-distancia-y-tiempo" data-title="Rapidez, distancia y tiempo">
+        <math-formula data-title="Fórmulas">
+          <math-display>\[v=\frac{d}{t},\qquad d=vt,\qquad t=\frac{d}{v}.\]</math-display>
+        </math-formula>
+        <p>Asegúrate de que las unidades sean compatibles. Kilómetros
+	por hora y metros por segundo no son lo mismo.</p>
+      </sub-sub-section>
+    </sub-section>
+  </section>
+  <section id="secundaria" data-title="Secundaria">
+    <sub-section id="capitulo-04-lgebra-letras-que-representan-n-meros" data-title="Álgebra: letras que representan números">
+      <sub-sub-section id="capitulo-04-apartado-01-expresiones-algebraicas" data-title="Expresiones algebraicas">
+        <p>En \(3x+5\), la letra \(x\) representa un número.
+	El número 3 es el coeficiente; 5 es el término constante.</p>
+        <p>Solo se reducen términos semejantes:</p>
+        <math-display>\[3x+5x=8x,\qquad 3x+5\neq8x.\]</math-display>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-02-propiedad-distributiva" data-title="Propiedad distributiva">
+        <math-formula data-title="Fórmulas">
+          <math-display>\[a(b+c)=ab+ac\]</math-display>
+          <math-display>\[a(b-c)=ab-ac\]</math-display>
+        </math-formula>
+        <math-examples>
+          <math-example id="c4-s2-ejemplo-2" data-title="Ejemplo resuelto">
+            <math-display>\[3(x+4)=3x+12.\]</math-display>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-03-productos-notables" data-title="Productos notables">
+        <math-formula data-title="Fórmulas">
+          <math-display>\[(a+b)^2=a^2+2ab+b^2\]</math-display>
+          <math-display>\[(a-b)^2=a^2-2ab+b^2\]</math-display>
+          <math-display>\[(a+b)(a-b)=a^2-b^2\]</math-display>
+          <math-display>\[(a+b)^3=a^3+3a^2b+3ab^2+b^3\]</math-display>
+        </math-formula>
+        <math-remark data-title="Advertencia">
+          <p>\((a+b)^2\) no es \(a^2+b^2\). Falta el término \(2ab\).</p>
+        </math-remark>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-04-factorizaci-n" data-title="Factorización">
+        <p>Factorizar es expresar una suma como producto.</p>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[ab+ac=a(b+c)\]</math-display>
+          <math-display>\[a^2-b^2=(a-b)(a+b)\]</math-display>
+          <math-display>\[x^2+(m+n)x+mn=(x+m)(x+n)\]</math-display>
+        </math-formula>
+        <p>Ejemplo:</p>
+        <math-display>\[x^2+5x+6=(x+2)(x+3).\]</math-display>
+        <p>Se buscan dos números que sumen 5 y multipliquen 6.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-05-ecuaciones-lineales" data-title="Ecuaciones lineales">
+        <p>Una ecuación afirma que dos expresiones son iguales.
+	Resolverla consiste en encontrar los valores que la hacen cierta.</p>
+        <math-examples>
+          <math-example id="c4-s5-ejemplo-1" data-title="Ejemplo resuelto">
+            <p>Resuelve \(3x+5=20\).</p>
+            <math-display>\[3x=20-5=15,\qquad x=5.\]</math-display>
+          </math-example>
+        </math-examples>
+        <p>La operación que haces en un lado debes hacerla también
+	en el otro. La igualdad no es decoración.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-06-ecuaciones-con-par-ntesis-y-fracciones" data-title="Ecuaciones con paréntesis y fracciones">
+        <p>Ejemplo:</p>
+        <math-display>\[2(x-3)=10\]</math-display>
+        <math-display>\[2x-6=10,\qquad 2x=16,\qquad x=8.\]</math-display>
+        <p>Si aparecen fracciones, puedes multiplicar toda la ecuación
+	por el mínimo común múltiplo de los denominadores, siempre
+	respetando las restricciones del problema.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-07-sistemas-de-ecuaciones" data-title="Sistemas de ecuaciones">
+        <p>Un sistema contiene dos o más ecuaciones con las mismas
+	incógnitas.</p>
+        <math-examples>
+          <math-example id="c4-s7-ejemplo-1" data-title="Ejemplo resuelto">
+            <math-display>\[\begin{cases}
+			x+y=7\\
+			x-y=1
+		\end{cases}\]</math-display>
+            <p>Sumamos las ecuaciones:</p>
+            <math-display>\[2x=8\Longrightarrow x=4.\]</math-display>
+            <p>Sustituimos:</p>
+            <math-display>\[4+y=7\Longrightarrow y=3.\]</math-display>
+          </math-example>
+        </math-examples>
+        <p>Métodos frecuentes: sustitución, igualación y reducción.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-08-ecuaciones-cuadr-ticas" data-title="Ecuaciones cuadráticas">
+        <p>Forma general:</p>
+        <math-display>\[ax^2+bx+c=0,\qquad a\neq0.\]</math-display>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}.\]</math-display>
+        </math-formula>
+        <p>El discriminante es \(\Delta=b^2-4ac\):</p>
+        <ul>
+          <li>
+            <p>\(\Delta&gt;0\): dos soluciones reales distintas.</p>
+          </li>
+          <li>
+            <p>\(\Delta=0\): una solución real doble.</p>
+          </li>
+          <li>
+            <p>\(\Delta&lt;0\): no hay soluciones reales.</p>
+          </li>
+        </ul>
+        <math-examples>
+          <math-example id="c4-s8-ejemplo-3" data-title="Ejemplo resuelto">
+            <p>Resuelve \(x^2-5x+6=0\).</p>
+            <math-display>\[(x-2)(x-3)=0.\]</math-display>
+            <p>Por tanto, \(x=2\) o \(x=3\).</p>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-04-apartado-09-desigualdades" data-title="Desigualdades">
+        <p>Los signos son \(&lt;\), \(&gt;\), \(\leq\) y \(\geq\).</p>
+        <p>Al multiplicar o dividir una desigualdad por un número
+	negativo, se invierte el signo.</p>
+        <math-examples>
+          <math-example id="c4-s9-ejemplo-1" data-title="Ejemplo resuelto">
+            <math-display>\[-2x&gt;6\Longrightarrow x&lt;-3.\]</math-display>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-05-funciones-sucesiones-y-gr-ficas" data-title="Funciones, sucesiones y gráficas">
+      <sub-sub-section id="capitulo-05-apartado-01-plano-cartesiano" data-title="Plano cartesiano">
+        <p>Un punto se escribe \((x,y)\).
+	El eje horizontal es \(x\); el vertical es \(y\).</p>
+        <p>Los cuadrantes se numeran comenzando por el superior derecho
+	y siguiendo en sentido contrario a las agujas del reloj.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-05-apartado-02-funciones" data-title="Funciones">
+        <p>Una función asigna a cada entrada válida exactamente una salida.
+	Se escribe \(y=f(x)\).</p>
+        <math-examples>
+          <math-example id="c5-s2-ejemplo-1" data-title="Ejemplo resuelto">
+            <p>Si \(f(x)=2x+1\), entonces</p>
+            <math-display>\[f(3)=2(3)+1=7.\]</math-display>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-05-apartado-03-rectas" data-title="Rectas">
+        <p>La forma pendiente-intersección es</p>
+        <math-display>\[y=mx+b,\]</math-display>
+        <p>donde \(m\) es la pendiente y \(b\) el corte con el eje \(y\).</p>
+        <p>Con dos puntos:</p>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[m=\frac{y_2-y_1}{x_2-x_1},\qquad x_2\neq x_1.\]</math-display>
+        </math-formula>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-05-apartado-04-sucesiones" data-title="Sucesiones">
+        <p>Una sucesión es una lista ordenada de números.</p>
+        <p>Aritmética: se suma siempre la misma diferencia \(d\).</p>
+        <math-display>\[a_n=a_1+(n-1)d.\]</math-display>
+        <p>Geométrica: se multiplica siempre por la misma razón \(r\).</p>
+        <math-display>\[a_n=a_1r^{n-1}.\]</math-display>
+        <p>Ejemplo aritmético: \(3,7,11,15,\ldots\) tiene diferencia 4.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-08-trigonometr-a" data-title="Trigonometría">
+      <sub-sub-section id="capitulo-08-apartado-01-razones-trigonom-tricas" data-title="Razones trigonométricas">
+        <p>En un triángulo rectángulo, respecto al ángulo \(\theta\):</p>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[\sin\theta=\frac{\text{cateto opuesto}}{\text{hipotenusa}}\]</math-display>
+          <math-display>\[\cos\theta=\frac{\text{cateto adyacente}}{\text{hipotenusa}}\]</math-display>
+          <math-display>\[\tan\theta=\frac{\text{cateto opuesto}}{\text{cateto adyacente}}\]</math-display>
+        </math-formula>
+        <math-examples>
+          <math-example id="c8-s1-ejemplo-2" data-title="Ejemplo resuelto">
+            <p>Si el cateto opuesto mide 3 y la hipotenusa 5:</p>
+            <math-display>\[\sin\theta=\frac35=0.6.\]</math-display>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-08-apartado-02-identidad-fundamental" data-title="Identidad fundamental">
+        <math-display>\[\sin^2\theta+\cos^2\theta=1.\]</math-display>
+        <p>En una calculadora, revisa si el modo está en grados o radianes.
+	Un resultado correcto con la unidad equivocada sigue siendo
+	un resultado inútil.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-08-apartado-03-ley-de-senos-y-ley-de-cosenos" data-title="Ley de senos y ley de cosenos">
+        <p>Para un triángulo con lados \(a,b,c\) opuestos a ángulos
+	\(A,B,C\):</p>
+        <math-display>\[\frac{a}{\sin A}=\frac{b}{\sin B}=\frac{c}{\sin C}.\]</math-display>
+        <p>Ley de cosenos:</p>
+        <math-display>\[c^2=a^2+b^2-2ab\cos C.\]</math-display>
+        <p>Sirven para triángulos que no necesariamente son rectángulos.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-09-geometr-a-anal-tica" data-title="Geometría analítica">
+      <sub-sub-section id="capitulo-09-apartado-01-distancia-entre-dos-puntos" data-title="Distancia entre dos puntos">
+        <math-display>\[d=\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}.\]</math-display>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-09-apartado-02-punto-medio" data-title="Punto medio">
+        <math-display>\[M=\left(\frac{x_1+x_2}{2},\frac{y_1+y_2}{2}\right).\]</math-display>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-09-apartado-03-ecuaci-n-de-la-circunferencia" data-title="Ecuación de la circunferencia">
+        <p>Con centro \((h,k)\) y radio \(r\):</p>
+        <math-display>\[(x-h)^2+(y-k)^2=r^2.\]</math-display>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-09-apartado-04-par-bola-y-otras-c-nicas" data-title="Parábola y otras cónicas">
+        <p>Una forma común de parábola vertical es</p>
+        <math-display>\[y=a(x-h)^2+k.\]</math-display>
+        <p>La elipse y la hipérbola tienen otras ecuaciones canónicas.
+	En un examen, identifica primero la forma de la ecuación y
+	después qué información pide el problema.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-10-estad-stica-descriptiva" data-title="Estadística descriptiva">
+      <sub-sub-section id="capitulo-10-apartado-01-media-mediana-y-moda" data-title="Media, mediana y moda">
+        <p>Datos: \(2,3,3,4,8\).</p>
+        <p>Media:</p>
+        <math-display>\[\bar{x}=\frac{\text{suma de los datos}}{\text{número de datos}}
+	=\frac{20}{5}=4.\]</math-display>
+        <p>Mediana: el dato central al ordenar la lista. Aquí es 3.</p>
+        <p>Moda: el valor más frecuente. Aquí es 3.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-10-apartado-02-rango-y-dispersi-n" data-title="Rango y dispersión">
+        <math-display>\[\text{Rango}=\text{máximo}-\text{mínimo}.\]</math-display>
+        <p>La varianza mide dispersión respecto a la media.
+	Para una población:</p>
+        <math-display>\[\sigma^2=\frac{\sum_{i=1}^n(x_i-\mu)^2}{n}.\]</math-display>
+        <p>La desviación estándar es la raíz cuadrada de la varianza.
+	En muestras, la fórmula usual de varianza muestral divide
+	entre \(n-1\).</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-10-apartado-03-gr-ficas" data-title="Gráficas">
+        <ul>
+          <li>
+            <p>Barras: comparar categorías.</p>
+          </li>
+          <li>
+            <p>Histograma: mostrar una distribución numérica agrupada.</p>
+          </li>
+          <li>
+            <p>Circular: mostrar proporciones de un total.</p>
+          </li>
+          <li>
+            <p>Línea: observar cambios a lo largo del tiempo.</p>
+          </li>
+          <li>
+            <p>Dispersión: observar la relación entre dos variables.</p>
+          </li>
+        </ul>
+        <p>Una gráfica puede ser correcta y aun así inducir a error si
+	el eje está recortado o las escalas no son comparables.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-11-probabilidad-y-conteo" data-title="Probabilidad y conteo">
+      <sub-sub-section id="capitulo-11-apartado-01-probabilidad-cl-sica" data-title="Probabilidad clásica">
+        <p>Cuando todos los resultados son igualmente probables:</p>
+        <math-display>\[\mathbb{P}(A)=\frac{\text{casos favorables}}{\text{casos posibles}}.\]</math-display>
+        <p>La probabilidad está entre 0 y 1.</p>
+        <math-examples>
+          <math-example id="c11-s1-ejemplo-1" data-title="Ejemplo resuelto">
+            <p>Al lanzar un dado justo, la probabilidad de obtener un 6 es</p>
+            <math-display>\[\mathbb{P}(6)=\frac16.\]</math-display>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-11-apartado-02-complemento" data-title="Complemento">
+        <math-display>\[\mathbb{P}(A^c)=1-\mathbb{P}(A).\]</math-display>
+        <p>Si la probabilidad de que llueva es 0.3, la de que no llueva
+	es 0.7, suponiendo que son los únicos dos resultados.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-11-apartado-03-principios-de-conteo" data-title="Principios de conteo">
+        <p>Si una decisión tiene \(m\) opciones y otra tiene \(n\) opciones,
+	y ambas se pueden combinar libremente, hay \(mn\) combinaciones.</p>
+        <p>Permutaciones de \(n\) objetos distintos:</p>
+        <math-display>\[n!=n(n-1)(n-2)\cdots2\cdot1.\]</math-display>
+        <p>Arreglos de \(r\) elementos tomados de \(n\):</p>
+        <math-display>\[P(n,r)=\frac{n!}{(n-r)!}.\]</math-display>
+        <p>Combinaciones, cuando el orden no importa:</p>
+        <math-display>\[\binom nr=\frac{n!}{r!(n-r)!}.\]</math-display>
+      </sub-sub-section>
+    </sub-section>
+  </section>
+  <section id="preparatoria" data-title="Preparatoria">
+    <sub-section id="capitulo-12-exponenciales-y-logaritmos" data-title="Exponenciales y logaritmos">
+      <sub-sub-section id="capitulo-12-apartado-01-funci-n-exponencial" data-title="Función exponencial">
+        <math-display>\[y=a^x,\qquad a&gt;0,\quad a\neq1.\]</math-display>
+        <p>Si \(a&gt;1\), la función es creciente.
+	Si \(0&lt;a&lt;1\), es decreciente.</p>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-12-apartado-02-logaritmos" data-title="Logaritmos">
+        <p>El logaritmo responde: ¿a qué exponente hay que elevar
+	la base para obtener cierto número?</p>
+        <math-display>\[\log_a x=y\quad\Longleftrightarrow\quad a^y=x.\]</math-display>
+        <p>Condiciones: \(a&gt;0\), \(a\neq1\) y \(x&gt;0\).</p>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[\log_a(xy)=\log_a x+\log_a y\]</math-display>
+          <math-display>\[\log_a\left(\frac{x}{y}\right)=\log_a x-\log_a y\]</math-display>
+          <math-display>\[\log_a(x^r)=r\log_a x\]</math-display>
+        </math-formula>
+        <p>Cambio de base:</p>
+        <math-display>\[\log_a x=\frac{\log_b x}{\log_b a}.\]</math-display>
+        <p>No existe una regla que convierta automáticamente
+	\(\log(x+y)\) en \(\log x+\log y\).</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-13-l-mites-derivadas-e-integrales" data-title="Límites, derivadas e integrales">
+      <sub-sub-section id="capitulo-13-apartado-01-l-mites" data-title="Límites">
+        <p>Un límite describe el valor al que se aproxima una función
+	cuando la variable se acerca a cierto punto.</p>
+        <math-display>\[\lim_{x\to a}f(x)=L.\]</math-display>
+        <p>Si la función es continua en \(a\), normalmente basta con
+	sustituir \(x=a\). Si aparece una indeterminación como \(0/0\),
+	hace falta simplificar o aplicar otro método.</p>
+        <math-examples>
+          <math-example id="c13-s1-ejemplo-1" data-title="Ejemplo resuelto">
+            <math-display>\[\lim_{x\to2}(x^2+1)=2^2+1=5.\]</math-display>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-13-apartado-02-derivadas" data-title="Derivadas">
+        <p>La derivada representa una tasa de cambio instantánea.
+	Geométricamente, es la pendiente de la recta tangente.</p>
+        <math-formula data-title="Fórmulas">
+          <p>Reglas básicas:</p>
+          <math-display>\[\frac{d}{dx}(c)=0,\qquad
+		\frac{d}{dx}(x^n)=nx^{n-1}\]</math-display>
+          <math-display>\[\frac{d}{dx}(cf)=cf',\qquad
+		\frac{d}{dx}(f+g)=f'+g'\]</math-display>
+          <math-display>\[(fg)'=f'g+fg'\]</math-display>
+          <math-display>\[\left(\frac fg\right)'=
+		\frac{f'g-fg'}{g^2},\quad g\neq0.\]</math-display>
+        </math-formula>
+        <math-examples>
+          <math-example id="c13-s2-ejemplo-2" data-title="Ejemplo resuelto">
+            <p>Si \(f(x)=3x^2+2x-4\):</p>
+            <math-display>\[f'(x)=6x+2.\]</math-display>
+          </math-example>
+        </math-examples>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-13-apartado-03-integral" data-title="Integral">
+        <p>La integral definida puede representar área con signo
+	bajo una curva y acumular cantidades.</p>
+        <math-formula data-title="Fórmulas">
+          <math-display>\[\int x^n\,dx=\frac{x^{n+1}}{n+1}+C,\qquad n\neq-1.\]</math-display>
+          <math-display>\[\int_a^b f(x)\,dx=F(b)-F(a),\qquad F'=f.\]</math-display>
+        </math-formula>
+        <math-examples>
+          <math-example id="c13-s3-ejemplo-2" data-title="Ejemplo resuelto">
+            <math-display>\[\int_0^2 x\,dx
+		=\left[\frac{x^2}{2}\right]_0^2
+		=2.\]</math-display>
+          </math-example>
+        </math-examples>
+        <p>Estos temas suelen pertenecer al bachillerato avanzado
+	o a cursos introductorios de cálculo; no todos los planes
+	de preparatoria los incluyen.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-14-errores-frecuentes" data-title="Errores frecuentes">
+      <sub-sub-section id="capitulo-14-contenido" data-title="Contenido">
+        <ol>
+          <li>
+            <p>Sumar fracciones sumando también los denominadores.</p>
+          </li>
+          <li>
+            <p>Olvidar la jerarquía de operaciones.</p>
+          </li>
+          <li>
+            <p>Cambiar un signo al pasar términos de una ecuación.</p>
+          </li>
+          <li>
+            <p>Olvidar invertir una desigualdad al dividir entre un negativo.</p>
+          </li>
+          <li>
+            <p>Confundir radio con diámetro.</p>
+          </li>
+          <li>
+            <p>Usar área cuando el problema pide perímetro.</p>
+          </li>
+          <li>
+            <p>Usar grados cuando la calculadora está en radianes.</p>
+          </li>
+          <li>
+            <p>Confundir una relación proporcional con una relación cualquiera.</p>
+          </li>
+          <li>
+            <p>Redondear demasiado pronto.</p>
+          </li>
+          <li>
+            <p>Dar una respuesta sin unidades cuando sí hacen falta.</p>
+          </li>
+          <li>
+            <p>Dividir entre cero.</p>
+          </li>
+          <li>
+            <p>Afirmar que \(\sqrt{a+b}=\sqrt a+\sqrt b\).</p>
+          </li>
+        </ol>
+        <p>La comprobación más barata es sustituir el resultado en el
+	problema original. Hazla antes de entregar.</p>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-15-formulario-expr-s" data-title="Formulario exprés">
+      <sub-sub-section id="capitulo-15-contenido" data-title="Contenido">
+        <p>Porcentaje</p>
+        <math-display>\[p \% \text{ de } N=\frac{pN}{100}\]</math-display>
+        <p>Proporción</p>
+        <math-display>\[\frac ab=\frac cd\Rightarrow ad=bc\]</math-display>
+        <p>Pitágoras</p>
+        <math-display>\[a^2+b^2=c^2\]</math-display>
+        <p>Recta</p>
+        <math-display>\[y=mx+b\]</math-display>
+        <p>Pendiente</p>
+        <math-display>\[m=\frac{y_2-y_1}{x_2-x_1}\]</math-display>
+        <p>Cuadrática</p>
+        <math-display>\[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}\]</math-display>
+        <p>Círculo</p>
+        <math-display>\[A=\pi r^2,\quad C=2\pi r\]</math-display>
+        <p>Triángulo</p>
+        <math-display>\[A=\frac{bh}{2}\]</math-display>
+        <p>Rectángulo</p>
+        <math-display>\[A=bh,\quad P=2b+2h\]</math-display>
+        <p>Prisma</p>
+        <math-display>\[V=A_bh\]</math-display>
+        <p>Cilindro</p>
+        <math-display>\[V=\pi r^2h\]</math-display>
+        <p>Cono</p>
+        <math-display>\[V=\frac13\pi r^2h\]</math-display>
+        <p>Rapidez</p>
+        <math-display>\[v=\frac dt\]</math-display>
+        <p>Media</p>
+        <math-display>\[\bar{x}=\frac{\sum x_i}{n}\]</math-display>
+        <p>Probabilidad clásica</p>
+        <math-display>\[\mathbb{P}(A)=\frac{F}{N}\]</math-display>
+        <p>Sucesión aritmética</p>
+        <math-display>\[a_n=a_1+(n-1)d\]</math-display>
+        <p>Sucesión geométrica</p>
+        <math-display>\[a_n=a_1r^{n-1}\]</math-display>
+        <p>Trigonometría</p>
+        <math-display>\[\sin\theta=\frac{CO}{H}\]</math-display>
+        <math-display>\[\cos\theta=\frac{CA}{H}\]</math-display>
+        <math-display>\[\tan\theta=\frac{CO}{CA}\]</math-display>
+        <p>Derivada de potencia</p>
+        <math-display>\[(x^n)'=nx^{n-1}\]</math-display>
+        <p>Integral de potencia</p>
+        <math-display>\[\int x^n dx=\frac{x^{n+1}}{n+1}+C\]</math-display>
+      </sub-sub-section>
+    </sub-section>
+    <sub-section id="capitulo-16-mini-examen-de-supervivencia" data-title="Mini examen de supervivencia">
+      <sub-sub-section id="capitulo-16-contenido-inicial" data-title="Contenido">
+        <p>Intenta resolver sin mirar las respuestas.</p>
+        <ol>
+          <li>
+            <p>Calcula \(12-2(3+1)\).</p>
+          </li>
+          <li>
+            <p>Simplifica \(\frac{18}{24}\).</p>
+          </li>
+          <li>
+            <p>Calcula el 20% de 350.</p>
+          </li>
+          <li>
+            <p>Resuelve \(5x-7=18\).</p>
+          </li>
+          <li>
+            <p>Factoriza \(x^2-9\).</p>
+          </li>
+          <li>
+            <p>Calcula la hipotenusa con catetos 6 y 8.</p>
+          </li>
+          <li>
+            <p>Calcula el área de un círculo de radio 3.</p>
+          </li>
+          <li>
+            <p>Encuentra la media de 4, 6, 8 y 10.</p>
+          </li>
+          <li>
+            <p>Calcula la pendiente entre \((1,2)\) y \((3,8)\).</p>
+          </li>
+          <li>
+            <p>Deriva \(f(x)=4x^3\).</p>
+          </li>
+        </ol>
+      </sub-sub-section>
+      <sub-sub-section id="capitulo-16-apartado-01-respuestas" data-title="Respuestas">
+        <ol>
+          <li>
+            <p>\(4\).</p>
+          </li>
+          <li>
+            <p>\(\frac34\).</p>
+          </li>
+          <li>
+            <p>\(70\).</p>
+          </li>
+          <li>
+            <p>\(x=5\).</p>
+          </li>
+          <li>
+            <p>\((x-3)(x+3)\).</p>
+          </li>
+          <li>
+            <p>\(10\).</p>
+          </li>
+          <li>
+            <p>\(9\pi\) unidades cuadradas.</p>
+          </li>
+          <li>
+            <p>\(7\).</p>
+          </li>
+          <li>
+            <p>\(m=3\).</p>
+          </li>
+          <li>
+            <p>\(f'(x)=12x^2\).</p>
+          </li>
+        </ol>
+      </sub-sub-section>
+    </sub-section>
+  </section>
+</lectura>

@@ -19,6 +19,40 @@ export function parsearXML(xmlString: string): NodoXML {
   return convertirElemento(doc.documentElement as unknown as Element);
 }
 
+/**
+ * 
+ * @param nodo El nodo XML del cual se desea extraer elementos específicos.
+ * @param etiquetas Un arreglo de etiquetas que se desean conservar en el árbol resultante.
+ * @returns Un nuevo nodo XML que contiene únicamente los elementos con las etiquetas especificadas y sus hijos correspondientes, o null si no hay coincidencias.
+ */
+export function extractOnly(nodo: NodoXML, etiquetas: string[]): NodoXML | null {
+  if (nodo.tipo === "texto") {
+    return null;
+  }
+
+  if (etiquetas.includes(nodo.etiqueta)) {
+    return {
+      ...nodo,
+      hijos: nodo.hijos
+        .map((hijo) => extractOnly(hijo, etiquetas))
+        .filter((hijo): hijo is NodoXML => hijo !== null),
+    };
+  }
+
+  const hijosFiltrados = nodo.hijos
+    .map((hijo) => extractOnly(hijo, etiquetas))
+    .filter((hijo): hijo is NodoXML => hijo !== null);
+
+  if (hijosFiltrados.length > 0) {
+    return {
+      ...nodo,
+      hijos: hijosFiltrados,
+    };
+  }
+
+  return null;
+}
+
 /*
 function extractOnlySections(nodo: NodoXML): NodoXML {
   let nodoNew : NodoXML{tipo: "elemento"; }

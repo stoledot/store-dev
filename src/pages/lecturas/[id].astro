@@ -8,9 +8,10 @@ import { parseReadingXml } from '../../features/mathTexts/xmlReading';
 import { parseXml } from '../../features/lecturas/lectura_xml_to_html';
 import { getCustomerByEmail } from '../../features/customers_new/db';
 import { getLecturasByCustomerId, getLecturasCustomerByCustomerId, getLecturaById } from '../../features/lecturas/db';
-import { parsearXML } from '../../features/xml/xmlParser';
+import { parsearXML, extractOnly } from '../../features/xml/xmlParser';
 import RenderLecturaXml from '../../components/xml/RenderLecturaXml.astro';
 import RenderIndiceTemario from '../../components/xml/RenderIndiceTemario.astro';
+import { extractMetaXml } from '../../features/lecturas/utils';
 
 if (!(await accountsEnabled())) return Astro.redirect('/',303);
 
@@ -29,19 +30,20 @@ const tieneAcceso = new Set(
 ).has(Number(id));
 if (!tieneAcceso) return Astro.redirect('/account/lecturas', 303);
 
-const readingXml = (await getLecturaById(env.DB, Number(id)))?.content_xml ?? "";
+const lectura = await getLecturaById(env.DB, Number(id));
+
+const readingXml = lectura?.content_xml ?? "";
 
 const nodo = parsearXML(readingXml);
 
-const arbolXML = parsearXML(readingXml);
-
+const metaXml = extractMetaXml(nodo);
 
 interface Props {
   xml: string;
   backHref?: string;
 }
 
-const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
+const { xml = readingXml, backHref = '/account/readings' } = Astro.props;
 
 const { doc, error } = parseXml(xml);
 if (!doc) return Astro.redirect('/account/lecturas', 303);
@@ -63,20 +65,64 @@ if (error) return Astro.redirect('/account/lecturas', 303);
   >
     ← Volver a mis lecturas
   </a>
-
   <!-- PORTADA -->
-  <header id="reading-header" class="my-5 overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-paper to-surface p-6 shadow-sm sm:my-7 sm:p-9">
-    <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand">
-      Biblioteca de aprendizaje
-    </p>
+  <header 
+    id="reading-header" 
+    class="group relative my-6 overflow-hidden rounded-[2rem] border border-line bg-gradient-to-br from-paper via-paper to-surface p-6 shadow-sm transition-all duration-300 hover:shadow-md sm:my-8 sm:p-10"
+  >
+    <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-10">
+      
+      <!-- Columna de Texto (8 columnas si hay imagen cuadrada, 12 si no hay) -->
+      <div class={lectura?.image_url ? "lg:col-span-8" : "lg:col-span-12"}>
+        
+        <!-- Etiqueta amigable tipo píldora -->
+        <div class="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-brand">
+          <span class="h-1.5 w-1.5 rounded-full bg-brand"></span>
+          {lectura?.type === "book" ? "Libro" : "Biblioteca de aprendizaje"}
+        </div>
 
-    <h1 id="reading-title" class="mt-3 max-w-4xl break-words font-serif text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-      Cargando lectura...
-    </h1>
+        <!-- Título principal -->
+        <h1 
+          id="reading-title" 
+          class="mt-4 break-words font-serif text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl lg:text-5xl"
+        >
+          {metaXml.title ?? "Cargando lectura..."}
+        </h1>
 
-    <div id="reading-meta" class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted"></div>
+        <!-- Resumen -->
+        {metaXml.summary && (
+          <p 
+            id="reading-summary" 
+            class="mt-4 max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
+          >
+            {metaXml.summary}
+          </p>
+        )}
 
-    <p id="reading-summary" class="mt-5 max-w-3xl text-sm leading-7 text-muted sm:text-base"></p>
+        <!-- Metadatos separados sutilmente -->
+        <div 
+          id="reading-meta" 
+          class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line/60 pt-5 text-sm font-medium text-muted"
+        ></div>
+      </div>
+
+      <!-- Columna de Imagen Cuadrada (4 columnas en escritorio, centrada en móvil) -->
+      {lectura?.image_url && (
+        <div class="mx-auto w-full max-w-[260px] sm:max-w-[300px] lg:col-span-4 lg:max-w-none">
+          <div class="relative aspect-square w-full overflow-hidden rounded-3xl border border-line/80 bg-surface shadow-md">
+            <img
+              src={lectura.image_url}
+              alt={metaXml.title ?? "Ilustración de la lectura"}
+              loading="eager"
+              class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            />
+            <!-- Brillo sutil en el borde interior -->
+            <div class="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/5"></div>
+          </div>
+        </div>
+      )}
+
+    </div>
   </header>
 
   <!-- ÍNDICE HORIZONTAL: queda fijo al llegar al borde superior -->
@@ -118,7 +164,7 @@ if (error) return Astro.redirect('/account/lecturas', 303);
         id="reading-toc"
         class="mt-2 flex max-h-[65dvh] flex-wrap items-start gap-1.5 overflow-y-auto pt-1 text-sm"
       >
-        <RenderIndiceTemario nodo={arbolXML} />
+        <RenderIndiceTemario nodo={nodo} />
       </ol>
 
       <!-- 2. Vista de resultados de búsqueda (sobrescribe el espacio del temario) -->

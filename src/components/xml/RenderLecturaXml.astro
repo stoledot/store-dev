@@ -139,9 +139,40 @@ const numeroEjercicio = esElemento
     </summary>
     <div class="space-y-3 border-t border-indigo-100 px-4 py-4 leading-7 text-slate-700">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
   </details>
-) : (
+) : etiqueta === "table" ? (
+  <div class="scroll-mt-32 my-5 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <table class="w-full border-collapse text-left text-sm text-slate-700">
+      {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+    </table>
+  </div>
+) : etiqueta === "thead" ? (
+  <thead class="border-b border-indigo-100 bg-indigo-50/70 text-xs font-bold uppercase tracking-wider text-indigo-950">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </thead>
+) : etiqueta === "tbody" ? (
+  <tbody class="divide-y divide-slate-100 bg-white">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </tbody>
+) : etiqueta === "tr" ? (
+  <tr class="transition-colors hover:bg-slate-50/80">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </tr>
+) : etiqueta === "th" ? (
+  <th scope="col" class="px-4 py-3.5 font-bold whitespace-nowrap">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </th>
+) : etiqueta === "td" ? (
+  <td class="px-4 py-3.5 leading-relaxed">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </td>
+ 
+):
+
+(
   <div class="scroll-mt-32 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3">
     <span class="sr-only">Contenido: </span>
     {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
   </div>
-)}
+)
+
+}
