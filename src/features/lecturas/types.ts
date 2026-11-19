@@ -6,6 +6,9 @@ export type Lectura = {
     content_html: string;
     created_at: string;
     updated_at: string;
+    image_url: string;
+    type: string;
+    description: string;
 };
 
 export interface XmlLLectura {
@@ -16,5 +19,8 @@ export interface XmlLLectura {
     date: string;
     number?: string;
     volume?: string;
+    image_url?: string;
+    type?: string;
     html: string;
+    description?: string;
 }

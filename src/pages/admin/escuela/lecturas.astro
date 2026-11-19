@@ -12,6 +12,9 @@ let errors: string[] = [];
 let message = "";
 let titulo = "";
 let id = "";
+let image_url = "";
+let type = "";
+let description = "";
 
 function validId(value: string): boolean {
   return /^[1-9]\d*$/.test(value) && Number.isSafeInteger(Number(value));
@@ -19,9 +22,15 @@ function validId(value: string): boolean {
 
 if (Astro.request.method === "POST") {
   const form = await Astro.request.formData();
+
   xml = String(form.get("xml") ?? "");
   titulo = String(form.get("titulo") ?? "");
   id = String(form.get("id") ?? "");
+
+  image_url = String(form.get("image_url") ?? "").trim();
+  type = String(form.get("type") ?? "").trim();
+  description = String(form.get("description") ?? "").trim();
+
   const action = String(form.get("action") ?? "validate");
   try {
     const validation = validateLecturaXml(xml);
@@ -36,17 +45,20 @@ if (Astro.request.method === "POST") {
       message = "No se guardó: corrige los errores de validación.";
     } else if (!titulo.trim()) {
       message = "No se guardó: falta el título.";
+    } else if (!["book", "article", "magazine-edition", "blog"].includes(type)) 
+    {
+      message = "No se guardó: selecciona un tipo de contenido válido.";
     } else if (id && !validId(id)) {
       message = "No se guardó: el ID de la lectura no es válido.";
     } else {
       try {
         const result = id
           ? await env.DB.prepare(
-              'UPDATE school_lecturas SET title = ?, content_xml = ?, content_html = ?, updated_at = ? WHERE id = ? RETURNING id'
-            ).bind(titulo, xml, html, new Date().toISOString(), Number(id)).first<{ id: number }>()
+              'UPDATE school_lecturas SET title = ?, content_xml = ?, content_html = ?, updated_at = ?, image_url = ?, type = ?, description = ? WHERE id = ? RETURNING id'
+            ).bind(titulo, xml, html, new Date().toISOString(), image_url, type, description, Number(id)).first<{ id: number }>()
           : await env.DB.prepare(
-              "INSERT INTO school_lecturas (title, id_from_xml, content_xml, content_html) VALUES (?, '', ?, ?) RETURNING id"
-            ).bind(titulo, xml, html).first<{ id: number }>();
+              "INSERT INTO school_lecturas (title, id_from_xml, content_xml, content_html, image_url, type, description) VALUES (?, '', ?, ?, ?, ?, ?) RETURNING id"
+            ).bind(titulo, xml, html, image_url, type, description).first<{ id: number }>();
         if (!result) {
           message = id ? "No se guardó: la lectura ya no existe." : "No se pudo crear la lectura.";
         } else {
@@ -70,6 +82,9 @@ if (Astro.request.method === "POST") {
     } else {
       titulo = lectura.title;
       xml = lectura.content_xml;
+      image_url = lectura.image_url ?? "";
+      type = lectura.type ?? "";
+      description = lectura.description ?? "";
       if (Astro.url.searchParams.get("guardado") === "1") message = "Guardado correctamente.";
     }
   }
@@ -92,6 +107,7 @@ const lecturas = await getAllLecturas(env.DB);
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 text-zinc-800">
   <form method="post" class="space-y-6">
     <input type="hidden" name="id" value={id} />
+    
 
     <!-- BARRA SUPERIOR DE ACCIONES -->
     <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-zinc-200">
@@ -132,6 +148,96 @@ const lecturas = await getAllLecturas(env.DB);
         </button>
       </div>
     </header>
+
+
+    <!-- METADATOS DE LA LECTURA -->
+    <section class="bg-white rounded-2xl border border-zinc-200 shadow-xs p-5 sm:p-6 space-y-5">
+
+      <div>
+        <h2 class="text-sm font-bold text-zinc-900">
+          Información de la publicación
+        </h2>
+        <p class="text-xs text-zinc-500 mt-1">
+          Configura la imagen, descripción y categoría de esta lectura.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+        <!-- TIPO -->
+        <div>
+          <label for="type" class="block text-sm font-medium text-zinc-700 mb-1.5">
+            Tipo de contenido
+          </label>
+
+          <select
+            id="type"
+            name="type"
+            required
+            value={type}
+            class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600"
+          >
+            <option value="" selected={!type}>Seleccionar tipo...</option>
+            <option value="book" selected={type === "book"}>Libro</option>
+            <option value="article" selected={type === "article"}>Artículo</option>
+            <option value="magazine-edition" selected={type === "magazine-edition"}>
+              Edición de revista
+            </option>
+            <option value="blog" selected={type === "blog"}>Blog</option>
+          </select>
+        </div>
+
+        <!-- IMAGE URL -->
+        <div>
+          <label for="image_url" class="block text-sm font-medium text-zinc-700 mb-1.5">
+            URL de imagen
+          </label>
+
+          <input
+            id="image_url"
+            name="image_url"
+            type="text" 
+            pattern="^\/[a-zA-Z0-9\-\_\/]*$"
+            value={image_url}
+            placeholder="https://ejemplo.com/imagen.jpg"
+            class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600"
+          />
+        </div>
+
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div>
+        <label for="description" class="block text-sm font-medium text-zinc-700 mb-1.5">
+          Descripción
+        </label>
+
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          placeholder="Escribe una descripción breve de la lectura..."
+          class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 resize-y"
+        >{description}</textarea>
+      </div>
+
+      <!-- IMAGE PREVIEW -->
+      <div id="image-preview-container" class:list={[
+        "rounded-xl border border-zinc-200 bg-zinc-50 p-3",
+        !image_url && "hidden"
+      ]}>
+        <p class="text-xs font-medium text-zinc-500 mb-2">
+          Vista previa de imagen
+        </p>
+        <img
+          id="image-preview"
+          src={image_url || undefined}
+          alt="Vista previa"
+          class="max-h-48 max-w-full rounded-lg object-contain"
+        />
+      </div>
+
+    </section>
 
     <!-- MENSAJE DE ESTADO GLOBAL -->
     {message && (
@@ -410,6 +516,32 @@ const lecturas = await getAllLecturas(env.DB);
     }
     fileInput.value = "";
   });
+
+
+  const imageInput = document.querySelector("#image_url") as HTMLInputElement | null;
+  const imagePreview = document.querySelector("#image-preview") as HTMLImageElement | null;
+  const imageContainer = document.querySelector("#image-preview-container") as HTMLDivElement | null;
+
+  imageInput?.addEventListener("input", () => {
+    const url = imageInput.value.trim();
+
+    if (url) {
+      imagePreview!.src = url;
+      imageContainer?.classList.remove("hidden");
+    } else {
+      imagePreview!.removeAttribute("src");
+      imageContainer?.classList.add("hidden");
+    }
+  });
+
+  imagePreview?.addEventListener("error", () => {
+    imageContainer?.classList.add("hidden");
+  });
+
+  imagePreview?.addEventListener("load", () => {
+    imageContainer?.classList.remove("hidden");
+  });
+
 </script>  
 </AdminLayout>
 

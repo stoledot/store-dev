@@ -1,0 +1,65 @@
+---
+import type { NodoXML } from "../../features/xml/xmlParser";
+
+interface Props {
+  nodo: NodoXML;
+}
+
+const { nodo } = Astro.props;
+const STRUCTURAL_TAGS = new Set(["section", "sub-section", "sub-sub-section"]);
+const isStructural = nodo.tipo === "elemento" && STRUCTURAL_TAGS.has(nodo.etiqueta);
+const title = nodo.tipo === "elemento"
+  ? nodo.atributos["data-title"] ?? nodo.atributos.title ?? ""
+  : "";
+const rawId = nodo.tipo === "elemento" ? nodo.atributos.id : undefined;
+const anchorId = rawId
+  ? rawId.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+  : "";
+const children = nodo.tipo === "elemento" ? nodo.hijos.filter(
+  (child): child is Extract<NodoXML, { tipo: "elemento" }> =>
+    child.tipo === "elemento" && STRUCTURAL_TAGS.has(child.etiqueta),
+  ) : [];
+---
+{isStructural ? (
+  <li data-toc-item data-toc-label={title} class="min-w-0">
+    {children.length ? (
+      <details class="group relative rounded-xl border border-line/70 bg-paper/60 transition-colors open:border-brand/40 open:bg-paper">
+        <summary class="flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-indigo-50/70 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 marker:hidden">
+          {anchorId ? (
+            <a
+              href={`#${anchorId}`}
+              data-section-link
+              class="leading-5 hover:underline"
+              onclick="event.stopPropagation()"
+            >
+              {title || "Apartado sin título"}
+            </a>
+          ) : (
+            <span class="leading-5">{title || "Apartado sin título"}</span>
+          )}
+          <span
+            class="shrink-0 text-xs text-slate-500 transition-transform duration-200 group-open:rotate-180"
+            aria-hidden="true"
+          >
+            ⌄
+          </span>
+        </summary>
+
+        {/* Subtemas desplegados verticalmente */}
+        <ol class="space-y-1 border-t border-line/60 bg-surface/80 p-2 pl-3 text-sm">
+          {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+        </ol>
+      </details>
+    ) : (
+      <a
+        href={anchorId ? `#${anchorId}` : undefined}
+        data-section-link={anchorId ? "" : undefined}
+        class="reading-toc-link flex min-h-9 items-center rounded-xl border border-transparent px-3 py-1.5 text-sm leading-5 text-slate-600 hover:border-line hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      >
+        {title || "Apartado sin título"}
+      </a>
+    )}
+  </li>
+) : nodo.tipo === "elemento" ? (
+  nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)
+) : null}

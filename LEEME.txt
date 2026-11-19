@@ -1,0 +1,7 @@
+Índice horizontal para el temario XML
+
+Contenido:
+- src/components/xml/RenderIndiceTemario.astro: índice recursivo con grupos desplegables.
+- src/pages/lecturas/[id].astro: barra horizontal fija debajo del encabezado, búsqueda y contenido integrado.
+
+Copia la carpeta src del ZIP en la raíz del proyecto, conservando las rutas. Requiere el tipo NodoXML ya existente en src/features/xml/xmlParser.ts.

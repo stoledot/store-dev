@@ -5,7 +5,6 @@ import Layout from '../../layouts/Layout.astro';
 import { accountsEnabled, getCustomerEmail} from '../../features/auth/customer';
 import { renderCourseTex } from '../../features/mathTexts/render';
 import { parseReadingXml } from '../../features/mathTexts/xmlReading';
-import { parseXml } from '../../features/lecturas/lectura_xml_to_html';
 import { getCustomerByEmail } from '../../features/customers_new/db';
 import { getLecturasByCustomerId, getLecturasCustomerByCustomerId, getLecturaById } from '../../features/lecturas/db';
 
@@ -34,11 +33,6 @@ interface Props {
 }
 
 const { xml = readingXml, backHref = '/account/lecturas' } = Astro.props;
-
-const { doc, error } = parseXml(xml);
-if (!doc) return Astro.redirect('/account/lecturas', 303);
-if (error) return Astro.redirect('/account/lecturas', 303);
-
 ---
 <Layout title="Lectura">
 <div
@@ -95,12 +89,9 @@ if (error) return Astro.redirect('/account/lecturas', 303);
         </a>
       </nav>
     </aside>
-    
+
     <!-- LECTURA -->
     <article id="reading-content" class="min-w-0 space-y-6 sm:space-y-8">
-      
-
-
       <div class="rounded-2xl border border-line bg-paper p-6 text-sm text-muted">
         Preparando el contenido...
       </div>

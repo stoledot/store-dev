@@ -7,9 +7,9 @@ export const createLectura = async (
 ): Promise<Lectura> => {
   const newLectura = await db
     .prepare(
-      'INSERT INTO school_lecturas (title, id_from_xml, content_xml, content_html) VALUES (?, ?, ?, ?) RETURNING *'
+      'INSERT INTO school_lecturas (title, id_from_xml, content_xml, content_html, image_url, type, description) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *'
     )
-    .bind(lectura.title, lectura.id_from_xml, lectura.content_xml, lectura.content_html)
+    .bind(lectura.title, lectura.id_from_xml, lectura.content_xml, lectura.content_html, lectura.image_url, lectura.type, lectura.description)
     .first<Lectura>();
 
   if (!newLectura) {
@@ -26,13 +26,16 @@ export const updateLectura = async (
 ): Promise<Lectura | null> => {
   const updatedLectura = await db
     .prepare(
-      'UPDATE school_lecturas SET title = ?, id_from_xml = ?, content_xml = ?, content_html = ?, updated_at = ? WHERE id = ? RETURNING *'
+      'UPDATE school_lecturas SET title = ?, id_from_xml = ?, content_xml = ?, content_html = ?, image_url = ?, type = ?, description = ?, updated_at = ? WHERE id = ? RETURNING *'
     )
     .bind(
       lectura.title ?? null,
       lectura.id_from_xml ?? null,
       lectura.content_xml ?? null,
       lectura.content_html ?? null,
+      lectura.image_url ?? null,
+      lectura.type ?? null,
+      lectura.description ?? null,
       new Date().toISOString(),
       id
     )
@@ -262,15 +265,15 @@ export const setLecturasCustomerByLecturaIdsCustomerId = async (
 export const getLecturasCustomerByCustomerId = async (
   db: D1Database,
   customer_id: number
-): Promise<{ l_title: string; school_lectura_id: number; customer_id: number }[]> => {
+): Promise<{ l_title: string; l_image_url: string; l_type: string; l_description: string; school_lectura_id: number; customer_id: number }[]> => {
   const result = await db
     .prepare(
-      'SELECT l.title as l_title, school_lectura_id, customer_id FROM school_lecturas_customers slc ' +
+      'SELECT l.title as l_title, l.image_url as l_image_url, l.type as l_type, l.description as l_description, school_lectura_id, customer_id FROM school_lecturas_customers slc ' +
       'LEFT JOIN school_lecturas l ON slc.school_lectura_id = l.id ' +
       'WHERE slc.customer_id = ?'
     )
     .bind(customer_id)
-    .all<{ l_title: string; school_lectura_id: number; customer_id: number }>();
+    .all<{ l_title: string; l_image_url: string; l_type: string; l_description: string; school_lectura_id: number; customer_id: number }>();
 
   return result.results ?? [];
 };
