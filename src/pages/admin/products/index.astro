@@ -79,15 +79,15 @@ const arrow = (col: string) => (sort === col ? (dir === 'asc' ? ' ↑' : ' ↓')
     selects={[
       {
         name: 'status',
-        label: 'Visibility',
-        anyLabel: 'All products',
+        label: 'Visibilidad',
+        anyLabel: 'Todos los productos',
         value: filters.status,
         options: PRODUCT_STATUS_OPTIONS,
       },
       {
         name: 'stock',
-        label: 'Stock',
-        anyLabel: 'Any stock',
+        label: 'Inventario',
+        anyLabel: 'Cualquier stock',
         value: filters.stock,
         options: PRODUCT_STOCK_OPTIONS,
       },
@@ -99,21 +99,21 @@ const arrow = (col: string) => (sort === col ? (dir === 'asc' ? ' ↑' : ' ↓')
     <thead>
       <tr class="border-b border-line text-xs uppercase tracking-widest text-gray-400">
         <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('name')} class="hover:text-brand">Product{arrow('name')}</a>
+          <a href={sortHref('name')} class="hover:text-brand">Producto{arrow('name')}</a>
         </th>
         <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('price')} class="hover:text-brand">Price{arrow('price')}</a>
+          <a href={sortHref('price')} class="hover:text-brand">Precio{arrow('price')}</a>
         </th>
         <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('stock')} class="hover:text-brand">Stock{arrow('stock')}</a>
+          <a href={sortHref('stock')} class="hover:text-brand">Inventario{arrow('stock')}</a>
         </th>
         <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('sold')} class="hover:text-brand">Sold{arrow('sold')}</a>
+          <a href={sortHref('sold')} class="hover:text-brand">Vendidos{arrow('sold')}</a>
         </th>
         <th class="py-3 pr-4 font-normal">
-          <a href={sortHref('active')} class="hover:text-brand">Active{arrow('active')}</a>
+          <a href={sortHref('active')} class="hover:text-brand">Activo{arrow('active')}</a>
         </th>
-        <th class="py-3 text-right font-normal">Actions</th>
+        <th class="py-3 text-right font-normal">Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -134,12 +134,12 @@ const arrow = (col: string) => (sort === col ? (dir === 'asc' ? ' ↑' : ' ↓')
                 <span class="font-medium">{p.name}</span>
               </a>
             </td>
-            <td data-label="Price" class="py-3 pr-4 tabular-nums">{formatPrice(p.price_cents)}</td>
-            <td data-label="Stock" class="py-3 pr-4 tabular-nums">{p.stock}</td>
-            <td data-label="Sold" class="py-3 pr-4 tabular-nums">
+            <td data-label="Precio" class="py-3 pr-4 tabular-nums">{formatPrice(p.price_cents)}</td>
+            <td data-label="Inventario" class="py-3 pr-4 tabular-nums">{p.stock}</td>
+            <td data-label="Vendidos" class="py-3 pr-4 tabular-nums">
               {p.sold > 0 ? p.sold : <span class="text-gray-300">0</span>}
             </td>
-            <td data-label="Active" class="py-3 pr-4">{p.active ? 'Yes' : <span class="text-gray-400">No</span>}</td>
+            <td data-label="Activo" class="py-3 pr-4">{p.active ? 'Sí' : <span class="text-gray-400">No</span>}</td>
             <td data-label="" class="py-3 text-right">
               <div class="flex justify-end gap-4 text-xs uppercase tracking-widest">
                 <a
@@ -148,23 +148,23 @@ const arrow = (col: string) => (sort === col ? (dir === 'asc' ? ' ↑' : ' ↓')
                   rel="noopener"
                   class="text-gray-500 hover:text-brand"
                 >
-                  View ↗
+                  Ver ↗
                 </a>
                 <a href={`/admin/products/${p.public_id}/edit`} class="text-accent hover:underline">
-                  Edit
+                  Editar
                 </a>
                 <form
                   method="POST"
                   action={`/api/admin/products/${p.public_id}`}
                   onsubmit={`return confirm('${
                     menuRefs.has(p.id)
-                      ? 'This product is linked from your navigation. Deleting it hides that link on the storefront. Continue?'
-                      : 'Delete this product?'
+                      ? 'Este producto está vinculado desde tu navegación. Eliminarlo oculta ese enlace en la tienda. ¿Continuar?'
+                      : '¿Eliminar este producto?'
                   }')`}
                 >
                   <input type="hidden" name="_action" value="delete" />
                   <button type="submit" class="text-red-600 hover:underline">
-                    Delete
+                    Eliminar
                   </button>
                 </form>
               </div>

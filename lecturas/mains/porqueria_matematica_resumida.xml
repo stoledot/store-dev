@@ -1,4 +1,175 @@
 <?xml version='1.0' encoding='utf-8'?>
+
+
+<!--
+TEMARIO:
+
+- Introducción
+  - Orientaciones iniciales y estrategia para resolver problemas
+- Primaria inicial
+  - Aritmética: los números y sus problemas
+    - **11. División con cociente y residuo**
+    - **13. Comprobación de operaciones mediante la operación inversa**
+    - **15. Patrones numéricos y reglas de formación**
+  - Medidas y situaciones cotidianas
+    - **16. Lectura del reloj y cálculo de tiempo transcurrido**
+    - **17. Uso de monedas y billetes en problemas de cambio**
+    - **18. Medición de longitudes con instrumentos y unidades adecuadas**
+  - Geometría y datos iniciales
+    - **19. Reconocimiento y clasificación de figuras planas y cuerpos**
+    - **20. Lectura e interpretación de pictogramas y tablas sencillas**
+- Primaria avanzada
+  - Aritmética y divisibilidad
+    - Divisibilidad y números primos
+    - Mínimo común múltiplo y máximo común divisor
+  - Fracciones, decimales y porcentajes
+    - **21. Valor posicional de décimos, centésimos y milésimos**
+    - **22. Comparación y orden de números decimales**
+    - **23. Suma y resta de números decimales**
+    - **24. Multiplicación y división de números decimales**
+    - **25. Fracciones como parte de un todo, cociente y medida**
+    - **26. Comparación y orden de fracciones**
+    - Fracciones equivalentes y simplificación
+    - **27. Representación de fracciones equivalentes con modelos**
+    - **28. Suma y resta de fracciones con igual denominador**
+    - **29. Suma y resta de fracciones con distinto denominador**
+    - **30. Multiplicación y división de fracciones**
+    - **31. Conversión entre fracciones, decimales y porcentajes**
+    - Porcentajes
+    - **32. Cálculo de un porcentaje de una cantidad**
+    - Razones, proporciones y regla de tres
+    - **33. Razones unitarias y tablas de proporcionalidad**
+    - **34. Resolución de problemas de regla de tres**
+  - Medición y geometría plana
+    - **35. Conversión de unidades de longitud, masa y capacidad**
+    - **36. Equivalencias entre horas, minutos y segundos**
+    - Ángulos, perímetros y áreas
+    - **37. Clasificación de triángulos por sus lados y ángulos**
+    - **38. Propiedades de cuadriláteros y otros polígonos**
+    - **39. Cálculo de áreas de rectángulos y triángulos**
+    - Circunferencia
+  - Geometría espacial y datos
+    - Volúmenes y conversiones
+    - **40. Interpretación de gráficas de barras y líneas**
+    - Media, mediana y moda
+- Secundaria inicial
+  - Enteros, potencias y raíces
+    - Números negativos
+    - **41. Valor absoluto y comparación de números enteros**
+    - **42. Suma, resta, multiplicación y división de números enteros**
+    - **43. Operaciones y comparación de números racionales**
+    - **44. Jerarquía de operaciones con números racionales**
+    - Potencias
+    - **45. Leyes de los exponentes**
+    - Raíces
+    - **46. Simplificación de raíces cuadradas exactas**
+    - Notación científica
+    - **47. Operaciones básicas con notación científica**
+  - Álgebra y ecuaciones
+    - **48. Traducción de frases cotidianas al lenguaje algebraico**
+    - Expresiones algebraicas
+    - **49. Reducción de términos semejantes**
+    - **50. Evaluación de expresiones algebraicas por sustitución**
+    - Propiedad distributiva
+    - Ecuaciones lineales
+    - **51. Resolución y comprobación de ecuaciones lineales de uno y dos pasos**
+    - **52. Planteamiento de ecuaciones a partir de problemas verbales**
+    - Ecuaciones con paréntesis y fracciones
+    - Desigualdades
+    - **53. Representación de desigualdades en la recta numérica**
+  - Plano cartesiano y geometría
+    - Plano cartesiano
+    - **54. Ubicación de puntos en los cuatro cuadrantes del plano cartesiano**
+    - **55. Pendiente como razón de cambio**
+    - **56. Tablas de entrada y salida para relaciones y funciones**
+    - Ángulos
+    - **57. Ángulos opuestos por el vértice y ángulos suplementarios**
+    - **58. Suma de ángulos interiores de triángulos y cuadriláteros**
+    - **59. Criterios básicos de congruencia de triángulos**
+    - Teorema de Pitágoras
+    - **60. Aplicaciones del teorema de Pitágoras en problemas**
+- Secundaria avanzada
+  - Álgebra: letras que representan números
+    - Productos notables
+    - Factorización
+    - Ecuaciones lineales y sistemas de ecuaciones
+    - **61. Resolución de sistemas por el método de sustitución**
+    - **62. Resolución de sistemas por el método de eliminación**
+    - **63. Factorización de polinomios por factor común**
+    - **64. Factorización de diferencias de cuadrados**
+    - Ecuaciones cuadráticas
+    - **65. Fórmula general y discriminante de ecuaciones cuadráticas**
+  - Funciones, rectas y sucesiones
+    - Funciones
+    - Rectas
+    - **66. Ecuación de la recta en forma pendiente-intersección**
+    - **67. Ecuación de una recta conociendo un punto y su pendiente**
+    - **68. Identificación de rectas paralelas y perpendiculares por sus pendientes**
+    - **69. Vértice e intersecciones de la gráfica de una parábola**
+    - **70. Comparación de funciones lineales y no lineales**
+    - Sucesiones
+    - **71. Término general de sucesiones aritméticas y geométricas**
+  - Geometría plana y espacial
+    - Semejanza y teorema de Tales
+    - **72. Escala y semejanza aplicadas a figuras y mapas**
+    - Circunferencia
+    - **73. Área del círculo y problemas de circunferencia**
+    - **74. Área superficial de prismas, pirámides y cilindros**
+    - Geometría espacial: volúmenes y conversiones
+    - Rapidez, distancia y tiempo
+    - Trigonometría: razones trigonométricas, identidad fundamental,
+      ley de senos y ley de cosenos
+  - Geometría analítica, estadística y probabilidad
+    - Distancia entre dos puntos y punto medio
+    - Ecuación de la circunferencia, parábola y otras cónicas
+    - Estadística descriptiva: media, mediana, moda, rango,
+      dispersión y gráficas
+    - **75. Cuartiles, rango intercuartílico y diagramas de caja**
+    - Probabilidad clásica, complemento y principios de conteo
+- Preparatoria
+  - Álgebra avanzada
+    - **76. Clasificación de los números reales e intervalos**
+    - **77. Desigualdades con valor absoluto**
+    - **78. División de polinomios**
+    - **79. Teoremas del residuo y del factor**
+    - **80. Dominio y simplificación de expresiones racionales**
+    - **81. Resolución y verificación de ecuaciones racionales y radicales**
+    - **82. Representación y operaciones básicas con números complejos**
+  - Funciones, exponenciales y logaritmos
+    - **83. Ceros y comportamiento de funciones polinomiales**
+    - **84. Dominio, asíntotas y gráfica de funciones racionales**
+    - **85. Composición de funciones y cálculo de funciones inversas**
+    - **86. Transformaciones de gráficas de funciones**
+    - Exponenciales y logaritmos: función exponencial y logaritmos
+    - **87. Modelos exponenciales de crecimiento y decaimiento**
+    - **88. Propiedades de logaritmos y resolución de ecuaciones logarítmicas**
+    - **89. Interés compuesto y crecimiento de inversiones**
+  - Trigonometría y geometría analítica
+    - **90. Medida en radianes y círculo unitario**
+    - **91. Gráficas de seno, coseno y tangente**
+    - **92. Identidades y ecuaciones trigonométricas básicas**
+    - **93. Componentes, magnitud y producto punto de vectores**
+    - **94. Ecuaciones y gráficas de las secciones cónicas**
+  - Álgebra lineal, estadística y probabilidad
+    - **95. Operaciones con matrices y determinantes**
+    - **96. Permutaciones y combinaciones en problemas de conteo**
+    - **97. Probabilidad condicional e independencia de eventos**
+    - **98. Varianza, desviación estándar y lectura crítica de datos**
+    - Media, mediana, moda, rango, dispersión y gráficas
+    - Probabilidad clásica, complemento y principios de conteo
+  - Límites, derivadas e integrales
+    - Límites
+    - **99. Límites, continuidad y comportamiento de funciones**
+    - Derivadas
+    - Integral
+    - **100. Reglas de derivación, optimización e interpretación de integrales**
+- Repaso y práctica
+  - Errores frecuentes
+  - Formulario exprés
+  - Mini examen de supervivencia y respuestas
+
+-->
+
 <lectura>
   <meta>
     <title>Porquería Matemática: guía de supervivencia escolar</title>
@@ -6,91 +177,585 @@
     <summary>Conversión estructural del documento LaTeX a XML. Se conserva la organización, los ejemplos, las fórmulas, los avisos y los ejercicios del original.</summary>
     <source>porqueria_matematica.tex</source>
   </meta>
-  <section id="introduccion" data-title="Introducción">
-    <sub-section id="antes-de-empezar" data-title="Antes de empezar">
-      <sub-sub-section id="antes-de-empezar-contenido" data-title="Orientaciones iniciales">
-        <p>Este documento es un acordeón ampliado. No sustituye un curso
-	completo ni garantiza que aparezcan todos los temas de tu examen.
-	Los programas cambian según el grado, la escuela y el subsistema
-	de bachillerato.</p>
-        <p>La estrategia es sencilla:</p>
-        <ol>
-          <li>
-            <p>Identifica qué tipo de problema tienes.</p>
-          </li>
-          <li>
-            <p>Busca la fórmula correspondiente.</p>
-          </li>
-          <li>
-            <p>Sustituye los datos.</p>
-          </li>
-          <li>
-            <p>Haz las operaciones.</p>
-          </li>
-          <li>
-            <p>Comprueba que el resultado tenga sentido.</p>
-          </li>
-        </ol>
-        <p>Las matemáticas no siempre son difíciles. A veces solamente
-	están escritas de una forma poco amable.</p>
-      </sub-sub-section>
-    </sub-section>
-  </section>
+  <chapter id="introduccion-general" data-title="Introducción general">
+    <section id="introduccion" data-title="Introducción">
+      <sub-section id="antes-de-empezar" data-title="Antes de empezar">
+        <sub-sub-section id="antes-de-empezar-contenido" data-title="Orientaciones iniciales">
+          <p>Este documento es un acordeón ampliado. No sustituye un curso
+    completo ni garantiza que aparezcan todos los temas de tu examen.
+    Los programas cambian según el grado, la escuela y el subsistema
+    de bachillerato.</p>
+          <p>La estrategia es sencilla:</p>
+          <ol>
+            <li>
+              <p>Identifica qué tipo de problema tienes.</p>
+            </li>
+            <li>
+              <p>Busca la fórmula correspondiente.</p>
+            </li>
+            <li>
+              <p>Sustituye los datos.</p>
+            </li>
+            <li>
+              <p>Haz las operaciones.</p>
+            </li>
+            <li>
+              <p>Comprueba que el resultado tenga sentido.</p>
+            </li>
+          </ol>
+          <p>Las matemáticas no siempre son difíciles. A veces solamente
+    están escritas de una forma poco amable.</p>
+        </sub-sub-section>
+      </sub-section>
+    </section>
 
+  </chapter>
+
+  <chapter id="primaria" data-title="Primaria">
+    <section id="primaria-inicial" data-title="Primaria inicial">
+      <sub-section id="aritmetica-los-numeros-y-sus-problemas" data-title="Aritmética: los números y sus problemas">
+
+        - **+ ¿Qué son los números naturales?**
+        <sub-sub-section id="que-son-los-numeros-naturales" data-title="¿Qué son los números naturales?">
+          <p>Empecemos definiendo los números naturales. Los números naturales son aquellos que usamos para contar: 
+          \(0, 1, 2, 3, \dots\).</p>
+          <p>Los números naturales forman un conjunto infinito y se representan generalmente con la letra \(\mathbb{N}\).</p>
+          <p>Por ejemplo, los primeros números naturales son \(0, 1, 2, 3, 4, 5, \dots\).</p>
+          <p>Los números naturales se utilizan para contar objetos, ordenar elementos y realizar operaciones básicas como suma, resta, multiplicación y división.</p>
+          <p>Es importante notar que los números naturales no incluyen números negativos ni fracciones.</p>
+          <p>En resumen, los números naturales son los números que usamos para contar y ordenar, comenzando desde el cero y continuando indefinidamente.</p>
+          <math-exercise id="numeros-naturales-ejercicios" data-title="Ejercicios sobre números naturales">
+            <question>Escribe los primeros cinco números naturales.</question>
+            <question>¿Cuál es el número natural que sigue a 7?</question>
+            <question>¿Cuál es el número natural que precede a 0?</question>
+          </math-exercise>
+
+        </sub-sub-section>
+
+        - **01. Lectura y escritura de números naturales**
+        <sub-sub-section id="lectura-y-escritura-de-los-numeros-naturales" data-title="Lectura y escritura de los números naturales">
+          <p>Para leer y escribir números naturales, es importante conocer el valor de cada cifra según su posición. Por ejemplo, en el número \(345\), el \(3\) representa tres centenas, el \(4\) representa cuatro decenas y el \(5\) representa cinco unidades.</p>
+          <p>Los números naturales se pueden escribir en forma desarrollada, 
+          descomponiéndolos según el valor de cada cifra: \(345 = 3\cdot 100 + 4\cdot 10 + 5\).</p>
+          <p>También se pueden comparar utilizando los símbolos 
+          \(\lt, \gt, =\) para determinar cuál es mayor, menor o si son iguales.</p>
+          <math-exercise id="lectura-escritura-numeros-naturales-ejercicios" data-title="Ejercicios sobre lectura y escritura de números naturales">
+            <question>Escribe el número 472 en forma desarrollada.</question>
+            <question>Compara los números 345 y 354 utilizando los símbolos \(\lt;, \gt;, =\).</question>
+            <question>Escribe el número que tiene 6 centenas, 3 decenas y 2 unidades.</question>
+          </math-exercise>
+        </sub-sub-section>
+
+        - **02. Descomposición aditiva de números según su valor posicional**
+        <sub-sub-section id="descomposicion-aditiva" data-title="Descomposición aditiva de números según su valor posicional">
+          <p>La descomposición aditiva consiste en expresar un número como la suma de los valores de cada una de sus cifras según su posición. Por ejemplo, el número \(345\) se puede descomponer como:</p>
+          <p>\(345 = 3\cdot 100 + 4\cdot 10 + 5\)</p>
+          <p>Esto nos permite entender mejor el valor de cada cifra dentro del número y facilita operaciones como la suma y la resta.</p>
+          <math-exercise id="descomposicion-aditiva-ejercicios" data-title="Ejercicios sobre descomposición aditiva">
+            <question>Descompón el número 526 según el valor de sus cifras.</question>
+            <question>Escribe en forma desarrollada el número 407.</question>
+            <question>¿Cuál es la descomposición aditiva del número 318?</question>
+          </math-exercise>
+        </sub-sub-section>
+
+        - **03. Representación de números naturales en la recta numérica**
+        <sub-sub-section id="03-representacion-numeros-recta" data-title="Representación de números naturales en la recta numérica">
+          <p>Los números naturales se pueden representar en la recta numérica, donde cada número ocupa un punto específico en orden creciente de izquierda a derecha.</p>
+          <p>En la recta numérica, los números se colocan en orden creciente de izquierda a derecha, y cada punto representa un número natural.</p>
+          <math-figure id="representacion-recta-figura" data-title="Representación en la recta numérica">
+            <svg width="600" height="80" viewBox="0 0 600 80" style="font-family:Arial,sans-serif;font-size:14px;text-anchor:middle"><path d="M30 40H570M50 30V50M100 33V47M150 33V47M200 33V47M250 33V47M300 33V47M350 33V47M400 33V47M450 33V47M500 33V47M550 33V47" stroke="#333" stroke-width="2"/><polygon points="575,40 565,35 565,45" fill="#333"/><text x="50" y="68" font-weight="bold">0</text><text x="100" y="68">1</text><text x="150" y="68">2</text><text x="200" y="68">3</text><text x="250" y="68">4</text><text x="300" y="68">5</text><text x="350" y="68">6</text><text x="400" y="68">7</text><text x="450" y="68">8</text><text x="500" y="68">9</text><text x="550" y="68">10</text></svg>
+          </math-figure>
+          
+
+          <math-exercise id="representacion-recta-ejercicios" data-title="Ejercicios sobre representación en la recta numérica">
+            <question>Ubica los números 3, 7 y 10 en la recta numérica.</question>
+            <question>¿Qué número se encuentra entre el 5 y el 6 en la recta numérica?</question>
+            <question>Representa los números 0, 4 y 8 en la recta numérica.</question>
+          </math-exercise>
+        </sub-sub-section>
+
+        - **04. Comparación y orden de números naturales**
+        <sub-sub-section id="comparacion-orden-numeros-naturales" data-title="Comparación y orden de números naturales">
+          <p>Para comparar números naturales, se observa cuál es mayor o menor según su valor posicional.</p>
+          <p>El orden de los números naturales se establece de menor a mayor o de mayor a menor.</p>
+          <math-example id="comparacion-orden-ejemplo" data-title="Ejemplo de comparación y orden de números naturales">
+            <p>Comparando 4 y 7, observamos que 7 es mayor que 4.</p>
+            <p>Ordenando 3, 1 y 5 de menor a mayor, obtenemos 1, 3 y 5.</p>
+          </math-example>
+
+          <p>Para expresar la comparación y el orden de números naturales, se utilizan los símbolos \(\lt\), \(\gt\) e \(=\) según corresponda.</p>
+
+          <p>Por ejemplo, \(4 \lt 7\) indica que 4 es menor que 7, \(7 \gt 4\) indica que 7 es mayor que 4, y \(3 = 3\) indica que 3 es igual a 3.</p>
+
+          <math-example id="comparacion-orden-simbolos-ejemplo" data-title="Ejemplo de uso de símbolos de comparación y orden">
+            <p>Para los números 4 y 7, escribimos \(4 \lt 7\) porque 4 es menor que 7.</p>
+            <p>Para los números 7 y 4, escribimos \(7 \gt 4\) porque 7 es mayor que 4.</p>
+            <p>Para los números 3 y 3, escribimos \(3 = 3\) porque son iguales.</p>
+          </math-example>
+
+          <math-exercise id="comparacion-orden-ejercicios" data-title="Ejercicios sobre comparación y orden de números naturales">
+            <question>Compara los números 4 y 7. ¿Cuál es mayor?</question>
+            <question>Ordena los números 3, 1 y 5 de menor a mayor.</question>
+            <question>¿Qué número se encuentra entre el 2 y el 4?</question>
+          </math-exercise>
+        </sub-sub-section>
+
+        - **05. Redondeo a decenas, centenas y millares**
+        <sub-sub-section id="Redondeo a decenas, centenas y millares" data-title="Redondeo a decenas, centenas y millares">
+          <p>El redondeo consiste en aproximar un número al múltiplo de 10, 100 o 1000 más cercano.</p>
+          <math-example id="redondeo-ejemplo" data-title="Ejemplo de redondeo">
+            <p>Redondeando 47 a la decena más cercana, obtenemos 50.</p>
+            <p>Redondeando 386 a la centena más cercana, obtenemos 400.</p>
+            <p>Redondeando 4721 al millar más cercano, obtenemos 5000.</p>
+          </math-example>
+          <math-exercise id="redondeo-ejercicios" data-title="Ejercicios sobre redondeo">
+            <question>Redondea 56 a la decena más cercana.</question>
+            <question>Redondea 742 a la centena más cercana.</question>
+            <question>Redondea 3891 al millar más cercano.</question>
+          </math-exercise>
+        </sub-sub-section>
+
+        - **06. Aproximación de números antes de calcular**
+        <sub-sub-section id="aproximacion-de-numeros" data-title="Aproximación de números antes de calcular">
+          <p>La aproximación de números consiste en estimar un valor cercano antes de realizar cálculos exactos, lo que facilita la resolución rápida de problemas.</p>
+          <math-example id="aproximacion-ejemplo" data-title="Ejemplo de aproximación">
+            <p>Si queremos sumar 48 y 37, podemos aproximar 48 a 50 y 37 a 40, obteniendo una suma aproximada de 90.</p>
+          </math-example>
+          <math-exercise id="aproximacion-ejercicios" data-title="Ejercicios sobre aproximación">
+            <question>Redondea 63 y 29 antes de sumarlos y estima el resultado.</question>
+            <question>Redondea 147 y 86 antes de restarlos y estima el resultado.</question>
+          </math-exercise>
+        </sub-sub-section>
+
+        - **07. Estrategias de cálculo mental**
+        <sub-sub-section id="estrategias-de-calculo-mental" data-title="Estrategias de cálculo mental">
+          <p>El cálculo mental consiste en realizar operaciones matemáticas sin ayuda de lápiz, papel o calculadora, utilizando estrategias que faciliten el proceso.</p>
+          <p>Algunas estrategias comunes incluyen descomponer los números, redondear y ajustar, y utilizar propiedades de las operaciones como la conmutativa y la distributiva.</p>
+
+          <sub-sub-sub-section id="estrategia-calculo-mental-descomponer" data-title="Descomponer números">
+            <p>Una estrategia útil es descomponer los números en partes más manejables. Por ejemplo, para sumar 48 y 37, podemos descomponerlos en decenas y unidades:.</p>
+            <table>
+              <tr>
+                <td>\(48 + 37\)</td>
+              </tr>
+              <tr>
+                <td>\(=(40+8)+(30+7)\)</td>
+              </tr>
+              <tr>
+                <td>\(=70+15\)</td>
+              </tr>
+              <tr>
+                <td>\(=85\)</td>
+              </tr>
+            </table>
+            <p>En este ejemplo, descomponemos cada número en decenas y unidades, sumamos las decenas y las unidades por separado, y luego combinamos los resultados para obtener la suma final.</p>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="estrategia-calculo-mental-redondear" data-title="Redondear y ajustar">
+            <p>Otra estrategia es redondear los números a valores más fáciles de manejar y luego ajustar el resultado. Por ejemplo, para sumar 48 y 37, podemos redondear 48 a 50 y 37 a 40, obteniendo una suma aproximada de 90. Luego ajustamos restando 2 y 3, obteniendo 85.</p>
+            <table>
+              <tr>
+                <td>\(48 + 37\)</td>
+              </tr>
+              <tr>
+                <td>\(\approx 50 + 40\)</td>
+              </tr>
+              <tr>
+                <td>\(=90\)</td>
+              </tr>
+              <tr>
+                <td>\(90 - 2 - 3\)</td>
+              </tr>
+              <tr>
+                <td>\(\approx 50 + 40 - 2 - 3 = 85\)</td>
+              </tr>
+            </table>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="Cálculo-mental-mediante-algoritmo-de-los-renglones" data-title="Cálculo mental mediante algoritmo de los renglones">
+            <p>El algoritmo de los renglones es una técnica que permite realizar sumas y restas mentalmente organizando los números en renglones según sus valores posicionales (decenas, unidades, etc.). Esto facilita el cálculo al poder sumar o restar cada columna por separado.</p>
+            
+            <p>Veamos un ejemplo de cómo se aplica este algoritmo para la suma, la resta y la multiplicación.</p>
+            <p>Este método consiste en alinear los números según sus posiciones y realizar las operaciones columna por columna, llevando los excedentes cuando sea necesario.</p>
+            <p>En la suma y la resta, se comienza por la columna de las unidades y se avanza hacia las decenas, centenas, etc. En la multiplicación, se multiplica cada cifra del multiplicador por cada cifra del multiplicando y se suman los resultados parciales.</p>
+            <p>Es importante practicar este algoritmo para mejorar la agilidad mental y la precisión en los cálculos, ya que permite descomponer problemas complejos en pasos más manejables.</p>
+            <p>En los ejemplos siguientes, se muestra cómo se aplican estos principios en la suma, la resta y la multiplicación utilizando el algoritmo de los renglones.</p>
+            <p>Comencemos con un ejemplo de suma utilizando este algoritmo.</p>
+            <math-formula id="algoritmo-renglones-figure-suma" data-title="Algoritmo de los renglones para la suma">
+              <math-display>
+                \begin{array}{r} \color{gray}{\small 1\phantom{0}1\phantom{0}} \\ 458 \\ + 367 \\ \hline 825 \end{array}
+              </math-display>
+            </math-formula>
+
+            <p>Ahora veamos un ejemplo de resta utilizando el mismo algoritmo.</p>
+
+            <math-formula id="algoritmo-renglones-figure-resta" data-title="Algoritmo de los renglones para la resta">
+              <math-display>
+                \begin{array}{r} \color{gray}{\small 1\phantom{0}1\phantom{0}} \\ 458 \\ - 367 \\ \hline 91 \end{array}
+              </math-display>
+              
+            </math-formula>
+
+            <p>Finalmente, veamos un ejemplo de multiplicación utilizando el algoritmo de los renglones.</p>
+            <math-formula id="algoritmo-renglones-figure-multiplicacion" data-title="Algoritmo de los renglones para la multiplicación">
+              <math-display id="algoritmo-renglones-figure-multiplicacion" data-title="Algoritmo de los renglones para la multiplicación">
+                \begin{array}{r} \color{gray}{\small 1\phantom{0}1\phantom{0}} \\ 458 \\ \times 367 \\ \hline 167786 \end{array}
+              </math-display>
+            </math-formula>
+          </sub-sub-sub-section>
+
+
+          <math-example id="calculo-mental-ejemplo" data-title="Ejemplo de cálculo mental">
+            <p>Para sumar 48 y 37 mentalmente, podemos descomponer los números: \(48+37=(40+8)+(30+7)=70+15=85\).</p>
+          </math-example>
+          <math-exercise id="calculo-mental-ejercicios" data-title="Ejercicios sobre cálculo mental">
+            <question>Calcula mentalmente \(56+29\).</question>
+            <question>Calcula mentalmente \(83-47\).</question>
+          </math-exercise>
+        </sub-sub-section>
+
+        - Las cuatro operaciones
+        <sub-sub-section id="capitulo-01-apartado-01-las-cuatro-operaciones" data-title="Las cuatro operaciones">
+          <ul>
+            <li>
+              <p>Suma: juntar cantidades.</p>
+            </li>
+            <li>
+              <p>Resta: calcular una diferencia.</p>
+            </li>
+            <li>
+              <p>Multiplicación: sumar repetidamente una cantidad.</p>
+            </li>
+            <li>
+              <p>División: repartir o calcular cuántas veces cabe algo.</p>
+            </li>
+          </ul>
+          <math-formula data-title="Fórmulas">
+            <math-display>\[a+b,\qquad a-b,\qquad a\cdot b,\qquad \frac{a}{b}\]</math-display>
+            <p>En una división, \(b\neq 0\). Dividir entre cero no está definido.</p>
+          </math-formula>
+          <math-examples>
+            <math-example id="c1-s1-ejemplo-3" data-title="Ejemplo resuelto">
+              <p>Calcula \(18+4(3-1)\).</p>
+              <p>Primero el paréntesis: \(3-1=2\).</p>
+              <p>Después la multiplicación: \(4(2)=8\).</p>
+              <p>Finalmente: \(18+8=26\).</p>
+            </math-example>
+          </math-examples>
+
+          <sub-sub-sub-section id="la-suma" data-title="La suma">
+            <p>La suma es una operación que consiste en juntar cantidades. Se representa con el signo \(+\).</p>
+            <math-formula data-title="Fórmula de la suma">
+              <math-display>\[a+b\]</math-display>
+            </math-formula>
+            <math-examples>
+              <math-example id="c1-s1-ejemplo-4" data-title="Ejemplo resuelto">
+                <p>Calcula \(7+5\).</p>
+                <p>Se suman las cantidades: \(7+5=12\).</p>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="la-resta" data-title="La resta">
+            <p>La resta es una operación que consiste en calcular la diferencia entre cantidades. Se representa con el signo \(-\).</p>
+            <math-formula data-title="Fórmula de la resta">
+              <math-display>\[a-b\]</math-display>
+            </math-formula>
+            <math-examples>
+              <math-example id="c1-s1-ejemplo-5" data-title="Ejemplo resuelto">
+                <p>Calcula \(9-4\).</p>
+                <p>Se resta la segunda cantidad de la primera: \(9-4=5\).</p>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="la-multiplicacion" data-title="La multiplicación">
+            <p>La multiplicación es una operación que consiste en calcular el producto de cantidades. Se representa con el signo \(\cdot\).</p>
+            <p>La multiplicación también se puede indicar mediante paréntesis, o si son letras, simplemente escribiendo las letras juntas: \(ab\) significa \(a\cdot b\).</p>
+            <p>En niveles inferiores, la multiplicación se indica con una \(\times\).</p>
+            <p>Por ejemplo, \(3\times 4=12\).</p>
+            <p>Pero en niveles superiores, se prefiere utilizar el punto \(\cdot\) para evitar confusiones con la letra \(x\) o con la variable \(x\).</p>
+            <p>Es importante recordar que la multiplicación es conmutativa, es decir, el orden de los factores no altera el producto: \(a\cdot b = b\cdot a\).</p>
+            <math-formula data-title="Fórmula de la multiplicación">
+              <math-display>\[a\cdot b\]</math-display>
+            </math-formula>
+            <math-examples>
+              <math-example id="c1-s1-ejemplo-6" data-title="Ejemplo resuelto">
+                <p>Calcula \(3\cdot 4\).</p>
+                <p>Se multiplican las cantidades: \(3\cdot 4=12\).</p>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="la-division" data-title="La división">
+            <p>La división es una operación que consiste en calcular el cociente entre cantidades. Se representa de la siguiente manera: \(\frac{a}{b}\) indica que \(a\) se divide entre \(b\).</p>
+            <p>Por ejemplo, \(\frac{12}{4}=3\).</p>
+            <p>Es importante recordar que la división no es conmutativa, es decir, el orden de los factores sí altera el cociente: \(\frac{a}{b} \neq \frac{b}{a}\) en general.</p>
+            <p>Además, la división por cero no está definida: \(\frac{a}{0}\) no tiene significado en matemáticas.</p>
+            <p>En resumen, la división nos permite repartir una cantidad en partes iguales o determinar cuántas veces una cantidad está contenida en otra.</p>
+            <p>En niveles inferiores, la división se enseña generalmente utilizando el signo \(\div\) y se enfoca en repartir cantidades de manera equitativa o en determinar cuántas veces un número está contenido en otro.</p>
+            <p>En niveles superiores, se prefiere utilizar fracciones para representar la división, ya que permiten trabajar con cantidades más generales y facilitan la manipulación algebraica.</p>
+            <p>Por ejemplo, en lugar de escribir \(12\div 4\), se puede escribir \(\frac{12}{4}\), lo cual es especialmente útil cuando se trabaja con expresiones algebraicas.</p>
+            <p>De esta manera, la división se integra de forma natural en el álgebra y permite simplificar y manipular fracciones de manera más eficiente.</p>
+            
+
+            <math-formula data-title="Fórmula de la división">
+              <math-display>\[\frac{a}{b}\]</math-display>
+            </math-formula>
+            <math-examples>
+              <math-example id="c1-s1-ejemplo-7" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{12}{4}\).</p>
+                <p>Se divide la primera cantidad entre la segunda: \(\frac{12}{4}=3\).</p>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+        </sub-sub-section>
+
+        - **08. Propiedades de la suma y la multiplicación**
+        <sub-sub-section id="propiedades-conmutativa-y-asociativa-de-la-suma-y-la-multiplicación" data-title="Propiedades conmutativa y asociativa de la suma y la multiplicación">
+          <p>La suma y la multiplicación cumplen las siguientes propiedades:</p>
+          <ul>
+            <li>
+              <p>Conmutativa: el orden de los factores no altera el resultado. Por ejemplo, \(3+2=2+3\) y \(4\cdot 5=5\cdot 4\).</p>
+            </li>
+            <li>
+              <p>Asociativa: la forma de agrupar los factores no altera el resultado. Por ejemplo, \((2+3)+4=2+(3+4)\) y \((4\cdot 5)\cdot 6=4\cdot (5\cdot 6)\).</p>
+            </li>
+          </ul>
+
+          <math-remark data-title="Observación">
+            <p>Estas propiedades son fundamentales para simplificar cálculos y resolver problemas de manera eficiente.</p>
+          </math-remark>
+
+          <math-exercises data-title="Ejercicios">
+            <math-exercise id="c1-s1-ejercicio-1" data-title="Ejercicio 1" data-nivel="basic">
+              <p>Calcula \(3+5\) y \(4\cdot 2\).</p>
+            </math-exercise>
+            <math-exercise id="c1-s1-ejercicio-2" data-title="Ejercicio 2" data-nivel="basic">
+              <p>Calcula \((2+3)+4\) y \(4\cdot (5\cdot 6)\).</p>
+            </math-exercise>
+          </math-exercises>
+
+        </sub-sub-section>
+
+        - **09. Tablas de multiplicar**
+        <sub-sub-section id="Tablas de multiplicar" data-title="Tablas de multiplicar">
+          <p>Las tablas de multiplicar son una herramienta fundamental para realizar multiplicaciones de manera rápida y eficiente. A continuación se presentan las tablas del 1 al 10:</p>
+          <table>
+            <tr>
+              <th>Tabla</th>
+              <th>Resultados</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1, 2, 3, 4, 5, 6, 7, 8, 9, 10</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>2, 4, 6, 8, 10, 12, 14, 16, 18, 20</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>3, 6, 9, 12, 15, 18, 21, 24, 27, 30</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>4, 8, 12, 16, 20, 24, 28, 32, 36, 40</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>5, 10, 15, 20, 25, 30, 35, 40, 45, 50</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>6, 12, 18, 24, 30, 36, 42, 48, 54, 60</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>7, 14, 21, 28, 35, 42, 49, 56, 63, 70</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td>8, 16, 24, 32, 40, 48, 56, 64, 72, 80</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td>9, 18, 27, 36, 45, 54, 63, 72, 81, 90</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td>10, 20, 30, 40, 50, 60, 70, 80, 90, 100</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td>11, 22, 33, 44, 55, 66, 77, 88, 99, 110</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>12, 24, 36, 48, 60, 72, 84, 96, 108, 120</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td>13, 26, 39, 52, 65, 78, 91, 104, 117, 130</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td>14, 28, 42, 56, 70, 84, 98, 112, 126, 140</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td>15, 30, 45, 60, 75, 90, 105, 120, 135, 150</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td>16, 32, 48, 64, 80, 96, 112, 128, 144, 160</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td>17, 34, 51, 68, 85, 102, 119, 136, 153, 170</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td>18, 36, 54, 72, 90, 108, 126, 144, 162, 180</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td>19, 38, 57, 76, 95, 114, 133, 152, 171, 190</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td>20, 40, 60, 80, 100, 120, 140, 160, 180, 200</td>
+            </tr>
+          </table>
+        </sub-sub-section>
+
+        - **10. Multiplicación de números de varias cifras**
+        <sub-sub-section id="multiplicacion-de-numeros-de-varias-cifras" data-title="Multiplicación de números de varias cifras">
+          <p>La multiplicación de números de varias cifras se realiza utilizando el algoritmo de los renglones, donde cada cifra del multiplicador se multiplica por cada cifra del multiplicando y se suman los resultados parciales, teniendo en cuenta las posiciones correspondientes.</p>
+          <p>Por ejemplo, para multiplicar 123 por 45, se realiza de la siguiente manera:</p>
+          <math-formula id="multiplicacion-ejemplo" data-title="Ejemplo de multiplicación">
+            <math-display>
+              123 \cdot 45 = (123 \cdot 5) + (123 \cdot 40) = 615 + 4920 = 5535
+            </math-display>
+          </math-formula>
+
+          <p>Este método se puede aplicar a cualquier par de números de varias cifras, siguiendo el mismo procedimiento de multiplicar cada cifra del multiplicador por cada cifra del multiplicando y sumando los resultados parciales.</p>
+          <p>Veamos otro ejemplo:</p>
+          <math-formula id="multiplicacion-ejemplo-2" data-title="Ejemplo de multiplicación">
+            <math-display>
+              234 \cdot 56 = (234 \cdot 6) + (234 \cdot 50) = 1404 + 11700 = 13104
+            </math-display>
+          </math-formula>
+
+          <p>En resumen, el algoritmo consiste en multiplicar cada cifra del multiplicador por cada cifra del multiplicando, teniendo en cuenta la posición de cada cifra, y luego sumar todos los resultados parciales para obtener el producto final.</p>
+          <p>Es importante practicar este método con diferentes números para familiarizarse con el proceso y evitar errores en los cálculos.</p>
+
+          <math-excersice id="multiplicacion-ejercicio" data-title="Ejercicio de multiplicación">
+            <p>Resuelve el ejercicio aplicando el algoritmo explicado anteriormente.</p>
+            <math-display>
+              345 \cdot 67 = ?
+            </math-display>
+          </math-excersice>
+          
+        </sub-sub-section>
+
+        - **12. Relación inversa entre multiplicación y división**
+        <sub-sub-section id="relacion-inversa-entre-multiplicacion-y-division" data-title="Relación inversa entre multiplicación y división">
+          <p>La multiplicación y la división son operaciones inversas. Esto significa que si conocemos el producto y uno de los factores, podemos encontrar el otro factor mediante la división.</p>
+          <p>Por ejemplo, si sabemos que 8 multiplicado por 7 es 56, podemos usar la división para encontrar cualquiera de los factores si conocemos el producto y el otro factor.</p>
+          <p>Esto nos permite resolver problemas de multiplicación y división de manera más eficiente, utilizando la relación inversa entre ambas operaciones.</p>
+
+          <math-formula id="relacion-inversa-ejemplo" data-title="Ejemplo de relación inversa">
+            <math-display>
+              Si \; 8 \cdot 7 = 56, \; entonces \; 56 \div 8 = 7 \; y \; 56 \div 7 = 8
+            </math-display>
+          </math-formula>
+
+          <math-excersice id="relacion-inversa-ejercicio" data-title="Ejercicio de relación inversa">
+            <p>Resuelve el ejercicio aplicando la relación inversa entre multiplicación y división.</p>
+            <math-display>
+              Si \; 9 \cdot 5 = 45, \; entonces \; 45 \div 9 = ? \; y \; 45 \div 5 = ?
+            </math-display>
+          </math-excersice>
+        </sub-sub-section>
+
+        - **14. Resolución de problemas de varios pasos con números naturales**
+        <sub-sub-section id="resolucion-de-problemas-de-varios-pasos-con-numeros-naturales" data-title="Resolución de problemas de varios pasos con números naturales">
+          <p>Para resolver problemas de varios pasos con números naturales, 
+          es importante identificar las operaciones necesarias y el orden en que deben realizarse. 
+          A menudo, estos problemas requieren combinar sumas, restas, multiplicaciones y divisiones de manera estratégica.</p>
+
+          <math-excersices id="problema-varios-pasos-ejercicio" data-title="Ejercicio de varios pasos">
+            <math-excersice id="problema-varios-pasos-ejercicio-1" data-title="Ejercicio 1">
+              <p>Resuelve el siguiente problema paso a paso:</p>
+              <math-display>
+                Juan tiene 24 manzanas. Si reparte las manzanas en 4 cestas y luego cada cesta la divide en 3 partes iguales, ¿cuántas manzanas hay en cada parte?
+              </math-display>
+            </math-excersice>
+
+            <math-excersice id="problema-varios-pasos-ejercicio-2" data-title="Ejercicio 2">
+              <p>Resuelve el siguiente problema paso a paso:</p>
+              <math-display>
+                Ana tiene 36 caramelos. Si los reparte en 6 bolsas y luego cada bolsa la divide en 2 partes iguales, ¿cuántos caramelos hay en cada parte?
+              </math-display>
+            </math-excersice>
+
+            <math-excersice id="problema-varios-pasos-ejercicio-3" data-title="Ejercicio 3">
+              <p>Resuelve el siguiente problema paso a paso:</p>
+              <math-display>
+                Pedro tiene 48 lápices. Si los reparte en 8 cajas y luego cada caja la divide en 2 partes iguales, ¿cuántos lápices hay en cada parte?
+              </math-display>
+            </math-excersice>
+          </math-excersices>
+
+        </sub-sub-section>
+
+        - Jerarquía de operaciones
+        <sub-sub-section id="capitulo-01-apartado-02-jerarqu-a-de-operaciones" data-title="Jerarquía de operaciones">
+          <p>El orden usual es:</p>
+          <ol>
+            <li>
+              <p>Paréntesis y otros signos de agrupación.</p>              
+            </li>
+            <li>
+              <p>Potencias y raíces.</p>
+            </li>
+            <li>
+              <p>Multiplicaciones y divisiones, de izquierda a derecha.</p>
+            </li>
+            <li>
+              <p>Sumas y restas, de izquierda a derecha.</p>
+            </li>
+          </ol>
+
+          <p>Por ejemplo, en la expresión \(2 + 3 \times 4\), primero se realiza la multiplicación y luego la suma.</p>
+
+          <math-example data-title="Ejemplo">
+            <p>Resuelve paso a paso la expresión \(2 + 3 \times 4\).</p>
+            <math-display>\[2 + 3 \times 4 = 2 + 12 = 14\]</math-display>
+          </math-example>
+
+          <math-remark data-title="Advertencia">
+            <p>No se resuelve necesariamente todo de izquierda a derecha.
+            La jerarquía existe precisamente para evitar ese desastre.</p>
+          </math-remark>
+        </sub-sub-section>
+
+
+
+      </sub-section>
+
+    </section>
+
+  </chapter>
+  
   <section id="primaria" data-title="Primaria">
     <sub-section id="capitulo-01-aritm-tica-los-n-meros-y-sus-problemas" data-title="Aritmética: los números y sus problemas">
-      <sub-sub-section id="capitulo-01-apartado-01-las-cuatro-operaciones" data-title="Las cuatro operaciones">
-        <ul>
-          <li>
-            <p>Suma: juntar cantidades.</p>
-          </li>
-          <li>
-            <p>Resta: calcular una diferencia.</p>
-          </li>
-          <li>
-            <p>Multiplicación: sumar repetidamente una cantidad.</p>
-          </li>
-          <li>
-            <p>División: repartir o calcular cuántas veces cabe algo.</p>
-          </li>
-        </ul>
-        <math-formula data-title="Fórmulas">
-          <math-display>\[a+b,\qquad a-b,\qquad a\cdot b,\qquad \frac{a}{b}\]</math-display>
-          <p>En una división, \(b\neq 0\). Dividir entre cero no está definido.</p>
-        </math-formula>
-        <math-examples>
-          <math-example id="c1-s1-ejemplo-3" data-title="Ejemplo resuelto">
-            <p>Calcula \(18+4(3-1)\).</p>
-            <p>Primero el paréntesis: \(3-1=2\).</p>
-            <p>Después la multiplicación: \(4(2)=8\).</p>
-            <p>Finalmente: \(18+8=26\).</p>
-          </math-example>
-        </math-examples>
-      </sub-sub-section>
-      <sub-sub-section id="capitulo-01-apartado-02-jerarqu-a-de-operaciones" data-title="Jerarquía de operaciones">
-        <p>El orden usual es:</p>
-        <ol>
-          <li>
-            <p>Paréntesis y otros signos de agrupación.</p>
-          </li>
-          <li>
-            <p>Potencias y raíces.</p>
-          </li>
-          <li>
-            <p>Multiplicaciones y divisiones, de izquierda a derecha.</p>
-          </li>
-          <li>
-            <p>Sumas y restas, de izquierda a derecha.</p>
-          </li>
-        </ol>
-        <math-remark data-title="Advertencia">
-          <p>No se resuelve necesariamente todo de izquierda a derecha.
-		La jerarquía existe precisamente para evitar ese desastre.</p>
-        </math-remark>
-      </sub-sub-section>
+      
+      
       <sub-sub-section id="capitulo-01-apartado-03-divisibilidad-y-n-meros-primos" data-title="Divisibilidad y números primos">
-        <p>Un número es divisible entre otro si la división da un entero
-	sin residuo.</p>
+        <p>Un número es divisible entre otro si la división da un entero sin residuo.</p>
         <table>
           <thead>
             <tr>
@@ -124,6 +789,7 @@
         <p>Un número primo tiene exactamente dos divisores positivos:
 	1 y él mismo. El 1 no es primo.</p>
       </sub-sub-section>
+
       <sub-sub-section id="capitulo-01-apartado-04-m-nimo-com-n-m-ltiplo-y-m-ximo-com-n-divisor" data-title="Mínimo común múltiplo y máximo común divisor">
         <p>El MCM es el menor múltiplo positivo común.
 	El MCD es el mayor divisor positivo común.</p>

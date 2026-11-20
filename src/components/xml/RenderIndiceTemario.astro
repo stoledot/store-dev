@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { nodo } = Astro.props;
-const STRUCTURAL_TAGS = new Set(["section", "sub-section", "sub-sub-section"]);
+const STRUCTURAL_TAGS = new Set(["chapter", "section", "sub-section", "sub-sub-section"]);
 const isStructural = nodo.tipo === "elemento" && STRUCTURAL_TAGS.has(nodo.etiqueta);
 
 const title = nodo.tipo === "elemento"
