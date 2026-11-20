@@ -1,4 +1,5 @@
 ---
+//src/pages/lecturas/[id].astro
 import { env } from 'cloudflare:workers';
 export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
@@ -125,19 +126,33 @@ if (error) return Astro.redirect('/account/lecturas', 303);
     </div>
   </header>
 
-  <!-- ÍNDICE HORIZONTAL: queda fijo al llegar al borde superior -->
-  <!-- ÍNDICE DE ANCHO COMPLETO: fijo arriba al hacer scroll y desplegable en vertical -->
-    <aside
+    <!-- ÍNDICE VERTICAL DESPLEGABLE -->
+    <!-- ÍNDICE REPLEGADO DESDE EL PRINCIPIO -->
+  <aside
     class="sticky top-0 z-40 -mx-3 border-y border-line bg-surface/95 px-3 py-2.5 shadow-sm backdrop-blur sm:-mx-6 sm:px-6"
     aria-label="Navegación de la lectura"
   >
     <nav class="mx-auto max-w-7xl" aria-label="Índice de lectura">
-      <!-- Fila superior: título, buscador y enlace para volver -->
+      <!-- Fila superior compacta: botón desplegable del índice, enlace inicio, buscador y X -->
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-3">
-          <h2 id="reading-toc-heading" class="text-xs font-bold uppercase tracking-wide text-muted">
-            En esta lectura
-          </h2>
+          <button
+            type="button"
+            id="reading-toc-toggle"
+            aria-expanded="false"
+            aria-controls="reading-toc-panel"
+            class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold uppercase tracking-wide text-slate-700 transition-colors hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-brand"
+          >
+            <span
+              id="reading-toc-chevron"
+              class="text-xs transition-transform duration-200"
+              aria-hidden="true"
+            >
+              ▸
+            </span>
+            <span id="reading-toc-heading">En esta lectura</span>
+          </button>
+
           <a
             href="#reading-header"
             class="text-xs font-semibold text-brand underline underline-offset-4 hover:opacity-80"
@@ -146,52 +161,78 @@ if (error) return Astro.redirect('/account/lecturas', 303);
           </a>
         </div>
 
-        <div class="w-full sm:w-64">
-          <label for="reading-toc-search" class="sr-only">Buscar tema en el índice</label>
-          <input
-            id="reading-toc-search"
-            data-reading-toc-search
-            type="search"
-            autocomplete="off"
-            placeholder="Buscar tema…"
-            class="h-9 w-full rounded-xl border border-line bg-paper px-3 text-xs text-slate-900 placeholder:text-muted focus-visible:outline-2 focus-visible:outline-brand"
-          />
+        <div class="flex w-full items-center gap-1.5 sm:w-72">
+          <div class="relative flex-1">
+            <label for="reading-toc-search" class="sr-only">Buscar tema en el índice</label>
+            <input
+              id="reading-toc-search"
+              data-reading-toc-search
+              type="text"
+              autocomplete="off"
+              placeholder="Buscar tema…"
+              class="h-9 w-full rounded-xl border border-line bg-paper px-3 text-xs text-slate-900 placeholder:text-muted focus-visible:outline-2 focus-visible:outline-brand"
+            />
+          </div>
+
+          <!-- Botón X: limpia búsqueda, cierra submenús y repliega todo el índice -->
+          <button
+            type="button"
+            id="reading-toc-clear"
+            aria-label="Limpiar búsqueda y replegar índice"
+            title="Limpiar búsqueda y replegar índice"
+            class="hidden size-9 shrink-0 items-center justify-center rounded-xl border border-line bg-paper text-sm font-bold text-slate-500 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-brand"
+          >
+            ✕
+          </button>
         </div>
       </div>
 
-      <!-- 1. Temario original (se oculta al buscar) -->
-      <ol
-        id="reading-toc"
-        class="mt-2 flex max-h-[65dvh] flex-wrap items-start gap-1.5 overflow-y-auto pt-1 text-sm"
-      >
-        <RenderIndiceTemario nodo={nodo} />
-      </ol>
+      <!-- Panel desplegable (oculto por defecto con 'hidden') -->
+      <div id="reading-toc-panel" class="hidden">
+        <!-- 1. Temario original (vertical) -->
+        <ol
+          id="reading-toc"
+          class="mt-2 flex max-h-[55dvh] flex-col space-y-1 overflow-y-auto border-t border-line/60 pt-2 text-sm"
+        >
+          <RenderIndiceTemario nodo={nodo} />
+        </ol>
 
-      <!-- 2. Vista de resultados de búsqueda (sobrescribe el espacio del temario) -->
-      <ol
-        id="reading-toc-results"
-        class="mt-2 hidden max-h-[65dvh] flex-wrap items-center gap-1.5 overflow-y-auto pt-1 text-sm"
-        aria-live="polite"
-      ></ol>
+        <!-- 2. Vista de resultados de búsqueda (vertical) -->
+        <ol
+          id="reading-toc-results"
+          class="mt-2 hidden max-h-[55dvh] flex-col space-y-1.5 overflow-y-auto border-t border-line/60 pt-2 text-sm"
+          aria-live="polite"
+        ></ol>
+      </div>
     </nav>
   </aside>
 
+
   <!-- CONTENIDO -->
   <article id="reading-content" class="mt-5 min-w-0 space-y-6 sm:mt-7 sm:space-y-8">
-    
     <RenderLecturaXml nodo={nodo}/>
   </article>
 
-  <div id="reading-error" class="hidden mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-sm leading-6 text-red-800" role="alert"></div>
-</div><script>
+  <div
+    id="reading-error"
+    class="hidden mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-sm leading-6 text-red-800"
+    role="alert"
+  ></div>
+</div>
+
+<script>
   function initFullContentSearch() {
     const searchInput = document.querySelector<HTMLInputElement>('[data-reading-toc-search]');
+    const clearBtn = document.getElementById('reading-toc-clear');
+    const toggleBtn = document.getElementById('reading-toc-toggle');
+    const chevron = document.getElementById('reading-toc-chevron');
+    const tocPanel = document.getElementById('reading-toc-panel');
     const tocOriginal = document.getElementById('reading-toc');
     const tocResults = document.getElementById('reading-toc-results');
     const tocHeading = document.getElementById('reading-toc-heading');
     const contentRoot = document.getElementById('reading-content');
 
-    if (!searchInput || !tocOriginal || !tocResults || !contentRoot) return;
+    if (!searchInput || !tocPanel || !tocOriginal || !tocResults || !contentRoot) return;
 
     const normalize = (text: string) =>
       text
@@ -208,19 +249,50 @@ if (error) return Astro.redirect('/account/lecturas', 303);
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
 
-    // Indexamos todos los bloques navegables (con ID) dentro de #reading-content
+    const updateClearButtonState = () => {
+      if (!clearBtn) return;
+      const isPanelOpen = !tocPanel.classList.contains('hidden');
+      const hasText = searchInput.value.trim().length > 0;
+      const hasOpenDetails = tocOriginal.querySelector('details[open]') !== null;
+
+      if (isPanelOpen || hasText || hasOpenDetails) {
+        clearBtn.classList.remove('hidden');
+        clearBtn.classList.add('flex');
+      } else {
+        clearBtn.classList.add('hidden');
+        clearBtn.classList.remove('flex');
+      }
+    };
+
+    const setPanelOpen = (open: boolean) => {
+      if (open) {
+        tocPanel.classList.remove('hidden');
+        toggleBtn?.setAttribute('aria-expanded', 'true');
+        chevron?.classList.add('rotate-90');
+      } else {
+        tocPanel.classList.add('hidden');
+        toggleBtn?.setAttribute('aria-expanded', 'false');
+        chevron?.classList.remove('rotate-90');
+      }
+      updateClearButtonState();
+    };
+
+    toggleBtn?.addEventListener('click', () => {
+      const isCurrentlyOpen = !tocPanel.classList.contains('hidden');
+      setPanelOpen(!isCurrentlyOpen);
+    });
+
+    tocOriginal.addEventListener('toggle', updateClearButtonState, true);
+
     const searchableBlocks = Array.from(
-      contentRoot.querySelectorAll<HTMLElement>(
-        'section[id], li[id]'
-      )
+      contentRoot.querySelectorAll<HTMLElement>('section[id], li[id]')
     ).map((el) => {
       const id = el.id;
-
-      // Extraemos el encabezado principal del bloque
-      const headingEl = el.querySelector(':scope > header h2, :scope > header h3, :scope > h4, :scope > header h5, :scope > div > span');
+      const headingEl = el.querySelector(
+        ':scope > header h2, :scope > header h3, :scope > h4, :scope > header h5, :scope > div > span'
+      );
       const title = headingEl?.textContent?.trim() || 'Sección de la lectura';
 
-      // Extraemos el texto limpio de este bloque (excluyendo secciones hijas para no duplicar resultados)
       const clone = el.cloneNode(true) as HTMLElement;
       clone.querySelectorAll('section[id], li[id]').forEach((child) => child.remove());
       const rawText = clone.textContent?.replace(/\s+/g, ' ').trim() || '';
@@ -234,7 +306,6 @@ if (error) return Astro.redirect('/account/lecturas', 303);
       };
     });
 
-    // Extrae un fragmento corto alrededor de la palabra encontrada
     const buildSnippet = (rawText: string, query: string) => {
       const normText = normalize(rawText);
       const matchIndex = normText.indexOf(query);
@@ -250,37 +321,48 @@ if (error) return Astro.redirect('/account/lecturas', 303);
       return escapeHtml(snippet);
     };
 
-    const resetSearch = () => {
+    const resetAll = () => {
       searchInput.value = '';
       tocResults.innerHTML = '';
       tocResults.classList.add('hidden');
       tocResults.classList.remove('flex');
       tocOriginal.classList.remove('hidden');
+
+      tocOriginal.querySelectorAll<HTMLDetailsElement>('details[open]').forEach((details) => {
+        details.open = false;
+      });
+
       if (tocHeading) tocHeading.textContent = 'En esta lectura';
+      setPanelOpen(false);
     };
+
+    clearBtn?.addEventListener('click', resetAll);
 
     searchInput.addEventListener('input', () => {
       const rawQuery = searchInput.value.trim();
       const query = normalize(rawQuery);
 
       if (!query) {
-        resetSearch();
+        tocResults.innerHTML = '';
+        tocResults.classList.add('hidden');
+        tocResults.classList.remove('flex');
+        tocOriginal.classList.remove('hidden');
+        if (tocHeading) tocHeading.textContent = 'En esta lectura';
+        updateClearButtonState();
         return;
       }
 
+      setPanelOpen(true);
       tocOriginal.classList.add('hidden');
       tocResults.classList.remove('hidden');
       tocResults.classList.add('flex');
 
-      // Filtramos coincidencias en título o contenido interno
       const matches = searchableBlocks.filter(
-        (block) =>
-          block.normalizedTitle.includes(query) ||
-          block.normalizedText.includes(query)
+        (block) => block.normalizedTitle.includes(query) || block.normalizedText.includes(query)
       );
 
       if (tocHeading) {
-        tocHeading.textContent = `Resultados en la lectura (${matches.length})`;
+        tocHeading.textContent = `Resultados (${matches.length})`;
       }
 
       if (matches.length === 0) {
@@ -289,18 +371,18 @@ if (error) return Astro.redirect('/account/lecturas', 303);
             No se encontró "<strong>${escapeHtml(rawQuery)}</strong>" en el contenido.
           </li>
         `;
+        updateClearButtonState();
         return;
       }
 
-      // Renderizamos las tarjetas de resultados en el nav
       tocResults.innerHTML = matches
         .map((match) => {
           const snippet = buildSnippet(match.rawText, query);
           return `
-            <li class="max-w-sm shrink-0">
+            <li class="w-full">
               <a
                 href="#${match.id}"
-                class="flex flex-col rounded-xl border border-line bg-paper px-3 py-2 text-left transition-colors hover:border-brand hover:bg-indigo-50"
+                class="flex w-full flex-col rounded-xl border border-line bg-paper px-3 py-2 text-left transition-colors hover:border-brand hover:bg-indigo-50"
               >
                 <span class="line-clamp-1 text-xs font-bold text-indigo-800">
                   ${escapeHtml(match.title)}
@@ -315,24 +397,23 @@ if (error) return Astro.redirect('/account/lecturas', 303);
           `;
         })
         .join('');
+
+      updateClearButtonState();
     });
 
-    // Al hacer clic en un resultado: salta a la sección, restaura el nav y destaca el bloque
     tocResults.addEventListener('click', (e) => {
       const link = (e.target as HTMLElement).closest('a');
       if (!link) return;
 
       const targetId = link.getAttribute('href')?.slice(1);
-      resetSearch();
+      resetAll();
 
       if (targetId) {
         const targetEl = document.getElementById(targetId);
         if (targetEl) {
-          // Si estaba dentro de un <details> cerrado (como una solución), lo abrimos
           const parentDetails = targetEl.closest('details');
           if (parentDetails) parentDetails.open = true;
 
-          // Destello temporal para ubicar visualmente el bloque
           targetEl.classList.add('ring-2', 'ring-brand', 'ring-offset-2');
           setTimeout(() => {
             targetEl.classList.remove('ring-2', 'ring-brand', 'ring-offset-2');
@@ -341,17 +422,24 @@ if (error) return Astro.redirect('/account/lecturas', 303);
       }
     });
 
+    tocOriginal.addEventListener('click', (e) => {
+      const link = (e.target as HTMLElement).closest('a');
+      if (link) {
+        resetAll();
+      }
+    });
+
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        resetSearch();
+        resetAll();
         searchInput.blur();
       }
     });
+
+    setPanelOpen(false);
   }
 
   initFullContentSearch();
   document.addEventListener('astro:page-load', initFullContentSearch);
 </script>
-
-
 </Layout>

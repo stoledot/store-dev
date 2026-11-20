@@ -1,4 +1,5 @@
 ---
+// src/components/xml/RenderIndiceTemario.astro
 import type { NodoXML } from "../../features/xml/xmlParser";
 
 interface Props {
@@ -8,46 +9,63 @@ interface Props {
 const { nodo } = Astro.props;
 const STRUCTURAL_TAGS = new Set(["section", "sub-section", "sub-sub-section"]);
 const isStructural = nodo.tipo === "elemento" && STRUCTURAL_TAGS.has(nodo.etiqueta);
+
 const title = nodo.tipo === "elemento"
   ? nodo.atributos["data-title"] ?? nodo.atributos.title ?? ""
   : "";
+
 const rawId = nodo.tipo === "elemento" ? nodo.atributos.id : undefined;
 const anchorId = rawId
-  ? rawId.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+  ? rawId
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
   : "";
-const children = nodo.tipo === "elemento" ? nodo.hijos.filter(
-  (child): child is Extract<NodoXML, { tipo: "elemento" }> =>
-    child.tipo === "elemento" && STRUCTURAL_TAGS.has(child.etiqueta),
-  ) : [];
+
+const children = nodo.tipo === "elemento"
+  ? nodo.hijos.filter(
+      (child): child is Extract<NodoXML, { tipo: "elemento" }> =>
+        child.tipo === "elemento" && STRUCTURAL_TAGS.has(child.etiqueta),
+    )
+  : [];
 ---
 
 {isStructural ? (
-  <li data-toc-item data-toc-label={title} class="min-w-0 shrink-0">
+  <li data-toc-item data-toc-label={title} class="w-full min-w-0">
     {children.length ? (
-      <div class="flex min-w-0 items-start gap-1">
-        <details class="group shrink-0">
-          <summary class="flex size-10 cursor-pointer list-none items-center justify-center rounded-lg text-slate-500 hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 marker:hidden" aria-label={`Mostrar u ocultar ${title || "apartados"}`}>
-            <span class="text-xs transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
-          </summary>
-          <ol class="mt-1 w-72 max-w-[80vw] max-h-[min(55dvh,28rem)] space-y-1 overflow-y-auto rounded-xl border border-line bg-surface p-2 shadow-lg">
-            {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
-          </ol>
-        </details>
-        {anchorId && (
-          <a
-            href={`#${anchorId}`}
-            data-section-link={anchorId ? "" : undefined}
-            class="reading-toc-link min-h-10 min-w-0 flex-1 rounded-lg px-2 py-2 text-sm font-medium leading-5 text-slate-700 hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      <details class="group w-full">
+        <summary class="flex min-h-9 w-full cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 marker:hidden">
+          <span
+            class="flex size-5 shrink-0 items-center justify-center rounded text-xs text-slate-500 transition-transform duration-200 group-open:rotate-90"
+            aria-hidden="true"
           >
-            {title || "Apartado sin título"}
-          </a>
-        )}
-      </div>
+            ▸
+          </span>
+          {anchorId ? (
+            <a
+              href={`#${anchorId}`}
+              data-section-link
+              class="reading-toc-link min-w-0 flex-1 truncate hover:underline"
+            >
+              {title || "Apartado sin título"}
+            </a>
+          ) : (
+            <span class="min-w-0 flex-1 truncate">{title || "Apartado sin título"}</span>
+          )}
+        </summary>
+
+        {/* Sublista anidada verticalmente con línea guía */}
+        <ol class="mt-1 ml-3.5 flex flex-col space-y-1 border-l-2 border-slate-200 pl-2.5">
+          {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+        </ol>
+      </details>
     ) : (
       <a
         href={anchorId ? `#${anchorId}` : undefined}
         data-section-link={anchorId ? "" : undefined}
-        class="reading-toc-link block min-h-10 rounded-lg px-3 py-2 text-sm leading-5 text-slate-600 hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        class="reading-toc-link block min-h-9 w-full truncate rounded-lg px-3 py-2 text-sm leading-5 text-slate-600 hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
       >
         {title || "Apartado sin título"}
       </a>
