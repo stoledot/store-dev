@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+TEMAS:
+
+- Secuencia sugerida: los grados exactos pueden variar según el programa escolar.
+- Antes de empezar: estrategias para resolver problemas y comprobar resultados.
+- Primaria inicial (aproximadamente 1.º a 3.º)
+  - **Numeración, sistema decimal y valor posicional**
+  - **Comparación y orden de números naturales**
+  - Números pares e impares
+  - **Sumas y restas; introducción a la multiplicación y la división**
+  - **Cálculo mental, estimación y redondeo**
+  - Patrones y sucesiones numéricas sencillas
+  - **Sistema monetario, problemas de cambio y compras**
+  - **Medidas de longitud, masa, capacidad y tiempo**
+  - **Rectas, segmentos y figuras geométricas básicas**
+  - Simetría y reconocimiento de figuras
+  - Tablas y gráficas sencillas
+- Primaria avanzada (aproximadamente 4.º a 6.º)
+  - **Las cuatro operaciones con números naturales y operaciones combinadas**
+  - Divisibilidad, números primos y compuestos
+  - Mínimo común múltiplo y máximo común divisor
+  - **Fracciones, fracciones equivalentes y simplificación**
+  - **Operaciones con fracciones y números decimales**
+  - **Porcentajes sencillos y resolución de problemas**
+  - **Razones, proporciones y regla de tres directa**
+  - Unidades de longitud, masa, capacidad, tiempo y temperatura
+  - **Sistema métrico decimal y conversiones de unidades**
+  - **Clasificación de ángulos, triángulos, cuadriláteros y polígonos**
+  - **Perímetros y áreas de figuras planas**
+  - Elementos de la circunferencia
+  - Cuerpos geométricos, sus redes y volúmenes sencillos
+  - Plano cartesiano y ubicación de puntos
+  - **Media, mediana, moda, tablas de frecuencia y gráficas**
+  - Experimentos aleatorios y probabilidad sencilla
+- Secundaria inicial (aproximadamente 1.º)
+  - **Números enteros positivos y negativos; comparación y operaciones**
+  - **Jerarquía de operaciones y uso de paréntesis**
+  - **Fracciones, decimales, razones y proporciones**
+  - **Proporcionalidad directa e inversa**
+  - **Porcentajes, descuentos y aumentos**
+  - **Lenguaje algebraico, expresiones y propiedad distributiva**
+  - Patrones, sucesiones y traducción de problemas a expresiones
+  - **Ecuaciones lineales sencillas y comprobación de soluciones**
+  - Desigualdades sencillas y recta numérica
+  - Rectas, ángulos y sus relaciones
+  - **Clasificación de figuras; perímetro y área de figuras compuestas**
+  - Escalas, planos, mapas y transformaciones: simetría, traslación, rotación y reflexión
+  - **Tablas de frecuencia y gráficas de barras, líneas y circulares**
+  - Espacio muestral y eventos sencillos
+- Secundaria intermedia (aproximadamente 2.º)
+  - **Potencias, propiedades de las potencias y potencias de base 10**
+  - Raíces y notación científica
+  - **Operaciones con fracciones, decimales y números con signo**
+  - **Razón, proporción y regla de tres**
+  - Porcentajes, interés simple y problemas de variación proporcional
+  - **Expresiones algebraicas, productos notables y factorización inicial**
+  - **Ecuaciones con paréntesis y fracciones**
+  - **Sistemas de ecuaciones lineales**
+  - **Plano cartesiano, funciones y gráficas**
+  - Rectas y sucesiones
+  - Clasificación de triángulos y cuadriláteros; congruencia y semejanza
+  - **Teorema de Pitágoras y teorema de Tales**
+  - **Circunferencia, áreas y volúmenes de prismas y cilindros**
+  - Conversiones de unidades
+  - **Media, mediana, moda, rango y gráficas**
+  - Probabilidad clásica, complemento y principios de conteo
+- Secundaria avanzada (aproximadamente 3.º)
+  - **Operaciones combinadas con números racionales y potencias**
+  - **Ecuaciones cuadráticas y factorización**
+  - Desigualdades y representación de soluciones
+  - **Funciones, rectas y sucesiones**
+  - **Razones trigonométricas**
+  - Semejanza, teorema de Tales y teorema de Pitágoras
+  - **Perímetros, áreas y circunferencia**
+  - Área total y volumen de prismas, pirámides y cilindros
+  - Rapidez, distancia y tiempo
+  - **Estadística descriptiva, dispersión y análisis de gráficas**
+  - **Probabilidad, espacio muestral y conteo**
+- Preparatoria inicial (aproximadamente 1.º; repaso y consolidación)
+  - **Clasificación de los números reales e intervalos en la recta numérica**
+  - Valor absoluto, leyes de los signos y propiedades de las operaciones
+  - **Operaciones con polinomios: suma, resta, multiplicación y división**
+  - **Productos notables y factorización de polinomios**
+  - Fracciones algebraicas y simplificación de expresiones racionales
+  - **Ecuaciones lineales, ecuaciones cuadráticas y sistemas de ecuaciones**
+  - Desigualdades lineales y representación de intervalos
+  - **Concepto de función: dominio, rango, evaluación y representación**
+  - **Funciones lineales y cuadráticas; pendiente e intersecciones**
+  - Sucesiones aritméticas y geométricas
+  - **Geometría analítica: plano cartesiano, distancia entre dos puntos y punto medio**
+  - Ecuación de la recta y de la circunferencia
+  - **Estadística descriptiva: media, mediana, moda, rango y gráficas**
+- Preparatoria intermedia (aproximadamente 2.º; funciones y modelos)
+  - Ecuaciones polinomiales, racionales, radicales y con valor absoluto
+  - Números complejos y operaciones básicas
+  - **Sistemas de ecuaciones lineales de dos y tres incógnitas**
+  - Inecuaciones y sistemas de desigualdades
+  - **Funciones polinomiales, racionales, por partes, inversas y compuestas**
+  - Transformaciones de gráficas: traslaciones, reflexiones y estiramientos
+  - **Funciones exponenciales y logarítmicas; propiedades de los logaritmos**
+  - Modelación de crecimiento y decaimiento exponencial
+  - **Razones trigonométricas, ángulos y conversión entre grados y radianes**
+  - **Círculo unitario e identidad trigonométrica fundamental**
+  - Gráficas y ecuaciones trigonométricas básicas
+  - **Ley de senos y ley de cosenos**
+  - Geometría analítica: pendiente, paralelismo, perpendicularidad y circunferencia
+  - Parábola, elipse e hipérbola como secciones cónicas
+  - Vectores en el plano: componentes, magnitud y operaciones básicas
+  - Conteo: principio aditivo y multiplicativo, permutaciones y combinaciones
+  - **Probabilidad clásica, complemento, probabilidad condicional e independencia**
+  - Medidas de dispersión: varianza, desviación estándar y cuartiles
+  - **Interés simple y compuesto, porcentajes y aplicaciones financieras**
+- Preparatoria avanzada y puente a estudios superiores (aproximadamente 3.º)
+  - **Repaso de funciones, composición, inversas y análisis de gráficas**
+  - **Límites y continuidad de funciones**
+  - **Derivadas: definición, reglas y derivación de funciones algebraicas,
+    exponenciales, logarítmicas y trigonométricas**
+  - **Aplicaciones de la derivada: tasas de cambio, recta tangente,
+    crecimiento, extremos y optimización**
+  - **Antiderivadas e integral definida**
+  - **Aplicaciones de la integral: área bajo la curva y acumulación**
+  - Sucesiones y sumas; introducción a series
+  - Matrices, determinantes y resolución de sistemas lineales
+  - Trigonometría: identidades, ecuaciones y resolución de triángulos
+  - Geometría analítica de cónicas y sus ecuaciones
+  - Técnicas de conteo y probabilidad en varios pasos
+  - Variables aleatorias y distribuciones de probabilidad básicas
+  - **Muestreo, correlación, regresión lineal e interpretación de datos**
+  - Modelación matemática y resolución de problemas aplicados
+- Repaso y consulta
+  - Errores frecuentes
+  - Formulario exprés
+  - Mini examen de supervivencia y respuestas
+
+-->
+
+
+<meta>
+    <title>Porquería Matemática</title>
+    <summary>Un análisis de la porquería en matemáticas.</summary>
+</meta>
+
+<lectura>
+  <section id="introduction" data-title="Introducción">
+    <p>Este libro es una guía práctica para que repases todos los conceptos matemáticos fundamentales
+    desde primaria hasta preparatoria.</p>
+    <p>Está diseñado para ayudarte a comprender y aplicar conceptos matemáticos de manera efectiva, 
+    con ejemplos prácticos y ejercicios que refuerzan el aprendizaje.</p>
+  </section>
+
+  <section id="conclusion" data-title="Conclusión">
+    <p>En resumen, este libro te proporciona una visión completa de los conceptos matemáticos esenciales, 
+    ayudándote a consolidar tu conocimiento y habilidades en matemáticas.</p>
+  </section>
+</lectura>

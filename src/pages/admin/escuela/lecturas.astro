@@ -1,36 +1,548 @@
 ---
-export const prerender=false;
 import { env } from 'cloudflare:workers';
+import { getAllLecturas, getLecturaById } from '../../../features/lecturas/db';
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { parseReadingXml, validateReadingXml } from '../../../features/mathTexts/xmlReading';
-const clean=(v:unknown,n=200)=>String(v??'').trim().slice(0,n);
-const slugify=(s:string)=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,80)||'lectura';
-let error=Astro.url.searchParams.get('error');
-const editId=Astro.url.searchParams.get('edit')||'';const editing=editId?await env.DB.prepare("SELECT id,title,slug,status,xml_source_key,xml_filename FROM school_courses WHERE id=? AND source_format='xml' AND content_kind='reading'").bind(editId).first<any>():null;let editingSource='';if(editing?.xml_source_key&&env.FILES){const old=await env.FILES.get(editing.xml_source_key);if(old)editingSource=await old.text();}
-if(Astro.request.method==='POST'){
- try{
-  const form=await Astro.request.formData();if(form.get('_action')==='status'){const id=clean(form.get('id'),100),status=form.get('status')==='published'?'published':'draft',now=new Date().toISOString();await env.DB.batch([env.DB.prepare("UPDATE school_courses SET status=?,updated_at=? WHERE id=? AND source_format='xml' AND content_kind='reading'").bind(status,now,id),env.DB.prepare("UPDATE school_lessons SET status=?,updated_at=? WHERE course_id=? AND activity_kind='reading' AND required_to_complete=0 AND EXISTS(SELECT 1 FROM school_courses c WHERE c.id=school_lessons.course_id AND c.source_format='xml' AND c.content_kind='reading')").bind(status,now,id)]);return Astro.redirect('/admin/escuela/lecturas?ok=status',303);}let source=String(form.get('xml_source')??'');const file=form.get('xml_file');let filename=clean(form.get('xml_filename'),200)||'lectura.xml';
-  if(file instanceof File&&file.size){if(file.size>1_000_000)throw new Error('El XML no puede superar 1 MB.');if(!file.name.toLowerCase().endsWith('.xml'))throw new Error('El archivo debe tener extensión .xml.');source=await file.text();filename=file.name.replace(/[\r\n"\\]/g,'_').slice(0,200);}
-  if(!source.trim())throw new Error('Carga un XML o pega el texto de la lectura.');const issues=validateReadingXml(source);if(issues.length)throw new Error(issues.slice(0,6).map(i=>`Línea ${i.line}, columna ${i.column}: ${i.message}`).join(' '));const reading=parseReadingXml(source);
-  if(!env.FILES)throw new Error('El almacenamiento privado FILES no está configurado.');const id=clean(form.get('id'),100)||crypto.randomUUID();if(!/^[A-Za-z0-9_-]{1,100}$/.test(id))throw new Error('El id interno de lectura no es válido.');const existing=await env.DB.prepare("SELECT id FROM school_courses WHERE id=? AND content_kind='reading'").bind(id).first();const existingSlug=await env.DB.prepare('SELECT id FROM school_courses WHERE slug=? AND id<>?').bind(slugify(clean(form.get('slug'),100)||reading.title),id).first();if(existingSlug)throw new Error('Ya hay una lectura o curso con ese slug.');
-  const now=new Date().toISOString(),slug=slugify(clean(form.get('slug'),100)||reading.title),key=`school-xml/readings/${id}/${Date.now()}-${filename}`;await env.FILES.put(key,source,{httpMetadata:{contentType:'application/xml; charset=utf-8'},customMetadata:{readingId:id}});
-  if(existing){await env.DB.prepare("UPDATE school_courses SET slug=?,title=?,summary=?,status=?,source_format='xml',xml_source_key=?,xml_filename=?,xml_author=?,xml_date=?,content_version=content_version+1,updated_at=? WHERE id=?").bind(slug,reading.title,reading.summary,form.get('status')==='published'?'published':'draft',key,filename,reading.author,reading.date,now,id).run();await env.DB.prepare("UPDATE school_lessons SET status='archived',sequence_no=sequence_no+1000000,updated_at=? WHERE course_id=? AND status<>'archived'").bind(now,id).run();}
-  else{const seq=await env.DB.prepare('SELECT COALESCE(MAX(sequence_no),0)+1 AS n FROM school_courses').first<{n:number}>();await env.DB.prepare("INSERT INTO school_courses(id,slug,title,summary,description_md,sequence_no,status,content_version,source_format,xml_source_key,xml_filename,xml_author,xml_date,content_kind,created_at,updated_at) VALUES(?,?,?,?,?,? ,?,1,'xml',?,?,?,?,'reading',?,?)").bind(id,slug,reading.title,reading.summary,'',Number(seq?.n??1),form.get('status')==='published'?'published':'draft',key,filename,reading.author,reading.date,now,now).run();}
-  for(let i=0;i<reading.cards.length;i++){const card=reading.cards[i],lessonId=crypto.randomUUID(),lessonSlug=`lectura-${slugify(card.id)}-${lessonId.slice(0,8)}`,refs=[...card.html.matchAll(/data-reading-geogebra="([^"]+)"/g)].map(m=>m[1]),assessment=JSON.stringify({version:2,questions:[],blocks:refs.map(ref=>({type:'geogebragraphics',ref}))});await env.DB.prepare("INSERT INTO school_lessons(id,course_id,slug,title,summary,content_md,content_html,sequence_no,lesson_type,status,required_to_complete,content_version,assessment_json,tex_node_id,activity_kind,xml_section_id,xml_section_title,xml_section_slug,xml_lesson_id,xml_lesson_title,created_at,updated_at) VALUES(?,?,?,?,?,'',?,?, 'reading',?,0,1,?,?,'reading',?,?,?,?,?,?,?)").bind(lessonId,id,lessonSlug,card.title,`Apartado de nivel ${card.level}`,card.html,i+1,form.get('status')==='published'?'published':'draft',assessment,card.id,card.id,card.title,slugify(card.id),card.id,card.title,now,now).run();}
-  return Astro.redirect(`/admin/escuela/lecturas?ok=guardada`,303);
- }catch(e){error=e instanceof Error?e.message:'No se pudo guardar la lectura.';}
+import {validateLecturaXml, lecturaXmlToHtml} from '../../../features/lecturas/lectura_xml_to_html';
+
+export const prerender = false;
+
+let xml = "";
+let html = "";
+let errors: string[] = [];
+let message = "";
+let titulo = "";
+let id = "";
+let image_url = "";
+let type = "";
+let description = "";
+
+function validId(value: string): boolean {
+  return /^[1-9]\d*$/.test(value) && Number.isSafeInteger(Number(value));
 }
-const readings=(await env.DB.prepare("SELECT id,title,slug,status,xml_author,xml_date,xml_filename,updated_at FROM school_courses WHERE content_kind='reading' AND source_format='xml' ORDER BY updated_at DESC LIMIT 100").all<any>()).results??[];
-const ok=Astro.url.searchParams.get('ok');
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+
+  xml = String(form.get("xml") ?? "");
+  titulo = String(form.get("titulo") ?? "");
+  id = String(form.get("id") ?? "");
+
+  image_url = String(form.get("image_url") ?? "").trim();
+  type = String(form.get("type") ?? "").trim();
+  description = String(form.get("description") ?? "").trim();
+
+  const action = String(form.get("action") ?? "validate");
+  try {
+    const validation = validateLecturaXml(xml);
+    errors = validation.errors;
+    if (validation.valid) html = lecturaXmlToHtml(xml);
+  } catch (e: unknown) {
+    errors = [e instanceof Error ? e.message : String(e)];
+  }
+
+  if (action === "save") {
+    if (errors.length) {
+      message = "No se guardó: corrige los errores de validación.";
+    } else if (!titulo.trim()) {
+      message = "No se guardó: falta el título.";
+    } else if (!["book", "article", "magazine-edition", "blog"].includes(type)) 
+    {
+      message = "No se guardó: selecciona un tipo de contenido válido.";
+    } else if (id && !validId(id)) {
+      message = "No se guardó: el ID de la lectura no es válido.";
+    } else {
+      try {
+        const result = id
+          ? await env.DB.prepare(
+              'UPDATE school_lecturas SET title = ?, content_xml = ?, content_html = ?, updated_at = ?, image_url = ?, type = ?, description = ? WHERE id = ? RETURNING id'
+            ).bind(titulo, xml, html, new Date().toISOString(), image_url, type, description, Number(id)).first<{ id: number }>()
+          : await env.DB.prepare(
+              "INSERT INTO school_lecturas (title, id_from_xml, content_xml, content_html, image_url, type, description) VALUES (?, '', ?, ?, ?, ?, ?) RETURNING id"
+            ).bind(titulo, xml, html, image_url, type, description).first<{ id: number }>();
+        if (!result) {
+          message = id ? "No se guardó: la lectura ya no existe." : "No se pudo crear la lectura.";
+        } else {
+          return Astro.redirect(`${Astro.url.pathname}?id=${result.id}&guardado=1`, 303);
+        }
+      } catch (e: unknown) {
+        message = "Error al guardar: " + (e instanceof Error ? e.message : String(e));
+      }
+    }
+  } else if (action !== "validate") {
+    message = "Acción no reconocida.";
+  }
+} else {
+  id = Astro.url.searchParams.get("id") ?? "";
+  if (id && !validId(id)) {
+    message = "El ID de la lectura no es válido.";
+  } else if (id) {
+    const lectura = await getLecturaById(env.DB, Number(id));
+    if (!lectura) {
+      message = "La lectura seleccionada ya no existe.";
+    } else {
+      titulo = lectura.title;
+      xml = lectura.content_xml;
+      image_url = lectura.image_url ?? "";
+      type = lectura.type ?? "";
+      description = lectura.description ?? "";
+      if (Astro.url.searchParams.get("guardado") === "1") message = "Guardado correctamente.";
+    }
+  }
+  if (xml) {
+    try {
+      const validation = validateLecturaXml(xml);
+      errors = validation.errors;
+      if (validation.valid) html = lecturaXmlToHtml(xml);
+    } catch (e: unknown) {
+      errors = [e instanceof Error ? e.message : String(e)];
+    }
+  }
+}
+
+const lecturas = await getAllLecturas(env.DB);
 ---
+
 <AdminLayout title="Lecturas XML" active="readings">
- <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6"><a href="/admin/escuela" class="text-sm underline">← Cursos y lecciones</a><header class="my-5"><p class="text-xs font-semibold uppercase tracking-widest text-gray-500">Biblioteca editorial</p><h1 class="mt-2 font-serif text-3xl">Lecturas XML</h1><p class="mt-2 max-w-3xl text-sm text-gray-600">Carga lecturas con secciones anidadas, ambientes matemáticos, HTML seguro, LaTeX y referencias a GeoGebra. La navegación se construye a partir de tus section, subsection y subsubsection.</p></header>
- {error&&<p class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}{ok&&<p class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">Lectura guardada y lista en el catálogo de lectura.</p>}
- <section class="rounded-2xl border border-line bg-surface p-5 sm:p-7"><h2 class="text-lg font-semibold">{editing?'Editar lectura':'Subir lectura'}</h2><form method="POST" enctype="multipart/form-data" class="mt-4 space-y-4">{editing&&<input type="hidden" name="id" value={editing.id}/>}<label class="block text-sm">Archivo XML<input class="mt-1 block w-full" type="file" name="xml_file" accept=".xml,text/xml"/>{editing&&<span class="mt-1 block text-xs text-muted">Actual: {editing.xml_filename}. Si no eliges archivo, pega la fuente actual y guárdala.</span>}</label><label class="block text-sm">O pega el XML<textarea id="reading-xml" name="xml_source" rows="18" class="mt-1 block w-full rounded-lg border border-line p-3 font-mono text-xs" placeholder="<?xml version=\"1.0\" encoding=\"UTF-8\"?>&#10;&lt;lectura&gt;...&lt;/lectura&gt;">{editingSource}</textarea></label><div class="flex flex-wrap items-center gap-3"><label class="text-sm">Estado<select name="status" class="ml-2 rounded border border-line p-2"><option value="draft" selected={editing?.status==='draft'}>Borrador</option><option value="published" selected={editing?.status==='published'}>Publicada</option></select></label><button type="button" id="validate-reading" class="rounded-lg border border-line px-4 py-2 text-sm">Validar y previsualizar</button><button class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Guardar lectura</button>{editing&&<a class="rounded-lg border border-line px-4 py-2 text-sm" href="/admin/escuela/lecturas">Cancelar</a>}</div></form><div id="reading-errors" class="mt-4 hidden rounded-lg bg-red-50 p-3 text-sm text-red-800"></div><div id="reading-preview" class="mt-4 hidden space-y-3"></div></section>
- <section class="mt-7"><h2 class="mb-3 text-lg font-semibold">Lecturas cargadas</h2><div class="overflow-x-auto rounded-xl border border-line"><table class="w-full text-left text-sm"><thead><tr class="bg-gray-50"><th class="p-3">Lectura</th><th class="p-3">Autor / archivo</th><th class="p-3">Estado</th><th class="p-3">Acciones</th></tr></thead><tbody>{readings.map(r=><tr class="border-t border-line"><td class="p-3 font-medium">{r.title}<div class="text-xs text-gray-500">/lecturas/{r.slug}</div></td><td class="p-3">{r.xml_author}<div class="text-xs text-gray-500">{r.xml_filename}</div></td><td class="p-3">{r.status}</td><td class="p-3"><div class="flex flex-wrap gap-3"><a class="underline" href={`/admin/escuela/lecturas?edit=${encodeURIComponent(r.id)}`}>Editar XML</a>{r.status==='published'&&<a class="underline" href={`/lecturas/${r.slug}`} target="_blank">Abrir</a>}<form method="POST" class="flex items-center gap-2"><input type="hidden" name="_action" value="status"/><input type="hidden" name="id" value={r.id}/><input type="hidden" name="status" value={r.status==='published'?'draft':'published'}/><button class="underline">{r.status==='published'?'Pasar a borrador':'Publicar'}</button></form></div></td></tr>)}{!readings.length&&<tr><td colspan="4" class="p-5 text-center text-gray-500">Aún no hay lecturas XML.</td></tr>}</tbody></table></div></section></main>
- <script>
- const button=document.querySelector<HTMLButtonElement>('#validate-reading'),input=document.querySelector<HTMLTextAreaElement>('#reading-xml'),errors=document.querySelector<HTMLDivElement>('#reading-errors'),preview=document.querySelector<HTMLDivElement>('#reading-preview');
- const fileInput=document.querySelector<HTMLInputElement>('input[name="xml_file"]');fileInput?.addEventListener('change',async()=>{const file=fileInput.files?.[0];if(file&&input)input.value=await file.text();});
- button?.addEventListener('click',async()=>{if(!input||!errors||!preview)return;errors.classList.add('hidden');preview.classList.add('hidden');try{const response=await fetch('/api/admin/escuela/lecturas/validar',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({source:input.value})});const data=await response.json();if(!response.ok)throw new Error(data.error||'No se pudo validar.');const head=document.createElement('article');head.className='rounded-xl border border-line bg-white p-4';const title=document.createElement('strong');title.textContent=data.title;const byline=document.createElement('p');byline.className='text-sm';byline.textContent=`${data.author} · ${data.date||'Sin fecha'}`;const summary=document.createElement('p');summary.className='mt-2 text-sm';summary.textContent=data.summary;head.append(title,byline,summary);preview.replaceChildren(head);for(const cardData of data.cards){const card=document.createElement('article');card.className='rounded-xl border border-line bg-white p-4';const h=document.createElement('h3');h.className='font-semibold';h.textContent=cardData.title;const body=document.createElement('div');body.className='math-content mt-3';body.innerHTML=cardData.html;card.append(h,body);preview.append(card);}preview.classList.remove('hidden');window.renderLatexContent?.(preview);}catch(e){errors.textContent=e instanceof Error?e.message:'XML no válido.';errors.classList.remove('hidden');}});
- </script>
+    <h1>Gestión de Lecturas XML</h1>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 text-zinc-800">
+  <form method="post" class="space-y-6">
+    <input type="hidden" name="id" value={id} />
+    
+
+    <!-- BARRA SUPERIOR DE ACCIONES -->
+    <header class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-zinc-200">
+      <div>
+        <span class="text-xs font-semibold uppercase tracking-widest text-teal-600">Gestión de contenido</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">Editor de Lecturas XML</h1>
+        <p class="text-sm text-zinc-500 mt-1">{id ? `Editando lectura ID: ${id}` : "Nueva lectura"}</p>
+      </div>
+
+      <div class="flex items-center gap-2.5 w-full sm:w-auto">
+        <a
+          href={Astro.url.pathname}
+          class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium text-teal-700 bg-white border border-teal-300 rounded-lg hover:bg-teal-50"
+        >Nueva lectura</a>
+        <button
+          type="submit"
+          name="action"
+          value="validate"
+          class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-zinc-700 bg-white border border-zinc-300 rounded-lg hover:bg-zinc-50 hover:border-zinc-400 active:bg-zinc-100 transition-all cursor-pointer"
+        >
+          <svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Validar</span>
+        </button>
+
+        <button
+          type="submit"
+          name="action"
+          value="save"
+          class="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-zinc-900 rounded-lg hover:bg-zinc-800 active:bg-zinc-950 shadow-sm transition-all cursor-pointer"
+        >
+          <svg class="w-4 h-4 text-teal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>{id ? "Guardar cambios" : "Crear lectura"}</span>
+        </button>
+      </div>
+    </header>
+
+
+    <!-- METADATOS DE LA LECTURA -->
+    <section class="bg-white rounded-2xl border border-zinc-200 shadow-xs p-5 sm:p-6 space-y-5">
+
+      <div>
+        <h2 class="text-sm font-bold text-zinc-900">
+          Información de la publicación
+        </h2>
+        <p class="text-xs text-zinc-500 mt-1">
+          Configura la imagen, descripción y categoría de esta lectura.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+        <!-- TIPO -->
+        <div>
+          <label for="type" class="block text-sm font-medium text-zinc-700 mb-1.5">
+            Tipo de contenido
+          </label>
+
+          <select
+            id="type"
+            name="type"
+            required
+            value={type}
+            class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600"
+          >
+            <option value="" selected={!type}>Seleccionar tipo...</option>
+            <option value="book" selected={type === "book"}>Libro</option>
+            <option value="article" selected={type === "article"}>Artículo</option>
+            <option value="magazine-edition" selected={type === "magazine-edition"}>
+              Edición de revista
+            </option>
+            <option value="blog" selected={type === "blog"}>Blog</option>
+          </select>
+        </div>
+
+        <!-- IMAGE URL -->
+        <div>
+          <label for="image_url" class="block text-sm font-medium text-zinc-700 mb-1.5">
+            URL de imagen
+          </label>
+
+          <input
+            id="image_url"
+            name="image_url"
+            type="text" 
+            pattern="^\/[a-zA-Z0-9\-\_\/]*$"
+            value={image_url}
+            placeholder="https://ejemplo.com/imagen.jpg"
+            class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600"
+          />
+        </div>
+
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div>
+        <label for="description" class="block text-sm font-medium text-zinc-700 mb-1.5">
+          Descripción
+        </label>
+
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          placeholder="Escribe una descripción breve de la lectura..."
+          class="w-full px-3.5 py-2.5 text-sm bg-white border border-zinc-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 resize-y"
+        >{description}</textarea>
+      </div>
+
+      <!-- IMAGE PREVIEW -->
+      <div id="image-preview-container" class:list={[
+        "rounded-xl border border-zinc-200 bg-zinc-50 p-3",
+        !image_url && "hidden"
+      ]}>
+        <p class="text-xs font-medium text-zinc-500 mb-2">
+          Vista previa de imagen
+        </p>
+        <img
+          id="image-preview"
+          src={image_url || undefined}
+          alt="Vista previa"
+          class="max-h-48 max-w-full rounded-lg object-contain"
+        />
+      </div>
+
+    </section>
+
+    <!-- MENSAJE DE ESTADO GLOBAL -->
+    {message && (
+      <div
+        role="alert"
+        class={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium border ${
+          message.startsWith("Guardado")
+            ? "bg-teal-50/80 border-teal-200 text-teal-900"
+            : "bg-red-50/80 border-red-200 text-red-900"
+        }`}
+      >
+        <span
+          class={`w-2 h-2 rounded-full shrink-0 ${
+            message.startsWith("Guardado") ? "bg-teal-500" : "bg-red-500"
+          }`}
+        />
+        <p>{message}</p>
+      </div>
+    )}
+
+    <!-- ESPACIO DE TRABAJO PRINCIPAL -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      
+      <!-- PANEL IZQUIERDO: EDITOR (7 columnas en desktop) -->
+      <section class="lg:col-span-7 bg-white rounded-2xl border border-zinc-200/90 shadow-xs overflow-hidden">
+        
+        <!-- Título estilo documento -->
+        <div class="p-5 sm:p-6 border-b border-zinc-100">
+          <label for="titulo" class="sr-only">Título de la lectura</label>
+          <input
+            id="titulo"
+            type="text"
+            name="titulo"
+            placeholder="Escribe el título de la lectura aquí..."
+            value={titulo}
+            class="w-full text-lg sm:text-xl font-bold text-zinc-900 placeholder-zinc-300 bg-transparent border-none focus:outline-none focus:ring-0 p-0"
+          />
+        </div>
+
+        <!-- Barra de herramientas del código -->
+        <div class="px-5 py-3 bg-zinc-50 border-b border-zinc-200/80 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-zinc-200/70 text-zinc-700">
+              XML
+            </span>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Código fuente</h2>
+          </div>
+
+          <label
+            for="lectura-xml-file"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100/80 border border-teal-200/80 rounded-lg cursor-pointer transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Importar .xml</span>
+            <input
+              id="lectura-xml-file"
+              type="file"
+              accept=".xml,application/xml,text/xml"
+              class="sr-only"
+            />
+          </label>
+        </div>
+
+        <!-- Textarea del editor -->
+        <div class="relative bg-zinc-950">
+          <textarea
+            id="lectura-xml-editor"
+            name="xml"
+            spellcheck="false"
+            placeholder="<!-- Pega tu código XML o importa un archivo desde tu equipo -->"
+            class="w-full h-[48vh] lg:h-[60vh] p-5 font-mono text-xs sm:text-sm leading-relaxed text-zinc-100 bg-transparent placeholder-zinc-600 focus:outline-none resize-y selection:bg-teal-500/30"
+          >{xml}</textarea>
+        </div>
+      </section>
+
+      <!-- PANEL DERECHO: VALIDACIÓN Y VISTA PREVIA (5 columnas en desktop) -->
+      <aside class="lg:col-span-5 space-y-5 lg:sticky lg:top-6">
+        
+        <!-- Bloque de Validación -->
+        <div id="lectura-diagnostico" class="bg-white rounded-2xl border border-zinc-200/90 shadow-xs p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Diagnóstico XML</h2>
+            {errors.length ? (
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700">
+                {errors.length} {errors.length === 1 ? "error" : "errores"}
+              </span>
+            ) : xml ? (
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-100 text-teal-700">
+                Válido
+              </span>
+            ) : (
+              <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-zinc-100 text-zinc-500">
+                En espera
+              </span>
+            )}
+          </div>
+
+          {errors.length ? (
+            <div class="bg-red-50 border border-red-200/80 rounded-xl p-3.5 text-red-800">
+              <ul class="space-y-1.5 text-xs sm:text-sm list-disc list-inside">
+                {errors.map((e) => <li>{e}</li>)}
+              </ul>
+            </div>
+          ) : xml ? (
+            <p class="text-sm text-teal-800 bg-teal-50/70 border border-teal-200/70 rounded-xl px-3.5 py-2.5 flex items-center gap-2">
+              <svg class="w-4 h-4 text-teal-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>La sintaxis del XML es correcta.</span>
+            </p>
+          ) : (
+            <p class="text-sm text-zinc-500 bg-zinc-50 border border-zinc-200/60 rounded-xl px-3.5 py-2.5">
+              Sin contenido para analizar.
+            </p>
+          )}
+        </div>
+
+        <!-- Bloque de Vista Previa 
+        <p id="lectura-pendiente" class="hidden text-sm text-zinc-500">El XML cambió. Presiona Validar para actualizar el diagnóstico y la vista previa.</p>
+        <div id="lectura-vista-previa" class="bg-white rounded-2xl border border-zinc-200/90 shadow-xs overflow-hidden">
+          <div class="px-5 py-3.5 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-zinc-500">Vista previa del lector</h2>
+            <span class="flex gap-1">
+              <span class="w-2 h-2 rounded-full bg-zinc-300"></span>
+              <span class="w-2 h-2 rounded-full bg-zinc-300"></span>
+              <span class="w-2 h-2 rounded-full bg-zinc-300"></span>
+            </span>
+          </div>
+
+          <div class="p-5 sm:p-6 min-h-[280px] max-h-[54vh] overflow-y-auto">
+            {html ? (
+              <article class="prose prose-zinc prose-sm sm:prose-base max-w-none" set:html={html} />
+            ) : (
+              <div class="h-56 flex flex-col items-center justify-center text-center px-4">
+                <div class="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mb-3">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-zinc-600">Vista previa vacía</p>
+                <p class="text-xs text-zinc-400 mt-1">Presiona <strong class="font-medium text-zinc-600">Validar</strong> para generar la lectura.</p>
+              </div>
+            )}
+          </div>
+        </div>
+        -->
+      </aside>
+    </div>
+  </form>
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-zinc-800">
+  
+  <!-- Cabecera de la sección con contador y buscador -->
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 mb-6 border-b border-zinc-200">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <h2 class="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">
+          Lista de Lecturas
+        </h2>
+        <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200/80">
+          {lecturas.length}
+        </span>
+      </div>
+      <p class="text-sm text-zinc-500 mt-1">
+        Selecciona una lectura para cargar su contenido en el editor.
+      </p>
+    </div>
+
+    <!-- Buscador rápido (opcional, funciona con el script de abajo) -->
+    {lecturas.length > 0 && (
+      <div class="relative w-full sm:w-64">
+        <svg class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          id="filtro-lecturas"
+          type="search"
+          placeholder="Filtrar por título..."
+          class="w-full pl-9 pr-3.5 py-2 text-sm bg-white border border-zinc-300 rounded-xl placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all"
+        />
+      </div>
+    )}
+  </div>
+
+  {lecturas.length > 0 ? (
+    <ul
+      id="lista-lecturas"
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4"
+    >
+      {lecturas.map((lectura) => (
+        <li class="item-lectura">
+          <a
+            href={`${Astro.url.pathname}?id=${lectura.id}`}
+            aria-current={id === String(lectura.id) ? "true" : undefined}
+            class="group w-full text-left p-4 bg-white rounded-xl border border-zinc-200/90 hover:border-teal-500/60 hover:shadow-md hover:shadow-zinc-900/5 active:scale-[0.99] transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer"
+          >
+            <div class="flex items-center gap-3.5 min-w-0">
+              <!-- Ícono de documento -->
+              <div class="w-10 h-10 rounded-lg bg-zinc-100 text-zinc-500 group-hover:bg-teal-50 group-hover:text-teal-600 flex items-center justify-center shrink-0 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+
+              <!-- Título e ID -->
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-zinc-900 group-hover:text-teal-700 truncate transition-colors">
+                  {lectura.title || "Lectura sin título"}
+                </p>
+                <span class="text-xs font-mono text-zinc-400 block mt-0.5">
+                  ID: {lectura.id}
+                </span>
+              </div>
+            </div>
+
+            <!-- Flecha indicadora -->
+            <svg class="w-4 h-4 text-zinc-300 group-hover:text-teal-600 group-hover:translate-x-0.5 shrink-0 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    
+    <div id="lista-lecturas" class="bg-zinc-50/70 border border-dashed border-zinc-300 rounded-2xl p-8 sm:p-12 text-center">
+      <div class="w-12 h-12 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-400 mx-auto mb-3 shadow-2xs">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+      </div>
+      <h3 class="text-sm font-semibold text-zinc-900">Aún no hay lecturas guardadas</h3>
+      <p class="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
+        Crea una nueva lectura usando el editor superior y aparecerá listada aquí automáticamente.
+      </p>
+    </div>
+  )}
+</section>
+
+
+</main>
+
+
+<!-- Script ligero para el buscador en tiempo real -->
+<script>
+  const searchInput = document.querySelector("#filtro-lecturas") as HTMLInputElement | null;
+  const items = document.querySelectorAll(".item-lectura");
+
+  searchInput?.addEventListener("input", () => {
+    const query = searchInput.value.toLowerCase().trim();
+    items.forEach((item) => {
+      const text = item.textContent?.toLowerCase() || "";
+      (item as HTMLElement).style.display = text.includes(query) ? "" : "none";
+    });
+  });
+
+  const fileInput = document.querySelector("#lectura-xml-file") as HTMLInputElement | null;
+  const xmlEditor = document.querySelector("#lectura-xml-editor") as HTMLTextAreaElement | null;
+
+  function markPreviewStale() {
+    document.getElementById("lectura-diagnostico")?.classList.add("hidden");
+    document.getElementById("lectura-vista-previa")?.classList.add("hidden");
+    document.getElementById("lectura-pendiente")?.classList.remove("hidden");
+  }
+
+  xmlEditor?.addEventListener("input", markPreviewStale);
+  fileInput?.addEventListener("change", async () => {
+    const file = fileInput.files?.[0];
+    if (!file || !xmlEditor) return;
+    try {
+      xmlEditor.value = await file.text();
+      markPreviewStale();
+    } catch (error) {
+      alert("No se pudo leer el archivo XML: " + (error instanceof Error ? error.message : String(error)));
+    }
+    fileInput.value = "";
+  });
+
+
+  const imageInput = document.querySelector("#image_url") as HTMLInputElement | null;
+  const imagePreview = document.querySelector("#image-preview") as HTMLImageElement | null;
+  const imageContainer = document.querySelector("#image-preview-container") as HTMLDivElement | null;
+
+  imageInput?.addEventListener("input", () => {
+    const url = imageInput.value.trim();
+
+    if (url) {
+      imagePreview!.src = url;
+      imageContainer?.classList.remove("hidden");
+    } else {
+      imagePreview!.removeAttribute("src");
+      imageContainer?.classList.add("hidden");
+    }
+  });
+
+  imagePreview?.addEventListener("error", () => {
+    imageContainer?.classList.add("hidden");
+  });
+
+  imagePreview?.addEventListener("load", () => {
+    imageContainer?.classList.remove("hidden");
+  });
+
+</script>  
 </AdminLayout>
+
+

@@ -1,0 +1,1249 @@
+
+\documentclass[10pt,oneside]{book}
+
+% ==================================================
+% PORQUERÍA MATEMÁTICA
+% Guía de supervivencia matemática
+% ==================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,mexico]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+%\usepackage[a4paper,margin=1.65cm,headheight=14pt]{geometry}
+\usepackage[
+paperwidth=5.5in,
+paperheight=8.5in,
+top=0.65in,
+bottom=0.65in,
+inner=0.75in,
+outer=0.55in
+]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs,array,tabularx,multicol}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\definecolor{tinta}{HTML}{202020}
+\definecolor{gris}{HTML}{EEEEEE}
+\definecolor{rojo}{HTML}{8D2424}
+\definecolor{azul}{HTML}{244A68}
+
+\hypersetup{
+	colorlinks=true,
+	linkcolor=azul,
+	urlcolor=rojo,
+	pdftitle={Porquería Matemática},
+	pdfauthor={Brillinury y Samuel}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Porquería Matemática}}
+\fancyhead[R]{\small Guía de supervivencia}
+\fancyfoot[C]{\thepage}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3pt}
+\setlist{nosep,leftmargin=*}
+\setcounter{tocdepth}{1}
+
+\titleformat{\chapter}
+{\Large\bfseries\color{tinta}}
+{\thechapter.}{0.5em}{}
+\titleformat{\section}
+{\large\bfseries\color{azul}}
+{\thesection}{0.5em}{}
+
+\newtcolorbox{formula}{
+	colback=gris,colframe=tinta,
+	boxrule=.5pt,arc=1mm,
+	left=2mm,right=2mm,top=1mm,bottom=1mm
+}
+\newtcolorbox{ejemplo}{
+	colback=white,colframe=azul,
+	boxrule=.6pt,arc=1mm,
+	title=Ejemplo resuelto,
+	fonttitle=\bfseries
+}
+\newtcolorbox{ojo}{
+	colback=red!4,colframe=rojo,
+	boxrule=.5pt,arc=1mm,
+	title=No lo hagas peor,
+	fonttitle=\bfseries
+}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\sen}{\operatorname{sen}}
+\newcommand{\Prob}{\operatorname{P}}
+
+\begin{document}
+	
+	% ==================================================
+	% PORTADA
+	% ==================================================
+	
+	\begin{titlepage}
+		\centering
+		\vspace*{2cm}
+		
+		{\Huge\bfseries PORQUERÍA\\[3mm] MATEMÁTICA\par}
+		
+		\vspace{1cm}
+		{\Large Guía de supervivencia escolar\par}
+		
+		\vspace{1.5cm}
+		\begin{tcolorbox}[
+			width=.85\textwidth,
+			colback=gris,colframe=tinta,
+			arc=2mm,boxrule=1pt
+			]
+			\centering
+			Una guía rápida de matemáticas para sobrevivir
+			a la primaria, secundaria y preparatoria.
+			
+			Sin revelaciones profundas. Sin discursos inspiradores.
+			Con fórmulas, ejemplos y lo estrictamente necesario.
+		\end{tcolorbox}
+		
+		\vfill
+		
+		{\large Autores: Brillinury y Samuel\par}
+		
+		\vspace{1cm}
+		{\small Edición de consulta y regularización\par}
+	\end{titlepage}
+	
+	\frontmatter
+	\chapter*{Antes de empezar}
+	\addcontentsline{toc}{chapter}{Antes de empezar}
+	
+	Este documento es un acordeón ampliado. No sustituye un curso
+	completo ni garantiza que aparezcan todos los temas de tu examen.
+	Los programas cambian según el grado, la escuela y el subsistema
+	de bachillerato.
+	
+	La estrategia es sencilla:
+	\begin{enumerate}
+		\item Identifica qué tipo de problema tienes.
+		\item Busca la fórmula correspondiente.
+		\item Sustituye los datos.
+		\item Haz las operaciones.
+		\item Comprueba que el resultado tenga sentido.
+	\end{enumerate}
+	
+	Las matemáticas no siempre son difíciles. A veces solamente
+	están escritas de una forma poco amable.
+	
+	\tableofcontents
+	
+	\mainmatter
+	
+	% ==================================================
+	\chapter{Aritmética: los números y sus problemas}
+	
+	\section{Las cuatro operaciones}
+	
+	\begin{itemize}
+		\item \textbf{Suma:} juntar cantidades.
+		\item \textbf{Resta:} calcular una diferencia.
+		\item \textbf{Multiplicación:} sumar repetidamente una cantidad.
+		\item \textbf{División:} repartir o calcular cuántas veces cabe algo.
+	\end{itemize}
+	
+	\begin{formula}
+		\[
+		a+b,\qquad a-b,\qquad a\cdot b,\qquad \frac{a}{b}
+		\]
+		En una división, $b\neq 0$. Dividir entre cero no está definido.
+	\end{formula}
+	
+	\begin{ejemplo}
+		Calcula $18+4(3-1)$.
+		
+		Primero el paréntesis: $3-1=2$.
+		
+		Después la multiplicación: $4(2)=8$.
+		
+		Finalmente: $18+8=26$.
+	\end{ejemplo}
+	
+	\section{Jerarquía de operaciones}
+	
+	El orden usual es:
+	\begin{enumerate}
+		\item Paréntesis y otros signos de agrupación.
+		\item Potencias y raíces.
+		\item Multiplicaciones y divisiones, de izquierda a derecha.
+		\item Sumas y restas, de izquierda a derecha.
+	\end{enumerate}
+	
+	\begin{ojo}
+		No se resuelve necesariamente todo de izquierda a derecha.
+		La jerarquía existe precisamente para evitar ese desastre.
+	\end{ojo}
+	
+	\section{Divisibilidad y números primos}
+	
+	Un número es divisible entre otro si la división da un entero
+	sin residuo.
+	
+	\begin{center}
+		\begin{tabularx}{\textwidth}{cX}
+			\toprule
+			Divisor & Regla rápida\\
+			\midrule
+			2 & Termina en 0, 2, 4, 6 u 8.\\
+			3 & La suma de sus cifras es múltiplo de 3.\\
+			5 & Termina en 0 o 5.\\
+			9 & La suma de sus cifras es múltiplo de 9.\\
+			10 & Termina en 0.\\
+			\bottomrule
+		\end{tabularx}
+	\end{center}
+	
+	Un número primo tiene exactamente dos divisores positivos:
+	1 y él mismo. El 1 no es primo.
+	
+	\section{Mínimo común múltiplo y máximo común divisor}
+	
+	El \textbf{MCM} es el menor múltiplo positivo común.
+	El \textbf{MCD} es el mayor divisor positivo común.
+	
+	Ejemplo: para 12 y 18,
+	\[
+	12=2^2\cdot3,\qquad 18=2\cdot3^2.
+	\]
+	\[
+	\operatorname{MCD}(12,18)=2\cdot3=6
+	\]
+	\[
+	\operatorname{MCM}(12,18)=2^2\cdot3^2=36.
+	\]
+	
+	Para el MCD se toman los exponentes menores; para el MCM,
+	los mayores.
+	
+	% ==================================================
+	\chapter{Fracciones, decimales y porcentajes}
+	
+	\section{Fracciones}
+	
+	Una fracción representa partes de un todo:
+	\[
+	\frac{a}{b},\qquad b\neq0.
+	\]
+	$a$ es el numerador y $b$ el denominador.
+	
+	\begin{formula}
+		\[
+		\frac{a}{b}+\frac{c}{d}=\frac{ad+bc}{bd}
+		\]
+		\[
+		\frac{a}{b}\cdot\frac{c}{d}=\frac{ac}{bd}
+		\]
+		\[
+		\frac{a}{b}\div\frac{c}{d}=\frac{a}{b}\cdot\frac{d}{c}
+		\]
+		En la división también se requiere $c\neq0$.
+	\end{formula}
+	
+	\begin{ejemplo}
+		Calcula $\frac{1}{2}+\frac{1}{3}$.
+		
+		El denominador común puede ser 6:
+		\[
+		\frac{1}{2}+\frac{1}{3}
+		=\frac{3}{6}+\frac{2}{6}
+		=\frac{5}{6}.
+		\]
+	\end{ejemplo}
+	
+	\begin{ojo}
+		No sumes los denominadores. En general,
+		$\frac12+\frac13\neq\frac25$.
+	\end{ojo}
+	
+	\section{Fracciones equivalentes y simplificación}
+	
+	Multiplicar o dividir numerador y denominador por el mismo
+	número distinto de cero conserva el valor:
+	\[
+	\frac{2}{4}=\frac{1}{2}=\frac{5}{10}.
+	\]
+	
+	Simplifica dividiendo arriba y abajo entre un divisor común.
+	
+	\section{Decimales}
+	
+	Para sumar y restar, alinea los puntos decimales.
+	Para multiplicar, multiplica como si fueran enteros y luego
+	coloca tantas cifras decimales como haya en total en los factores.
+	
+	\begin{ejemplo}
+		\[
+		2.4\times0.3=0.72.
+		\]
+		Como $24\times3=72$ y hay dos cifras decimales en total,
+		el resultado es $0.72$.
+	\end{ejemplo}
+	
+	\section{Porcentajes}
+	
+	Porcentaje significa ``por cada cien''.
+	
+	\begin{formula}
+		\[
+		p\%=\frac{p}{100},\qquad
+		p\%\text{ de }N=\frac{p}{100}N.
+		\]
+	\end{formula}
+	
+	\begin{ejemplo}
+		¿Cuánto es el 15\% de 800?
+		\[
+		0.15(800)=120.
+		\]
+	\end{ejemplo}
+	
+	Para aumentar una cantidad en $p\%$, multiplica por
+	$1+\frac{p}{100}$. Para disminuirla, multiplica por
+	$1-\frac{p}{100}$.
+	
+	\section{Razones, proporciones y regla de tres}
+	
+	Una razón compara cantidades. Una proporción afirma que
+	dos razones son iguales:
+	\[
+	\frac{a}{b}=\frac{c}{d}
+	\quad\Longrightarrow\quad ad=bc.
+	\]
+	
+	\begin{ejemplo}
+		Si 3 cuadernos cuestan 45 pesos, ¿cuánto cuestan 5 al mismo
+		precio unitario?
+		\[
+		x=\frac{5(45)}{3}=75.
+		\]
+	\end{ejemplo}
+	
+	La regla de tres directa sirve cuando ambas cantidades aumentan
+	o disminuyen juntas en la misma proporción. Si una aumenta y
+	la otra disminuye, revisa si se trata de proporcionalidad inversa.
+	
+	% ==================================================
+	\chapter{Enteros, potencias y raíces}
+	
+	\section{Números negativos}
+	
+	En la recta numérica, los números a la derecha son mayores.
+	
+	\[
+	-5<-2<0<3<7.
+	\]
+	
+	Reglas de signos para multiplicar o dividir:
+	
+	\begin{center}
+		\begin{tabular}{c|c}
+			Operación de signos & Resultado\\
+			\hline
+			$+\cdot+$ & $+$\\
+			$+\cdot-$ & $-$\\
+			$-\cdot+$ & $-$\\
+			$-\cdot-$ & $+$
+		\end{tabular}
+	\end{center}
+	
+	Sumar un negativo equivale a restar. Restar un negativo
+	equivale a sumar.
+	
+	\section{Potencias}
+	
+	\[
+	a^n=\underbrace{a\cdot a\cdots a}_{n\text{ factores}}.
+	\]
+	
+	\begin{formula}
+		Para las bases y exponentes donde las expresiones estén definidas:
+		\[
+		a^m a^n=a^{m+n},\qquad
+		\frac{a^m}{a^n}=a^{m-n}\quad(a\neq0),
+		\]
+		\[
+		(a^m)^n=a^{mn},\qquad
+		(ab)^n=a^nb^n,
+		\]
+		\[
+		a^0=1\quad(a\neq0),\qquad
+		a^{-n}=\frac{1}{a^n}\quad(a\neq0).
+		\]
+	\end{formula}
+	
+	\section{Raíces}
+	
+	La raíz cuadrada principal de un número no negativo es el número
+	no negativo cuyo cuadrado da el original:
+	\[
+	\sqrt{49}=7,\qquad \sqrt{a^2}=|a|.
+	\]
+	
+	\begin{ejemplo}
+		\[
+		\sqrt{72}=\sqrt{36\cdot2}=6\sqrt2.
+		\]
+	\end{ejemplo}
+	
+	No se puede separar una suma bajo una raíz de esta manera:
+	\[
+	\sqrt{a+b}\neq\sqrt a+\sqrt b
+	\]
+	en general.
+	
+	\section{Notación científica}
+	
+	Se escribe un número como
+	\[
+	a\times10^n,\qquad 1\leq |a|<10.
+	\]
+	
+	Ejemplos:
+	\[
+	450000=4.5\times10^5,\qquad
+	0.00032=3.2\times10^{-4}.
+	\]
+	
+	% ==================================================
+	\chapter{Álgebra: letras que representan números}
+	
+	\section{Expresiones algebraicas}
+	
+	En $3x+5$, la letra $x$ representa un número.
+	El número 3 es el coeficiente; 5 es el término constante.
+	
+	Solo se reducen términos semejantes:
+	\[
+	3x+5x=8x,\qquad 3x+5\neq8x.
+	\]
+	
+	\section{Propiedad distributiva}
+	
+	\begin{formula}
+		\[
+		a(b+c)=ab+ac
+		\]
+		\[
+		a(b-c)=ab-ac
+		\]
+	\end{formula}
+	
+	\begin{ejemplo}
+		\[
+		3(x+4)=3x+12.
+		\]
+	\end{ejemplo}
+	
+	\section{Productos notables}
+	
+	\begin{formula}
+		\[
+		(a+b)^2=a^2+2ab+b^2
+		\]
+		\[
+		(a-b)^2=a^2-2ab+b^2
+		\]
+		\[
+		(a+b)(a-b)=a^2-b^2
+		\]
+		\[
+		(a+b)^3=a^3+3a^2b+3ab^2+b^3
+		\]
+	\end{formula}
+	
+	\begin{ojo}
+		$(a+b)^2$ no es $a^2+b^2$. Falta el término $2ab$.
+	\end{ojo}
+	
+	\section{Factorización}
+	
+	Factorizar es expresar una suma como producto.
+	
+	\begin{formula}
+		\[
+		ab+ac=a(b+c)
+		\]
+		\[
+		a^2-b^2=(a-b)(a+b)
+		\]
+		\[
+		x^2+(m+n)x+mn=(x+m)(x+n)
+		\]
+	\end{formula}
+	
+	Ejemplo:
+	\[
+	x^2+5x+6=(x+2)(x+3).
+	\]
+	Se buscan dos números que sumen 5 y multipliquen 6.
+	
+	\section{Ecuaciones lineales}
+	
+	Una ecuación afirma que dos expresiones son iguales.
+	Resolverla consiste en encontrar los valores que la hacen cierta.
+	
+	\begin{ejemplo}
+		Resuelve $3x+5=20$.
+		\[
+		3x=20-5=15,\qquad x=5.
+		\]
+	\end{ejemplo}
+	
+	La operación que haces en un lado debes hacerla también
+	en el otro. La igualdad no es decoración.
+	
+	\section{Ecuaciones con paréntesis y fracciones}
+	
+	Ejemplo:
+	\[
+	2(x-3)=10
+	\]
+	\[
+	2x-6=10,\qquad 2x=16,\qquad x=8.
+	\]
+	
+	Si aparecen fracciones, puedes multiplicar toda la ecuación
+	por el mínimo común múltiplo de los denominadores, siempre
+	respetando las restricciones del problema.
+	
+	\section{Sistemas de ecuaciones}
+	
+	Un sistema contiene dos o más ecuaciones con las mismas
+	incógnitas.
+	
+	\begin{ejemplo}
+		\[
+		\begin{cases}
+			x+y=7\\
+			x-y=1
+		\end{cases}
+		\]
+		
+		Sumamos las ecuaciones:
+		\[
+		2x=8\Longrightarrow x=4.
+		\]
+		Sustituimos:
+		\[
+		4+y=7\Longrightarrow y=3.
+		\]
+	\end{ejemplo}
+	
+	Métodos frecuentes: sustitución, igualación y reducción.
+	
+	\section{Ecuaciones cuadráticas}
+	
+	Forma general:
+	\[
+	ax^2+bx+c=0,\qquad a\neq0.
+	\]
+	
+	\begin{formula}
+		\[
+		x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}.
+		\]
+	\end{formula}
+	
+	El discriminante es $\Delta=b^2-4ac$:
+	\begin{itemize}
+		\item $\Delta>0$: dos soluciones reales distintas.
+		\item $\Delta=0$: una solución real doble.
+		\item $\Delta<0$: no hay soluciones reales.
+	\end{itemize}
+	
+	\begin{ejemplo}
+		Resuelve $x^2-5x+6=0$.
+		\[
+		(x-2)(x-3)=0.
+		\]
+		Por tanto, $x=2$ o $x=3$.
+	\end{ejemplo}
+	
+	\section{Desigualdades}
+	
+	Los signos son $<$, $>$, $\leq$ y $\geq$.
+	
+	Al multiplicar o dividir una desigualdad por un número
+	negativo, se invierte el signo.
+	
+	\begin{ejemplo}
+		\[
+		-2x>6\Longrightarrow x<-3.
+		\]
+	\end{ejemplo}
+	
+	% ==================================================
+	\chapter{Funciones, sucesiones y gráficas}
+	
+	\section{Plano cartesiano}
+	
+	Un punto se escribe $(x,y)$.
+	El eje horizontal es $x$; el vertical es $y$.
+	
+	Los cuadrantes se numeran comenzando por el superior derecho
+	y siguiendo en sentido contrario a las agujas del reloj.
+	
+	\section{Funciones}
+	
+	Una función asigna a cada entrada válida exactamente una salida.
+	Se escribe $y=f(x)$.
+	
+	\begin{ejemplo}
+		Si $f(x)=2x+1$, entonces
+		\[
+		f(3)=2(3)+1=7.
+		\]
+	\end{ejemplo}
+	
+	\section{Rectas}
+	
+	La forma pendiente-intersección es
+	\[
+	y=mx+b,
+	\]
+	donde $m$ es la pendiente y $b$ el corte con el eje $y$.
+	
+	Con dos puntos:
+	\begin{formula}
+		\[
+		m=\frac{y_2-y_1}{x_2-x_1},\qquad x_2\neq x_1.
+		\]
+	\end{formula}
+	
+	\section{Sucesiones}
+	
+	Una sucesión es una lista ordenada de números.
+	
+	Aritmética: se suma siempre la misma diferencia $d$.
+	\[
+	a_n=a_1+(n-1)d.
+	\]
+	
+	Geométrica: se multiplica siempre por la misma razón $r$.
+	\[
+	a_n=a_1r^{n-1}.
+	\]
+	
+	Ejemplo aritmético: $3,7,11,15,\ldots$ tiene diferencia 4.
+	
+	% ==================================================
+	\chapter{Geometría plana}
+	
+	\section{Ángulos}
+	
+	\begin{itemize}
+		\item Agudo: menor que $90^\circ$.
+		\item Recto: $90^\circ$.
+		\item Obtuso: mayor que $90^\circ$ y menor que $180^\circ$.
+		\item Llano: $180^\circ$.
+		\item Completo: $360^\circ$.
+	\end{itemize}
+	
+	Los ángulos interiores de un triángulo suman $180^\circ$.
+	Los de un cuadrilátero suman $360^\circ$.
+	
+	\section{Perímetros y áreas}
+	
+	\begin{center}
+		\begin{tabularx}{\textwidth}{lXX}
+			\toprule
+			Figura & Perímetro & Área\\
+			\midrule
+			Cuadrado de lado $l$ & $4l$ & $l^2$\\
+			Rectángulo & $2(b+h)$ & $bh$\\
+			Triángulo & suma de lados & $\frac{bh}{2}$\\
+			Paralelogramo & $2(a+b)$ & $bh$\\
+			Trapecio & suma de lados & $\frac{(B+b)h}{2}$\\
+			Círculo & $2\pi r$ & $\pi r^2$\\
+			\bottomrule
+		\end{tabularx}
+	\end{center}
+	
+	En las fórmulas, $b$ suele representar base, $h$ altura,
+	$r$ radio y $B$ base mayor. Revisa la figura antes de sustituir.
+	
+	\section{Teorema de Pitágoras}
+	
+	Para un triángulo rectángulo:
+	\[
+	a^2+b^2=c^2,
+	\]
+	donde $c$ es la hipotenusa, el lado opuesto al ángulo recto.
+	
+	\begin{ejemplo}
+		Si los catetos miden 3 y 4:
+		\[
+		c=\sqrt{3^2+4^2}=\sqrt{25}=5.
+		\]
+	\end{ejemplo}
+	
+	No se aplica directamente a cualquier triángulo.
+	
+	\section{Semejanza y teorema de Tales}
+	
+	Los triángulos semejantes tienen ángulos correspondientes
+	iguales y lados correspondientes proporcionales.
+	
+	Si las longitudes se escalan por un factor $k$:
+	\[
+	\text{longitudes}\times k,\qquad
+	\text{áreas}\times k^2.
+	\]
+	
+	El teorema de Tales permite establecer proporciones cuando
+	rectas paralelas cortan transversales. Identifica primero
+	los segmentos correspondientes.
+	
+	\section{Circunferencia}
+	
+	\[
+	C=2\pi r=\pi d,\qquad A=\pi r^2,\qquad d=2r.
+	\]
+	
+	Una circunferencia es el borde; el círculo es la región interior.
+	La terminología importa en los ejercicios.
+	
+	% ==================================================
+	\chapter{Geometría espacial y unidades}
+	
+	\section{Volúmenes}
+	
+	\begin{center}
+		\begin{tabularx}{\textwidth}{lX}
+			\toprule
+			Cuerpo & Volumen\\
+			\midrule
+			Cubo & $V=l^3$\\
+			Prisma & $V=A_bh$\\
+			Cilindro & $V=\pi r^2h$\\
+			Pirámide & $V=\frac13A_bh$\\
+			Cono & $V=\frac13\pi r^2h$\\
+			Esfera & $V=\frac43\pi r^3$\\
+			\bottomrule
+		\end{tabularx}
+	\end{center}
+	
+	$A_b$ es el área de la base y $h$ la altura perpendicular.
+	
+	\section{Conversiones}
+	
+	En el sistema métrico:
+	\[
+	1\text{ km}=1000\text{ m},\qquad
+	1\text{ m}=100\text{ cm},\qquad
+	1\text{ kg}=1000\text{ g}.
+	\]
+	
+	Para áreas, el factor de conversión se eleva al cuadrado;
+	para volúmenes, al cubo.
+	
+	\[
+	1\text{ m}^2=10000\text{ cm}^2,\qquad
+	1\text{ m}^3=1000000\text{ cm}^3.
+	\]
+	
+	\section{Rapidez, distancia y tiempo}
+	
+	\begin{formula}
+		\[
+		v=\frac{d}{t},\qquad d=vt,\qquad t=\frac{d}{v}.
+		\]
+	\end{formula}
+	
+	Asegúrate de que las unidades sean compatibles. Kilómetros
+	por hora y metros por segundo no son lo mismo.
+	
+	% ==================================================
+	\chapter{Trigonometría}
+	
+	\section{Razones trigonométricas}
+	
+	En un triángulo rectángulo, respecto al ángulo $\theta$:
+	\begin{formula}
+		\[
+		\sen\theta=\frac{\text{cateto opuesto}}{\text{hipotenusa}}
+		\]
+		\[
+		\cos\theta=\frac{\text{cateto adyacente}}{\text{hipotenusa}}
+		\]
+		\[
+		\tan\theta=\frac{\text{cateto opuesto}}{\text{cateto adyacente}}
+		\]
+	\end{formula}
+	
+	\begin{ejemplo}
+		Si el cateto opuesto mide 3 y la hipotenusa 5:
+		\[
+		\sen\theta=\frac35=0.6.
+		\]
+	\end{ejemplo}
+	
+	\section{Identidad fundamental}
+	
+	\[
+	\sen^2\theta+\cos^2\theta=1.
+	\]
+	
+	En una calculadora, revisa si el modo está en grados o radianes.
+	Un resultado correcto con la unidad equivocada sigue siendo
+	un resultado inútil.
+	
+	\section{Ley de senos y ley de cosenos}
+	
+	Para un triángulo con lados $a,b,c$ opuestos a ángulos
+	$A,B,C$:
+	\[
+	\frac{a}{\sen A}=\frac{b}{\sen B}=\frac{c}{\sen C}.
+	\]
+	
+	Ley de cosenos:
+	\[
+	c^2=a^2+b^2-2ab\cos C.
+	\]
+	
+	Sirven para triángulos que no necesariamente son rectángulos.
+	
+	% ==================================================
+	\chapter{Geometría analítica}
+	
+	\section{Distancia entre dos puntos}
+	
+	\[
+	d=\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}.
+	\]
+	
+	\section{Punto medio}
+	
+	\[
+	M=\left(\frac{x_1+x_2}{2},\frac{y_1+y_2}{2}\right).
+	\]
+	
+	\section{Ecuación de la circunferencia}
+	
+	Con centro $(h,k)$ y radio $r$:
+	\[
+	(x-h)^2+(y-k)^2=r^2.
+	\]
+	
+	\section{Parábola y otras cónicas}
+	
+	Una forma común de parábola vertical es
+	\[
+	y=a(x-h)^2+k.
+	\]
+	
+	La elipse y la hipérbola tienen otras ecuaciones canónicas.
+	En un examen, identifica primero la forma de la ecuación y
+	después qué información pide el problema.
+	
+	% ==================================================
+	\chapter{Estadística descriptiva}
+	
+	\section{Media, mediana y moda}
+	
+	Datos: $2,3,3,4,8$.
+	
+	Media:
+	\[
+	\bar{x}=\frac{\text{suma de los datos}}{\text{número de datos}}
+	=\frac{20}{5}=4.
+	\]
+	
+	Mediana: el dato central al ordenar la lista. Aquí es 3.
+	
+	Moda: el valor más frecuente. Aquí es 3.
+	
+	\section{Rango y dispersión}
+	
+	\[
+	\text{Rango}=\text{máximo}-\text{mínimo}.
+	\]
+	
+	La varianza mide dispersión respecto a la media.
+	Para una población:
+	\[
+	\sigma^2=\frac{\sum_{i=1}^n(x_i-\mu)^2}{n}.
+	\]
+	
+	La desviación estándar es la raíz cuadrada de la varianza.
+	En muestras, la fórmula usual de varianza muestral divide
+	entre $n-1$.
+	
+	\section{Gráficas}
+	
+	\begin{itemize}
+		\item Barras: comparar categorías.
+		\item Histograma: mostrar una distribución numérica agrupada.
+		\item Circular: mostrar proporciones de un total.
+		\item Línea: observar cambios a lo largo del tiempo.
+		\item Dispersión: observar la relación entre dos variables.
+	\end{itemize}
+	
+	Una gráfica puede ser correcta y aun así inducir a error si
+	el eje está recortado o las escalas no son comparables.
+	
+	% ==================================================
+	\chapter{Probabilidad y conteo}
+	
+	\section{Probabilidad clásica}
+	
+	Cuando todos los resultados son igualmente probables:
+	\[
+	\Prob(A)=\frac{\text{casos favorables}}{\text{casos posibles}}.
+	\]
+	
+	La probabilidad está entre 0 y 1.
+	
+	\begin{ejemplo}
+		Al lanzar un dado justo, la probabilidad de obtener un 6 es
+		\[
+		\Prob(6)=\frac16.
+		\]
+	\end{ejemplo}
+	
+	\section{Complemento}
+	
+	\[
+	\Prob(A^c)=1-\Prob(A).
+	\]
+	
+	Si la probabilidad de que llueva es 0.3, la de que no llueva
+	es 0.7, suponiendo que son los únicos dos resultados.
+	
+	\section{Principios de conteo}
+	
+	Si una decisión tiene $m$ opciones y otra tiene $n$ opciones,
+	y ambas se pueden combinar libremente, hay $mn$ combinaciones.
+	
+	Permutaciones de $n$ objetos distintos:
+	\[
+	n!=n(n-1)(n-2)\cdots2\cdot1.
+	\]
+	
+	Arreglos de $r$ elementos tomados de $n$:
+	\[
+	P(n,r)=\frac{n!}{(n-r)!}.
+	\]
+	
+	Combinaciones, cuando el orden no importa:
+	\[
+	\binom nr=\frac{n!}{r!(n-r)!}.
+	\]
+	
+	% ==================================================
+	\chapter{Exponenciales y logaritmos}
+	
+	\section{Función exponencial}
+	
+	\[
+	y=a^x,\qquad a>0,\quad a\neq1.
+	\]
+	
+	Si $a>1$, la función es creciente.
+	Si $0<a<1$, es decreciente.
+	
+	\section{Logaritmos}
+	
+	El logaritmo responde: ¿a qué exponente hay que elevar
+	la base para obtener cierto número?
+	
+	\[
+	\log_a x=y\quad\Longleftrightarrow\quad a^y=x.
+	\]
+	
+	Condiciones: $a>0$, $a\neq1$ y $x>0$.
+	
+	\begin{formula}
+		\[
+		\log_a(xy)=\log_a x+\log_a y
+		\]
+		\[
+		\log_a\left(\frac{x}{y}\right)=\log_a x-\log_a y
+		\]
+		\[
+		\log_a(x^r)=r\log_a x
+		\]
+	\end{formula}
+	
+	Cambio de base:
+	\[
+	\log_a x=\frac{\log_b x}{\log_b a}.
+	\]
+	
+	No existe una regla que convierta automáticamente
+	$\log(x+y)$ en $\log x+\log y$.
+	
+	% ==================================================
+	\chapter{Límites, derivadas e integrales}
+	
+	\section{Límites}
+	
+	Un límite describe el valor al que se aproxima una función
+	cuando la variable se acerca a cierto punto.
+	
+	\[
+	\lim_{x\to a}f(x)=L.
+	\]
+	
+	Si la función es continua en $a$, normalmente basta con
+	sustituir $x=a$. Si aparece una indeterminación como $0/0$,
+	hace falta simplificar o aplicar otro método.
+	
+	\begin{ejemplo}
+		\[
+		\lim_{x\to2}(x^2+1)=2^2+1=5.
+		\]
+	\end{ejemplo}
+	
+	\section{Derivadas}
+	
+	La derivada representa una tasa de cambio instantánea.
+	Geométricamente, es la pendiente de la recta tangente.
+	
+	\begin{formula}
+		Reglas básicas:
+		\[
+		\frac{d}{dx}(c)=0,\qquad
+		\frac{d}{dx}(x^n)=nx^{n-1}
+		\]
+		\[
+		\frac{d}{dx}(cf)=cf',\qquad
+		\frac{d}{dx}(f+g)=f'+g'
+		\]
+		\[
+		(fg)'=f'g+fg'
+		\]
+		\[
+		\left(\frac fg\right)'=
+		\frac{f'g-fg'}{g^2},\quad g\neq0.
+		\]
+	\end{formula}
+	
+	\begin{ejemplo}
+		Si $f(x)=3x^2+2x-4$:
+		\[
+		f'(x)=6x+2.
+		\]
+	\end{ejemplo}
+	
+	\section{Integral}
+	
+	La integral definida puede representar área con signo
+	bajo una curva y acumular cantidades.
+	
+	\begin{formula}
+		\[
+		\int x^n\,dx=\frac{x^{n+1}}{n+1}+C,\qquad n\neq-1.
+		\]
+		\[
+		\int_a^b f(x)\,dx=F(b)-F(a),\qquad F'=f.
+		\]
+	\end{formula}
+	
+	\begin{ejemplo}
+		\[
+		\int_0^2 x\,dx
+		=\left[\frac{x^2}{2}\right]_0^2
+		=2.
+		\]
+	\end{ejemplo}
+	
+	Estos temas suelen pertenecer al bachillerato avanzado
+	o a cursos introductorios de cálculo; no todos los planes
+	de preparatoria los incluyen.
+	
+	% ==================================================
+	\chapter{Errores frecuentes}
+	
+	\begin{enumerate}
+		\item Sumar fracciones sumando también los denominadores.
+		\item Olvidar la jerarquía de operaciones.
+		\item Cambiar un signo al pasar términos de una ecuación.
+		\item Olvidar invertir una desigualdad al dividir entre un negativo.
+		\item Confundir radio con diámetro.
+		\item Usar área cuando el problema pide perímetro.
+		\item Usar grados cuando la calculadora está en radianes.
+		\item Confundir una relación proporcional con una relación cualquiera.
+		\item Redondear demasiado pronto.
+		\item Dar una respuesta sin unidades cuando sí hacen falta.
+		\item Dividir entre cero.
+		\item Afirmar que $\sqrt{a+b}=\sqrt a+\sqrt b$.
+	\end{enumerate}
+	
+	La comprobación más barata es sustituir el resultado en el
+	problema original. Hazla antes de entregar.
+	
+	% ==================================================
+	\chapter{Formulario exprés}
+	
+	\small
+	\begin{multicols}{2}
+		
+		\textbf{Porcentaje}
+		\[
+		p\%\text{ de }N=\frac{pN}{100}
+		\]
+		
+		\textbf{Proporción}
+		\[
+		\frac ab=\frac cd\Rightarrow ad=bc
+		\]
+		
+		\textbf{Pitágoras}
+		\[
+		a^2+b^2=c^2
+		\]
+		
+		\textbf{Recta}
+		\[
+		y=mx+b
+		\]
+		
+		\textbf{Pendiente}
+		\[
+		m=\frac{y_2-y_1}{x_2-x_1}
+		\]
+		
+		\textbf{Cuadrática}
+		\[
+		x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}
+		\]
+		
+		\textbf{Círculo}
+		\[
+		A=\pi r^2,\quad C=2\pi r
+		\]
+		
+		\textbf{Triángulo}
+		\[
+		A=\frac{bh}{2}
+		\]
+		
+		\textbf{Rectángulo}
+		\[
+		A=bh,\quad P=2b+2h
+		\]
+		
+		\textbf{Prisma}
+		\[
+		V=A_bh
+		\]
+		
+		\textbf{Cilindro}
+		\[
+		V=\pi r^2h
+		\]
+		
+		\textbf{Cono}
+		\[
+		V=\frac13\pi r^2h
+		\]
+		
+		\textbf{Rapidez}
+		\[
+		v=\frac dt
+		\]
+		
+		\textbf{Media}
+		\[
+		\bar{x}=\frac{\sum x_i}{n}
+		\]
+		
+		\textbf{Probabilidad clásica}
+		\[
+		\Prob(A)=\frac{F}{N}
+		\]
+		
+		\textbf{Sucesión aritmética}
+		\[
+		a_n=a_1+(n-1)d
+		\]
+		
+		\textbf{Sucesión geométrica}
+		\[
+		a_n=a_1r^{n-1}
+		\]
+		
+		\textbf{Trigonometría}
+		\[
+		\sen\theta=\frac{CO}{H}
+		\]
+		\[
+		\cos\theta=\frac{CA}{H}
+		\]
+		\[
+		\tan\theta=\frac{CO}{CA}
+		\]
+		
+		\textbf{Derivada de potencia}
+		\[
+		(x^n)'=nx^{n-1}
+		\]
+		
+		\textbf{Integral de potencia}
+		\[
+		\int x^n dx=\frac{x^{n+1}}{n+1}+C
+		\]
+		
+	\end{multicols}
+	\normalsize
+	
+	% ==================================================
+	\chapter{Mini examen de supervivencia}
+	
+	Intenta resolver sin mirar las respuestas.
+	
+	\begin{enumerate}
+		\item Calcula $12-2(3+1)$.
+		\item Simplifica $\frac{18}{24}$.
+		\item Calcula el 20\% de 350.
+		\item Resuelve $5x-7=18$.
+		\item Factoriza $x^2-9$.
+		\item Calcula la hipotenusa con catetos 6 y 8.
+		\item Calcula el área de un círculo de radio 3.
+		\item Encuentra la media de 4, 6, 8 y 10.
+		\item Calcula la pendiente entre $(1,2)$ y $(3,8)$.
+		\item Deriva $f(x)=4x^3$.
+	\end{enumerate}
+	
+	\section*{Respuestas}
+	\addcontentsline{toc}{section}{Respuestas del mini examen}
+	
+	\begin{enumerate}
+		\item $4$.
+		\item $\frac34$.
+		\item $70$.
+		\item $x=5$.
+		\item $(x-3)(x+3)$.
+		\item $10$.
+		\item $9\pi$ unidades cuadradas.
+		\item $7$.
+		\item $m=3$.
+		\item $f'(x)=12x^2$.
+	\end{enumerate}
+	
+	\vfill
+	\begin{center}
+		\textbf{Fin.}
+		
+		Ya tienes las fórmulas. El resto es identificar cuál
+		te están pidiendo y no pelearte con los signos.
+	\end{center}
+	
+\end{document}

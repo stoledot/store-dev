@@ -1,0 +1,3525 @@
+\documentclass[10pt,oneside,openany]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,mexico]{babel}
+\usepackage{lmodern,microtype}
+
+%\usepackage[a4paper,margin=1.7cm,headheight=15pt,footskip=22pt]{geometry}
+
+\usepackage[
+paperwidth=5.5in,
+paperheight=8.5in,
+top=0.65in,
+bottom=0.65in,
+inner=0.75in,
+outer=0.55in
+]{geometry}
+
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,tabularx,array,multicol}
+\usepackage[most]{tcolorbox}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{tikz}
+\definecolor{tinta}{HTML}{222222}
+\definecolor{gris}{HTML}{F0F0F0}
+\definecolor{rojo}{HTML}{8D2424}
+\definecolor{azul}{HTML}{244A68}
+\hypersetup{colorlinks=true,linkcolor=azul,urlcolor=rojo,pdftitle={Porquería Matemática: edición ampliada},pdfauthor={Brillinury y Samuel}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\textit{Porquería Matemática}}
+\fancyhead[R]{\small Acordeón ampliado}
+\fancyfoot[C]{\thepage}
+\setlength{\parindent}{0pt}\setlength{\parskip}{3pt}
+\setlist{itemsep=2pt,topsep=3pt,leftmargin=*}
+\setcounter{tocdepth}{1}
+\titleformat{\chapter}{\Huge\bfseries\color{tinta}}{\thechapter.}{.5em}{}
+\titleformat{\section}{\Large\bfseries\color{azul}}{\thesection}{.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{tinta}}{\thesubsection}{.5em}{}
+\newtcolorbox{idea}{colback=gris,colframe=tinta,boxrule=.5pt,arc=1mm,left=2mm,right=2mm,top=1.5mm,bottom=1.5mm}
+\newtcolorbox{ejemplo}{colback=white,colframe=azul,boxrule=.6pt,arc=1mm,title=Ejemplo resuelto,fonttitle=\bfseries}
+\newtcolorbox{ojo}{colback=red!4,colframe=rojo,boxrule=.5pt,arc=1mm,title=No lo hagas peor,fonttitle=\bfseries}
+\newtcolorbox{practica}{colback=blue!3,colframe=azul,boxrule=.5pt,arc=1mm,title=Práctica rápida,fonttitle=\bfseries}
+\newcommand{\R}{\mathbb{R}}\newcommand{\N}{\mathbb{N}}\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\sen}{\operatorname{sen}}\newcommand{\Prob}{\operatorname{P}}
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2.3cm}
+{\Huge\bfseries PORQUERÍA\\[4mm] MATEMÁTICA\par}
+\vspace{8mm}
+{\LARGE Edición ampliada\par}
+\vspace{1.2cm}
+\begin{tcolorbox}[width=.86\textwidth,colback=gris,colframe=tinta,arc=2mm,boxrule=1pt]
+\centering\Large
+Guía de supervivencia desde primaria hasta preparatoria.
+\end{tcolorbox}
+\vspace{1cm}
+{\large Explicaciones desde cero, ejemplos resueltos, errores comunes y ejercicios con respuestas.\par}
+\vfill
+{\large Autores: Brillinury y Samuel\par}
+\vspace{8mm}
+{\small Matemáticas explicadas con paciencia, ejemplos y el mínimo de ceremonia.\par}
+\end{titlepage}
+\frontmatter
+\chapter*{Nota de uso}
+\addcontentsline{toc}{chapter}{Nota de uso}
+Esta guía es un material general de repaso y regularización. Los programas oficiales, el orden de los contenidos y la profundidad cambian según el grado, la escuela y el subsistema de bachillerato. No es una reproducción oficial de un programa de la SEP ni garantiza que incluya cada tema que pueda aparecer en un examen particular.
+
+El tono es directo y algo áspero con los procedimientos, nunca con quien está aprendiendo. Cada tema parte de lo básico y avanza mediante ejemplos. Si un paso no se entiende, conviene detenerse ahí y aclararlo antes de continuar.
+
+\textbf{Cómo usarla:}
+\begin{enumerate}
+\item Lee la explicación corta.
+\item Revisa el ejemplo resuelto sin saltarte pasos.
+\item Tapa la solución e intenta los ejercicios.
+\item Corrige y anota el tipo de error: concepto, signo, operación, fórmula o lectura.
+\item Repite otro ejercicio del mismo tipo al día siguiente.
+\end{enumerate}
+
+\textbf{Símbolos frecuentes:} $=$ igualdad; $\\neq$ distinto; $\\approx$ aproximadamente; $\\leq$ menor o igual; $\\geq$ mayor o igual; $\\in$ pertenece; $\\sqrt{}$ raíz; $\\pi\\approx3.14159$.
+\tableofcontents
+\mainmatter
+
+\chapter{Cómo sobrevivir a un problema matemático}
+
+\begin{idea}
+Las matemáticas escolares suelen presentar un problema como si el enunciado hubiera sido redactado por alguien que cobra por esconder la información. La primera tarea no es calcular: es entender qué se pregunta.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+Lee el problema una vez para entender la historia y otra para localizar los datos. Subraya qué se conoce, encierra qué se pide y tacha los datos que no sirven. No todo número escrito en el enunciado tiene obligación de participar en la operación.
+
+
+
+\begin{ejemplo}
+Ejemplo: «Una caja contiene 24 lápices. Se reparten por igual entre 6 alumnos. ¿Cuántos recibe cada uno?» Datos: 24 lápices y 6 alumnos. Pregunta: lápices por alumno. La palabra «por igual» sugiere división: $24\div6=4$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: elegir una operación solo porque aparece una palabra. «En total» suele sugerir suma, pero el contexto manda. Las palabras son pistas, no leyes universales.
+\end{ojo}
+
+
+
+\section{Estimación antes del cálculo}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+Antes de hacer cuentas, calcula aproximadamente. Si compras algo de \textdollar{}98 y otra cosa de \textdollar{}203, el total estará cerca de \textdollar{}300. Si tu resultado es \textdollar{}3,001, probablemente algún signo decidió arruinarte el día.
+
+\begin{ejemplo}
+Ejemplo: $49\times21$ está cerca de $50\times20=1000$. El resultado exacto es $1029$, razonable porque queda cerca de 1000.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: redondear demasiado pronto cuando se requiere precisión. La estimación sirve para detectar disparates, no para reemplazar siempre el resultado exacto.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Estima $198+403$.
+
+\item Estima $31\times19$.
+
+\item ¿Es razonable que 3 cuadernos de \textdollar{}25 cada uno cuesten \textdollar{}750?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Comprobar una respuesta}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+Una respuesta se comprueba sustituyéndola en la operación original, usando la operación inversa o revisando las unidades. La comprobación no es una ceremonia: evita entregar errores evitables.
+
+\begin{ejemplo}
+Ejemplo: si calculaste que $x=7$ resuelve $3x+2=23$, sustituyes: $3(7)+2=21+2=23$. Funciona.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: revisar solo si la cuenta parece bonita. Las matemáticas no premian la estética del resultado.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Comprueba si $x=4$ resuelve $2x+1=9$.
+
+\item Si $56\div8=7$, ¿qué multiplicación lo comprueba?
+
+\item ¿Qué unidad debe tener el área de una mesa?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Un plan de cuatro pasos}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+Usa esta rutina: comprender, elegir método, calcular y comprobar. Si te atoras, identifica exactamente en qué paso. «No entiendo nada» es demasiado grande; «no sé cómo quitar el denominador» ya se puede atacar.
+
+\begin{ejemplo}
+Ejemplo: para «¿qué número más 9 da 22?» traduces a $x+9=22$, restas 9 en ambos lados y obtienes $x=13$. Compruebas: $13+9=22$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: intentar hacer todas las operaciones mentalmente. Escribe pasos intermedios; el papel es más barato que volver a empezar.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Escribe una ecuación para «el doble de un número es 18».
+
+\item Resuelve la ecuación anterior.
+
+\item Comprueba la solución.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Una cinta de 15 m se corta en 3 partes iguales. ¿Cuánto mide cada parte? \textbf{Respuesta:} 5 m
+
+\item Hay 8 bolsas con 5 naranjas cada una. ¿Cuántas naranjas hay? \textbf{Respuesta:} 40 naranjas
+
+\item Tienes \textdollar{}200 y gastas \textdollar{}73. ¿Cuánto queda? \textbf{Respuesta:} \textdollar{}127
+
+\item Estima $198+403$. \textbf{Respuesta:} Aproximadamente 600
+
+\item Estima $31\times19$. \textbf{Respuesta:} Aproximadamente 600
+
+\item ¿Es razonable que 3 cuadernos de \textdollar{}25 cada uno cuesten \textdollar{}750? \textbf{Respuesta:} No; deberían costar \textdollar{}75
+
+\item Comprueba si $x=4$ resuelve $2x+1=9$. \textbf{Respuesta:} No; da 9, así que sí resuelve la ecuación
+
+\item Si $56\div8=7$, ¿qué multiplicación lo comprueba? \textbf{Respuesta:} $7\times8=56$
+
+\item ¿Qué unidad debe tener el área de una mesa? \textbf{Respuesta:} Una unidad cuadrada, por ejemplo cm$^2$
+
+\item Escribe una ecuación para «el doble de un número es 18». \textbf{Respuesta:} $2x=18$
+
+\item Resuelve la ecuación anterior. \textbf{Respuesta:} $x=9$
+
+\item Comprueba la solución. \textbf{Respuesta:} $2(9)=18$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Números naturales, enteros y valor posicional}
+
+\begin{idea}
+Los números sirven para contar, ordenar y medir. El valor de una cifra depende de su posición; el 5 no vale lo mismo en 50 que en 5000, aunque conserve su forma.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para leer o escribir una cantidad, separa sus cifras en grupos de tres desde la derecha: unidades, millares, millones y así sucesivamente. Los espacios ayudan a leer; no cambian el valor. En los enteros, además de la posición importa el signo: indica si el número está por encima o por debajo de cero, no si es una cantidad «más grande» por llevar más cifras.
+
+En base diez, cada posición vale diez veces la posición a su derecha: unidades, decenas, centenas, millares. Por ejemplo, $4\,582=4(1000)+5(100)+8(10)+2$.
+
+
+
+\begin{ejemplo}
+Ejemplo: en 73 406, el 7 representa 70 000, el 3 representa 3 000, el 4 representa 400, el 0 representa cero decenas y el 6 representa 6 unidades.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: leer 305 como «treinta y cinco». El cero ocupa una posición y evita que las cifras se recorran.
+\end{ojo}
+
+
+
+\section{Recta numérica y orden}
+
+\textbf{Cómo se conecta con los ejercicios.} Para leer o escribir una cantidad, separa sus cifras en grupos de tres desde la derecha: unidades, millares, millones y así sucesivamente. Los espacios ayudan a leer; no cambian el valor. En los enteros, además de la posición importa el signo: indica si el número está por encima o por debajo de cero, no si es una cantidad «más grande» por llevar más cifras.
+
+Los números mayores se ubican a la derecha. Entre dos números negativos, el que está más cerca de cero es el mayor: $-2>-8$. Debe parecer raro al principio; después se vuelve costumbre.
+
+\begin{ejemplo}
+Ejemplo: ordenar $-3, 4, 0, -7, 2$ da $-7<-3<0<2<4$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: creer que $-9>-4$ porque 9 es mayor que 4. El signo importa.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Ordena $-1, 5, -6, 0$.
+
+\item ¿Cuál es mayor: $-12$ o $-5$?
+
+\item ¿Qué número está 3 unidades a la izquierda de 2?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+
+
+\begin{center}
+\begin{tikzpicture}[x=0.65cm,y=0.65cm,>=stealth]
+\draw[->,thick] (-5.5,0)--(5.5,0);
+\foreach \x in {-5,-4,...,5} {
+  \draw (\x,0.12)--(\x,-0.12);
+  \node[below=3pt] at (\x,0) {\small \x};
+}
+\fill[azul] (-3,0) circle (2.3pt);
+\fill[rojo] (2,0) circle (2.3pt);
+\node[above=4pt] at (-3,0) {\small $-3$};
+\node[above=4pt] at (2,0) {\small $2$};
+\end{tikzpicture}
+\end{center}
+
+\section{Valor absoluto}
+
+\textbf{Cómo se conecta con los ejercicios.} Para leer o escribir una cantidad, separa sus cifras en grupos de tres desde la derecha: unidades, millares, millones y así sucesivamente. Los espacios ayudan a leer; no cambian el valor. En los enteros, además de la posición importa el signo: indica si el número está por encima o por debajo de cero, no si es una cantidad «más grande» por llevar más cifras.
+
+El valor absoluto mide la distancia de un número al cero y nunca es negativo. Se escribe $|x|$. Por eso $|5|=5$ y $|-5|=5$.
+
+\begin{ejemplo}
+Ejemplo: la distancia entre $-4$ y $3$ es $|-4-3|=7$ unidades.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: pensar que el valor absoluto es simplemente «quitar el signo» en cualquier expresión compuesta. Primero calcula el interior.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Calcula $|-13|$.
+
+\item Calcula $|4-9|$.
+
+\item ¿Qué números tienen valor absoluto 6?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Operaciones con enteros}
+
+\textbf{Cómo se conecta con los ejercicios.} Para leer o escribir una cantidad, separa sus cifras en grupos de tres desde la derecha: unidades, millares, millones y así sucesivamente. Los espacios ayudan a leer; no cambian el valor. En los enteros, además de la posición importa el signo: indica si el número está por encima o por debajo de cero, no si es una cantidad «más grande» por llevar más cifras.
+
+Al sumar enteros con el mismo signo, suma sus valores y conserva el signo. Con signos distintos, resta valores absolutos y conserva el signo del número con mayor valor absoluto. Para multiplicación y división, signos iguales dan positivo y distintos dan negativo.
+
+\begin{ejemplo}
+Ejemplo: $-8+3=-5$ porque 8 tiene mayor valor absoluto. En cambio, $(-8)(-3)=24$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: mezclar las reglas de suma con las de multiplicación. Son operaciones distintas y tienen reglas distintas.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Calcula $-7+12$.
+
+\item Calcula $-4-6$.
+
+\item Calcula $(-5)(-2)$.
+
+\item Calcula $24\div(-6)$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para leer o escribir una cantidad, separa sus cifras en grupos de tres desde la derecha: unidades, millares, millones y así sucesivamente. Los espacios ayudan a leer; no cambian el valor. En los enteros, además de la posición importa el signo: indica si el número está por encima o por debajo de cero, no si es una cantidad «más grande» por llevar más cifras.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Descompón 8 219. \textbf{Respuesta:} 8000+200+10+9
+
+\item ¿Qué valor tiene el 6 en 46 300? \textbf{Respuesta:} 6000
+
+\item Escribe en cifras: doce mil cuarenta y cinco. \textbf{Respuesta:} 12 045
+
+\item Ordena $-1, 5, -6, 0$. \textbf{Respuesta:} $-6<-1<0<5$
+
+\item ¿Cuál es mayor: $-12$ o $-5$? \textbf{Respuesta:} $-5$
+
+\item ¿Qué número está 3 unidades a la izquierda de 2? \textbf{Respuesta:} $-1$
+
+\item Calcula $|-13|$. \textbf{Respuesta:} 13
+
+\item Calcula $|4-9|$. \textbf{Respuesta:} 5
+
+\item ¿Qué números tienen valor absoluto 6? \textbf{Respuesta:} 6 y -6
+
+\item Calcula $-7+12$. \textbf{Respuesta:} 5
+
+\item Calcula $-4-6$. \textbf{Respuesta:} -10
+
+\item Calcula $(-5)(-2)$. \textbf{Respuesta:} 10
+
+\item Calcula $24\div(-6)$. \textbf{Respuesta:} -4
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Operaciones y jerarquía}
+
+\begin{idea}
+Sumar, restar, multiplicar y dividir no son intercambiables. Para que una expresión tenga un resultado acordado, se usa una jerarquía.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Antes de operar, revisa qué símbolos aparecen y en qué orden deben resolverse. La multiplicación representa grupos iguales y la división permite repartir o averiguar cuántos grupos caben. La resta puede interpretarse como quitar o comparar. Entender estas interpretaciones permite elegir la operación en problemas escritos, en vez de adivinarla por una palabra aislada.
+
+La suma reúne cantidades; la resta compara o quita; la multiplicación puede representar grupos iguales; la división reparte o mide cuántas veces cabe una cantidad en otra.
+
+
+
+\begin{ejemplo}
+Ejemplo: 4 paquetes con 6 galletas contienen $4\times6=24$ galletas. Si se reparten entre 3 personas, cada una recibe $24\div3=8$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confundir $a-b$ con $b-a$. La resta no es conmutativa: $8-3=5$, pero $3-8=-5$.
+\end{ojo}
+
+
+
+\section{Jerarquía de operaciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Antes de operar, revisa qué símbolos aparecen y en qué orden deben resolverse. La multiplicación representa grupos iguales y la división permite repartir o averiguar cuántos grupos caben. La resta puede interpretarse como quitar o comparar. Entender estas interpretaciones permite elegir la operación en problemas escritos, en vez de adivinarla por una palabra aislada.
+
+Resuelve primero paréntesis, luego potencias y raíces, después multiplicaciones y divisiones de izquierda a derecha y finalmente sumas y restas de izquierda a derecha.
+
+\begin{ejemplo}
+Ejemplo: $6+2\times5=6+10=16$. En cambio, $(6+2)\times5=40$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: hacer siempre la operación más a la izquierda sin mirar su prioridad.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Calcula $8+3\times4$.
+
+\item Calcula $(8+3)\times4$.
+
+\item Calcula $20-12\div3$.
+
+\item Calcula $2^3+5$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Propiedades útiles}
+
+\textbf{Cómo se conecta con los ejercicios.} Antes de operar, revisa qué símbolos aparecen y en qué orden deben resolverse. La multiplicación representa grupos iguales y la división permite repartir o averiguar cuántos grupos caben. La resta puede interpretarse como quitar o comparar. Entender estas interpretaciones permite elegir la operación en problemas escritos, en vez de adivinarla por una palabra aislada.
+
+La suma y la multiplicación son conmutativas: cambiar el orden no altera el resultado. También son asociativas. La distributiva conecta multiplicación con suma: $a(b+c)=ab+ac$.
+
+\begin{ejemplo}
+Ejemplo: $7(20+3)=7(20)+7(3)=140+21=161$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: creer que la distributiva permite distribuir una potencia sobre una suma: $(a+b)^2$ no es $a^2+b^2$.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Calcula $9(10+4)$ usando distributiva.
+
+\item Reordena $13+27+7$ para facilitar la suma.
+
+\item Calcula $5(8-3)$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{División y residuo}
+
+\textbf{Cómo se conecta con los ejercicios.} Antes de operar, revisa qué símbolos aparecen y en qué orden deben resolverse. La multiplicación representa grupos iguales y la división permite repartir o averiguar cuántos grupos caben. La resta puede interpretarse como quitar o comparar. Entender estas interpretaciones permite elegir la operación en problemas escritos, en vez de adivinarla por una palabra aislada.
+
+Una división entera puede expresarse como dividendo = divisor por cociente más residuo. El residuo debe ser menor que el divisor y no negativo en la división entera usual.
+
+\begin{ejemplo}
+Ejemplo: $29\div4=7$ con residuo 1, pues $29=4(7)+1$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: escribir un residuo mayor que el divisor. Si pasa, todavía puedes repartir otro grupo.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Divide 38 entre 5 con residuo.
+
+\item Comprueba $47=6q+5$ encontrando $q$.
+
+\item ¿Puede ser 8 el residuo al dividir entre 6?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Antes de operar, revisa qué símbolos aparecen y en qué orden deben resolverse. La multiplicación representa grupos iguales y la división permite repartir o averiguar cuántos grupos caben. La resta puede interpretarse como quitar o comparar. Entender estas interpretaciones permite elegir la operación en problemas escritos, en vez de adivinarla por una palabra aislada.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Calcula $37+48$. \textbf{Respuesta:} 85
+
+\item Calcula $92-57$. \textbf{Respuesta:} 35
+
+\item Calcula $13\times7$. \textbf{Respuesta:} 91
+
+\item Calcula $144\div12$. \textbf{Respuesta:} 12
+
+\item Calcula $8+3\times4$. \textbf{Respuesta:} 20
+
+\item Calcula $(8+3)\times4$. \textbf{Respuesta:} 44
+
+\item Calcula $20-12\div3$. \textbf{Respuesta:} 16
+
+\item Calcula $2^3+5$. \textbf{Respuesta:} 13
+
+\item Calcula $9(10+4)$ usando distributiva. \textbf{Respuesta:} 126
+
+\item Reordena $13+27+7$ para facilitar la suma. \textbf{Respuesta:} $13+7+27=47$
+
+\item Calcula $5(8-3)$. \textbf{Respuesta:} 25
+
+\item Divide 38 entre 5 con residuo. \textbf{Respuesta:} Cociente 7, residuo 3
+
+\item Comprueba $47=6q+5$ encontrando $q$. \textbf{Respuesta:} $q=7$
+
+\item ¿Puede ser 8 el residuo al dividir entre 6? \textbf{Respuesta:} No
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Divisibilidad, primos, MCD y MCM}
+
+\begin{idea}
+Este capítulo aborda divisibilidad, primos, mcd y mcm. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Un múltiplo se obtiene al multiplicar un número entero por otro entero no negativo; un divisor divide exactamente, sin dejar residuo. Esta relación permite simplificar fracciones y descomponer números. Los criterios de divisibilidad son atajos para comprobar algunos casos, pero si no recuerdas uno, siempre puedes efectuar la división y revisar el residuo.
+
+Un número es divisible por otro si la división da un entero. Para 2, mira la última cifra; para 3 y 9, suma las cifras; para 5, mira si termina en 0 o 5; para 10, debe terminar en 0.
+
+
+
+\begin{ejemplo}
+Ejemplo: 4 572 es divisible por 3 porque $4+5+7+2=18$, y 18 es múltiplo de 3.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: aplicar un criterio sin comprobar qué número estás examinando.
+\end{ojo}
+
+
+
+\section{Números primos}
+
+\textbf{Cómo se conecta con los ejercicios.} Un múltiplo se obtiene al multiplicar un número entero por otro entero no negativo; un divisor divide exactamente, sin dejar residuo. Esta relación permite simplificar fracciones y descomponer números. Los criterios de divisibilidad son atajos para comprobar algunos casos, pero si no recuerdas uno, siempre puedes efectuar la división y revisar el residuo.
+
+Un número primo tiene exactamente dos divisores positivos: 1 y él mismo. El 1 no es primo. Todo entero mayor que 1 puede descomponerse en factores primos.
+
+\begin{ejemplo}
+Ejemplo: $60=2^2\cdot3\cdot5$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: llamar primo al 1 o pensar que todo número impar es primo. 9 es impar y no es primo.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Factoriza 18 en primos.
+
+\item ¿Es 21 primo?
+
+\item Factoriza 100.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{MCD y MCM}
+
+\textbf{Cómo se conecta con los ejercicios.} Un múltiplo se obtiene al multiplicar un número entero por otro entero no negativo; un divisor divide exactamente, sin dejar residuo. Esta relación permite simplificar fracciones y descomponer números. Los criterios de divisibilidad son atajos para comprobar algunos casos, pero si no recuerdas uno, siempre puedes efectuar la división y revisar el residuo.
+
+El máximo común divisor es el mayor divisor común. El mínimo común múltiplo es el menor múltiplo positivo compartido. La factorización prima facilita ambos cálculos.
+
+\begin{ejemplo}
+Ejemplo: $12=2^2\cdot3$ y $18=2\cdot3^2$. MCD $=2\cdot3=6$; MCM $=2^2\cdot3^2=36$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: intercambiar qué exponentes se toman: para MCD, los menores; para MCM, los mayores.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Halla MCD(20,30).
+
+\item Halla MCM(4,6).
+
+\item ¿Cuándo conviene usar MCM en un problema de eventos repetidos?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Aplicaciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Un múltiplo se obtiene al multiplicar un número entero por otro entero no negativo; un divisor divide exactamente, sin dejar residuo. Esta relación permite simplificar fracciones y descomponer números. Los criterios de divisibilidad son atajos para comprobar algunos casos, pero si no recuerdas uno, siempre puedes efectuar la división y revisar el residuo.
+
+El MCD sirve para dividir en grupos iguales lo más grandes posible sin sobrantes. El MCM sirve para sincronizar ciclos o encontrar denominadores comunes.
+
+\begin{ejemplo}
+Ejemplo: dos luces parpadean cada 6 y 8 segundos. Coinciden cada MCM(6,8) = 24 segundos.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: escoger MCD o MCM por memoria sin entender qué pregunta el problema.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Cortar cintas de 24 cm y 36 cm en trozos iguales máximos: ¿longitud?
+
+\item Eventos cada 10 y 15 minutos: ¿cuándo coinciden?
+
+\item Simplifica $42/56$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Un múltiplo se obtiene al multiplicar un número entero por otro entero no negativo; un divisor divide exactamente, sin dejar residuo. Esta relación permite simplificar fracciones y descomponer números. Los criterios de divisibilidad son atajos para comprobar algunos casos, pero si no recuerdas uno, siempre puedes efectuar la división y revisar el residuo.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item ¿Es 735 divisible entre 5? \textbf{Respuesta:} Sí
+
+\item ¿Es 432 divisible entre 9? \textbf{Respuesta:} Sí, sus cifras suman 9
+
+\item ¿Es 124 divisible entre 2? \textbf{Respuesta:} Sí
+
+\item Factoriza 18 en primos. \textbf{Respuesta:} $2\cdot3^2$
+
+\item ¿Es 21 primo? \textbf{Respuesta:} No, $21=3\cdot7$
+
+\item Factoriza 100. \textbf{Respuesta:} $2^2\cdot5^2$
+
+\item Halla MCD(20,30). \textbf{Respuesta:} 10
+
+\item Halla MCM(4,6). \textbf{Respuesta:} 12
+
+\item ¿Cuándo conviene usar MCM en un problema de eventos repetidos? \textbf{Respuesta:} Cuando se busca cuándo coinciden de nuevo
+
+\item Cortar cintas de 24 cm y 36 cm en trozos iguales máximos: ¿longitud? \textbf{Respuesta:} 12 cm
+
+\item Eventos cada 10 y 15 minutos: ¿cuándo coinciden? \textbf{Respuesta:} 30 minutos
+
+\item Simplifica $42/56$. \textbf{Respuesta:} $3/4$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Fracciones: significado y equivalencia}
+
+\begin{idea}
+Este capítulo aborda fracciones: significado y equivalencia. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Una fracción expresa partes iguales de una unidad o el cociente entre dos números. El denominador indica en cuántas partes iguales se divide la unidad; el numerador indica cuántas se toman. Por eso no basta con comparar los numeradores: también importa el tamaño de las partes. Para sumar o restar, las partes deben tener el mismo tamaño, lo que explica la necesidad de un denominador común.
+
+La fracción $a/b$ representa $a$ partes cuando el todo está dividido en $b$ partes iguales; también representa una división. El denominador no puede ser cero.
+
+
+
+\begin{ejemplo}
+Ejemplo: $3/4$ significa tres de cuatro partes iguales. En una recta numérica, está entre 0 y 1.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: asumir que una fracción con números grandes siempre es mayor. $3/8$ es menor que $1/2$.
+\end{ojo}
+
+
+
+\section{Equivalencia y simplificación}
+
+\textbf{Cómo se conecta con los ejercicios.} Una fracción expresa partes iguales de una unidad o el cociente entre dos números. El denominador indica en cuántas partes iguales se divide la unidad; el numerador indica cuántas se toman. Por eso no basta con comparar los numeradores: también importa el tamaño de las partes. Para sumar o restar, las partes deben tener el mismo tamaño, lo que explica la necesidad de un denominador común.
+
+Multiplicar o dividir numerador y denominador por el mismo factor no nulo conserva la fracción. Simplificar es dividir por un divisor común hasta no poder más.
+
+\begin{ejemplo}
+Ejemplo: $18/24$ se divide entre 6 y queda $3/4$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: restar el mismo número arriba y abajo; eso generalmente cambia el valor.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Simplifica $12/30$.
+
+\item Escribe $3/5$ con denominador 20.
+
+\item ¿Son equivalentes $6/9$ y $2/3$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Comparar fracciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Una fracción expresa partes iguales de una unidad o el cociente entre dos números. El denominador indica en cuántas partes iguales se divide la unidad; el numerador indica cuántas se toman. Por eso no basta con comparar los numeradores: también importa el tamaño de las partes. Para sumar o restar, las partes deben tener el mismo tamaño, lo que explica la necesidad de un denominador común.
+
+Con el mismo denominador, gana el numerador mayor. Con el mismo numerador positivo, la fracción con denominador menor es mayor. En otros casos, usa denominador común o productos cruzados.
+
+\begin{ejemplo}
+Ejemplo: comparar $2/3$ y $3/5$: $2\cdot5=10$ y $3\cdot3=9$, así que $2/3>3/5$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: comparar solo numeradores o solo denominadores.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Compara $5/8$ y $3/8$.
+
+\item Compara $1/4$ y $1/3$.
+
+\item Compara $4/7$ y $5/9$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Una fracción expresa partes iguales de una unidad o el cociente entre dos números. El denominador indica en cuántas partes iguales se divide la unidad; el numerador indica cuántas se toman. Por eso no basta con comparar los numeradores: también importa el tamaño de las partes. Para sumar o restar, las partes deben tener el mismo tamaño, lo que explica la necesidad de un denominador común.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Dibuja o describe $2/5$. \textbf{Respuesta:} Dos de cinco partes iguales
+
+\item ¿Qué fracción equivale a $1/2$ con denominador 10? \textbf{Respuesta:} $5/10$
+
+\item ¿Por qué $4/0$ no está definida? \textbf{Respuesta:} Porque no se puede dividir entre cero
+
+\item Simplifica $12/30$. \textbf{Respuesta:} $2/5$
+
+\item Escribe $3/5$ con denominador 20. \textbf{Respuesta:} $12/20$
+
+\item ¿Son equivalentes $6/9$ y $2/3$? \textbf{Respuesta:} Sí
+
+\item Compara $5/8$ y $3/8$. \textbf{Respuesta:} $5/8>3/8$
+
+\item Compara $1/4$ y $1/3$. \textbf{Respuesta:} $1/4<1/3$
+
+\item Compara $4/7$ y $5/9$. \textbf{Respuesta:} $4/7>5/9$, pues 36>35
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Operaciones con fracciones y decimales}
+
+\begin{idea}
+Este capítulo aborda operaciones con fracciones y decimales. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Una fracción expresa partes iguales de una unidad o el cociente entre dos números. El denominador indica en cuántas partes iguales se divide la unidad; el numerador indica cuántas se toman. Por eso no basta con comparar los numeradores: también importa el tamaño de las partes. Para sumar o restar, las partes deben tener el mismo tamaño, lo que explica la necesidad de un denominador común.
+
+Para sumar fracciones con denominador igual, suma numeradores. Con denominadores distintos, busca un denominador común y convierte las fracciones equivalentes.
+
+
+
+\begin{ejemplo}
+Ejemplo: $1/2+1/3=3/6+2/6=5/6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sumar denominadores. $1/2+1/3$ no es $2/5$.
+\end{ojo}
+
+
+
+\section{Multiplicar y dividir fracciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Una fracción expresa partes iguales de una unidad o el cociente entre dos números. El denominador indica en cuántas partes iguales se divide la unidad; el numerador indica cuántas se toman. Por eso no basta con comparar los numeradores: también importa el tamaño de las partes. Para sumar o restar, las partes deben tener el mismo tamaño, lo que explica la necesidad de un denominador común.
+
+Para multiplicar, multiplica numeradores y denominadores. Para dividir, multiplica por el recíproco de la segunda fracción.
+
+\begin{ejemplo}
+Ejemplo: $(2/3)(3/5)=6/15=2/5$. Además, $(2/3)\div(4/5)=(2/3)(5/4)=5/6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: invertir la primera fracción al dividir. Se invierte la segunda.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Calcula $(3/4)(2/5)$.
+
+\item Calcula $(1/2)\div(3/4)$.
+
+\item Calcula $5/8$ de 32.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Decimales y redondeo}
+
+\textbf{Cómo se conecta con los ejercicios.} Los decimales son otra manera de escribir fracciones cuyo denominador es una potencia de diez. El primer lugar después del punto decimal representa décimas, el segundo centésimas y el tercero milésimas. Un porcentaje significa «de cada cien»: 18 % equivale a 18/100 y a 0.18. Esta equivalencia permite pasar entre porcentaje, fracción y decimal según lo que resulte más cómodo.
+
+Los decimales expresan fracciones con denominadores como 10, 100 o 1000. Para redondear a una posición, mira la cifra siguiente: 5 o más aumenta una unidad; menos de 5 conserva la cifra.
+
+\begin{ejemplo}
+Ejemplo: 3.476 redondeado a centésimas es 3.48, porque la cifra de milésimas es 6.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: redondear en cada paso de una operación larga. Conserva cifras y redondea al final si es posible.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Escribe $7/10$ como decimal.
+
+\item Redondea 12.846 a décimas.
+
+\item Calcula $1.25+0.8$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Una fracción expresa partes iguales de una unidad o el cociente entre dos números. El denominador indica en cuántas partes iguales se divide la unidad; el numerador indica cuántas se toman. Por eso no basta con comparar los numeradores: también importa el tamaño de las partes. Para sumar o restar, las partes deben tener el mismo tamaño, lo que explica la necesidad de un denominador común.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Calcula $2/7+3/7$. \textbf{Respuesta:} $5/7$
+
+\item Calcula $1/4+1/2$. \textbf{Respuesta:} $3/4$
+
+\item Calcula $5/6-1/3$. \textbf{Respuesta:} $1/2$
+
+\item Calcula $(3/4)(2/5)$. \textbf{Respuesta:} $3/10$
+
+\item Calcula $(1/2)\div(3/4)$. \textbf{Respuesta:} $2/3$
+
+\item Calcula $5/8$ de 32. \textbf{Respuesta:} 20
+
+\item Escribe $7/10$ como decimal. \textbf{Respuesta:} 0.7
+
+\item Redondea 12.846 a décimas. \textbf{Respuesta:} 12.8
+
+\item Calcula $1.25+0.8$. \textbf{Respuesta:} 2.05
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Porcentajes, razones y proporcionalidad}
+
+\begin{idea}
+Este capítulo aborda porcentajes, razones y proporcionalidad. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Los decimales son otra manera de escribir fracciones cuyo denominador es una potencia de diez. El primer lugar después del punto decimal representa décimas, el segundo centésimas y el tercero milésimas. Un porcentaje significa «de cada cien»: 18 % equivale a 18/100 y a 0.18. Esta equivalencia permite pasar entre porcentaje, fracción y decimal según lo que resulte más cómodo.
+
+Un porcentaje es una fracción con denominador 100. Para calcular $p\%$ de una cantidad $N$, multiplica $N$ por $p/100$.
+
+
+
+\begin{ejemplo}
+Ejemplo: 18\% de 250 es $0.18(250)=45$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sumar 20 como si fuera 20\% sin convertirlo a $0.20$.
+\end{ojo}
+
+
+
+\section{Proporcionalidad directa e inversa}
+
+\textbf{Cómo se conecta con los ejercicios.} Los decimales son otra manera de escribir fracciones cuyo denominador es una potencia de diez. El primer lugar después del punto decimal representa décimas, el segundo centésimas y el tercero milésimas. Un porcentaje significa «de cada cien»: 18 % equivale a 18/100 y a 0.18. Esta equivalencia permite pasar entre porcentaje, fracción y decimal según lo que resulte más cómodo.
+
+En la directa, al multiplicar una cantidad por un factor, la otra se multiplica por el mismo factor. En la inversa, si una se multiplica por un factor, la otra se divide por él, bajo las condiciones del modelo.
+
+\begin{ejemplo}
+Ejemplo directo: 4 kg cuestan \textdollar{}80; 6 kg cuestan \textdollar{}120 si el precio por kg es constante.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: asumir que todo problema de dos cantidades es proporcional. El contexto debe justificarlo.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Si 5 boletos cuestan \textdollar{}150, ¿cuestan 8?
+
+\item Si 4 personas hacen un trabajo en 6 días, ¿cuánto tardarían 8 al mismo ritmo ideal?
+
+\item ¿Qué supuesto requiere la segunda pregunta?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Escalas, tasas y regla de tres}
+
+\textbf{Cómo se conecta con los ejercicios.} Una razón compara cantidades mediante una división. Antes de formar una proporción, comprueba que comparas magnitudes del mismo tipo y que las unidades son compatibles. En una relación directamente proporcional, si una cantidad se duplica, la otra también; en una relación inversamente proporcional, al duplicarse una, la otra se reduce a la mitad. No todas las situaciones son proporcionales, así que esa relación debe justificarse con el contexto.
+
+Una tasa compara cantidades con unidades distintas, como km/h o pesos por kilogramo. En mapas, una escala 1:50 000 significa que una unidad en el mapa representa 50 000 de esas unidades en la realidad.
+
+\begin{ejemplo}
+Ejemplo: a escala 1:100 000, 3 cm representan 300 000 cm, es decir, 3 km.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: mezclar unidades en la proporción.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item A \textdollar{}12 por kg, ¿cuánto cuestan 2.5 kg?
+
+\item En escala 1:20 000, ¿qué representan 4 cm?
+
+\item Un auto recorre 180 km en 3 h. ¿Rapidez media?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Los decimales son otra manera de escribir fracciones cuyo denominador es una potencia de diez. El primer lugar después del punto decimal representa décimas, el segundo centésimas y el tercero milésimas. Un porcentaje significa «de cada cien»: 18 % equivale a 18/100 y a 0.18. Esta equivalencia permite pasar entre porcentaje, fracción y decimal según lo que resulte más cómodo.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Calcula 30\% de 90. \textbf{Respuesta:} 27
+
+\item ¿Qué porcentaje es 15 de 60? \textbf{Respuesta:} 25\%
+
+\item Un precio de \textdollar{}500 baja 10\%. ¿Nuevo precio? \textbf{Respuesta:} \textdollar{}450
+
+\item Si 5 boletos cuestan \textdollar{}150, ¿cuestan 8? \textbf{Respuesta:} \textdollar{}240
+
+\item Si 4 personas hacen un trabajo en 6 días, ¿cuánto tardarían 8 al mismo ritmo ideal? \textbf{Respuesta:} 3 días
+
+\item ¿Qué supuesto requiere la segunda pregunta? \textbf{Respuesta:} Que el trabajo se reparta por igual y la productividad total sea proporcional al número de personas
+
+\item A \textdollar{}12 por kg, ¿cuánto cuestan 2.5 kg? \textbf{Respuesta:} \textdollar{}30
+
+\item En escala 1:20 000, ¿qué representan 4 cm? \textbf{Respuesta:} 800 m
+
+\item Un auto recorre 180 km en 3 h. ¿Rapidez media? \textbf{Respuesta:} 60 km/h
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Potencias, raíces y notación científica}
+
+\begin{idea}
+Este capítulo aborda potencias, raíces y notación científica. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Una potencia abrevia una multiplicación repetida: la base es el factor y el exponente indica cuántas veces aparece. Las raíces deshacen ciertas potencias: la raíz cuadrada principal de 25 es 5 porque $5^2 = 25$. Hay que distinguir la raíz principal de la solución de una ecuación; $x^2 = 25$ tiene dos soluciones reales, 5 y -5.
+
+Al multiplicar potencias de la misma base se suman exponentes; al dividir se restan, si la base no es cero; una potencia elevada a otra potencia multiplica exponentes.
+
+
+
+\begin{ejemplo}
+Ejemplo: $x^3x^4=x^7$ y $(x^2)^3=x^6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sumar exponentes en una suma: $x^2+x^3$ no es $x^5$.
+\end{ojo}
+
+
+
+\section{Raíces y radicales}
+
+\textbf{Cómo se conecta con los ejercicios.} Una potencia abrevia una multiplicación repetida: la base es el factor y el exponente indica cuántas veces aparece. Las raíces deshacen ciertas potencias: la raíz cuadrada principal de 25 es 5 porque $5^2 = 25$. Hay que distinguir la raíz principal de la solución de una ecuación; $x^2 = 25$ tiene dos soluciones reales, 5 y -5.
+
+La raíz cuadrada principal de $a\geq0$ es el número no negativo cuyo cuadrado es $a$. Se pueden simplificar radicales separando factores cuadrados perfectos.
+
+\begin{ejemplo}
+Ejemplo: $\sqrt{50}=\sqrt{25\cdot2}=5\sqrt2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: olvidar que $\sqrt{x^2}=|x|$, no siempre $x$.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Simplifica $\sqrt{81}$.
+
+\item Simplifica $\sqrt{12}$.
+
+\item ¿Cuánto vale $\sqrt{(-5)^2}$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Notación científica}
+
+\textbf{Cómo se conecta con los ejercicios.} La notación científica escribe una cantidad como un número entre 1 y 10 multiplicado por una potencia de diez. El exponente indica cuántos lugares se desplaza el punto decimal. El logaritmo responde a la pregunta «¿a qué exponente hay que elevar la base para obtener este número?». Por eso logaritmo y exponenciación son operaciones inversas, siempre dentro de las condiciones permitidas para la base y el argumento.
+
+Se escribe $a\times10^n$ con $1\leq|a|<10$. Se usa para números muy grandes o pequeños y para hacer operaciones con órdenes de magnitud.
+
+\begin{ejemplo}
+Ejemplo: $0.0000042=4.2\times10^{-6}$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: mover el punto decimal en una dirección y asignar el exponente contrario.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Escribe 72 000 000 en notación científica.
+
+\item Escribe $3.1\times10^{-4}$ en decimal.
+
+\item Calcula $(2\times10^3)(3\times10^2)$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Una potencia abrevia una multiplicación repetida: la base es el factor y el exponente indica cuántas veces aparece. Las raíces deshacen ciertas potencias: la raíz cuadrada principal de 25 es 5 porque $5^2 = 25$. Hay que distinguir la raíz principal de la solución de una ecuación; $x^2 = 25$ tiene dos soluciones reales, 5 y -5.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Simplifica $a^2a^5$. \textbf{Respuesta:} $a^7$
+
+\item Simplifica $(m^3)^2$. \textbf{Respuesta:} $m^6$
+
+\item Calcula $2^{-3}$. \textbf{Respuesta:} $1/8$
+
+\item Simplifica $\sqrt{81}$. \textbf{Respuesta:} 9
+
+\item Simplifica $\sqrt{12}$. \textbf{Respuesta:} $2\sqrt3$
+
+\item ¿Cuánto vale $\sqrt{(-5)^2}$? \textbf{Respuesta:} 5
+
+\item Escribe 72 000 000 en notación científica. \textbf{Respuesta:} $7.2\times10^7$
+
+\item Escribe $3.1\times10^{-4}$ en decimal. \textbf{Respuesta:} 0.00031
+
+\item Calcula $(2\times10^3)(3\times10^2)$. \textbf{Respuesta:} $6\times10^5$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Lenguaje algebraico y polinomios}
+
+\begin{idea}
+Este capítulo aborda lenguaje algebraico y polinomios. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Un polinomio es una suma o resta de términos algebraicos. Para sumar se combinan términos semejantes; para multiplicar, cada término de un factor multiplica a cada término del otro. Los productos notables son patrones que permiten escribir rápidamente multiplicaciones frecuentes, pero conviene recordar de dónde salen para no intercambiar signos ni olvidar el término del medio.
+
+Un número desconocido puede representarse con $x$. «El doble» es $2x$; «cinco más que un número» es $x+5$; «cinco menos que un número» es $x-5$.
+
+
+
+\begin{ejemplo}
+Ejemplo: «el triple de un número menos 4» se escribe $3x-4$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confundir «menos que». «5 menos que x» es $x-5$, no $5-x$.
+\end{ojo}
+
+
+
+\section{Términos semejantes}
+
+\textbf{Cómo se conecta con los ejercicios.} Un polinomio es una suma o resta de términos algebraicos. Para sumar se combinan términos semejantes; para multiplicar, cada término de un factor multiplica a cada término del otro. Los productos notables son patrones que permiten escribir rápidamente multiplicaciones frecuentes, pero conviene recordar de dónde salen para no intercambiar signos ni olvidar el término del medio.
+
+Dos términos son semejantes si tienen la misma parte literal con los mismos exponentes. Se suman sus coeficientes.
+
+\begin{ejemplo}
+Ejemplo: $4x^2+3x-2x^2+5x=2x^2+8x$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: juntar $x$ con $x^2$. No son términos semejantes.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Simplifica $7a-2a+4$.
+
+\item Simplifica $3x^2+x+5x^2-4x$.
+
+\item ¿Son semejantes $2ab$ y $5ba$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Polinomios y operaciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Antes de operar, revisa qué símbolos aparecen y en qué orden deben resolverse. La multiplicación representa grupos iguales y la división permite repartir o averiguar cuántos grupos caben. La resta puede interpretarse como quitar o comparar. Entender estas interpretaciones permite elegir la operación en problemas escritos, en vez de adivinarla por una palabra aislada.
+
+Un polinomio suma términos de potencias enteras no negativas de una variable, con coeficientes. Para sumar, agrupa términos semejantes; para multiplicar, usa la distributiva.
+
+\begin{ejemplo}
+Ejemplo: $(x+2)(x+3)=x^2+3x+2x+6=x^2+5x+6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: olvidar multiplicar cada término de un paréntesis por cada término del otro.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Suma $(2x+1)+(x-4)$.
+
+\item Resta $(3x+5)-(x-2)$.
+
+\item Multiplica $2x(x^2-3)$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Un polinomio es una suma o resta de términos algebraicos. Para sumar se combinan términos semejantes; para multiplicar, cada término de un factor multiplica a cada término del otro. Los productos notables son patrones que permiten escribir rápidamente multiplicaciones frecuentes, pero conviene recordar de dónde salen para no intercambiar signos ni olvidar el término del medio.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Escribe «un número dividido entre 3». \textbf{Respuesta:} $x/3$
+
+\item Escribe «7 más que el doble de x». \textbf{Respuesta:} $2x+7$
+
+\item Escribe «el cuadrado de la suma de x y 2». \textbf{Respuesta:} $(x+2)^2$
+
+\item Simplifica $7a-2a+4$. \textbf{Respuesta:} $5a+4$
+
+\item Simplifica $3x^2+x+5x^2-4x$. \textbf{Respuesta:} $8x^2-3x$
+
+\item ¿Son semejantes $2ab$ y $5ba$? \textbf{Respuesta:} Sí
+
+\item Suma $(2x+1)+(x-4)$. \textbf{Respuesta:} $3x-3$
+
+\item Resta $(3x+5)-(x-2)$. \textbf{Respuesta:} $2x+7$
+
+\item Multiplica $2x(x^2-3)$. \textbf{Respuesta:} $2x^3-6x$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Productos notables y factorización}
+
+\begin{idea}
+Este capítulo aborda productos notables y factorización. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Factorizar es expresar una suma como un producto. Es el proceso inverso de desarrollar paréntesis. Primero busca un factor común; si no lo hay, revisa patrones como diferencia de cuadrados o trinomios conocidos. Después multiplica los factores obtenidos para verificar que recuperas la expresión inicial. Si no coincide, la factorización contiene un error.
+
+El cuadrado de una suma incluye los cuadrados de cada término y el doble producto. La resta cambia el signo del término central.
+
+
+
+\begin{ejemplo}
+Ejemplo: $(x+4)^2=x^2+8x+16$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: omitir el término central.
+\end{ojo}
+
+
+
+\section{Factor común y diferencia de cuadrados}
+
+\textbf{Cómo se conecta con los ejercicios.} Factorizar es expresar una suma como un producto. Es el proceso inverso de desarrollar paréntesis. Primero busca un factor común; si no lo hay, revisa patrones como diferencia de cuadrados o trinomios conocidos. Después multiplica los factores obtenidos para verificar que recuperas la expresión inicial. Si no coincide, la factorización contiene un error.
+
+Busca primero un factor que aparezca en todos los términos. Para una diferencia de cuadrados usa $a^2-b^2=(a-b)(a+b)$.
+
+\begin{ejemplo}
+Ejemplo: $6x^2+9x=3x(2x+3)$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: intentar factorizar sin revisar si todos los términos comparten un factor.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Factoriza $8x+12$.
+
+\item Factoriza $x^2-16$.
+
+\item Factoriza $3x^2+6x$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Trinomios cuadráticos}
+
+\textbf{Cómo se conecta con los ejercicios.} Factorizar es expresar una suma como un producto. Es el proceso inverso de desarrollar paréntesis. Primero busca un factor común; si no lo hay, revisa patrones como diferencia de cuadrados o trinomios conocidos. Después multiplica los factores obtenidos para verificar que recuperas la expresión inicial. Si no coincide, la factorización contiene un error.
+
+Para $x^2+bx+c$, busca dos números que sumen $b$ y cuyo producto sea $c$. Si no aparecen enteros adecuados, quizá se necesite la fórmula general u otro método.
+
+\begin{ejemplo}
+Ejemplo: $x^2+7x+12=(x+3)(x+4)$ porque 3+4=7 y 3·4=12.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: verificar solo la suma y olvidar el producto.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Factoriza $x^2+5x+6$.
+
+\item Factoriza $x^2-x-6$.
+
+\item Resuelve $x^2-4=0$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Factorizar es expresar una suma como un producto. Es el proceso inverso de desarrollar paréntesis. Primero busca un factor común; si no lo hay, revisa patrones como diferencia de cuadrados o trinomios conocidos. Después multiplica los factores obtenidos para verificar que recuperas la expresión inicial. Si no coincide, la factorización contiene un error.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Expande $(x+3)^2$. \textbf{Respuesta:} $x^2+6x+9$
+
+\item Expande $(2a-b)^2$. \textbf{Respuesta:} $4a^2-4ab+b^2$
+
+\item Expande $(y+5)(y-5)$. \textbf{Respuesta:} $y^2-25$
+
+\item Factoriza $8x+12$. \textbf{Respuesta:} $4(2x+3)$
+
+\item Factoriza $x^2-16$. \textbf{Respuesta:} $(x-4)(x+4)$
+
+\item Factoriza $3x^2+6x$. \textbf{Respuesta:} $3x(x+2)$
+
+\item Factoriza $x^2+5x+6$. \textbf{Respuesta:} $(x+2)(x+3)$
+
+\item Factoriza $x^2-x-6$. \textbf{Respuesta:} $(x-3)(x+2)$
+
+\item Resuelve $x^2-4=0$. \textbf{Respuesta:} $x=2$ o $x=-2$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Ecuaciones, sistemas y desigualdades}
+
+\begin{idea}
+Este capítulo aborda ecuaciones, sistemas y desigualdades. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Una desigualdad compara cantidades y puede tener muchas soluciones. Si multiplicas o divides ambos lados por un número negativo, el sentido del signo se invierte; si sumas o restas la misma cantidad, el sentido se conserva. En la recta numérica, un círculo abierto indica que el extremo no se incluye y uno cerrado indica que sí se incluye.
+
+Una ecuación conserva la igualdad si aplicas la misma operación a ambos lados. El objetivo es dejar la incógnita aislada.
+
+
+
+\begin{ejemplo}
+Ejemplo: $4x-9=15$; sumas 9: $4x=24$; divides entre 4: $x=6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: cambiar términos de lado sin comprender que en realidad estás aplicando la operación inversa.
+\end{ojo}
+
+
+
+\section{Sistemas de dos ecuaciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Un sistema reúne ecuaciones que deben cumplirse al mismo tiempo. La solución común puede interpretarse como el punto donde se cruzan dos rectas. Sustitución, igualación y eliminación son métodos distintos para llegar a la misma condición. Si las rectas son paralelas distintas, no hay solución; si representan la misma recta, hay infinitas soluciones.
+
+Dos rectas pueden cruzarse en un punto, ser paralelas o coincidir. En un sistema lineal, esto se traduce en una solución, ninguna o infinitas soluciones.
+
+\begin{ejemplo}
+Ejemplo: $x+y=9$ y $x-y=3$. Sumando: $2x=12$, así que $x=6$ y $y=3$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: encontrar una pareja que satisface solo una ecuación. Debe satisfacer ambas.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Resuelve $x+y=10$, $x-y=2$.
+
+\item ¿Qué método elimina una variable sumando ecuaciones adecuadamente?
+
+\item Comprueba la pareja $(4,2)$ en $x+y=6$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Desigualdades e intervalos}
+
+\textbf{Cómo se conecta con los ejercicios.} Una desigualdad compara cantidades y puede tener muchas soluciones. Si multiplicas o divides ambos lados por un número negativo, el sentido del signo se invierte; si sumas o restas la misma cantidad, el sentido se conserva. En la recta numérica, un círculo abierto indica que el extremo no se incluye y uno cerrado indica que sí se incluye.
+
+Las desigualdades describen conjuntos de valores. Al multiplicar o dividir por un número negativo, el signo se invierte.
+
+\begin{ejemplo}
+Ejemplo: $-3x\leq12$; al dividir entre $-3$, queda $x\geq-4$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: no invertir el signo o representar con punto abierto un extremo incluido.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Resuelve $x+4>9$.
+
+\item Resuelve $-2x<8$.
+
+\item Escribe $x\geq3$ como intervalo.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Una desigualdad compara cantidades y puede tener muchas soluciones. Si multiplicas o divides ambos lados por un número negativo, el sentido del signo se invierte; si sumas o restas la misma cantidad, el sentido se conserva. En la recta numérica, un círculo abierto indica que el extremo no se incluye y uno cerrado indica que sí se incluye.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Resuelve $2x+3=13$. \textbf{Respuesta:} $x=5$
+
+\item Resuelve $7x=42$. \textbf{Respuesta:} $x=6$
+
+\item Resuelve $5-x=1$. \textbf{Respuesta:} $x=4$
+
+\item Resuelve $x+y=10$, $x-y=2$. \textbf{Respuesta:} $x=6,y=4$
+
+\item ¿Qué método elimina una variable sumando ecuaciones adecuadamente? \textbf{Respuesta:} Reducción
+
+\item Comprueba la pareja $(4,2)$ en $x+y=6$. \textbf{Respuesta:} Sí
+
+\item Resuelve $x+4>9$. \textbf{Respuesta:} $x>5$
+
+\item Resuelve $-2x<8$. \textbf{Respuesta:} $x>-4$
+
+\item Escribe $x\geq3$ como intervalo. \textbf{Respuesta:} $[3,\infty)$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Ecuaciones cuadráticas y funciones}
+
+\begin{idea}
+Este capítulo aborda ecuaciones cuadráticas y funciones. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Para $ax^2+bx+c=0$, con $a\neq0$, las soluciones son $(-b\pm\sqrt{b^2-4ac})/(2a)$. El discriminante indica cuántas soluciones reales hay.
+
+
+
+\begin{ejemplo}
+Ejemplo: $x^2-5x+6=0$ se factoriza como $(x-2)(x-3)=0$, de modo que $x=2$ o $x=3$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar $-b$ como $b$ o no colocar todo el numerador sobre $2a$.
+\end{ojo}
+
+
+
+\section{Funciones y notación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Una función asigna una sola salida a cada entrada válida. $f(x)$ se lee «f de x»; no significa multiplicar $f$ por $x$.
+
+\begin{ejemplo}
+Ejemplo: si $f(x)=3x-2$, entonces $f(4)=3(4)-2=10$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sustituir el valor solo en una parte de la expresión.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Si $f(x)=x^2+1$, calcula $f(3)$.
+
+\item Si $g(x)=2x$, resuelve $g(x)=12$.
+
+\item ¿Puede una entrada tener dos salidas distintas en una función?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Parábola y transformaciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+La función cuadrática $y=ax^2+bx+c$ tiene gráfica parabólica. Si $a>0$ abre hacia arriba; si $a<0$, hacia abajo. En forma $a(x-h)^2+k$, el vértice es $(h,k)$.
+
+\begin{ejemplo}
+Ejemplo: $y=(x-2)^2+1$ tiene vértice $(2,1)$ y abre hacia arriba.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confundir el signo dentro del paréntesis: $(x-2)^2$ desplaza el vértice a $x=2$.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item ¿Hacia dónde abre $y=-x^2$?
+
+\item Da el vértice de $y=(x+3)^2-2$.
+
+\item Calcula $f(2)$ si $f(x)=x^2-1$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Resuelve $x^2-9=0$. \textbf{Respuesta:} $x=3,-3$
+
+\item ¿Cuál es el discriminante de $x^2+2x+1$? \textbf{Respuesta:} 0
+
+\item ¿Cuántas raíces reales distintas tiene $x^2+1=0$? \textbf{Respuesta:} Ninguna
+
+\item Si $f(x)=x^2+1$, calcula $f(3)$. \textbf{Respuesta:} 10
+
+\item Si $g(x)=2x$, resuelve $g(x)=12$. \textbf{Respuesta:} $x=6$
+
+\item ¿Puede una entrada tener dos salidas distintas en una función? \textbf{Respuesta:} No
+
+\item ¿Hacia dónde abre $y=-x^2$? \textbf{Respuesta:} Hacia abajo
+
+\item Da el vértice de $y=(x+3)^2-2$. \textbf{Respuesta:} $(-3,-2)$
+
+\item Calcula $f(2)$ si $f(x)=x^2-1$. \textbf{Respuesta:} 3
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Geometría: figuras, ángulos y semejanza}
+
+\begin{idea}
+Este capítulo aborda geometría: figuras, ángulos y semejanza. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} En geometría, el dibujo ayuda a imaginar la situación, pero las medidas y las propiedades justifican el resultado. Un ángulo se mide por la abertura entre dos semirrectas, no por la longitud de los lados dibujados. La suma de los ángulos interiores de un triángulo es 180 grados; en otros polígonos, la suma depende del número de lados.
+
+Un ángulo recto mide 90°, llano 180° y completo 360°. Los ángulos interiores de un triángulo suman 180°; en un cuadrilátero suman 360°.
+
+
+
+\begin{ejemplo}
+Ejemplo: un triángulo tiene ángulos de 50° y 60°. El tercero es $180°-50°-60°=70°$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sumar los ángulos interiores de un triángulo y obtener otra cosa por olvidar el total de 180°.
+\end{ojo}
+
+
+
+\section{Perímetros y áreas}
+
+\textbf{Cómo se conecta con los ejercicios.} El perímetro mide la longitud del contorno y se expresa en unidades lineales, como centímetros o metros. El área mide la superficie y se expresa en unidades cuadradas. Aunque una figura tenga el mismo perímetro que otra, su área puede ser distinta. Antes de aplicar una fórmula, identifica qué medida se pide y comprueba que todas las longitudes estén en la misma unidad.
+
+El perímetro mide el borde y se expresa en unidades lineales. El área mide la superficie y se expresa en unidades cuadradas.
+
+\begin{ejemplo}
+Ejemplo: rectángulo de 8 cm por 3 cm: perímetro $2(8+3)=22$ cm y área $8\cdot3=24$ cm$^2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: escribir cm$^2$ para un perímetro o cm para un área.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Área de un triángulo de base 10 y altura 6.
+
+\item Perímetro de un cuadrado de lado 7.
+
+\item Área de un círculo de radio 2.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Semejanza y escalas}
+
+\textbf{Cómo se conecta con los ejercicios.} El teorema de Pitágoras se aplica únicamente a triángulos rectángulos. La hipotenusa está frente al ángulo recto y es el lado más largo; los otros dos lados son los catetos. La semejanza conserva los ángulos y mantiene proporcionales los lados correspondientes. Antes de usar una proporción, identifica con cuidado qué lado corresponde a cuál.
+
+Figuras semejantes conservan sus ángulos y tienen lados correspondientes en una razón constante. Si el factor lineal es $k$, el área cambia por $k^2$.
+
+\begin{ejemplo}
+Ejemplo: una figura ampliada al doble tiene longitudes dobles y área cuatro veces mayor.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: duplicar el área cuando se duplican los lados.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Si un lado de 4 cm pasa a 10 cm, ¿factor de escala?
+
+\item Si el factor es 3, ¿por cuánto cambia el área?
+
+\item Dos triángulos con ángulos iguales, ¿son semejantes?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} En geometría, el dibujo ayuda a imaginar la situación, pero las medidas y las propiedades justifican el resultado. Un ángulo se mide por la abertura entre dos semirrectas, no por la longitud de los lados dibujados. La suma de los ángulos interiores de un triángulo es 180 grados; en otros polígonos, la suma depende del número de lados.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Un ángulo suplementario de 115° mide cuánto? \textbf{Respuesta:} 65°
+
+\item ¿Cuánto suman los ángulos de un cuadrilátero? \textbf{Respuesta:} 360°
+
+\item Halla el tercer ángulo: 35°, 90° y x. \textbf{Respuesta:} 55°
+
+\item Área de un triángulo de base 10 y altura 6. \textbf{Respuesta:} 30 unidades cuadradas
+
+\item Perímetro de un cuadrado de lado 7. \textbf{Respuesta:} 28 unidades
+
+\item Área de un círculo de radio 2. \textbf{Respuesta:} $4\pi$ unidades cuadradas
+
+\item Si un lado de 4 cm pasa a 10 cm, ¿factor de escala? \textbf{Respuesta:} 2.5
+
+\item Si el factor es 3, ¿por cuánto cambia el área? \textbf{Respuesta:} Por 9
+
+\item Dos triángulos con ángulos iguales, ¿son semejantes? \textbf{Respuesta:} Sí
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Cuerpos geométricos y medición}
+
+\begin{idea}
+Este capítulo aborda cuerpos geométricos y medición. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+El volumen mide espacio ocupado. Para un prisma, $V=A_bh$. Para una pirámide, $V=A_bh/3$. La altura es perpendicular a la base.
+
+
+
+\begin{ejemplo}
+Ejemplo: prisma con base de área 12 cm$^2$ y altura 5 cm: $V=60$ cm$^3$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confundir la altura vertical con una arista inclinada.
+\end{ojo}
+
+
+
+\section{Unidades y conversiones}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+En el sistema métrico, cada paso entre km, hm, dam, m, dm, cm y mm cambia por un factor de diez. En áreas el factor se eleva al cuadrado y en volúmenes al cubo.
+
+\begin{ejemplo}
+Ejemplo: $2.5$ m = 250 cm. Pero $2.5$ m$^2$ = 25 000 cm$^2$, porque $1$ m$^2=10\,000$ cm$^2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar el factor lineal para convertir áreas o volúmenes.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Convierte 4.2 km a m.
+
+\item Convierte 3 m$^2$ a cm$^2$.
+
+\item Convierte 2 L a mL.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Circunferencia y esfera}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+La longitud de una circunferencia es $2\pi r$ y el área del círculo es $\pi r^2$. El volumen de una esfera es $4\pi r^3/3$.
+
+\begin{ejemplo}
+Ejemplo: con radio 5 cm, la circunferencia mide $10\pi$ cm y el área del círculo $25\pi$ cm$^2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar el diámetro donde se pide el radio sin dividir entre dos.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Diámetro si el radio es 7.
+
+\item Área de círculo de radio 4.
+
+\item Volumen de esfera de radio 3.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Volumen de un cubo de lado 3. \textbf{Respuesta:} 27 unidades cúbicas
+
+\item Volumen de cilindro de radio 2 y altura 5. \textbf{Respuesta:} $20\pi$
+
+\item Volumen de pirámide con base 30 y altura 6. \textbf{Respuesta:} 60 unidades cúbicas
+
+\item Convierte 4.2 km a m. \textbf{Respuesta:} 4200 m
+
+\item Convierte 3 m$^2$ a cm$^2$. \textbf{Respuesta:} 30 000 cm$^2$
+
+\item Convierte 2 L a mL. \textbf{Respuesta:} 2000 mL
+
+\item Diámetro si el radio es 7. \textbf{Respuesta:} 14
+
+\item Área de círculo de radio 4. \textbf{Respuesta:} $16\pi$
+
+\item Volumen de esfera de radio 3. \textbf{Respuesta:} $36\pi$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Trigonometría}
+
+\begin{idea}
+Este capítulo aborda trigonometría. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} En un triángulo rectángulo, seno, coseno y tangente relacionan un ángulo agudo con cocientes entre lados. «Opuesto» y «adyacente» dependen del ángulo que se esté usando; la hipotenusa no cambia. Revisa que la calculadora esté en grados si el ejercicio usa grados. Un resultado extraño suele deberse a elegir mal el lado o a usar radianes sin darse cuenta.
+
+En un triángulo rectángulo, respecto al ángulo elegido: seno = opuesto/hipotenusa, coseno = adyacente/hipotenusa y tangente = opuesto/adyacente. El ángulo elegido importa.
+
+
+
+\begin{ejemplo}
+Ejemplo: opuesto 3 e hipotenusa 5: $\sen\theta=3/5=0.6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: identificar el cateto opuesto sin fijar primero el ángulo de referencia.
+\end{ojo}
+
+
+
+\section{Ángulos notables y calculadora}
+
+\textbf{Cómo se conecta con los ejercicios.} En geometría, el dibujo ayuda a imaginar la situación, pero las medidas y las propiedades justifican el resultado. Un ángulo se mide por la abertura entre dos semirrectas, no por la longitud de los lados dibujados. La suma de los ángulos interiores de un triángulo es 180 grados; en otros polígonos, la suma depende del número de lados.
+
+Los valores más usados incluyen $\sen30^\circ=1/2$, $\cos60^\circ=1/2$, $\sen45^\circ=\sqrt2/2$. La calculadora debe estar en grados o radianes según el ejercicio.
+
+\begin{ejemplo}
+Ejemplo: una escalera de 5 m forma 30° con el suelo. La altura ideal es $5\sen30^\circ=2.5$ m.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar el modo RAD cuando el problema está en grados.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item ¿Cuánto vale $\cos 0^\circ$?
+
+\item ¿Cuánto vale $\sen90^\circ$?
+
+\item Si hipotenusa=10 y ángulo=30°, ¿cateto opuesto?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Leyes de senos y cosenos}
+
+\textbf{Cómo se conecta con los ejercicios.} En un triángulo rectángulo, seno, coseno y tangente relacionan un ángulo agudo con cocientes entre lados. «Opuesto» y «adyacente» dependen del ángulo que se esté usando; la hipotenusa no cambia. Revisa que la calculadora esté en grados si el ejercicio usa grados. Un resultado extraño suele deberse a elegir mal el lado o a usar radianes sin darse cuenta.
+
+La ley de senos relaciona lados con los senos de sus ángulos opuestos. La ley de cosenos generaliza Pitágoras a triángulos no rectángulos.
+
+\begin{ejemplo}
+Ejemplo: si dos lados miden 3 y 4 y el ángulo incluido es 90°, la ley de cosenos da $c^2=3^2+4^2-2(3)(4)\cos90^\circ=25$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar la ley de senos sin emparejar cada lado con su ángulo opuesto.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item ¿Qué ley conviene si conoces dos lados y el ángulo incluido?
+
+\item ¿Qué ley relaciona cada lado con su ángulo opuesto?
+
+\item Si $a=5,b=5,C=60^\circ$, calcula $c$ por ley de cosenos.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} En un triángulo rectángulo, seno, coseno y tangente relacionan un ángulo agudo con cocientes entre lados. «Opuesto» y «adyacente» dependen del ángulo que se esté usando; la hipotenusa no cambia. Revisa que la calculadora esté en grados si el ejercicio usa grados. Un resultado extraño suele deberse a elegir mal el lado o a usar radianes sin darse cuenta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Si opuesto=4 e hipotenusa=5, calcula seno. \textbf{Respuesta:} $4/5$
+
+\item Si adyacente=12 e hipotenusa=13, calcula coseno. \textbf{Respuesta:} $12/13$
+
+\item Si opuesto=6 y adyacente=8, calcula tangente. \textbf{Respuesta:} $3/4$
+
+\item ¿Cuánto vale $\cos 0^\circ$? \textbf{Respuesta:} 1
+
+\item ¿Cuánto vale $\sen90^\circ$? \textbf{Respuesta:} 1
+
+\item Si hipotenusa=10 y ángulo=30°, ¿cateto opuesto? \textbf{Respuesta:} 5
+
+\item ¿Qué ley conviene si conoces dos lados y el ángulo incluido? \textbf{Respuesta:} Ley de cosenos
+
+\item ¿Qué ley relaciona cada lado con su ángulo opuesto? \textbf{Respuesta:} Ley de senos
+
+\item Si $a=5,b=5,C=60^\circ$, calcula $c$ por ley de cosenos. \textbf{Respuesta:} 5
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Geometría analítica}
+
+\begin{idea}
+Este capítulo aborda geometría analítica. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+El plano cartesiano usa pares $(x,y)$. La distancia se obtiene con Pitágoras y el punto medio promedia las coordenadas.
+
+
+
+\begin{ejemplo}
+Ejemplo: entre $(1,2)$ y $(4,6)$, la distancia es $\sqrt{3^2+4^2}=5$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: restar coordenadas en orden distinto dentro de una misma diferencia sin elevar al cuadrado; sigue la fórmula.
+\end{ojo}
+
+
+
+\section{Recta y circunferencia}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+La recta puede escribirse como $y=mx+b$. La circunferencia con centro $(h,k)$ y radio $r$ satisface $(x-h)^2+(y-k)^2=r^2$.
+
+\begin{ejemplo}
+Ejemplo: $(x-2)^2+(y+1)^2=9$ tiene centro $(2,-1)$ y radio 3.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: cambiar el signo al leer el centro desde los paréntesis.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item En $y=4x-7$, ¿cuál es la pendiente?
+
+\item Centro y radio de $x^2+y^2=25$.
+
+\item ¿Cuál es la pendiente de una recta horizontal?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Pendientes y paralelismo}
+
+\textbf{Cómo se conecta con los ejercicios.} El plano cartesiano usa dos ejes perpendiculares que se cruzan en el origen. Un punto se escribe (x, y): primero se avanza horizontalmente y después verticalmente. La pendiente mide cuánto cambia y cuando x aumenta una unidad; una pendiente positiva sube hacia la derecha y una negativa baja. La fórmula de distancia se obtiene aplicando Pitágoras a las diferencias horizontal y vertical.
+
+Rectas paralelas distintas tienen la misma pendiente. Rectas perpendiculares con pendientes definidas cumplen $m_1m_2=-1$.
+
+\begin{ejemplo}
+Ejemplo: una recta con pendiente 2 es perpendicular a otra de pendiente $-1/2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: decir que dos rectas son perpendiculares solo porque una pendiente es positiva y la otra negativa.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Pendiente perpendicular a 3.
+
+\item ¿Son paralelas las pendientes 2 y 2?
+
+\item Pendiente de una recta vertical.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Distancia entre $(0,0)$ y $(3,4)$. \textbf{Respuesta:} 5
+
+\item Punto medio de $(2,4)$ y $(6,8)$. \textbf{Respuesta:} $(4,6)$
+
+\item Pendiente entre $(1,1)$ y $(3,5)$. \textbf{Respuesta:} 2
+
+\item En $y=4x-7$, ¿cuál es la pendiente? \textbf{Respuesta:} 4
+
+\item Centro y radio de $x^2+y^2=25$. \textbf{Respuesta:} Centro $(0,0)$, radio 5
+
+\item ¿Cuál es la pendiente de una recta horizontal? \textbf{Respuesta:} 0
+
+\item Pendiente perpendicular a 3. \textbf{Respuesta:} $-1/3$
+
+\item ¿Son paralelas las pendientes 2 y 2? \textbf{Respuesta:} Sí, si son rectas distintas
+
+\item Pendiente de una recta vertical. \textbf{Respuesta:} No está definida
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Estadística}
+
+\begin{idea}
+Este capítulo aborda estadística. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} La media se obtiene sumando los datos y dividiendo entre su cantidad; la mediana es el valor central después de ordenar; la moda es el valor más frecuente. Cada medida responde a una pregunta distinta. La media cambia mucho si aparece un valor extremo, mientras que la mediana suele resistirlo mejor. En gráficas, revisa siempre el título, la escala y el tamaño de la muestra.
+
+La media suma los datos y divide entre cuántos hay. La mediana es el valor central con los datos ordenados. La moda es el valor más frecuente.
+
+
+
+\begin{ejemplo}
+Ejemplo: 2, 4, 4, 10 tiene media 5, mediana 4 y moda 4.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: calcular la mediana sin ordenar los datos.
+\end{ojo}
+
+
+
+\section{Rango, varianza y gráficas}
+
+\textbf{Cómo se conecta con los ejercicios.} Una función asigna a cada valor permitido de entrada exactamente un valor de salida. En una tabla, x suele representar la entrada y y la salida; en una gráfica, cada punto muestra una pareja ordenada. Para interpretar una gráfica, revisa los ejes, las escalas, las unidades y el intervalo representado. Una línea que sube indica crecimiento respecto de x en ese tramo, no necesariamente una relación proporcional.
+
+El rango es máximo menos mínimo. La varianza y la desviación estándar describen qué tan dispersos están los datos respecto a la media. Las gráficas deben tener ejes y escalas legibles.
+
+\begin{ejemplo}
+Ejemplo: datos 4, 6, 8 tienen rango $8-4=4$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: concluir que una relación causa otra solo porque una gráfica muestra correlación.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Rango de 11, 3, 9, 5.
+
+\item ¿Qué gráfica sirve para comparar categorías?
+
+\item ¿Qué describe la desviación estándar?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Interpretar datos}
+
+\textbf{Cómo se conecta con los ejercicios.} La media se obtiene sumando los datos y dividiendo entre su cantidad; la mediana es el valor central después de ordenar; la moda es el valor más frecuente. Cada medida responde a una pregunta distinta. La media cambia mucho si aparece un valor extremo, mientras que la mediana suele resistirlo mejor. En gráficas, revisa siempre el título, la escala y el tamaño de la muestra.
+
+Antes de calcular, identifica población, variable, unidad y fuente. Una media puede verse afectada por valores extremos; la mediana suele resistirlos mejor.
+
+\begin{ejemplo}
+Ejemplo: salarios 5, 5, 6, 6 y 100 tienen media 24.4, pero mediana 6. El dato extremo altera la media.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: presentar un promedio sin explicar a qué grupo corresponde.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Media de 2, 2, 2, 14.
+
+\item Mediana de esos datos ordenados.
+
+\item ¿Qué medida se altera más por un valor extremo?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} La media se obtiene sumando los datos y dividiendo entre su cantidad; la mediana es el valor central después de ordenar; la moda es el valor más frecuente. Cada medida responde a una pregunta distinta. La media cambia mucho si aparece un valor extremo, mientras que la mediana suele resistirlo mejor. En gráficas, revisa siempre el título, la escala y el tamaño de la muestra.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Media de 3, 5, 7. \textbf{Respuesta:} 5
+
+\item Mediana de 1, 4, 8, 9, 10. \textbf{Respuesta:} 8
+
+\item Moda de 2, 2, 3, 5, 5, 5. \textbf{Respuesta:} 5
+
+\item Rango de 11, 3, 9, 5. \textbf{Respuesta:} 8
+
+\item ¿Qué gráfica sirve para comparar categorías? \textbf{Respuesta:} Barras
+
+\item ¿Qué describe la desviación estándar? \textbf{Respuesta:} La dispersión típica respecto a la media
+
+\item Media de 2, 2, 2, 14. \textbf{Respuesta:} 5
+
+\item Mediana de esos datos ordenados. \textbf{Respuesta:} 2
+
+\item ¿Qué medida se altera más por un valor extremo? \textbf{Respuesta:} La media
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Probabilidad y combinatoria}
+
+\begin{idea}
+Este capítulo aborda probabilidad y combinatoria. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} La probabilidad mide qué tan posible es un resultado y toma valores entre 0 y 1, o entre 0 % y 100 %. Si todos los resultados son igualmente posibles, se divide el número de casos favorables entre el total de casos posibles. Si no son igualmente probables, esa regla simple no se puede aplicar sin ajustar el modelo. Una probabilidad pequeña no significa que el evento sea imposible.
+
+Si los resultados son igualmente probables, probabilidad = casos favorables / casos posibles. Los eventos imposibles tienen probabilidad 0 y los seguros 1.
+
+
+
+\begin{ejemplo}
+Ejemplo: en un dado justo, sacar número par tiene probabilidad $3/6=1/2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sumar probabilidades de eventos que no son mutuamente excluyentes sin ajustar la intersección.
+\end{ojo}
+
+
+
+\section{Complemento e independencia}
+
+\textbf{Cómo se conecta con los ejercicios.} La probabilidad mide qué tan posible es un resultado y toma valores entre 0 y 1, o entre 0 % y 100 %. Si todos los resultados son igualmente posibles, se divide el número de casos favorables entre el total de casos posibles. Si no son igualmente probables, esa regla simple no se puede aplicar sin ajustar el modelo. Una probabilidad pequeña no significa que el evento sea imposible.
+
+El complemento de un evento es que no ocurra: $P(A^c)=1-P(A)$. Para eventos independientes, la probabilidad de que ambos ocurran es el producto de sus probabilidades.
+
+\begin{ejemplo}
+Ejemplo: dos lanzamientos independientes con probabilidad de cara 1/2: dos caras tienen probabilidad $1/2\cdot1/2=1/4$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: llamar independientes a dos eventos solo porque se mencionan por separado.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Si $P(A)=0.3$, calcula el complemento.
+
+\item Dos caras seguidas: probabilidad.
+
+\item Si $P(A)=1$, ¿cuánto vale $P(A^c)$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Permutaciones y combinaciones}
+
+\textbf{Cómo se conecta con los ejercicios.} La probabilidad mide qué tan posible es un resultado y toma valores entre 0 y 1, o entre 0 % y 100 %. Si todos los resultados son igualmente posibles, se divide el número de casos favorables entre el total de casos posibles. Si no son igualmente probables, esa regla simple no se puede aplicar sin ajustar el modelo. Una probabilidad pequeña no significa que el evento sea imposible.
+
+En permutaciones importa el orden. En combinaciones no importa. Para elegir presidente y secretario entre 5 personas, cambiar los cargos crea un resultado distinto; elegir un equipo de 2 no depende del orden.
+
+\begin{ejemplo}
+Ejemplo: elegir 2 de 4 personas sin importar orden: $\binom42=4!/(2!2!)=6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar combinaciones cuando el orden sí cambia el resultado.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item ¿Cuántas formas de ordenar 3 libros distintos?
+
+\item ¿Cuántos pares se forman con 5 personas?
+
+\item ¿Importa el orden al crear una contraseña?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} La probabilidad mide qué tan posible es un resultado y toma valores entre 0 y 1, o entre 0 % y 100 %. Si todos los resultados son igualmente posibles, se divide el número de casos favorables entre el total de casos posibles. Si no son igualmente probables, esa regla simple no se puede aplicar sin ajustar el modelo. Una probabilidad pequeña no significa que el evento sea imposible.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Probabilidad de cara en moneda justa. \textbf{Respuesta:} $1/2$
+
+\item Probabilidad de sacar más de 4 en un dado. \textbf{Respuesta:} $2/6=1/3$
+
+\item Probabilidad de evento seguro. \textbf{Respuesta:} 1
+
+\item Si $P(A)=0.3$, calcula el complemento. \textbf{Respuesta:} 0.7
+
+\item Dos caras seguidas: probabilidad. \textbf{Respuesta:} $1/4$
+
+\item Si $P(A)=1$, ¿cuánto vale $P(A^c)$? \textbf{Respuesta:} 0
+
+\item ¿Cuántas formas de ordenar 3 libros distintos? \textbf{Respuesta:} $3!=6$
+
+\item ¿Cuántos pares se forman con 5 personas? \textbf{Respuesta:} $\binom52=10$
+
+\item ¿Importa el orden al crear una contraseña? \textbf{Respuesta:} Sí
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Exponenciales y logaritmos}
+
+\begin{idea}
+Este capítulo aborda exponenciales y logaritmos. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} La notación científica escribe una cantidad como un número entre 1 y 10 multiplicado por una potencia de diez. El exponente indica cuántos lugares se desplaza el punto decimal. El logaritmo responde a la pregunta «¿a qué exponente hay que elevar la base para obtener este número?». Por eso logaritmo y exponenciación son operaciones inversas, siempre dentro de las condiciones permitidas para la base y el argumento.
+
+En $y=a^x$, la variable está en el exponente. Con $a>1$, el crecimiento se acelera; con $0<a<1$, hay decaimiento.
+
+
+
+\begin{ejemplo}
+Ejemplo: una cantidad que se duplica cada periodo sigue $N(t)=N_0 2^t$ si el modelo ideal aplica.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confundir crecimiento exponencial con crecimiento lineal. Duplicar cada periodo no añade siempre la misma cantidad.
+\end{ojo}
+
+
+
+\section{Definición de logaritmo}
+
+\textbf{Cómo se conecta con los ejercicios.} La notación científica escribe una cantidad como un número entre 1 y 10 multiplicado por una potencia de diez. El exponente indica cuántos lugares se desplaza el punto decimal. El logaritmo responde a la pregunta «¿a qué exponente hay que elevar la base para obtener este número?». Por eso logaritmo y exponenciación son operaciones inversas, siempre dentro de las condiciones permitidas para la base y el argumento.
+
+El logaritmo responde qué exponente produce un número: $\log_a x=y$ equivale a $a^y=x$. La base debe ser positiva y distinta de 1; el argumento debe ser positivo.
+
+\begin{ejemplo}
+Ejemplo: $\log_2 8=3$ porque $2^3=8$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: intentar calcular el logaritmo real de cero o de un número negativo.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Calcula $\log_{10}1000$.
+
+\item Calcula $\log_3 81$.
+
+\item ¿Cuánto vale $\log_5 1$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Propiedades de logaritmos}
+
+\textbf{Cómo se conecta con los ejercicios.} La notación científica escribe una cantidad como un número entre 1 y 10 multiplicado por una potencia de diez. El exponente indica cuántos lugares se desplaza el punto decimal. El logaritmo responde a la pregunta «¿a qué exponente hay que elevar la base para obtener este número?». Por eso logaritmo y exponenciación son operaciones inversas, siempre dentro de las condiciones permitidas para la base y el argumento.
+
+El logaritmo de un producto se convierte en suma de logaritmos; el de un cociente, en resta; el de una potencia, en el exponente multiplicando.
+
+\begin{ejemplo}
+Ejemplo: $\log_2(8\cdot4)=\log_2 8+\log_2 4=3+2=5$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: distribuir el logaritmo sobre una suma. En general, $\log(x+y)$ no se separa.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Expande $\log(x^3)$.
+
+\item Simplifica $\log_a u+\log_a v$.
+
+\item Resuelve $2^x=16$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} La notación científica escribe una cantidad como un número entre 1 y 10 multiplicado por una potencia de diez. El exponente indica cuántos lugares se desplaza el punto decimal. El logaritmo responde a la pregunta «¿a qué exponente hay que elevar la base para obtener este número?». Por eso logaritmo y exponenciación son operaciones inversas, siempre dentro de las condiciones permitidas para la base y el argumento.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Calcula $2^5$. \textbf{Respuesta:} 32
+
+\item Si $N_0=10$ y se duplica 3 veces, ¿cuánto hay? \textbf{Respuesta:} 80
+
+\item ¿Crece o decrece $y=(1/2)^x$ al aumentar x? \textbf{Respuesta:} Decrece
+
+\item Calcula $\log_{10}1000$. \textbf{Respuesta:} 3
+
+\item Calcula $\log_3 81$. \textbf{Respuesta:} 4
+
+\item ¿Cuánto vale $\log_5 1$? \textbf{Respuesta:} 0
+
+\item Expande $\log(x^3)$. \textbf{Respuesta:} $3\log x$
+
+\item Simplifica $\log_a u+\log_a v$. \textbf{Respuesta:} $\log_a(uv)$
+
+\item Resuelve $2^x=16$. \textbf{Respuesta:} $x=4$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Introducción al cálculo}
+
+\begin{idea}
+Este capítulo aborda introducción al cálculo. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+El límite describe a qué valor se acerca una función cuando la entrada se aproxima a un punto. Si la función es continua allí, la sustitución directa suele funcionar.
+
+
+
+\begin{ejemplo}
+Ejemplo: $\lim_{x\to3}(x^2+2)=11$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confundir el valor de la función en un punto con el límite cuando la función tiene una discontinuidad.
+\end{ojo}
+
+
+
+\section{Derivada como tasa de cambio}
+
+\textbf{Cómo se conecta con los ejercicios.} El límite describe el valor al que se acerca una función cuando la entrada se aproxima a cierto punto. No siempre equivale al valor de la función en ese punto. La derivada mide una tasa de cambio instantánea y puede interpretarse como la pendiente de la recta tangente. La integral definida acumula cantidades y, en situaciones sencillas, representa un área con signo. Estas ideas se entienden mejor distinguiendo qué se aproxima, qué cambia y qué se acumula.
+
+La derivada mide el cambio instantáneo. Para potencias, $(x^n)'=nx^{n-1}$. La derivada de una constante es cero; una constante multiplicativa se conserva.
+
+\begin{ejemplo}
+Ejemplo: si $f(x)=5x^3-2x+7$, entonces $f'(x)=15x^2-2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: derivar $x^3$ como $x^2$ sin multiplicar por 3.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Deriva $x^4$.
+
+\item Deriva $7x^2+3$.
+
+\item Deriva $9$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Integral como acumulación}
+
+\textbf{Cómo se conecta con los ejercicios.} El límite describe el valor al que se acerca una función cuando la entrada se aproxima a cierto punto. No siempre equivale al valor de la función en ese punto. La derivada mide una tasa de cambio instantánea y puede interpretarse como la pendiente de la recta tangente. La integral definida acumula cantidades y, en situaciones sencillas, representa un área con signo. Estas ideas se entienden mejor distinguiendo qué se aproxima, qué cambia y qué se acumula.
+
+Una integral indefinida busca antiderivadas y añade una constante $C$. La integral definida calcula acumulación neta entre límites; con una primitiva $F$, vale $F(b)-F(a)$.
+
+\begin{ejemplo}
+Ejemplo: $\int 2x\,dx=x^2+C$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: olvidar la constante en integrales indefinidas o cambiar el orden de evaluación en una integral definida.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Integra $3x^2$.
+
+\item Integra $4$.
+
+\item Calcula $\int_0^1 2x\,dx$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Calcula $\lim_{x\to2}(3x+1)$. \textbf{Respuesta:} 7
+
+\item Calcula $\lim_{x\to0}(x^2+4)$. \textbf{Respuesta:} 4
+
+\item ¿Qué indeterminación aparece en $\frac{x^2-1}{x-1}$ al sustituir x=1? \textbf{Respuesta:} $0/0$
+
+\item Deriva $x^4$. \textbf{Respuesta:} $4x^3$
+
+\item Deriva $7x^2+3$. \textbf{Respuesta:} $14x$
+
+\item Deriva $9$. \textbf{Respuesta:} 0
+
+\item Integra $3x^2$. \textbf{Respuesta:} $x^3+C$
+
+\item Integra $4$. \textbf{Respuesta:} $4x+C$
+
+\item Calcula $\int_0^1 2x\,dx$. \textbf{Respuesta:} 1
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Herramientas, calculadora y examen}
+
+\begin{idea}
+Este capítulo aborda herramientas, calculadora y examen. La meta no es fingir que el tema es fascinante; es entender qué significa, qué procedimiento suele usarse y cómo detectar los errores que más puntos cuestan.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+
+Introduce paréntesis cuando la expresión los necesita. Comprueba el modo de ángulo y distingue la tecla de signo negativo de la operación de resta. La calculadora ejecuta lo que escribes, no lo que querías escribir.
+
+
+
+\begin{ejemplo}
+Ejemplo: $-2^2$ suele interpretarse como $-(2^2)=-4$, mientras que $(-2)^2=4$. Los paréntesis cambian el resultado.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confiar en una pantalla sin estimar si el resultado tiene sentido.
+\end{ojo}
+
+
+
+\section{Administrar el tiempo}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+
+Resuelve primero lo que reconoces. Marca las preguntas que requieren más tiempo y vuelve a ellas. Escribe unidades, signos y pasos suficientes para que el procedimiento se entienda.
+
+\begin{ejemplo}
+Ejemplo: si un examen tiene 60 minutos y 30 preguntas, no gastes 15 minutos en la primera. Reserva tiempo para revisar.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: dedicar todo el tiempo a una sola pregunta difícil y dejar varias fáciles sin responder.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item ¿Qué conviene hacer si no recuerdas una fórmula?
+
+\item ¿Por qué revisar unidades?
+
+\item ¿Cuándo conviene estimar?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Preparar una regularización}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+
+Estudia por habilidades: primero identifica los temas débiles, luego practica ejercicios de dificultad creciente y revisa los errores. Repetir solo los ejercicios que ya salen no revela qué falta aprender.
+
+\begin{ejemplo}
+Ejemplo: si fallas al sumar fracciones, practica denominadores iguales, luego distintos, después problemas verbales con fracciones.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: estudiar mirando soluciones sin intentar resolver antes. Leer una solución produce familiaridad, no necesariamente habilidad.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item ¿Qué debes hacer tras fallar un ejercicio?
+
+\item ¿Por qué conviene mezclar tipos de problemas después de practicar por separado?
+
+\item ¿Qué evidencia muestra que ya dominas un tema?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item ¿Qué da $(-3)^2$? \textbf{Respuesta:} 9
+
+\item ¿Qué da $-3^2$ según la prioridad usual? \textbf{Respuesta:} -9
+
+\item ¿Qué modo usas para $\sen 30^\circ$? \textbf{Respuesta:} Grados (DEG)
+
+\item ¿Qué conviene hacer si no recuerdas una fórmula? \textbf{Respuesta:} Anotar datos, buscar relaciones y pasar a otra pregunta si te bloqueas
+
+\item ¿Por qué revisar unidades? \textbf{Respuesta:} Para detectar incompatibilidades y errores
+
+\item ¿Cuándo conviene estimar? \textbf{Respuesta:} Antes y después de calcular
+
+\item ¿Qué debes hacer tras fallar un ejercicio? \textbf{Respuesta:} Localizar el paso del error y repetir uno parecido
+
+\item ¿Por qué conviene mezclar tipos de problemas después de practicar por separado? \textbf{Respuesta:} Para aprender a identificar el método adecuado
+
+\item ¿Qué evidencia muestra que ya dominas un tema? \textbf{Respuesta:} Resolver varios ejercicios nuevos y explicar el procedimiento
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Razones, proporciones y porcentajes en problemas reales}
+
+\begin{idea}
+En este capítulo se desarrollan herramientas de razones, proporciones y porcentajes en problemas reales. Algunas escuelas lo cubren con distinta profundidad; úsalo como guía de consulta y practica con el temario concreto de tu curso.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+Un aumento del 20\% se calcula multiplicando por 1.20; un descuento del 20\%, por 0.80. Aplicar ambos no suele regresar al precio original porque se aplican sobre bases distintas.
+
+
+
+\begin{ejemplo}
+Ejemplo: \textdollar{}100 con aumento de 20\% pasa a \textdollar{}120. Luego descuento de 20\% sobre \textdollar{}120 deja \textdollar{}96, no \textdollar{}100.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sumar porcentajes sucesivos como si ambos se aplicaran al precio inicial.
+\end{ojo}
+
+
+
+\section{Interés simple y compuesto}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+El interés simple se calcula sobre el capital inicial: $I=Cit$ si la tasa y el tiempo están expresados en unidades compatibles. En el compuesto, los intereses se incorporan al capital: $M=C(1+i)^n$.
+
+\begin{ejemplo}
+Ejemplo: \textdollar{}1000 al 5\% simple anual durante 2 años genera $I=1000(0.05)(2)=100$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar una tasa porcentual como 5 en lugar de 0.05.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Interés simple de \textdollar{}2000 al 3\% anual por 2 años.
+
+\item Monto compuesto de \textdollar{}1000 al 10\% por 2 periodos.
+
+\item ¿Qué dato debe tener la misma unidad temporal que la tasa?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Variación directa e inversa}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+En variación directa, $y=kx$ y el cociente $y/x$ es constante. En variación inversa, $y=k/x$ y el producto $xy$ es constante, con valores permitidos no nulos.
+
+\begin{ejemplo}
+Ejemplo: si $y=12/x$, cuando $x=2$, $y=6$; cuando $x=4$, $y=3$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: declarar proporcionalidad solo porque dos valores parecen relacionados.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Si $y=4x$, calcula y para x=7.
+
+\item Si $xy=30$ y x=5, halla y.
+
+\item ¿Qué permanece constante en la variación inversa?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} En un problema conviene separar tres cosas: los datos que entrega el enunciado, la relación entre esos datos y la respuesta que se busca. La operación aparece después de reconocer esa relación. Por ejemplo, tener 18 objetos y repartirlos entre 3 personas no describe lo mismo que tener 18 objetos y añadir otros 3, aunque ambos enunciados contengan los mismos números.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Aumenta \textdollar{}400 en 15\%. \textbf{Respuesta:} \textdollar{}460
+
+\item Descuenta 25\% de \textdollar{}800. \textbf{Respuesta:} \textdollar{}600
+
+\item Aumenta 10\% y luego descuenta 10\% a \textdollar{}200. \textbf{Respuesta:} \textdollar{}198
+
+\item Interés simple de \textdollar{}2000 al 3\% anual por 2 años. \textbf{Respuesta:} \textdollar{}120
+
+\item Monto compuesto de \textdollar{}1000 al 10\% por 2 periodos. \textbf{Respuesta:} \textdollar{}1210
+
+\item ¿Qué dato debe tener la misma unidad temporal que la tasa? \textbf{Respuesta:} El tiempo
+
+\item Si $y=4x$, calcula y para x=7. \textbf{Respuesta:} 28
+
+\item Si $xy=30$ y x=5, halla y. \textbf{Respuesta:} 6
+
+\item ¿Qué permanece constante en la variación inversa? \textbf{Respuesta:} El producto $xy$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Expresiones racionales y radicales algebraicos}
+
+\begin{idea}
+En este capítulo se desarrollan herramientas de expresiones racionales y radicales algebraicos. Algunas escuelas lo cubren con distinta profundidad; úsalo como guía de consulta y practica con el temario concreto de tu curso.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Una fracción algebraica es un cociente de expresiones con variables. Los denominadores no pueden valer cero; esas restricciones deben identificarse antes de simplificar.
+
+
+
+\begin{ejemplo}
+Ejemplo: $(x^2-4)/(x-2)=((x-2)(x+2))/(x-2)=x+2$, siempre que $x\neq2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: cancelar términos que están sumando. En $(x+2)/x$ no se puede cancelar la x de esa forma.
+\end{ojo}
+
+
+
+\section{Ecuaciones racionales}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Para resolver una ecuación con fracciones algebraicas, identifica valores prohibidos, multiplica por un denominador común y resuelve. Al final, descarta soluciones prohibidas.
+
+\begin{ejemplo}
+Ejemplo: $1/x=2$ da $x=1/2$, con restricción inicial $x\neq0$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: aceptar una solución que hace cero el denominador original.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Resuelve $3/x=1$ con $x\neq0$.
+
+\item ¿Qué valor está prohibido en $2/(x-5)$?
+
+\item Resuelve $1/(x+1)=1/2$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Radicales algebraicos}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Para simplificar una raíz, busca factores que sean potencias perfectas. Para eliminar una raíz en una ecuación, se puede elevar al cuadrado, pero hay que comprobar las soluciones al final.
+
+\begin{ejemplo}
+Ejemplo: $\sqrt{x+1}=3$ implica $x+1=9$, así que $x=8$, que satisface la ecuación original.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: elevar al cuadrado sin comprobar; puede introducir soluciones extrañas.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Simplifica $\sqrt{20}$.
+
+\item Resuelve $\sqrt{x}=5$.
+
+\item Resuelve $\sqrt{x+2}=x$ y comprueba.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Simplifica $(x^2-9)/(x-3)$ e indica restricción. \textbf{Respuesta:} $x+3$, $x\neq3$
+
+\item ¿Para qué x no está definida $1/(x+4)$? \textbf{Respuesta:} $x=-4$
+
+\item Simplifica $6x/9x$ con las restricciones pertinentes. \textbf{Respuesta:} $2/3$, con $x\neq0$
+
+\item Resuelve $3/x=1$ con $x\neq0$. \textbf{Respuesta:} $x=3$
+
+\item ¿Qué valor está prohibido en $2/(x-5)$? \textbf{Respuesta:} $x=5$
+
+\item Resuelve $1/(x+1)=1/2$. \textbf{Respuesta:} $x=1$
+
+\item Simplifica $\sqrt{20}$. \textbf{Respuesta:} $2\sqrt5$
+
+\item Resuelve $\sqrt{x}=5$. \textbf{Respuesta:} $x=25$
+
+\item Resuelve $\sqrt{x+2}=x$ y comprueba. \textbf{Respuesta:} $x=2$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Funciones: dominio, rango y composición}
+
+\begin{idea}
+En este capítulo se desarrollan herramientas de funciones: dominio, rango y composición. Algunas escuelas lo cubren con distinta profundidad; úsalo como guía de consulta y practica con el temario concreto de tu curso.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+El dominio son las entradas permitidas; el rango son las salidas que produce la función. En una fracción, el denominador no puede ser cero; en una raíz cuadrada real, el radicando debe ser no negativo.
+
+
+
+\begin{ejemplo}
+Ejemplo: $f(x)=1/(x-2)$ tiene dominio todos los reales excepto $x=2$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: afirmar que toda función acepta cualquier número real.
+\end{ojo}
+
+
+
+\section{Composición de funciones}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+La composición $f(g(x))$ significa aplicar primero $g$ y luego $f$. El orden importa: $f(g(x))$ no tiene por qué ser igual a $g(f(x))$.
+
+\begin{ejemplo}
+Ejemplo: $f(x)=2x$ y $g(x)=x+3$. Entonces $f(g(x))=2(x+3)=2x+6$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: sumar funciones cuando se pide composición.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Si $f(x)=x^2$ y $g(x)=x+1$, calcula $f(g(2))$.
+
+\item Calcula $g(f(2))$ para las mismas funciones.
+
+\item ¿Siempre conmutan las composiciones?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Transformaciones gráficas}
+
+\textbf{Cómo se conecta con los ejercicios.} Una función asigna a cada valor permitido de entrada exactamente un valor de salida. En una tabla, x suele representar la entrada y y la salida; en una gráfica, cada punto muestra una pareja ordenada. Para interpretar una gráfica, revisa los ejes, las escalas, las unidades y el intervalo representado. Una línea que sube indica crecimiento respecto de x en ese tramo, no necesariamente una relación proporcional.
+
+En $y=f(x)+k$, la gráfica sube $k$ unidades si $k>0$. En $y=f(x-h)$, se desplaza $h$ unidades a la derecha si $h>0$. El signo dentro del argumento puede parecer contraintuitivo.
+
+\begin{ejemplo}
+Ejemplo: $y=(x-4)^2$ es la parábola $y=x^2$ trasladada cuatro unidades a la derecha.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: interpretar el signo del paréntesis como el sentido directo del desplazamiento.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item ¿Cómo se mueve $y=x^2+3$?
+
+\item ¿Cómo se mueve $y=(x+2)^2$?
+
+\item ¿Qué vértice tiene $y=(x-1)^2+5$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Dominio de $1/x$. \textbf{Respuesta:} $x\neq0$
+
+\item Dominio real de $\sqrt{x-3}$. \textbf{Respuesta:} $x\geq3$
+
+\item ¿Puede una función tener el mismo valor de salida para entradas distintas? \textbf{Respuesta:} Sí
+
+\item Si $f(x)=x^2$ y $g(x)=x+1$, calcula $f(g(2))$. \textbf{Respuesta:} 9
+
+\item Calcula $g(f(2))$ para las mismas funciones. \textbf{Respuesta:} 5
+
+\item ¿Siempre conmutan las composiciones? \textbf{Respuesta:} No
+
+\item ¿Cómo se mueve $y=x^2+3$? \textbf{Respuesta:} 3 arriba
+
+\item ¿Cómo se mueve $y=(x+2)^2$? \textbf{Respuesta:} 2 a la izquierda
+
+\item ¿Qué vértice tiene $y=(x-1)^2+5$? \textbf{Respuesta:} $(1,5)$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Sucesiones y series}
+
+\begin{idea}
+En este capítulo se desarrollan herramientas de sucesiones y series. Algunas escuelas lo cubren con distinta profundidad; úsalo como guía de consulta y practica con el temario concreto de tu curso.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Una sucesión aritmética suma una diferencia constante $d$. Su término n es $a_n=a_1+(n-1)d$.
+
+
+
+\begin{ejemplo}
+Ejemplo: $5,8,11,14,\ldots$ tiene $a_1=5$ y $d=3$; el término 10 es $5+9(3)=32$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: multiplicar por n en vez de usar n-1 cuando la fórmula parte del primer término.
+\end{ojo}
+
+
+
+\section{Sucesiones geométricas}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Cada término se obtiene multiplicando por una razón constante $r$. Su fórmula es $a_n=a_1r^{n-1}$.
+
+\begin{ejemplo}
+Ejemplo: $3,6,12,24,\ldots$ tiene razón 2 y $a_6=3(2^5)=96$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: confundir una razón multiplicativa con una diferencia aditiva.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Encuentra el término 5 de 2, 6, 18,...
+
+\item Halla la razón de 81, 27, 9,...
+
+\item Escribe los primeros cuatro términos con $a_1=5,r=2$.
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Sumas de sucesiones}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+La suma de los primeros n términos de una sucesión aritmética es $S_n=n(a_1+a_n)/2$. En una geométrica con $r\neq1$, $S_n=a_1(1-r^n)/(1-r)$.
+
+\begin{ejemplo}
+Ejemplo: $1+2+3+\cdots+10=10(1+10)/2=55$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar una fórmula de suma cuando el problema pide solo el término n.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Suma los primeros 5 términos de 2,4,6,...
+
+\item Calcula $1+2+\cdots+20$.
+
+\item ¿Qué condición requiere la fórmula geométrica escrita?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Encuentra el término 8 de 2, 6, 10,... \textbf{Respuesta:} 30
+
+\item Halla la diferencia de 15, 11, 7,... \textbf{Respuesta:} -4
+
+\item Escribe una fórmula si $a_1=4,d=5$. \textbf{Respuesta:} $a_n=4+5(n-1)$
+
+\item Encuentra el término 5 de 2, 6, 18,... \textbf{Respuesta:} 162
+
+\item Halla la razón de 81, 27, 9,... \textbf{Respuesta:} $1/3$
+
+\item Escribe los primeros cuatro términos con $a_1=5,r=2$. \textbf{Respuesta:} 5, 10, 20, 40
+
+\item Suma los primeros 5 términos de 2,4,6,... \textbf{Respuesta:} 30
+
+\item Calcula $1+2+\cdots+20$. \textbf{Respuesta:} 210
+
+\item ¿Qué condición requiere la fórmula geométrica escrita? \textbf{Respuesta:} $r\neq1$
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Aplicaciones de Pitágoras y trigonometría}
+
+\begin{idea}
+En este capítulo se desarrollan herramientas de aplicaciones de pitágoras y trigonometría. Algunas escuelas lo cubren con distinta profundidad; úsalo como guía de consulta y practica con el temario concreto de tu curso.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} El teorema de Pitágoras se aplica únicamente a triángulos rectángulos. La hipotenusa está frente al ángulo recto y es el lado más largo; los otros dos lados son los catetos. La semejanza conserva los ángulos y mantiene proporcionales los lados correspondientes. Antes de usar una proporción, identifica con cuidado qué lado corresponde a cuál.
+
+Dibuja la situación y busca el triángulo rectángulo. Marca el ángulo, el lado conocido y el lado solicitado. Después elige seno, coseno, tangente o Pitágoras.
+
+
+
+\begin{ejemplo}
+Ejemplo: una rampa sube 1.2 m en una distancia horizontal de 5 m. La longitud inclinada es $\sqrt{1.2^2+5^2}\approx5.14$ m.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: usar la distancia horizontal como si fuera la longitud inclinada.
+\end{ojo}
+
+
+
+\section{Ángulos de elevación y depresión}
+
+\textbf{Cómo se conecta con los ejercicios.} En geometría, el dibujo ayuda a imaginar la situación, pero las medidas y las propiedades justifican el resultado. Un ángulo se mide por la abertura entre dos semirrectas, no por la longitud de los lados dibujados. La suma de los ángulos interiores de un triángulo es 180 grados; en otros polígonos, la suma depende del número de lados.
+
+El ángulo de elevación se mide desde la horizontal hacia arriba; el de depresión, desde la horizontal hacia abajo. Dibuja una horizontal en el observador antes de usar trigonometría.
+
+\begin{ejemplo}
+Ejemplo: desde 20 m de distancia horizontal se observa la cima con elevación 30°. La diferencia de altura es $20\tan30^\circ\approx11.55$ m.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: medir el ángulo desde la vertical cuando el enunciado lo mide desde la horizontal.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item A 10 m, elevación 45°: altura relativa.
+
+\item ¿Qué razón conecta opuesto y adyacente?
+
+\item ¿Qué se debe dibujar primero?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Aplicaciones mixtas}
+
+\textbf{Cómo se conecta con los ejercicios.} El teorema de Pitágoras se aplica únicamente a triángulos rectángulos. La hipotenusa está frente al ángulo recto y es el lado más largo; los otros dos lados son los catetos. La semejanza conserva los ángulos y mantiene proporcionales los lados correspondientes. Antes de usar una proporción, identifica con cuidado qué lado corresponde a cuál.
+
+Algunos problemas requieren dos pasos: primero calcular un lado con Pitágoras y después usar una razón trigonométrica, o al revés. Escribe las unidades y conserva valores intermedios sin redondear demasiado.
+
+\begin{ejemplo}
+Ejemplo: si una escalera de 10 m forma 60° con el suelo, la altura ideal es $10\sen60^\circ\approx8.66$ m.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: redondear un ángulo o lado a mitad del procedimiento y acumular error.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Escalera de 5 m con 30° respecto al suelo: altura.
+
+\item Escalera de 5 m con 30°: distancia horizontal.
+
+\item ¿Por qué conviene conservar decimales intermedios?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} El teorema de Pitágoras se aplica únicamente a triángulos rectángulos. La hipotenusa está frente al ángulo recto y es el lado más largo; los otros dos lados son los catetos. La semejanza conserva los ángulos y mantiene proporcionales los lados correspondientes. Antes de usar una proporción, identifica con cuidado qué lado corresponde a cuál.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Catetos 9 y 12: hipotenusa. \textbf{Respuesta:} 15
+
+\item Hipotenusa 13 y cateto 5: otro cateto. \textbf{Respuesta:} 12
+
+\item Si opuesto=10 y adyacente=10, ¿tangente? \textbf{Respuesta:} 1
+
+\item A 10 m, elevación 45°: altura relativa. \textbf{Respuesta:} 10 m
+
+\item ¿Qué razón conecta opuesto y adyacente? \textbf{Respuesta:} Tangente
+
+\item ¿Qué se debe dibujar primero? \textbf{Respuesta:} El esquema y la horizontal de referencia
+
+\item Escalera de 5 m con 30° respecto al suelo: altura. \textbf{Respuesta:} 2.5 m
+
+\item Escalera de 5 m con 30°: distancia horizontal. \textbf{Respuesta:} $5\cos30^\circ\approx4.33$ m
+
+\item ¿Por qué conviene conservar decimales intermedios? \textbf{Respuesta:} Para reducir el error de redondeo
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+\chapter{Cálculo: reglas y aplicaciones}
+
+\begin{idea}
+En este capítulo se desarrollan herramientas de cálculo: reglas y aplicaciones. Algunas escuelas lo cubren con distinta profundidad; úsalo como guía de consulta y practica con el temario concreto de tu curso.
+\end{idea}
+
+\section{Explicación}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Si $h(x)=f(x)g(x)$, entonces $h'=f'g+fg'$. Para cociente, $(f/g)'=(f'g-fg')/g^2$, donde el denominador original no sea cero.
+
+
+
+\begin{ejemplo}
+Ejemplo: derivar $x^2\cdot x^3$ puede hacerse primero simplificando a $x^5$ y derivando: $5x^4$. La regla del producto da el mismo resultado.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: derivar cada factor y multiplicar las derivadas; eso no es la regla del producto.
+\end{ojo}
+
+
+
+\section{Máximos y mínimos básicos}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+La derivada puede localizar puntos críticos donde la pendiente es cero o no existe. Esos puntos son candidatos a máximos o mínimos, no garantía automática: hay que analizar el comportamiento.
+
+\begin{ejemplo}
+Ejemplo: $f(x)=x^2$ tiene $f'(x)=2x$. El punto crítico es $x=0$, donde la función alcanza un mínimo.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: afirmar que cualquier punto con derivada cero es un máximo o mínimo.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Deriva $x^2-4x$.
+
+\item ¿Dónde es cero la derivada anterior?
+
+\item ¿Es mínimo el vértice de $x^2+1$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Teorema fundamental, versión práctica}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Si $F'=f$, entonces la integral definida de $f$ entre a y b es $F(b)-F(a)$. La primitiva permite calcular acumulación neta sin sumar infinitas tiras una por una.
+
+\begin{ejemplo}
+Ejemplo: $\int_1^3 2x\,dx=[x^2]_1^3=9-1=8$.
+\end{ejemplo}
+
+\begin{ojo}
+Error frecuente: evaluar solo el límite superior y olvidar restar el inferior.
+\end{ojo}
+
+\begin{practica}
+
+\begin{enumerate}
+
+\item Calcula $\int_0^2 3\,dx$.
+
+\item Calcula $\int_1^2 x\,dx$.
+
+\item ¿Qué se resta de qué en $F(b)-F(a)$?
+
+\end{enumerate}
+
+\end{practica}
+
+
+
+\section{Respuestas y repaso del capítulo}
+
+\textbf{Cómo se conecta con los ejercicios.} Para aplicar este procedimiento, escribe los datos con claridad, indica qué representa cada símbolo y realiza una operación por línea. Después interpreta el resultado en el contexto del ejercicio y comprueba que responde exactamente a la pregunta.
+
+Antes de mirar las respuestas, intenta explicar en una frase qué procedimiento usaste. Si no puedes explicar ni siquiera el primer paso, vuelve a la sección correspondiente.
+
+\begin{multicols}{2}\begin{enumerate}
+
+\item Deriva $x(x+1)$. \textbf{Respuesta:} $2x+1$
+
+\item Deriva $(x^2+1)(x)$. \textbf{Respuesta:} $3x^2+1$
+
+\item ¿Qué condición impone el cociente? \textbf{Respuesta:} El denominador no puede ser cero
+
+\item Deriva $x^2-4x$. \textbf{Respuesta:} $2x-4$
+
+\item ¿Dónde es cero la derivada anterior? \textbf{Respuesta:} $x=2$
+
+\item ¿Es mínimo el vértice de $x^2+1$? \textbf{Respuesta:} Sí
+
+\item Calcula $\int_0^2 3\,dx$. \textbf{Respuesta:} 6
+
+\item Calcula $\int_1^2 x\,dx$. \textbf{Respuesta:} $3/2$
+
+\item ¿Qué se resta de qué en $F(b)-F(a)$? \textbf{Respuesta:} El valor de la primitiva en a se resta al valor en b
+
+\end{enumerate}\end{multicols}
+
+\begin{idea}\textbf{Chequeo final.} ¿Elegiste el método correcto? ¿Los signos están bien? ¿Las unidades tienen sentido? ¿Puedes sustituir la respuesta para comprobarla? Si alguna respuesta es no, todavía queda trabajo.\end{idea}
+
+
+
+
+\appendix
+\chapter{Formulario de consulta rápida}
+\small
+\begin{multicols}{2}
+\section*{Aritmética}
+\[
+\frac ab+\frac cd=\frac{ad+bc}{bd},\quad
+\frac ab\cdot\frac cd=\frac{ac}{bd}
+\]
+\[
+p\%\text{ de }N=\frac{pN}{100}
+\]
+\[
+\text{media}=\frac{\sum x_i}{n}
+\]
+\section*{Potencias}
+\[
+a^ma^n=a^{m+n},\quad (a^m)^n=a^{mn}
+\]
+\[
+a^{-n}=\frac1{a^n},\quad a^0=1\;(a\neq0)
+\]
+\section*{Álgebra}
+\[
+(a+b)^2=a^2+2ab+b^2
+\]
+\[
+a^2-b^2=(a-b)(a+b)
+\]
+\[
+x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}
+\]
+\section*{Recta}
+\[
+y=mx+b,\quad m=\frac{y_2-y_1}{x_2-x_1}
+\]
+\[
+d=\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}
+\]
+\section*{Geometría plana}
+\[
+A_{\text{rect}}=bh,\quad A_{\text{tri}}=\frac{bh}{2}
+\]
+\[
+A_{\text{círculo}}=\pi r^2,\quad C=2\pi r
+\]
+\[
+a^2+b^2=c^2
+\]
+\section*{Volúmenes}
+\[
+V_{\text{prisma}}=A_bh,\quad V_{\text{cil}}=\pi r^2h
+\]
+\[
+V_{\text{cono}}=\frac13\pi r^2h,\quad
+V_{\text{esfera}}=\frac43\pi r^3
+\]
+\section*{Trigonometría}
+\[
+\sen\theta=\frac{CO}{H},\quad
+\cos\theta=\frac{CA}{H}
+\]
+\[
+\tan\theta=\frac{CO}{CA},\quad
+\sen^2\theta+\cos^2\theta=1
+\]
+\section*{Probabilidad}
+\[
+P(A)=\frac{\text{favorables}}{\text{posibles}}
+\]
+\[
+P(A^c)=1-P(A)
+\]
+\section*{Sucesiones}
+\[
+a_n=a_1+(n-1)d
+\]
+\[
+a_n=a_1r^{n-1}
+\]
+\section*{Cálculo}
+\[
+(x^n)'=nx^{n-1}
+\]
+\[
+\int x^n\,dx=\frac{x^{n+1}}{n+1}+C,\;n\neq-1
+\]
+\end{multicols}
+\normalsize
+
+\chapter{Cómo preparar un examen sin hacer teatro}
+\section{Una semana antes}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+Haz una lista de temas y clasifícalos en tres grupos: lo sé, más o menos, no tengo idea. Empieza por los temas que sirven de base a otros: operaciones, fracciones, despejes y lectura de gráficas. No intentes memorizar una fórmula que todavía no sabes interpretar.
+
+\section{Un día antes}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+Resuelve ejercicios representativos y revisa los errores. Prepara lápiz, borrador, regla y calculadora si está permitida. Dormir poco para repasar hasta la madrugada suele empeorar la atención; no es una estrategia sofisticada.
+
+\section{Durante el examen}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+Lee la pregunta completa. Escribe los datos y las unidades. Si una pregunta se atasca, deja un espacio y sigue. Al final revisa signos, paréntesis, unidades y si la respuesta tiene un tamaño razonable.
+
+\section{Después del examen}
+
+\textbf{Cómo se conecta con los ejercicios.} Un repaso eficaz no consiste en releer pasivamente todas las páginas. Elige un ejercicio representativo, resuélvelo sin mirar la solución y compara los pasos. Si fallas, identifica si el problema fue de lectura, concepto, procedimiento, cálculo o notación. Practicar de nuevo el tipo de error detectado suele rendir más que hacer veinte ejercicios iguales sin revisar por qué fallaste.
+No te limites a mirar la calificación. Clasifica cada error: no sabía el concepto, elegí mal el método, hice una operación mal, leí mal el enunciado o me faltó tiempo. Cada causa requiere una solución distinta.
+
+\chapter{Glosario mínimo}
+\begin{description}
+\item[Coeficiente] Número que multiplica a una variable.
+\item[Constante] Cantidad que no cambia en el contexto estudiado.
+\item[Denominador] Número inferior de una fracción; no puede ser cero.
+\item[Dominio] Valores de entrada permitidos para una función.
+\item[Factor] Cantidad que se multiplica por otra.
+\item[Función] Regla que asigna una salida a cada entrada permitida.
+\item[Hipotenusa] Lado opuesto al ángulo recto.
+\item[Incógnita] Valor desconocido que se busca.
+\item[Pendiente] Cambio vertical dividido entre cambio horizontal.
+\item[Perímetro] Longitud del contorno de una figura.
+\item[Radicando] Expresión dentro del signo radical.
+\item[Variable] Símbolo que representa una cantidad que puede variar.
+\item[Volumen] Medida del espacio ocupado por un cuerpo.
+\end{description}
+
+\begin{center}
+\vspace{1cm}
+\Large\textbf{Fin del acordeón.}\\
+\normalsize Las fórmulas ya están aquí. El siguiente paso es practicar sin dejar que los signos hagan lo que quieran.
+\end{center}
+\end{document}

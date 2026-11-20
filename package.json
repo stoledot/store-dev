@@ -39,8 +39,10 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",
+    "@xmldom/xmldom": "^0.9.12",
     "astro": "^7.1.6",
     "bootstrap": "^5.3.8",
+    "linkedom": "^0.18.15",
     "markdown-it": "^15.0.0",
     "stripe": "^22.4.0",
     "uqr": "^0.1.3"

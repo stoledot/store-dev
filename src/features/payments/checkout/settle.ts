@@ -69,6 +69,7 @@ export async function settleDemoCheckout(
     // inside the order batch — no separate markPendingSettled round trip. With
     // waitUntil the emails (and their reads) run after the redirect is sent.
     await recordPaidWebhookOrder({ type: 'demo.paid', order }, origin, 'demo', settings, waitUntil);
+    
     return { settled: true };
   }
   return { declined: DECLINE[outcome] ?? DECLINE.decline };

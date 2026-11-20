@@ -15,6 +15,8 @@ import { markPendingSettled } from '../payments/lightning/pending';
 import { purgeStockProductCache } from '../cache/purge';
 import { settleSubprogramObligation } from '../school/subprogramSettlement';
 import { releaseExpiredPaymentBundle, settlePaymentBundle } from '../school/paymentBundles';
+import { getProductLecturasByProductIds, setLecturasCustomerByLecturaIdsCustomerId } from '../lecturas/db';
+import { getCustomerByEmail } from '../customers_new/db';
 
 /**
  * Persist a verified paid-webhook order (idempotent on the provider session id)
@@ -121,6 +123,27 @@ export async function settleSchoolObligation(
     obligation.student_email,
     `${obligation.title_snapshot} fue pagado correctamente.`));
   await env.DB.batch(statements);
+}
+
+export async function settleLecturasCustomer(
+  paidOrder: NonNullable<WebhookResult['order']>
+): Promise<void> {
+  // Implementation for settling a lecturas customer goes here.
+  // This typically involves marking the lectura as paid, updating related records,
+  // and possibly sending notifications to the customer.
+  const productsIds = paidOrder.items?.map(item => Number(item.productId)) ?? [];
+  if (productsIds.length === 0) return;
+  const lecturasIds = (await getProductLecturasByProductIds(env.DB, productsIds)).map(pl => pl.lectura_id);
+  const getCustomerId = await getCustomerByEmail(env.DB, paidOrder.email ?? '');
+  if (!getCustomerId) {
+    throw new Error('Customer not found for the provided email');
+  }
+  const success = await setLecturasCustomerByLecturaIdsCustomerId(env.DB, lecturasIds, Number(getCustomerId?.id));
+  if (!success) {
+    throw new Error('Failed to set lecturas for customer');
+  }
+  // Here you would typically update the database to mark these products as paid for the customer.
+  // For example, you might iterate over productsIds and update the corresponding lectura records.
 }
 
 export async function recordPaidWebhookOrder(
@@ -240,6 +263,7 @@ export async function recordPaidWebhookOrder(
     throw new Error(`Could not settle inventory reservation ${paidOrder.reservationId ?? 'legacy'}.`);
   }
   await settleSchoolObligation(paidOrder, orderId, paymentMethod);
+  await settleLecturasCustomer(paidOrder);
 
   // Orders built from a pending payment settle it inside the batch above
   // (settlePaymentHash); the separate round trip is only for results that
