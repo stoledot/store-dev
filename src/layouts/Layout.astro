@@ -272,23 +272,32 @@ const shell = buildShellModel({
     <!-- Script opcional para cambiar el estado activo al hacer clic -->
     <script>
       const navItems = document.querySelectorAll('.nav-item');
+      const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
 
-      navItems.forEach(item => {
-        item.addEventListener('click', function() {
-          // Resetear todos los elementos
-          navItems.forEach(nav => {
-            nav.classList.remove('text-indigo-600');
-            nav.classList.add('text-slate-400');
-            nav.querySelector('.active-dot')?.classList.add('hidden');
-            nav.querySelector('span:last-child')?.classList.replace('font-semibold', 'font-medium');
-          });
+      navItems.forEach((item) => {
+        const link = item.getAttribute('href');
+        if (!link) return;
 
-          // Activar el elemento seleccionado
-          item.classList.remove('text-slate-400');
-          item.classList.add('text-indigo-600');
-          item.querySelector('.active-dot')?.classList.remove('hidden');
-          item.querySelector('span:last-child')?.classList.replace('font-medium', 'font-semibold');
-        });
+        const linkPath = link.replace(/\/$/, '') || '/';
+
+        // Comparación de ruta exacta
+        const isActive = currentPath === linkPath;
+
+        item.classList.toggle('text-indigo-600', isActive);
+        item.classList.toggle('text-slate-400', !isActive);
+
+        const dot = item.querySelector('.active-dot');
+        dot?.classList.toggle('hidden', !isActive);
+
+        const label = item.querySelector('span:last-child');
+        label?.classList.toggle('font-semibold', isActive);
+        label?.classList.toggle('font-medium', !isActive);
+
+        if (isActive) {
+          item.setAttribute('aria-current', 'page');
+        } else {
+          item.removeAttribute('aria-current');
+        }
       });
     </script>
 
