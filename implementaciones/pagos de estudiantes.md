@@ -87,7 +87,7 @@ Alumnos (Students)
 | id | INTEGER | PRIMARY KEY AUTOINCREMENT |
 | regla_id | INTEGER | NOT NULL |
 | product_id | INTEGER | NOT NULL | Identificador del producto asociado al cobro |
-
+| concepto_cobro | TEXT | | Descripción del concepto de cobro |
 | moneda | TEXT | NOT NULL | Moneda del cobro |
 | creado_en | TEXT | NOT NULL DEFAULT (datetime('now')) |
 | FOREIGN KEY (regla_id) REFERENCES reglas_administrativas(id) ON DELETE CASCADE |
@@ -180,6 +180,7 @@ Otro ejemplo de regla de cobro
 | regla_administrativa_id | INTEGER | NOT NULL | Identificador de la regla administrativa asignada al alumno |
 | alumno_id | INTEGER | NOT NULL | Identificador del alumno al que se le asigna la regla administrativa |
 | fecha_asignacion | DATE | NOT NULL | Fecha en la que se asigna la regla administrativa al alumno |
+| activa | BOOLEAN | NOT NULL DEFAULT 1 | si esta activa o no la aplicacion a este alumno |
 
 
 ## Tabla de registro de cumplimiento de reglas administrativas
@@ -188,5 +189,19 @@ Otro ejemplo de regla de cobro
 | regla_administrativa_id | INTEGER | NOT NULL | Identificador de la regla administrativa que se está registrando |
 | alumno_id | INTEGER | NOT NULL | Identificador del alumno al que se le está registrando el cumplimiento de la regla administrativa |
 | fecha_cumplimiento | DATE | NOT NULL | Fecha en la que se cumple la regla administrativa |
-| estado_cumplimiento | TEXT | NOT NULL | Estado del cumplimiento de la regla administrativa, por ejemplo, "cumplido", "incumplido" |
+| estado_cumplimiento | TEXT | NOT NULL | Estado del cumplimiento de la regla administrativa, por ejemplo, "cumplido", "incumplido", "pendiente", "en curso"|
 | observaciones | TEXT |  | Observaciones adicionales sobre el cumplimiento de la regla administrativa |
+
+
+## Tratamiento de organización escolar
+¿cómo organizo la escuela?
+Hay carreras, areas de interes, programas, subprogramas, grupos escolares, salones de clases, periodos escolares, lecturas, conferencias, 
+
+Creo que para asignarle un privilegio a un alumno, debe ser por tabla:
+    Si se crea una pareja ordenada de (alumno, lectura), esta lectura se maneja como un acceso independiente a todo lo demás,
+    Si se crea una pareja ordenada de (alumno, conferencia), la conferencia le apatecerá al alumno, independite de todo lo demás.
+    Si se crea una pareja ordenada de (alumno, salon de clases), es porque el alumno puede acceder a los beneficios que el salón de clases ofrece: conferencias, cursos, lecturas, pero dentro del salón de clases específico.
+    Si se crea una pereja ordenada de (alumno, subprograma), entonces, solo se indica que ese alumno está inscrito a un subprograma específico, aunque, esto no sirve de mucho.
+    
+Es mejor crear grupos (salones) de alumnos independiente a cualquier objeto adicional, para simplificar relaciones.
+
