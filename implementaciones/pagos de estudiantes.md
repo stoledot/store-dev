@@ -205,3 +205,8 @@ Creo que para asignarle un privilegio a un alumno, debe ser por tabla:
     
 Es mejor crear grupos (salones) de alumnos independiente a cualquier objeto adicional, para simplificar relaciones.
 
+
+
+# OTRA IDEA
+tengo que asignarle a cada alumno un nivel académico
+
