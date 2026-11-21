@@ -6,40 +6,40 @@ TEMARIO:
 
 - Introducción
   - Orientaciones iniciales y estrategia para resolver problemas
-- Primaria inicial
-  - Aritmética: los números y sus problemas
-    - **11. División con cociente y residuo**
-    - **13. Comprobación de operaciones mediante la operación inversa**
-    - **15. Patrones numéricos y reglas de formación**
-  - Medidas y situaciones cotidianas
-    - **16. Lectura del reloj y cálculo de tiempo transcurrido**
-    - **17. Uso de monedas y billetes en problemas de cambio**
-    - **18. Medición de longitudes con instrumentos y unidades adecuadas**
-  - Geometría y datos iniciales
-    - **19. Reconocimiento y clasificación de figuras planas y cuerpos**
-    - **20. Lectura e interpretación de pictogramas y tablas sencillas**
-- Primaria avanzada
-  - Aritmética y divisibilidad
-    - Divisibilidad y números primos
-    - Mínimo común múltiplo y máximo común divisor
-  - Fracciones, decimales y porcentajes
-    - **21. Valor posicional de décimos, centésimos y milésimos**
-    - **22. Comparación y orden de números decimales**
-    - **23. Suma y resta de números decimales**
-    - **24. Multiplicación y división de números decimales**
-    - **25. Fracciones como parte de un todo, cociente y medida**
-    - **26. Comparación y orden de fracciones**
-    - Fracciones equivalentes y simplificación
-    - **27. Representación de fracciones equivalentes con modelos**
-    - **28. Suma y resta de fracciones con igual denominador**
-    - **29. Suma y resta de fracciones con distinto denominador**
-    - **30. Multiplicación y división de fracciones**
-    - **31. Conversión entre fracciones, decimales y porcentajes**
-    - Porcentajes
-    - **32. Cálculo de un porcentaje de una cantidad**
-    - Razones, proporciones y regla de tres
-    - **33. Razones unitarias y tablas de proporcionalidad**
-    - **34. Resolución de problemas de regla de tres**
+
+  
+    
+
+    
+  
+    
+    
+    
+  
+    
+    
+
+  
+    
+    
+  
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   - Medición y geometría plana
     - **35. Conversión de unidades de longitud, masa y capacidad**
     - **36. Equivalencias entre horas, minutos y segundos**
@@ -212,7 +212,10 @@ TEMARIO:
   </chapter>
 
   <chapter id="primaria" data-title="Primaria">
+    <!--- Primaria inicial -->
     <section id="primaria-inicial" data-title="Primaria inicial">
+
+      - Aritmética: los números y sus problemas
       <sub-section id="aritmetica-los-numeros-y-sus-problemas" data-title="Aritmética: los números y sus problemas">
 
         - **+ ¿Qué son los números naturales?**
@@ -659,6 +662,49 @@ TEMARIO:
           </math-excersice>
           
         </sub-sub-section>
+        
+        - **11. División con cociente y residuo**
+        <sub-sub-section id="division-con-cociente-y-residuo" data-title="División con cociente y residuo">
+          <p>La división con cociente y residuo consiste en dividir un número (dividendo) entre otro número (divisor) obteniendo un cociente y un residuo. El cociente es el número de veces que el divisor cabe en el dividendo, y el residuo es lo que sobra después de realizar la división.</p>
+          <p>En otras palabras, el cociente nos indica cuántas veces el divisor cabe completamente en el dividendo, mientras que el residuo representa la parte que queda sin poder dividirse más.</p>
+
+          <p>Existe un algoritmo para realizar la división con cociente y residuo, que consiste en dividir el dividendo entre el divisor, obtener el cociente y luego calcular el residuo restando el producto del cociente por el divisor al dividendo.</p>
+
+          <p>El procedimiento se puede resumir en los siguientes pasos:</p>
+          <ol>
+            <li>Dividir el dividendo entre el divisor para obtener el cociente.</li>
+            <li>Multiplicar el cociente por el divisor.</li>
+            <li>Restar el resultado anterior al dividendo para obtener el residuo.</li>
+          </ol>
+          <p>Siguiendo estos pasos, podemos realizar la división con cociente y residuo de manera sistemática y evitar errores en los cálculos.</p>
+          
+          <math-formula id="division-ejemplo" data-title="Ejemplo de división con cociente y residuo">
+            <math-display>
+            $$
+            \begin{array}{r@{}l}
+              & \phantom{0}278 \\
+            14 \vert & \overline{3,892} \\
+              & \underline{-28}\phantom{,92} \\
+              & \phantom{0}109 \\
+              & \phantom{0}\underline{-98} \\
+              & \phantom{00}112 \\
+              & \phantom{0}\underline{-112} \\
+              & \phantom{0000}0
+            \end{array}
+            $$
+
+            </math-display>
+          </math-formula>
+
+          <math-excersice id="division-ejercicio" data-title="Ejercicio de división con cociente y residuo">
+            <p>Resuelve el ejercicio aplicando la división con cociente y residuo.</p>
+            <math-display>
+              $$
+              14 \vert \overline{3,892}
+              $$
+            </math-display>
+          </math-excersice>
+        </sub-sub-section>
 
         - **12. Relación inversa entre multiplicación y división**
         <sub-sub-section id="relacion-inversa-entre-multiplicacion-y-division" data-title="Relación inversa entre multiplicación y división">
@@ -679,6 +725,9 @@ TEMARIO:
             </math-display>
           </math-excersice>
         </sub-sub-section>
+
+        ELIMNINADA- **13. Comprobación de operaciones mediante la operación inversa**
+        
 
         - **14. Resolución de problemas de varios pasos con números naturales**
         <sub-sub-section id="resolucion-de-problemas-de-varios-pasos-con-numeros-naturales" data-title="Resolución de problemas de varios pasos con números naturales">
@@ -742,8 +791,1060 @@ TEMARIO:
           </math-remark>
         </sub-sub-section>
 
+        - **15. Patrones numéricos y reglas de formación**
+        <sub-sub-section id="capitulo-01-apartado-04-patrones-numericos" data-title="Patrones numéricos y reglas de formación">
+          <p>Un patrón numérico es una secuencia de números que sigue una regla específica. La regla de formación nos permite encontrar los términos siguientes de la secuencia.</p>
+          <p>Por ejemplo, en la secuencia \(2, 4, 6, 8, \dots\), la regla de formación es "sumar 2 al término anterior".</p>
+          <math-excersices>
+            <math-excersice data-title="Ejercicio">
+              <p>Encuentra los siguientes tres términos de la secuencia \(2, 4, 6, 8, \dots\).</p>
+              <math-display>\[2, 4, 6, 8, 10, 12, 14\]</math-display>
+            </math-excersice>
+          </math-excersices>
+        </sub-sub-section>
+      </sub-section>
+
+      <!-- Medidas y situaciones cotidianas -->
+      <sub-section id="capitulo-01-apartado-05-medidas-y-situaciones-cotidianas" data-title="Medidas y situaciones cotidianas">
+        - **16. Lectura del reloj y cálculo de tiempo transcurrido**
+        <sub-sub-section id="capitulo-01-apartado-05-lectura-del-reloj" data-title="Lectura del reloj y cálculo de tiempo transcurrido">
+          <p>Aprender a leer el reloj y calcular el tiempo transcurrido es fundamental en la vida cotidiana.</p>
+          <p>Estos son los pasos para aprender a leer el reloj analógico:</p>
+          <ol>
+            <li>
+              <p>Identificar la hora en el reloj analógico.</p>
+            </li>
+            <li>
+              <p>Determinar los minutos transcurridos desde la hora inicial.</p>
+            </li>
+            <li>
+              <p>Sumar los minutos transcurridos a la hora inicial para obtener la hora final.</p>
+            </li>
+          </ol>
+
+          <math-figure data-title="Reloj analógico">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" stroke="black" stroke-width="2" fill="none"/>
+              <!-- Dibujar las marcas de las horas en el reloj analógico -->
+              <line x1="50" y1="50" x2="50" y2="5" stroke="black" stroke-width="2"/>
+              <line x1="50" y1="50" x2="50" y2="95" stroke="black" stroke-width="2"/>
+              <line x1="50" y1="50" x2="5" y2="50" stroke="black" stroke-width="2"/>
+              <line x1="50" y1="50" x2="95" y2="50" stroke="black" stroke-width="2"/>
+              <line x1="50" y1="50" x2="50" y2="15" stroke="black" stroke-width="2"/>
+              <line x1="50" y1="50" x2="85" y2="50" stroke="black" stroke-width="2"/>
+              <line x1="50" y1="50" x2="50" y2="85" stroke="black" stroke-width="2"/>
+              <line x1="50" y1="50" x2="15" y2="50" stroke="black" stroke-width="2"/>
+
+              <!-- Dibujar las manecillas del reloj -->
+              <line x1="50" y1="50" x2="50" y2="30" stroke="black" stroke-width="4"/>
+              <line x1="50" y1="50" x2="70" y2="50" stroke="black" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <p>En el reloj analógico, la manecilla corta indica la hora y la manecilla larga indica los minutos.</p>
+          <p>Para calcular el tiempo transcurrido entre dos horas, se restan los minutos de la hora inicial a los minutos de la hora final y se ajusta la hora según corresponda.</p>
+          <p>Por ejemplo, si la hora inicial es 3:15 y la hora final es 5:45, se calcula primero la diferencia de minutos (45 - 15 = 30) y luego la diferencia de horas (5 - 3 = 2), resultando en un tiempo transcurrido de 2 horas y 30 minutos.</p>
+        </sub-sub-section>
+
+        <!-- - **17. Uso de monedas y billetes en problemas de cambio** -->
+        <sub-sub-section id="capitulo-01-apartado-17-uso-de-monedas-y-billetes-en-problemas-de-cambio" data-title="Uso de monedas y billetes en problemas de cambio">
+          <p>En este apartado se estudia cómo utilizar monedas y billetes 
+          para resolver problemas de cambio en situaciones cotidianas.</p>
+          <p>Empecemos con un ejemplo sencillo: si tenemos un billete de 10 unidades y queremos comprar un artículo que cuesta 7 unidades, ¿cuánto cambio debemos recibir? La respuesta es 3 unidades, que se pueden dar utilizando monedas o billetes de menor denominación.</p>
+          <p>Otro ejemplo: si tenemos un billete de 20 unidades y compramos un artículo de 13 unidades, el cambio será de 7 unidades. Podemos dar este cambio con un billete de 5 unidades y dos monedas de 1 unidad, o con cualquier otra combinación que sume 7 unidades.</p>
+          <p>En general, para resolver problemas de cambio, se busca la combinación de monedas y billetes que sume la cantidad de cambio requerida, utilizando la menor cantidad de piezas posible o siguiendo las restricciones del problema.</p>
+
+          <p>Es importante practicar con diferentes combinaciones de monedas y billetes para familiarizarse con el cálculo del cambio y desarrollar habilidades para resolver problemas de manera eficiente.</p>
 
 
+        </sub-sub-section>
+
+
+        <!-- - **18. Medición de longitudes con instrumentos y unidades adecuadas** -->
+        <sub-sub-section id="capitulo-01-apartado-18-medicion-de-longitudes-con-instrumentos-y-unidades-adecuadas" data-title="Medición de longitudes con instrumentos y unidades adecuadas">
+          <p>En este apartado se estudia cómo medir longitudes utilizando instrumentos como reglas, cintas métricas y calibradores, así como la elección de unidades adecuadas según la magnitud a medir.</p>
+          <p>Por ejemplo, para medir la longitud de un lápiz se puede utilizar una regla graduada en centímetros, mientras que para medir la distancia entre dos ciudades se emplean kilómetros.</p>
+          <p>Es importante seleccionar el instrumento y la unidad de medida adecuados para obtener mediciones precisas y significativas.</p>
+
+          <sub-sub-sub-section id ="regla-de-medicion" data-title="Regla de medición">
+            <p>La regla es un instrumento utilizado para medir longitudes pequeñas, generalmente graduada en centímetros y milímetros.</p>
+            <p>Para medir un objeto con la regla, se coloca el extremo del objeto en el cero de la regla y se lee la longitud en la graduación correspondiente al otro extremo del objeto.</p>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="cinta-metrica" data-title="Cinta métrica">
+            <p>La cinta métrica es un instrumento flexible utilizado para medir longitudes mayores, como muebles o habitaciones.</p>
+            <p>Se extiende la cinta a lo largo del objeto a medir y se lee la longitud en la graduación correspondiente.</p>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="bascula" data-title="Báscula">
+            <p>La báscula es un instrumento utilizado para medir masas o pesos de objetos.</p>
+            <p>Se coloca el objeto sobre la báscula y se lee la masa en la unidad correspondiente, como kilogramos o gramos.</p>
+          </sub-sub-sub-section>
+
+        </sub-sub-section>
+
+
+
+
+      </sub-section>
+
+      - Geometría y datos iniciales
+      <sub-section id="capitulo-01-apartado-19-geometria-y-datos-iniciales" data-title="Geometría y datos iniciales">
+        <p>En este apartado se estudian conceptos básicos de geometría y cómo utilizar datos iniciales para resolver problemas geométricos.</p>
+
+        <!--- **19. Reconocimiento y clasificación de figuras planas y cuerpos**-->
+        <sub-sub-section id="capitulo-01-apartado-19-reconocimiento-y-clasificacion-de-figuras-planas-y-cuerpos" data-title="Reconocimiento y clasificación de figuras planas y cuerpos">
+          <p>Para reconocer y clasificar figuras planas y cuerpos geométricos, se deben observar sus propiedades, como el número de lados, vértices y caras.</p>
+          <p>Por ejemplo, un triángulo tiene tres lados y tres vértices, mientras que un cubo tiene seis caras cuadradas y ocho vértices.</p>
+
+          <sub-sub-sub-section id="capitulo-01-apartado-19-figuras-planas" data-title="Figuras planas">
+            <p>Las figuras planas son aquellas que tienen solo dos dimensiones: largo y ancho. Son aquellas que se encuentran en un solo plano y no tienen volumen. Por ejemplo, todo lo que puedas dibujar en una hoja de papel es una figura plana.</p>
+            <p>Ejemplos incluyen triángulos, cuadrados, rectángulos y círculos.</p>
+            <math-figure id="figura-triangulo" data-title="Triángulo">
+              <math>
+                <mi>A</mi><mo>&#x2212;</mo><mi>B</mi><mo>&#x2212;</mo><mi>C</mi>
+              </math>
+              <p>Triángulo con vértices A, B y C.</p>
+            </math-figure>
+
+            <p>Otro ejemplo de figura plana es el cuadrado, que tiene cuatro lados iguales y cuatro vértices.</p>
+
+            <math-figure id="figura-cuadrado" data-title="Cuadrado">
+              <svg>
+                <rect x="0" y="0" width="100" height="100" />
+                <line x1="0" y1="0" x2="100" y2="0" stroke="black" />
+                <line x1="100" y1="0" x2="100" y2="100" stroke="black" />
+                <line x1="100" y1="100" x2="0" y2="100" stroke="black" />
+                <line x1="0" y1="100" x2="0" y2="0" stroke="black" />
+                <!--Vértices A,B,C, D-->
+                <circle cx="0" cy="-10" r="2" fill="black" />
+                <circle cx="100" cy="0" r="2" fill="black" />
+                <circle cx="100" cy="100" r="2" fill="black" />
+                <circle cx="0" cy="100" r="2" fill="black" />
+                <text x="0" y="-15" font-size="10" fill="black">A</text>
+                <text x="100" y="-15" font-size="10" fill="black">B</text>
+                <text x="100" y="105" font-size="10" fill="black">C</text>
+                <text x="0" y="105" font-size="10" fill="black">D</text>
+
+              </svg>
+              <p>Cuadrado con vértices A, B, C y D.</p>
+            </math-figure>
+            
+          </sub-sub-sub-section>
+          
+          <sub-sub-sub-section id="capitulo-01-apartado-19-cuerpos-geometricos" data-title="Cuerpos geométricos">
+            <p>Los cuerpos geométricos son aquellos que tienen tres dimensiones: largo, ancho y alto. Tienen volumen y ocupan espacio.</p>
+            <p>Ejemplos incluyen cubos, esferas, prismas y pirámides.</p>
+            <math-figure id="figura-cubo" data-title="Cubo">
+              <svg>
+                <rect x="20" y="20" width="60" height="60" stroke="black" fill="none" />
+                <line x1="20" y1="20" x2="40" y2="0" stroke="black" />
+                <line x1="80" y1="20" x2="100" y2="0" stroke="black" />
+                <line x1="100" y1="0" x2="40" y2="0" stroke="black" />
+                <line x1="100" y1="0" x2="100" y2="60" stroke="black" />
+                <line x1="100" y1="60" x2="80" y2="80" stroke="black" />
+                <line x1="80" y1="80" x2="20" y2="80" stroke="black" />
+                <line x1="20" y1="80" x2="20" y2="20" stroke="black" />
+              </svg>
+              <p>Cubo con vértices A, B, C, D, E, F, G y H.</p>
+            </math-figure>
+
+            <p>El cubo es un ejemplo de cuerpo geométrico con seis caras cuadradas, doce aristas y ocho vértices.</p>
+            <p>Cada vértice del cubo es el punto de encuentro de tres aristas, y cada cara es un cuadrado.</p>
+
+            <p>Otro ejemplo de cuerpo geométrico es la esfera, que tiene todos sus puntos de la superficie a la misma distancia del centro y no tiene aristas ni vértices.</p>
+            <math-figure id="figura-esfera" data-title="Esfera">
+              <svg>
+                <circle cx="50" cy="50" r="40" stroke="black" fill="none" />
+              </svg>
+              <p>Esfera con centro O y radio r.</p>
+            </math-figure>
+          </sub-sub-sub-section>
+
+        </sub-sub-section>
+
+        <!--- **20. Lectura e interpretación de pictogramas y tablas sencillas** -->
+        <sub-sub-section id="capitulo-01-apartado-20-lectura-e-interpretacion-de-pictogramas-y-tablas-sencillas" data-title="Lectura e interpretación de pictogramas y tablas sencillas">
+          <p>Los pictogramas y las tablas son herramientas para representar información de manera visual y organizada.</p>
+          <p>Un pictograma utiliza imágenes o símbolos para representar datos, mientras que una tabla organiza los datos en filas y columnas.</p>
+          <p>Ejemplo de un pictograma que representa la cantidad de frutas consumidas en una semana:</p>
+          <math-figure id="figura-pictograma-frutas" data-title="Pictograma de frutas">
+            <svg>
+              <rect x="10" y="40" width="20" height="10" stroke="black" fill="none" />
+              <rect x="40" y="30" width="20" height="20" stroke="black" fill="none" />
+              <rect x="70" y="20" width="20" height="30" stroke="black" fill="none" />
+            </svg>
+            <p>Cada rectángulo representa la cantidad de frutas consumidas: manzanas, plátanos y naranjas.</p>
+          </math-figure>
+
+          <p>Ejemplo de una tabla que representa la cantidad de frutas consumidas en una semana:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Fruta</th>
+                <th>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Manzanas</td>
+                <td>10</td>
+              </tr>
+              <tr>
+                <td>Plátanos</td>
+                <td>15</td>
+              </tr>
+              <tr>
+                <td>Naranjas</td>
+                <td>20</td>
+              </tr>
+            </tbody>
+          </table>
+        </sub-sub-section>
+
+
+      </sub-section>
+      
+    </section>
+
+    <!--- Primaria avanzada-->
+    <section id="primaria-avanzada" data-title="Primaria avanzada">
+      <!--- Contenido de primaria avanzada -->
+
+      <!--- Aritmética y divisibilidad-->
+      <sub-section id="capitulo-01-apartado-01-aritmetica-y-divisibilidad" data-title="Aritmética y divisibilidad">
+        <!--- Contenido de aritmética y divisibilidad -->
+        <p>La aritmética estudia las operaciones con números: suma, resta, multiplicación y división. La divisibilidad se refiere a cuándo un número puede dividirse exactamente entre otro.</p>
+        <p>Por ejemplo, 12 es divisible entre 3 porque 12 ÷ 3 = 4, que es un número entero.</p>
+
+        <!--- Divisibilidad y números primos -->
+        <sub-sub-section id="capitulo-01-apartado-03-divisibilidad-y-n-meros-primos" data-title="Divisibilidad y números primos">
+          <p>Un número es divisible entre otro si la división da un entero sin residuo.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Divisor</th>
+                <th>Regla rápida</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Termina en 0, 2, 4, 6 u 8.</td>
+                <td>Es divisible entre 2.</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>La suma de sus cifras es múltiplo de 3.</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Termina en 0 o 5.</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>La suma de sus cifras es múltiplo de 9.</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>Termina en 0.</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>Un número primo tiene exactamente dos divisores positivos: 
+          1 y él mismo. El 1 no es primo.</p>
+        </sub-sub-section>
+
+        <!--- Mínimo común múltiplo -->
+        <sub-sub-section id="capitulo-01-apartado-04-m-nimo-com-n-m-ltiplo" data-title="Mínimo común múltiplo">
+          <p>El mínimo común múltiplo (MCM) de dos números es el menor múltiplo positivo que ambos números comparten.</p>
+          <p>Por ejemplo, para 12 y 18, los múltiplos son:</p>
+          <p>12: 12, 24, 36, 48, ...</p>
+          <p>18: 18, 36, 54, ...</p>
+          <p>El menor múltiplo común es 36, por lo que \(\operatorname{MCM}(12,18)=36\).</p>
+          <p>Para encontrar el MCM de varios números, se pueden listar sus múltiplos o usar la descomposición en factores primos y tomar los exponentes mayores de cada factor.</p>
+          <p>Por ejemplo, para 8, 12 y 18:</p>
+          <math-display>\[8=2^3,\qquad 12=2^2\cdot3,\qquad 18=2\cdot3^2.\]</math-display>
+          <p>Tomando los exponentes mayores de cada factor:</p>
+          <math-display>\[\operatorname{MCM}(8,12,18)=2^3\cdot3^2=72.\]</math-display>
+          <p>Así, el MCM de 8, 12 y 18 es 72.</p>
+          <p>En general, para encontrar el MCM de varios números, se recomienda descomponer cada número en factores primos y tomar los exponentes mayores de cada factor presente en cualquiera de los números.</p>
+          <p>Otra forma de calcular el MCM de dos números es usando el máximo común divisor (MCD):</p>
+          <math-display>\[\operatorname{MCM}(a,b)=\frac{a\cdot b}{\operatorname{MCD}(a,b)}.\]</math-display>
+          <p>Por ejemplo, si \(a=12\) y \(b=18\), entonces \(\operatorname{MCD}(12,18)=6\) y</p>
+          <math-display>\[\operatorname{MCM}(12,18)=\frac{12\cdot 18}{6}=36.\]</math-display>
+          <p>Esta fórmula es útil cuando se conoce el MCD de los números y se desea calcular rápidamente el MCM.</p>
+          <p>En resumen, el MCM de varios números puede encontrarse mediante la lista de múltiplos, la descomposición en factores primos o utilizando el MCD, dependiendo de la situación y de los números involucrados.</p>
+
+        </sub-sub-section>
+
+        <!--Máximo común divisor -->
+        <sub-sub-section id="capitulo-01-apartado-05-m-ximo-com-n-divisor" data-title="Máximo común divisor">
+          <p>El máximo común divisor (MCD) de dos números es el mayor número que divide a ambos sin dejar residuo.</p>
+          <p>Por ejemplo, para 12 y 18, los divisores son:</p>
+          <p>12: 1, 2, 3, 4, 6, 12</p>
+          <p>18: 1, 2, 3, 6, 9, 18</p>
+          <p>El mayor divisor común es 6, por lo que \(\operatorname{MCD}(12,18)=6\).</p>
+          <p>Para encontrar el MCD de varios números, se pueden listar sus divisores o usar la descomposición en factores primos y tomar los exponentes menores de cada factor común.</p>
+          <p>Por ejemplo, para 8, 12 y 18:</p>
+          <math-display>\[8=2^3,\qquad 12=2^2\cdot3,\qquad 18=2\cdot3^2.\]</math-display>
+          <p>Tomando los exponentes menores de cada factor común:</p>
+          <math-display>\[\operatorname{MCD}(8,12,18)=2^1=2.\]</math-display>
+          <p>Así, el MCD de 8, 12 y 18 es 2.</p>
+        </sub-sub-section>
+
+        <!--Usos del máximo común divisor (MCD) y del mínimo común múltiplo (MCM) -->
+        <sub-sub-section id="usos-del-mcd-y-del-mcm" data-title="Usos del MCD y del MCM">
+          <p>Como se mencionó anteriormente, el MCM de dos números puede calcularse usando el MCD:</p>
+          <math-display>\[\operatorname{MCM}(a,b)=\frac{a\cdot b}{\operatorname{MCD}(a,b)}.\]</math-display>
+          <p>Por ejemplo, para 12 y 18, sabemos que \(\operatorname{MCD}(12,18)=6\), entonces</p>
+          <math-display>\[\operatorname{MCM}(12,18)=\frac{12\cdot 18}{6}=36.\]</math-display>
+          <p>Esta relación es útil para calcular rápidamente el MCM cuando se conoce el MCD.</p>
+
+          <sub-sub-sub-section id="capitulo-01-apartado-06-uso-del-mcm-para-sumar-fracciones" data-title="Uso del MCM para sumar fracciones">
+            <p>Para sumar fracciones con diferente denominador, se puede usar el MCM de los denominadores como denominador común. Por ejemplo:</p>
+            <math-display>\[\frac{1}{4}+\frac{1}{6}=\frac{1\cdot\frac{12}{4}}{12}+\frac{1\cdot\frac{12}{6}}{12}=\frac{3}{12}+\frac{2}{12}=\frac{5}{12}.\]</math-display>
+            <p>En este ejemplo, el MCM de 4 y 6 es 12, que se utiliza como denominador común para realizar la suma de las fracciones.</p>
+            <p>Este método se puede aplicar a cualquier par de fracciones con denominadores distintos, facilitando la suma al encontrar un denominador común mediante el MCM.</p>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="uso-del-mcm-para-restar-fracciones" data-title="Uso del MCM para restar fracciones">
+            <p>De manera similar a la suma, para restar fracciones con diferente denominador, se puede usar el MCM de los denominadores como denominador común. Por ejemplo:</p>
+            <math-display>\[\frac{1}{4}-\frac{1}{6}=\frac{1\cdot\frac{12}{4}}{12}-\frac{1\cdot\frac{12}{6}}{12}=\frac{3}{12}-\frac{2}{12}=\frac{1}{12}.\]</math-display>
+            <p>En este ejemplo, el MCM de 4 y 6 es 12, que se utiliza como denominador común para realizar la resta de las fracciones.</p>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="uso-del-mcm-para-multiplicar-fracciones" data-title="Uso del MCM para multiplicar fracciones">
+            <p>Para multiplicar fracciones, no es necesario encontrar un denominador común. Simplemente se multiplican los numeradores entre sí y los denominadores entre sí. Por ejemplo:</p>
+            <math-display>\[\frac{1}{4}\cdot\frac{1}{6}=\frac{1\cdot 1}{4\cdot 6}=\frac{1}{24}.\]</math-display>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="uso-del-mcm-para-dividir-fracciones" data-title="Uso del MCM para dividir fracciones">
+            <p>Para dividir fracciones, se multiplica la primera fracción por el inverso de la segunda. Por ejemplo:</p>
+            <math-display>\[\frac{1}{4}\div\frac{1}{6}=\frac{1}{4}\cdot\frac{6}{1}=\frac{6}{4}=\frac{3}{2}.\]</math-display>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="uso-del-mcd-para-simplificar-fracciones" data-title="Uso del MCD para simplificar fracciones">
+            <p>Para simplificar una fracción, se divide el numerador y el denominador por su máximo común divisor (MCD). Por ejemplo:</p>
+            <math-display>\[\frac{6}{8}=\frac{6\div 2}{8\div 2}=\frac{3}{4}.\]</math-display>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="uso-del-mcd-para-comparar-fracciones" data-title="Uso del MCD para comparar fracciones">
+            <p>Para comparar fracciones, se puede simplificar cada fracción utilizando su MCD y luego comparar los numeradores si los denominadores son iguales. Por ejemplo:</p>
+            <math-display>\[\frac{6}{8} \text{ y } \frac{3}{4} \implies \frac{6\div 2}{8\div 2} = \frac{3}{4}.\]</math-display>
+            <p>Después de simplificar, ambas fracciones son iguales.</p>
+          </sub-sub-sub-section>
+
+        </sub-sub-section>
+
+      </sub-section>
+
+      <!--  - Fracciones, decimales y porcentajes-->
+      <sub-section id="fracciones-decimales-y-porcentajes" data-title="Fracciones, decimales y porcentajes">
+        <p>En esta sección se estudian las fracciones, los números decimales y los porcentajes, así como sus relaciones y operaciones.</p>
+
+        <!--- **21. Valor posicional de décimos, centésimos y milésimos**-->
+        <sub-sub-section id="valor-posicional-de-decimos-centesimos-y-milesimos" data-title="Valor posicional de décimos, centésimos y milésimos">
+          <p>El valor posicional de los números decimales se determina por la posición de cada cifra respecto al punto decimal:</p>
+          <p>Por ejemplo, en el número \(0.123\), el 1 está en la posición de los décimos, el 2 en la de los centésimos y el 3 en la de los milésimos:</p>
+          <p>\(0.123\) se puede descomponer como la suma de cada cifra multiplicada por su valor posicional:</p>
+          <p>\(0.123 = 0.1 + 0.02 + 0.003\)</p>
+          <p>Esto muestra cómo cada cifra contribuye al valor total del número decimal según su posición.</p>
+          <p>En términos de fracciones, cada cifra decimal representa una fracción cuyo denominador es una potencia de 10 correspondiente a su posición:</p>
+          <p>\(0.1 = \frac{1}{10}, \quad 0.02 = \frac{2}{100}, \quad 0.003 = \frac{3}{1000}\)</p>
+        </sub-sub-section>
+
+        <!--- **22. Comparación y orden de números decimales** -->
+        <sub-sub-section id="comparacion-y-orden-de-numeros-decimales" data-title="Comparación y orden de números decimales">
+          <p>Para comparar números decimales, se comparan las cifras de izquierda a derecha, comenzando por la parte entera y luego la parte decimal:</p>
+          <p>Por ejemplo, para comparar \(0.45\) y \(0.5\), se observa que \(0 \lt 0\) en la parte entera, luego se comparan las décimas: \(4 \lt 5\), por lo que \(0.45 \lt 0.5\).</p>
+          <p>Para ordenar varios números decimales, se pueden colocar en una línea y compararlos de manera sucesiva, de menor a mayor o de mayor a menor según se requiera.</p>
+
+          <math-figure id="comparacion-numeros-decimales" data-title="Comparación de números decimales">
+            <math-display>\[0.45 \lt 0.5\]</math-display>
+            <svg>
+              <line x1="0" y1="10" x2="100" y2="10" stroke="black" />
+              <circle cx="45" cy="10" r="3" fill="red" />
+              <circle cx="50" cy="10" r="3" fill="blue" />
+            </svg>
+          </math-figure>
+        </sub-sub-section>
+
+        <!--- **23. Suma y resta de números decimales**-->
+        <sub-sub-section id="suma-y-resta-de-numeros-decimales" data-title="Suma y resta de números decimales">
+          <p>Para sumar o restar números decimales, se alinean las cifras según la posición decimal y se procede como con los números enteros:</p>
+          <p>Ejemplo de suma:</p>
+          <math-display>\[0.45 + 0.5 = 0.95\]</math-display>
+          <p>Ejemplo de resta:</p>
+          <math-display>\[0.5 - 0.45 = 0.05\]</math-display>
+
+          <p>El procedimiento desglosado para hacerlo es el siguiente:</p>
+          <math-display>
+            
+            \(0.45 + 0.5 = 0.45 + 0.50 = 0.95\)
+            $$
+            \begin{array}{r}
+              45.70 \\
+            + \phantom{00}8.34 \\
+              123.09 \\
+            \hline
+              177.13
+            \end{array}
+            $$
+          </math-display>
+          <math-display>
+            $$\begin{array}{r}
+              84.20 \\
+            - 19.65 \\
+            \hline
+              64.55
+            \end{array}$$
+
+          </math-display>
+        </sub-sub-section>
+
+        <!--- **24. Multiplicación y división de números decimales**-->
+        <sub-sub-section id="multiplicacion-y-division-de-numeros-decimales" data-title="Multiplicación y división de números decimales">
+          <p>Para multiplicar números decimales, se multiplican como enteros y se colocan tantas cifras decimales como la suma de las cifras decimales de los factores.</p>
+          <p>Ejemplo de multiplicación:</p>
+          <math-display>\[0.6 \cdot 0.3 = 0.18\]</math-display>
+          <p>El procedimiento desglosado para la multiplicación es el siguiente:</p>
+          <math-display>
+            \[
+            0.6 \cdot 0.3 = 0.6 \cdot 0.3 = 0.18
+            \]
+          </math-display>
+
+          <p>También podemos aplicar el algoritmo de los renglones para la multiplicación de números decimales:</p>
+          <math-display>
+            $$
+            \begin{array}{r}
+              0.6 \\
+            \cdot 0.3 \\
+            \hline
+              18 \\
+            \end{array}
+            $$
+          </math-display>
+
+
+
+          <p>Para dividir números decimales, se puede multiplicar el dividendo y el divisor por la misma potencia de 10 para eliminar los decimales del divisor y luego dividir como enteros.</p>
+          <p>Ejemplo de división:</p>
+          <math-display>\[0.6 \div 0.3 = 2\]</math-display>
+          <p>El procedimiento desglosado para la división es el siguiente:</p>
+          <math-display>
+            \[
+            0.6 \div 0.3 = 0.6 \div 0.3 = 2
+            \]
+          </math-display>
+          <p>También podemos aplicar el algoritmo de la casita para la división de números decimales:</p>
+          <math-display>
+            $$
+            \begin{array}{r}
+              0.6 \,\big|\,0.3 \\
+            \hline
+              2 \\
+            \end{array}
+            $$
+          </math-display>
+          <p>Otro ejemplo más complejo de división de números decimales es el siguiente:</p>
+          <math-display>
+            $$
+            \begin{array}{r}
+              1.2 \,\big|\,0.4 \\
+            \hline
+              3 \\
+            \end{array}
+            $$
+          </math-display>
+          <p>En este ejemplo, multiplicamos el dividendo y el divisor por 10 para eliminar el decimal en el divisor y luego aplicamos el algoritmo de la casita.</p>
+
+          <p>Y para la división con tres cifras decimales, el procedimiento es similar: multiplicamos el dividendo y el divisor por la misma potencia de 10 para eliminar los decimales del divisor y luego aplicamos el algoritmo de la casita.</p>
+          <p>Por ejemplo, para dividir \(0.123\) entre \(0.004\), multiplicamos ambos por 1000 y luego aplicamos el algoritmo de la casita:</p>
+          <!--Desglosar el procedimiento paso a paso para la división de 0.123 entre 0.004:
+               1. Multiplicamos el dividendo y el divisor por 1000 para eliminar los decimales del divisor:
+                  0.123 * 1000 = 123
+                  0.004 * 1000 = 4
+               2. Aplicamos el algoritmo de la casita con los números enteros resultantes:
+                  123 ÷ 4 = 30.75
+               3. Por lo tanto, 0.123 ÷ 0.004 = 30.75
+          -->
+          <math-display>
+            $$
+            \begin{array}{r}
+              123 \,\big|\,4 \\
+            \hline
+              30.75 \\
+            \end{array}
+            $$
+          </math-display>
+
+        </sub-sub-section>
+
+        <!--- **25. Fracciones como parte de un todo, cociente y medida**-->
+        <sub-sub-section id="capitulo-02-apartado-25-fracciones-como-parte-de-un-todo" data-title="Fracciones como parte de un todo, cociente y medida">
+          <p>Una fracción puede representar una parte de un todo, un cociente o una medida:</p>
+          <p>Por ejemplo, \(\frac{1}{2}\) representa la mitad de un objeto o cantidad.</p>
+          <p>Como cociente, \(\frac{1}{2}\) significa \(1 \div 2 = 0.5\).</p>
+          <p>Como medida, \(\frac{1}{2}\) puede indicar que se ha tomado la mitad de una cantidad total.</p>
+          <p>En resumen, las fracciones son una herramienta versátil que nos permite representar partes de un todo, realizar divisiones y expresar medidas de manera precisa.</p>
+          <p>Por lo tanto, comprender las fracciones en sus diferentes interpretaciones nos ayuda a aplicarlas correctamente en distintos contextos matemáticos y de la vida cotidiana.</p>
+          <p>Con denominadores diferentes a \(2\) funciona de forma similar: se puede interpretar como parte de un todo, como cociente o como medida, dependiendo del contexto.</p>
+          <p>Por ejemplo, \(\frac{3}{4}\) representa tres cuartas partes de un todo, como cociente \(3 \div 4 = 0.75\) y como medida puede indicar que se ha tomado tres cuartas partes de una cantidad total.</p>
+
+          <p>También se puede ver como un pastel: si dividimos un pastel en 4 partes iguales, tomar 3 de esas partes representa \(\frac{3}{4}\) del pastel.</p>
+          <math-figure>
+            <math-display>
+              \frac{3}{4}
+            </math-display>
+            <p>Representación de \(\frac{3}{4}\) como parte de un pastel.</p>
+
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="50" fill="#f2c94c"/>
+              <path d="M50 50 L50 0 A50 50 0 0 1 100 50 Z" fill="#eb5757"/>
+              <path d="M50 50 L50 100 A50 50 0 0 1 0 50 Z" fill="#eb5757"/>
+              <path d="M50 50 L0 50 A50 50 0 0 1 50 0 Z" fill="#eb5757"/>
+              <path d="M50 50 L50 0 A50 50 0 0 1 0 50 Z" fill="#eb5757"/>
+              <path d="M50 50 L100 50 A50 50 0 0 1 50 100 Z" fill="#eb5757"/>
+            </svg>
+          </math-figure>
+        </sub-sub-section>
+
+        <!--- **26. Comparación de fracciones**-->
+        <sub-sub-section id="capitulo-02-apartado-26-comparacion-de-fracciones" data-title="Comparación de fracciones">
+          <p>Para comparar fracciones, se pueden usar varios métodos, como el denominador común o la conversión a decimales.</p>
+          <p>Por ejemplo, para comparar \(\frac{3}{4}\) y \(\frac{2}{3}\), se puede usar el denominador común 12:</p>
+          <math-display>
+            $$
+            \frac{3}{4} = \frac{9}{12}, \quad \frac{2}{3} = \frac{8}{12}
+            $$
+          </math-display>
+          <p>Como \(9/12 \gt 8/12\), se concluye que \(\frac{3}{4} \gt \frac{2}{3}\).</p>
+
+          <p>Veamos más ejemplos</p>
+          <p>Comparar \(\frac{5}{6}\) y \(\frac{7}{8}\) usando el denominador común 24:</p>
+          <math-display>
+            $$
+            \frac{5}{6} = \frac{20}{24}, \quad \frac{7}{8} = \frac{21}{24}
+            $$
+          </math-display>
+          <p>Como \(20/24 \lt 21/24\), se concluye que \(\frac{5}{6} \lt \frac{7}{8}\).</p>
+        </sub-sub-section>
+
+
+
+      </sub-section>
+
+      <!--- Fracciones equivalentes y simplificación-->
+      <sub-section id="capitulo-02-apartado-27-fracciones-equivalentes-y-simplificacion" data-title="Fracciones equivalentes y simplificación">
+        
+        <!--- **27. Representación de fracciones equivalentes con modelos**-->
+        <sub-sub-section id="capitulo-02-apartado-27-1-representacion-de-fracciones-equivalentes-con-modelos" data-title="Representación de fracciones equivalentes con modelos">
+          <p>Dos fracciones son equivalentes si representan la misma cantidad, aunque tengan numeradores y denominadores diferentes.</p>
+          <p>Por ejemplo, \(\frac{1}{2}\) y \(\frac{2}{4}\) son fracciones equivalentes:</p>
+          <math-display>
+            $$
+            \frac{1}{2} = \frac{2}{4}
+            $$
+          </math-display>
+
+          <math-definition data-title="Definición conceptual">
+
+            <p>Dos fracciones \(\frac{a}{b}\) y \(\frac{c}{d}\) son equivalentes si \(ad = bc\).</p>
+          </math-definition>
+
+          <math-examples>
+            <math-example id="c2-s27-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Comprueba si \(\frac{3}{4}\) y \(\frac{6}{8}\) son equivalentes.</p>
+              <p>Multiplicamos cruzado: \(3 \cdot 8 = 24\) y \(4 \cdot 6 = 24\).</p>
+              <p>Como \(24 = 24\), las fracciones son equivalentes.</p>
+            </math-example>
+            <math-example id="c2-s27-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Comprueba si \(\frac{2}{3}\) y \(\frac{4}{6}\) son equivalentes.</p>
+              <p>Multiplicamos cruzado: \(2 \cdot 6 = 12\) y \(3 \cdot 4 = 12\).</p>
+              <p>Como \(12 = 12\), las fracciones son equivalentes.</p>
+            </math-example>
+          </math-examples>
+          <math-remark data-title="Observación">
+            <p>Si dos fracciones son equivalentes, se puede simplificar una fracción multiplicando o dividiendo el numerador y el denominador por el mismo número distinto de cero.</p>
+          </math-remark>
+        </sub-sub-section>
+
+        <!--- **28. Suma y resta de fracciones con igual denominador**  -->
+        <sub-sub-section id="capitulo-02-apartado-28-suma-y-resta-de-fracciones-con-igual-denominador" data-title="Suma y resta de fracciones con igual denominador">
+          <p>Para sumar o restar fracciones con igual denominador, se suman o restan los numeradores y se mantiene el mismo denominador:</p>
+          <math-display>
+            $$
+            \frac{a}{b} + \frac{c}{b} = \frac{a+c}{b},\qquad
+            \frac{a}{b} - \frac{c}{b} = \frac{a-c}{b}
+            $$
+          </math-display>
+
+          <math-examples id="capitulo-02-apartado-28-ejemplos" data-title="Ejemplos resueltos">
+            <math-example id="c2-s28-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Calcula \(\frac{3}{7} + \frac{2}{7}\).</p>
+              <p>Sumamos los numeradores y mantenemos el denominador:</p>
+              <math-display>
+                $$
+                \frac{3}{7} + \frac{2}{7} = \frac{3+2}{7} = \frac{5}{7}
+                $$
+              </math-display>
+            </math-example>
+            <math-example id="c2-s28-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Calcula \(\frac{5}{9} - \frac{2}{9}\).</p>
+              <p>Restamos los numeradores y mantenemos el denominador:</p>
+              <math-display>
+                $$
+                \frac{5}{9} - \frac{2}{9} = \frac{5-2}{9} = \frac{3}{9}
+                $$
+              </math-display>
+            </math-example>
+          </math-examples>
+
+          <math-exercises id="capitulo-02-apartado-28-ejercicios" data-title="Ejercicios">
+            <math-exercise id="c2-s28-ejercicio-1" data-title="Ejercicio">
+              <p>Calcula \(\frac{4}{7} + \frac{3}{7}\).</p>
+            </math-exercise>
+            <math-exercise id="c2-s28-ejercicio-2" data-title="Ejercicio">
+              <p>Calcula \(\frac{6}{9} - \frac{2}{9}\).</p>
+            </math-exercise>
+          </math-exercises>
+        </sub-sub-section>
+
+        <!--- **29. Suma y resta de fracciones con distinto denominador**  -->
+        <sub-sub-section id="capitulo-02-apartado-29-suma-y-resta-de-fracciones-con-distinto-denominador" data-title="Suma y resta de fracciones con distinto denominador">
+          <p>Para sumar o restar fracciones con distinto denominador, se busca un denominador común y se ajustan los numeradores:</p>
+          <math-display>
+            $$
+            \frac{a}{b} + \frac{c}{d} = \frac{ad+bc}{bd},\qquad
+            \frac{a}{b} - \frac{c}{d} = \frac{ad-bc}{bd}
+            $$
+          </math-display>
+          <math-exercises id="capitulo-02-apartado-29-ejercicios" data-title="Ejercicios">
+            <math-exercise id="c2-s29-ejercicio-1" data-title="Ejercicio">
+              <p>Calcula \(\frac{3}{4} + \frac{2}{5}\).</p>
+            </math-exercise>
+            <math-exercise id="c2-s29-ejercicio-2" data-title="Ejercicio">
+              <p>Calcula \(\frac{7}{8} - \frac{1}{3}\).</p>
+            </math-exercise>
+          </math-exercises>
+          <math-examples id="capitulo-02-apartado-29-ejemplos" data-title="Ejemplos resueltos">
+            <math-example id="c2-s29-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Calcula \(\frac{2}{3} + \frac{1}{4}\).</p>
+              <p>El denominador común es 12:</p>
+              <math-display>
+                $$
+                \frac{2}{3} + \frac{1}{4} = \frac{8}{12} + \frac{3}{12} = \frac{11}{12}
+                $$
+              </math-display>
+            </math-example>
+            <math-example id="c2-s29-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Calcula \(\frac{5}{6} - \frac{1}{4}\).</p>
+              <p>El denominador común es 12:</p>
+              <math-display>
+                $$
+                \frac{5}{6} - \frac{1}{4} = \frac{10}{12} - \frac{3}{12} = \frac{7}{12}
+                $$
+              </math-display>
+            </math-example>
+          </math-examples>
+          <math-remark data-title="Advertencia">
+            <p>No olvides buscar un denominador común antes de sumar o restar fracciones con distinto denominador.</p>
+          </math-remark>
+          <math-remark data-title="Consejo">
+            <p>Si es posible, simplifica las fracciones resultantes a su mínima expresión.</p>
+            <p>Recuerda que una fracción está en su mínima expresión cuando el numerador y el denominador no tienen ningún factor común aparte de 1.</p>
+          </math-remark>
+        </sub-sub-section>
+
+        <!--¿Cómo simplificar fracciones?-->
+        <sub-sub-section id="capitulo-02-apartado-30-simplificar-fracciones" data-title="Simplificar fracciones">
+          <p>Para simplificar una fracción, se divide el numerador y el denominador por su máximo común divisor (MCD).</p>
+          <math-examples>
+            <math-example id="c2-s30-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Simplifica \(\frac{8}{12}\).</p>
+              <p>El MCD de 8 y 12 es 4:</p>
+              <math-display>
+                $$
+                \frac{8}{12} = \frac{8\div4}{12\div4} = \frac{2}{3}
+                $$
+              </math-display>
+            </math-example>
+            <math-example id="c2-s30-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Simplifica \(\frac{15}{25}\).</p>
+              <p>El MCD de 15 y 25 es 5:</p>
+              <math-display>
+                $$
+                \frac{15}{25} = \frac{15\div5}{25\div5} = \frac{3}{5}
+                $$
+              </math-display>
+            </math-example>
+
+            
+          </math-examples>
+          <p>Explicado de forma más extensa, se puede decir que simplificar una fracción consiste en encontrar el mayor número que divide tanto al numerador como al denominador y dividir ambos por ese número, que es el máximo común divisor (MCD).</p>
+          <p>Por ejemplo, para simplificar \(\frac{18}{24}\), se busca el MCD de 18 y 24, que es 6, y se divide numerador y denominador por 6:</p>
+          <math-display>
+            $$
+            \frac{18}{24} = \frac{18\div6}{24\div6} = \frac{3}{4}
+            $$
+          </math-display>
+        </sub-sub-section>
+        
+        <!--- **30. Multiplicación de fracciones**-->
+        <sub-sub-section id="capitulo-02-apartado-31-multiplicacion-fracciones" data-title="Multiplicación de fracciones">
+          <p>Para multiplicar fracciones, se multiplican los numeradores entre sí y los denominadores entre sí:</p>
+          <math-display>
+            $$
+            \frac{a}{b}\cdot\frac{c}{d} = \frac{ac}{bd}
+            $$
+          </math-display>
+
+          <p>Por ejemplo, para multiplicar \(\frac{2}{3}\) por \(\frac{4}{5}\), se multiplican los numeradores y los denominadores:</p>
+          <math-display>
+            $$
+            \frac{2}{3}\cdot\frac{4}{5} = \frac{2\cdot4}{3\cdot5} = \frac{8}{15}
+            $$
+          </math-display>
+        </sub-sub-section>
+
+        <!-- **30. División de fracciones**-->
+        <sub-sub-section id="capitulo-02-apartado-32-division-fracciones" data-title="División de fracciones">
+          <p>Para dividir fracciones, se multiplica la primera fracción por el inverso de la segunda:</p>
+          <math-display>
+            $$
+            \frac{a}{b}\div\frac{c}{d} = \frac{a}{b}\cdot\frac{d}{c} = \frac{ad}{bc}
+            $$
+          </math-display>
+          <p>Por ejemplo, para dividir \(\frac{2}{3}\) entre \(\frac{4}{5}\), se multiplica por el inverso de la segunda fracción:</p>
+          <math-display>
+            $$
+            \frac{2}{3}\div\frac{4}{5} = \frac{2}{3}\cdot\frac{5}{4} = \frac{10}{12} = \frac{5}{6}
+            $$
+          </math-display>
+
+          <p>A esta regla también se le llama la ley del sándwich o ley del inverso.</p>
+
+          <math-display id="ley-del-sandwich" data-title="Ley del sándwich">
+            $$
+            \frac{a}{b}\div\frac{c}{d} = \frac{a}{b}\cdot\frac{d}{c}
+            $$
+          </math-display>
+        </sub-sub-section>
+
+        <!--- **31. Conversión entre fracciones, decimales y porcentajes**-->
+        <sub-sub-section id="capitulo-02-apartado-33-conversion-fracciones-decimales-porcentajes" data-title="Conversión entre fracciones, decimales y porcentajes">
+          <p>Para convertir una fracción a decimal, se divide el numerador entre el denominador.</p>
+          <p> Para convertir un decimal a porcentaje, se multiplica por 100 y se añade el símbolo \(\%\).</p>
+          <p>Por ejemplo:</p>
+          <math-display>
+            $$
+            \frac{3}{4} = 0.75 = 75\%
+            $$
+          </math-display>
+
+          <math-examples id="capitulo-02-apartado-33-ejemplos" data-title="Ejemplos de conversión entre fracciones, decimales y porcentajes">
+            <math-example id="c2-s33-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Convierte \(\frac{2}{5}\) a decimal y porcentaje.</p>
+              <math-display>
+                $$
+                \frac{2}{5} = 0.4 = 40\%
+                $$
+              </math-display>
+            </math-example>
+            <math-example id="c2-s33-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Convierte \(0.6\) a fracción y porcentaje.</p>
+              <math-display>
+                $$
+                0.6 = \frac{3}{5} = 60\%
+                $$
+              </math-display>
+            </math-example>
+          </math-examples>
+        </sub-sub-section>
+
+        <!--- **32. Comparación de fracciones**-->
+        <sub-sub-section id="capitulo-02-apartado-34-comparacion-fracciones" data-title="Comparación de fracciones">
+          <p>Para comparar fracciones con distinto denominador, se puede usar un denominador común o convertirlas a decimales.</p>
+          <p>Por ejemplo:</p>
+          <math-display>
+            $$
+            \frac{3}{4} \quad ? \quad \frac{2}{3}
+            $$
+          </math-display>
+          <p>Usando un denominador común (12):</p>
+          <math-display>
+            $$
+            \frac{3}{4} = \frac{9}{12},\quad \frac{2}{3} = \frac{8}{12},\quad \frac{9}{12} > \frac{8}{12}
+            $$
+          </math-display>
+        </sub-sub-section>
+
+        <!--- **Comparación de decimales**-->
+        <sub-sub-section id="capitulo-02-apartado-35-comparacion-decimales" data-title="Comparación de decimales">
+          <p>Para comparar decimales, se alinean los puntos decimales y se comparan dígito a dígito.</p>
+          <p>Por ejemplo:</p>
+          <math-display>
+            $$
+            0.75 \quad ? \quad 0.8
+            $$
+          </math-display>
+          <p>Comparando dígito a dígito:</p>
+          <math-display>
+            $$
+            0.75 \lt 0.8
+            $$
+          </math-display>
+        </sub-sub-section>
+
+        <!--- **Cálculo de un porcentaje de una cantidad**-->
+        <sub-sub-section id="capitulo-02-apartado-36-calculo-porcentaje" data-title="Cálculo de un porcentaje de una cantidad">
+          <p>Para calcular un porcentaje de una cantidad, multiplica la cantidad por el porcentaje expresado como fracción o decimal.</p>
+          <p>Por ejemplo, calcula el \(20\%\) de 50:</p>
+          <math-display>
+            $$
+            50 \cdot 0.2 = 10
+            $$
+          </math-display>
+
+          <math-examples data-title="Ejemplos de cálculo de porcentaje">
+            <math-example id="c2-s1-ejemplo-3" data-title="Ejemplo resuelto">
+              <p>Calcula el \(20\%\) de 50.</p>
+              <math-display>
+                $$
+                50 \cdot 0.2 = 10
+                $$
+              </math-display>
+            </math-example>
+          </math-examples>
+        </sub-sub-section>
+
+        <!--- **Cálculo del porcentaje a partir de la cantidad y el total**-->
+        <sub-sub-section id="capitulo-02-apartado-37-porcentaje-cantidad-total" data-title="Cálculo del porcentaje a partir de la cantidad y el total">
+          <p>Para calcular el porcentaje que representa una cantidad respecto a un total, divide la cantidad entre el total y multiplica por 100.</p>
+          <p>Por ejemplo, ¿qué porcentaje es 15 de 60?</p>
+          <math-display>
+            $$
+            \frac{15}{60} \cdot 100 = 25\%
+            $$
+          </math-display>
+        </sub-sub-section>
+        
+        <!--- **33. Razones unitarias y tablas de proporcionalidad**-->
+        <sub-sub-section id="capitulo-02-apartado-38-razones-unitarias" data-title="Razones unitarias y tablas de proporcionalidad">
+          <p>Una razón unitaria compara una cantidad con una unidad de otra cantidad. Las tablas de proporcionalidad permiten encontrar valores correspondientes de manera proporcional.</p>
+          <p>Por ejemplo, si 3 manzanas cuestan 6 unidades monetarias, el precio unitario es:</p>
+          <math-display>
+            $$
+            \frac{6}{3} = 2
+            $$
+          </math-display>
+
+          <math-examples data-title="Ejemplos de razones unitarias">
+            <math-example id="c2-s1-ejemplo-4" data-title="Ejemplo resuelto">
+              <p>Calcula el precio unitario de 3 manzanas que cuestan 6 unidades monetarias.</p>
+              <math-display>
+                $$
+                \frac{6}{3} = 2
+                $$
+              </math-display>
+            </math-example>
+            <math-example id="c2-s1-ejemplo-5" data-title="Ejemplo resuelto">
+              <p>Si 5 litros de jugo cuestan 20 unidades monetarias, ¿cuál es el precio unitario por litro?</p>
+              <math-display>
+                $$
+                \frac{20}{5} = 4
+                $$
+              </math-display>
+            </math-example>
+          </math-examples>
+
+          <math-excersices data-title="Ejercicios de razones unitarias">
+            <math-exercise id="c2-s1-ejercicio-1" data-title="Ejercicio">
+              <p>Calcula el precio unitario de 4 manzanas que cuestan 8 unidades monetarias.</p>
+            </math-exercise>
+            <math-exercise id="c2-s1-ejercicio-2" data-title="Ejercicio">
+              <p>Si 6 litros de jugo cuestan 18 unidades monetarias, ¿cuál es el precio unitario por litro?</p>
+            </math-exercise>
+          </math-excersices>
+        </sub-sub-section>
+
+        <!--Regla de tres-->
+        <sub-sub-section id="capitulo-02-apartado-39-regla-de-tres" data-title="Regla de tres">
+          <p>La regla de tres permite resolver problemas de proporcionalidad directa. Si \(a\) se relaciona con \(b\) y \(c\) se relaciona con \(x\), entonces:</p>
+          <math-display>
+            $$
+            \frac{a}{b} = \frac{c}{x} \implies x = \frac{b \cdot c}{a}
+            $$
+          </math-display>
+          <p>Por ejemplo, si 3 manzanas cuestan 6 unidades monetarias y queremos saber cuánto cuestan 5 manzanas, aplicamos la regla de tres:</p>
+          <math-display>
+            $$
+            \frac{3}{6} = \frac{5}{x} \implies x = \frac{6 \cdot 5}{3} = 10
+            $$
+          </math-display>
+
+          <p>También se puede ver de forma visual:</p>
+
+          <math-figure data-title="Visualización de la regla de tres">
+            <svg viewBox="0 0 560 220" width="100%" style="max-width: 560px; font-family: sans-serif;" xmlns="http://w3.org">
+              <!-- Definición de puntas de flecha -->
+              <defs>
+                <marker id="flecha-azul" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
+                </marker>
+                <marker id="flecha-roja" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#dc2626" />
+                </marker>
+              </defs>
+
+              <!-- Fondo suave opcional -->
+              <rect x="5" y="5" width="550" height="210" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+
+              <!-- Flecha 1: Multiplicación cruzada (B -> C) -->
+              <line x1="95" y1="150" x2="185" y2="70" stroke="#2563eb" stroke-width="2.5" marker-end="url(#flecha-azul)" />
+              <text x="115" y="95" fill="#2563eb" font-size="13" font-weight="bold">1. Multiplica</text>
+
+              <!-- Flecha 2: División (C -> A) -->
+              <line x1="185" y1="55" x2="95" y2="55" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="5,4" marker-end="url(#flecha-roja)" />
+              <text x="115" y="42" fill="#dc2626" font-size="13" font-weight="bold">2. Divide</text>
+
+              <!-- Guiones de relación horizontal -->
+              <line x1="85" y1="60" x2="195" y2="60" stroke="#94a3b8" stroke-width="1" opacity="0.4"/>
+              <line x1="85" y1="155" x2="195" y2="155" stroke="#94a3b8" stroke-width="1" opacity="0.4"/>
+
+              <!-- Nodos con MathJax (foreignObject) -->
+              <!-- Variable A -->
+              <foreignObject x="35" y="38" width="55" height="45">
+                <div xmlns="http://w3.org" style="font-size: 20px; text-align: center; color: #dc2626;">
+                  \( A \)
+                </div>
+              </foreignObject>
+
+              <!-- Variable C -->
+              <foreignObject x="190" y="38" width="55" height="45">
+                <div xmlns="http://w3.org" style="font-size: 20px; text-align: center; color: #2563eb;">
+                  \( C \)
+                </div>
+              </foreignObject>
+
+              <!-- Variable B -->
+              <foreignObject x="35" y="135" width="55" height="45">
+                <div xmlns="http://w3.org" style="font-size: 20px; text-align: center; color: #2563eb;">
+                  \( B \)
+                </div>
+              </foreignObject>
+
+              <!-- Incógnita X -->
+              <foreignObject x="190" y="135" width="55" height="45">
+                <div xmlns="http://w3.org" style="font-size: 20px; text-align: center; font-weight: bold; color: #0f172a;">
+                  \( x \)
+                </div>
+              </foreignObject>
+
+              <!-- Línea divisoria vertical -->
+              <line x1="275" y1="25" x2="275" y2="195" stroke="#cbd5e1" stroke-width="1.5" />
+
+              <!-- Fórmula resultante en MathJax -->
+              <foreignObject x="290" y="55" width="250" height="110">
+                <div xmlns="http://w3.org" style="font-size: 22px; text-align: center; color: #1e293b;">
+                  \[ x = \frac{\color{#2563eb}{B \cdot C}}{\color{#dc2626}{A}} \]
+                </div>
+              </foreignObject>
+            </svg>
+
+          </math-figure>
+
+          <math-excersices data-title="Ejercicios de regla de tres">
+            <math-exercise id="c2-s1-ejercicio-3" data-title="Ejercicio">
+              <p>Si 4 manzanas cuestan 8 unidades monetarias, ¿cuánto cuestan 7 manzanas?</p>
+            </math-exercise>
+            <math-exercise id="c2-s1-ejercicio-4" data-title="Ejercicio">
+              <p>Si 3 litros de jugo cuestan 9 unidades monetarias, ¿cuál es el precio de 5 litros?</p>
+            </math-exercise>
+          </math-excersices>
+
+
+          <math-remark data-title="Observación">
+            <p>Recuerda que la regla de tres solo se aplica a situaciones de proporcionalidad directa.</p>
+          </math-remark>
+        </sub-sub-section>
+
+        <!--- **34. Resolución de problemas de regla de tres**-->
+        <sub-sub-section id="capitulo-02-apartado-02-regla-de-tres" data-title="Resolución de problemas de regla de tres">
+          <math-examples data-title="Ejemplos resueltos de regla de tres">
+            <math-example id="c2-s2-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Si 4 manzanas cuestan 8 unidades monetarias, ¿cuánto cuestan 7 manzanas?</p>
+              <p>Planteamos la regla de tres:</p>
+              <math-display>\[
+              4 \text{ manzanas} \rightarrow 8 \text{ unidades}
+              \\
+              7 \text{ manzanas} \rightarrow x
+              \]</math-display>
+              <p>Resolviendo:</p>
+              <math-display>\[
+              x = \frac{7 \cdot 8}{4} = 14
+              \]</math-display>
+            </math-example>
+            <math-example id="c2-s2-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Si 3 litros de jugo cuestan 9 unidades monetarias, ¿cuál es el precio de 5 litros?</p>
+              <p>Planteamos la regla de tres:</p>
+              <math-display>\[
+              3 \text{ litros} \rightarrow 9 \text{ unidades}
+              \\
+              5 \text{ litros} \rightarrow x
+              \]</math-display>
+              <p>Resolviendo:</p>
+              <math-display>\[
+              x = \frac{5 \cdot 9}{3} = 15
+              \]</math-display>
+            </math-example>
+            <math-example id="c2-s2-ejemplo-3" data-title="Ejemplo resuelto">
+              <p>Si 6 lápices cuestan 12 unidades monetarias, ¿cuánto cuestan 10 lápices?</p>
+              <p>Planteamos la regla de tres:</p>
+              <math-display>\[
+              6 \text{ lápices} \rightarrow 12 \text{ unidades}
+              \\
+              10 \text{ lápices} \rightarrow x
+              \]</math-display>
+              <p>Resolviendo:</p>
+              <math-display>\[
+              x = \frac{10 \cdot 12}{6} = 20
+              \]</math-display>
+            </math-example>
+            <math-example id="c2-s2-ejemplo-4" data-title="Ejemplo resuelto">
+              <p>Si 8 libros cuestan 32 unidades monetarias, ¿cuánto cuestan 5 libros?</p>
+              <p>Planteamos la regla de tres:</p>
+              <math-display>\[
+              8 \text{ libros} \rightarrow 32 \text{ unidades}
+              \\
+              5 \text{ libros} \rightarrow x
+              \]</math-display>
+              <p>Resolviendo:</p>
+              <math-display>\[
+              x = \frac{5 \cdot 32}{8} = 20
+              \]</math-display>
+            </math-example>
+            <math-example id="c2-s2-ejemplo-5" data-title="Ejemplo resuelto">
+              <p>Si 12 galletas cuestan 18 unidades monetarias, ¿cuánto cuestan 8 galletas?</p>
+              <p>Planteamos la regla de tres:</p>
+              <math-display>\[
+              12 \text{ galletas} \rightarrow 18 \text{ unidades}
+              \\
+              8 \text{ galletas} \rightarrow x
+              \]</math-display>
+              <p>Resolviendo:</p>
+              <math-display>\[
+              x = \frac{8 \cdot 18}{12} = 12
+              \]</math-display>
+            </math-example>
+          </math-examples>
+        </sub-sub-section>
+      </sub-section>
+
+      <!--Medición y geometría plana-->
+      <sub-section id="capitulo-03-medicion-y-geometria-plana" data-title="Medición y geometría plana">
+      
       </sub-section>
 
     </section>
@@ -754,52 +1855,8 @@ TEMARIO:
     <sub-section id="capitulo-01-aritm-tica-los-n-meros-y-sus-problemas" data-title="Aritmética: los números y sus problemas">
       
       
-      <sub-sub-section id="capitulo-01-apartado-03-divisibilidad-y-n-meros-primos" data-title="Divisibilidad y números primos">
-        <p>Un número es divisible entre otro si la división da un entero sin residuo.</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Divisor</th>
-              <th>Regla rápida</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Termina en 0, 2, 4, 6 u 8.</td>
-              <td>Es divisible entre 2.</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>La suma de sus cifras es múltiplo de 3.</td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>Termina en 0 o 5.</td>
-            </tr>
-            <tr>
-              <td>9</td>
-              <td>La suma de sus cifras es múltiplo de 9.</td>
-            </tr>
-            <tr>
-              <td>10</td>
-              <td>Termina en 0.</td>
-            </tr>
-          </tbody>
-        </table>
-        <p>Un número primo tiene exactamente dos divisores positivos:
-	1 y él mismo. El 1 no es primo.</p>
-      </sub-sub-section>
-
-      <sub-sub-section id="capitulo-01-apartado-04-m-nimo-com-n-m-ltiplo-y-m-ximo-com-n-divisor" data-title="Mínimo común múltiplo y máximo común divisor">
-        <p>El MCM es el menor múltiplo positivo común.
-	El MCD es el mayor divisor positivo común.</p>
-        <p>Ejemplo: para 12 y 18,</p>
-        <math-display>\[12=2^2\cdot3,\qquad 18=2\cdot3^2.\]</math-display>
-        <math-display>\[\operatorname{MCD}(12,18)=2\cdot3=6\]</math-display>
-        <math-display>\[\operatorname{MCM}(12,18)=2^2\cdot3^2=36.\]</math-display>
-        <p>Para el MCD se toman los exponentes menores; para el MCM,
-	los mayores.</p>
-      </sub-sub-section>
+      
+     
     </sub-section>
     <sub-section id="capitulo-02-fracciones-decimales-y-porcentajes" data-title="Fracciones, decimales y porcentajes">
       <sub-sub-section id="capitulo-02-apartado-01-fracciones" data-title="Fracciones">
