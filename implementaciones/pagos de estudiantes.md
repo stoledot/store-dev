@@ -15,8 +15,50 @@ Para manejar reglas de cobro recurrente, acumulación de adeudos y bajas automá
 
 ## 2. Esquema Completo de Base de Datos (SQLite / D1)
 
+## Tabla de Alumnos: 
+Un cliente puede registrar a varios alumnos
+```sql
+CREATE TABLE alumnos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    apellido TEXT NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
+    genero TEXT, -- 'M' o 'F' u otro valor según corresponda
+    email TEXT UNIQUE NOT NULL,
+    telefono TEXT,
+    whatsapp TEXT,
+    customer_id INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_alumnos_email ON alumnos(email);
+CREATE INDEX idx_alumnos_customer_id ON alumnos(customer_id);
+```
+
+
+# Guía Completa de Arquitectura en Cloudflare D1 (SQLite): Cobros, Bajas y Control de Clases
+
+Este documento consolida el esquema de base de datos, las reglas de negocio automatizadas y los controles operativos para administrar subprogramas de aprendizaje, cobros recurrentes con morosidad y asignación exacta de clases por alumno en **Cloudflare D1**.
+
+---
+
+## 1. Arquitectura General
+
+El sistema separa la **configuración** (reglas y catálogos) del **libro mayor transaccional** (inscripciones, cargos individuales y asistencias).
+
+1. **Inscripción continua:** Un alumno se inscribe una sola vez a un subprograma (`inscripciones`). No se reinscribe cada mes.
+2. **Cargos mensuales individuales:** Cada mensualidad genera una fila en `cargos` con sus propias fechas de visibilidad, vencimiento, gracia y cuota de clases.
+3. **Bolsa de clases por periodo:** Cada cargo mensual desbloquea un número exacto de clases (`clases_incluidas`). Cada asistencia las descuenta (`clases_consumidas`), evitando dar sesiones de más o dejar alumnos sin sus clases.
+4. **Automatización diaria:** Un Cloudflare Worker con **Cron Trigger** evalúa vencimientos, acumula atrasos, ejecuta bajas al 4to mes y emite los cobros del siguiente periodo.
+
+---
+
+## 2. Esquema Completo de Base de Datos (D1 / SQLite)
+
 ### A. Tabla `inscripciones`
-Controla la relación entre el alumno y el subprograma, su ciclo de corte, estado operativo y contador de morosidad.
+Controla la relación activa entre el alumno y el subprograma, su ciclo de corte y su estado de morosidad.
 
 ```sql
 CREATE TABLE inscripciones (
@@ -25,83 +67,80 @@ CREATE TABLE inscripciones (
     subprograma_id INTEGER NOT NULL,
     
     -- Control de fechas del ciclo del alumno
-    fecha_inscripcion DATE NOT NULL DEFAULT (date('now')), -- Cuándo se dio de alta
-    fecha_inicio_clases DATE NOT NULL,                     -- Cuándo arranca su primer periodo (clave si cobran por aniversario)
+    fecha_inscripcion DATE NOT NULL DEFAULT (date('now')),
+    fecha_inicio_clases DATE NOT NULL,
     proximo_corte DATE NOT NULL,                           -- Fecha en que inicia su siguiente mensualidad por generar
+    
+    -- Cuota personalizada de clases por periodo
+    clases_por_mes INTEGER NOT NULL DEFAULT 4,             -- Ej. 4 u 8 clases al mes según su plan
     
     -- Estado operativo y control de morosidad
     estado TEXT NOT NULL DEFAULT 'ACTIVO',                 -- 'ACTIVO', 'PAUSADO', 'BAJA_MOROSIDAD', 'BAJA_VOLUNTARIA', 'FINALIZADO'
     meses_atraso_consecutivos INTEGER NOT NULL DEFAULT 0,  -- Contador rápido (0 a 3; al llegar al 4to pasa a BAJA_MOROSIDAD)
     
-    -- Auditoría de baja (si aplica)
+    -- Auditoría de baja
     fecha_baja DATE,
     motivo_baja TEXT,
     
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    -- Llaves foráneas
     FOREIGN KEY (alumno_id) REFERENCES alumnos(id) ON DELETE RESTRICT,
     FOREIGN KEY (subprograma_id) REFERENCES subprogramas(id) ON DELETE RESTRICT
 );
 
--- Índices esenciales para el rendimiento en D1
+-- Índices de rendimiento
 CREATE INDEX idx_inscripciones_alumno ON inscripciones(alumno_id);
 CREATE INDEX idx_inscripciones_subprograma ON inscripciones(subprograma_id);
 CREATE INDEX idx_inscripciones_cron ON inscripciones(estado, proximo_corte);
 
--- Evitar que un alumno tenga dos inscripciones ACTIVAS al mismo subprograma simultáneamente
+-- Evita duplicar inscripciones ACTIVAS al mismo subprograma, pero permite reingresos históricos
 CREATE UNIQUE INDEX idx_inscripcion_activa_unica 
 ON inscripciones(alumno_id, subprograma_id) 
 WHERE estado = 'ACTIVO';
 ```
 
-#### Decisiones clave en `inscripciones`:
-* **Índice único parcial (`idx_inscripcion_activa_unica`):** Evita inscribir dos veces al mismo alumno en un subprograma mientras ya está `ACTIVO`, pero **le permite volver a inscribirse** en el futuro si antes causó baja (conservando su historial intacto).
-* **Columna `proximo_corte`:** Simplifica el Cron diario; permite identificar rápidamente qué inscripciones requieren la generación de un nuevo cargo.
-* **`ON DELETE RESTRICT`:** Evita borrar accidentalmente un alumno o subprograma si ya tiene historial asociado.
-
----
-
 ### B. Tabla `reglas_cobro`
-Configuración financiera por subprograma. Permite cambiar precios o días de gracia en el futuro sin afectar los cargos históricos.
+Define las tarifas y plazos vigentes por subprograma.
 
 ```sql
 CREATE TABLE reglas_cobro (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     subprograma_id INTEGER NOT NULL,
-    monto_inscripcion INTEGER NOT NULL,          -- Guardar en centavos (ej. $500.00 = 50000)
+    monto_inscripcion INTEGER NOT NULL,          -- Guardar en centavos (ej. 50000 = $500.00)
     monto_mensualidad INTEGER NOT NULL,          -- Guardar en centavos
-    dias_anticipacion_emision INTEGER DEFAULT 5, -- Días antes de iniciar el periodo para mostrar el cobro
-    dias_gracia INTEGER DEFAULT 5,               -- Días extra después de la fecha límite antes de marcar vencido
-    dia_corte INTEGER DEFAULT 1,                 -- Día del mes en que inicia el periodo (si es fecha fija)
+    dias_anticipacion_emision INTEGER DEFAULT 5, -- Días antes del periodo en que el cobro se hace visible
+    dias_gracia INTEGER DEFAULT 5,               -- Días extra después del vencimiento antes de marcar morosidad
+    dia_corte INTEGER DEFAULT 1,                 -- Día del mes de corte (si aplica corte fijo)
     activa BOOLEAN DEFAULT 1,
     FOREIGN KEY (subprograma_id) REFERENCES subprogramas(id)
 );
 ```
 
----
-
-### C. Tabla `cargos` (Libro mayor de cobros)
-Cada fila es un cobro específico (una inscripción o una mensualidad de un mes concreto). Esta tabla resuelve la acumulación de adeudos.
+### C. Tabla `cargos`
+Libro mayor de todos los cobros (inscripciones y mensualidades) y contenedor de la bolsa de clases del periodo.
 
 ```sql
 CREATE TABLE cargos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     inscripcion_id INTEGER NOT NULL,
-    tipo TEXT NOT NULL,                     -- 'INSCRIPCION', 'MENSUALIDAD'
+    tipo TEXT NOT NULL,                     -- 'INSCRIPCION', 'MENSUALIDAD', 'REINSCRIPCION'
     concepto TEXT NOT NULL,                 -- Ej. 'Mensualidad Noviembre 2026'
     monto INTEGER NOT NULL,                 -- En centavos
     
-    -- Fechas clave del ciclo de vida del cobro
-    periodo_inicio DATE NOT NULL,           -- Fecha en que empiezan las clases que cubre este pago
-    periodo_fin DATE NOT NULL,              -- Fecha en que terminan las clases que cubre este pago
+    -- Fechas del ciclo de vida del cobro
+    periodo_inicio DATE NOT NULL,           -- Inicio de las clases que cubre este pago
+    periodo_fin DATE NOT NULL,              -- Fin de las clases que cubre este pago
     fecha_visible_desde DATE NOT NULL,      -- periodo_inicio - dias_anticipacion_emision
     fecha_vencimiento DATE NOT NULL,        -- Fecha límite normal de pago
     fecha_limite_gracia DATE NOT NULL,      -- fecha_vencimiento + dias_gracia
     
-    -- Estado del pago
-    estado TEXT DEFAULT 'PENDIENTE',        -- 'PROGRAMADO', 'PENDIENTE', 'VENCIDO', 'PAGADO', 'CONDONADO', 'CANCELADO'
+    -- Control de bolsa de clases del periodo
+    clases_incluidas INTEGER NOT NULL DEFAULT 0,  -- 0 para inscripción; copia inscripciones.clases_por_mes en mensualidad
+    clases_consumidas INTEGER NOT NULL DEFAULT 0, -- Se incrementa con cada asistencia válida o falta injustificada
+    
+    -- Estado financiero
+    estado TEXT DEFAULT 'PENDIENTE',        -- 'PENDIENTE', 'VENCIDO', 'PAGADO', 'CONDONADO', 'CANCELADO'
     fecha_pago DATETIME,
     metodo_pago TEXT,
     referencia_pago TEXT,
@@ -110,40 +149,82 @@ CREATE TABLE cargos (
     FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id)
 );
 
--- Índices para consultas rápidas en D1
 CREATE INDEX idx_cargos_inscripcion ON cargos(inscripcion_id);
 CREATE INDEX idx_cargos_estado_fechas ON cargos(estado, fecha_visible_desde, fecha_limite_gracia);
 ```
 
+### D. Tablas de Clases y Asistencias (`clases_catalogo`, `clases_asignadas`, `asistencias`)
+Controlan qué materias o sesiones le tocan a cada alumno y descuentan su cuota mensual.
+
+```sql
+-- 1. Catálogo de materias o sesiones dentro de un subprograma
+CREATE TABLE clases_catalogo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    subprograma_id INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    cupo_maximo INTEGER DEFAULT 15,
+    activa BOOLEAN DEFAULT 1,
+    FOREIGN KEY (subprograma_id) REFERENCES subprogramas(id)
+);
+
+-- 2. Horario/clases específicas asignadas a cada alumno
+CREATE TABLE clases_asignadas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    inscripcion_id INTEGER NOT NULL,
+    clase_id INTEGER NOT NULL,
+    dia_semana INTEGER NOT NULL, -- 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes, 6=Sábado, 7=Domingo
+    hora_inicio TEXT NOT NULL,   -- Formato '16:00'
+    activa BOOLEAN DEFAULT 1,
+    FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id),
+    FOREIGN KEY (clase_id) REFERENCES clases_catalogo(id)
+);
+
+CREATE INDEX idx_clases_asignadas_inscripcion ON clases_asignadas(inscripcion_id);
+
+-- 3. Registro de asistencia vinculado al cargo mensual
+CREATE TABLE asistencias (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    inscripcion_id INTEGER NOT NULL,
+    clase_id INTEGER NOT NULL,
+    cargo_id INTEGER NOT NULL,        -- Mensualidad a la que se le descuenta esta sesión
+    fecha_clase DATE NOT NULL,
+    estado TEXT NOT NULL,             -- 'ASISTIO', 'FALTA_JUSTIFICADA', 'FALTA_INJUSTIFICADA', 'CANCELADA_ESCUELA'
+    notas TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (inscripcion_id) REFERENCES inscripciones(id),
+    FOREIGN KEY (clase_id) REFERENCES clases_catalogo(id),
+    FOREIGN KEY (cargo_id) REFERENCES cargos(id)
+);
+
+CREATE INDEX idx_asistencias_cargo ON asistencias(cargo_id);
+```
+
 ---
 
-## 3. Lógica de las Reglas Administrativas (Flujos)
+## 3. Reglas de Negocio y Flujos Automatizados (Cron Diario)
 
-Implementa un **Cloudflare Worker con Cron Trigger** que se ejecute todos los días (ej. `00:05 hrs`).
+### Flujo 1: Alta de un alumno
+1. Se inserta la fila en `inscripciones` con `estado = 'ACTIVO'`.
+2. Se insertan dos cargos iniciales en `cargos`:
+   - `INSCRIPCION` (`clases_incluidas = 0`).
+   - `MENSUALIDAD` del primer periodo (`clases_incluidas = inscripciones.clases_por_mes`).
 
-### Flujo 1: Al inscribir al alumno
-1. Creas el registro en `inscripciones` con `estado = 'ACTIVO'` y `meses_atraso_consecutivos = 0`.
-2. Insertas inmediatamente dos registros en `cargos`:
-   * **Cargo 1 (`INSCRIPCION`):** Con vencimiento inmediato (hoy).
-   * **Cargo 2 (`MENSUALIDAD`):** Correspondiente a su primer mes de clases.
+### Flujo 2: Emisión anticipada y acumulación de adeudos
+- Cada madrugada, el Cron busca inscripciones en estado `ACTIVO` cuya fecha `proximo_corte` esté dentro de la ventana `dias_anticipacion_emision`.
+- Inserta el nuevo cargo mensual sin borrar los anteriores (acumulando naturalmente el adeudo si existen meses sin pagar) y actualiza `proximo_corte` al mes siguiente.
+- El portal del alumno solo muestra cargos donde `date('now') >= fecha_visible_desde`.
 
-### Flujo 2: Generación y visibilidad de mensualidades (Cron Diario)
-* **Acumulación de adeudos:** Al crear un nuevo registro en `cargos` cada mes sin borrar los anteriores, la deuda se acumula naturalmente. El saldo total de un alumno es `SUM(monto) WHERE estado IN ('PENDIENTE', 'VENCIDO')`.
-* **Visibilidad anticipada:** En tu frontend/API, filtra los cargos donde `date('now') >= fecha_visible_desde`.
-* **Emisión automática:** El Cron busca inscripciones activas donde `date('now', '+' || dias_anticipacion || ' days') >= proximo_corte`, inserta el nuevo cargo del mes entrante y actualiza `proximo_corte` al mes siguiente *(validando que no exista duplicado para ese `periodo_inicio`)*.
+### Flujo 3: Días de gracia, morosidad y baja automática al 4to mes
+Ejecutar diariamente en este orden dentro de un `db.batch()`:
 
-### Flujo 3: Días de gracia, vencimientos y baja al 4to mes (Cron Diario)
-
-1. **Marcar vencidos (pasando días de gracia):**
 ```sql
+-- Paso 1: Marcar como VENCIDO todo cargo cuya fecha límite de gracia haya pasado
 UPDATE cargos 
 SET estado = 'VENCIDO' 
 WHERE estado = 'PENDIENTE' 
   AND date('now') > fecha_limite_gracia;
-```
 
-2. **Recalcular meses de atraso por inscripción:**
-```sql
+-- Paso 2: Recalcular meses de atraso consecutivos en inscripciones activas
 UPDATE inscripciones
 SET meses_atraso_consecutivos = (
     SELECT COUNT(*) 
@@ -153,15 +234,12 @@ SET meses_atraso_consecutivos = (
       AND cargos.estado = 'VENCIDO'
 )
 WHERE estado = 'ACTIVO';
-```
 
-3. **Ejecutar baja automática en el 4to mes de atraso:**
-*(Si la baja ocurre al iniciar el 4to mes sin haber pagado los 3 anteriores)*:
-```sql
+-- Paso 3: Ejecutar baja automática al iniciar el 4to mes de atraso (3 vencidos + 4to periodo iniciado)
 UPDATE inscripciones
 SET estado = 'BAJA_MOROSIDAD',
     fecha_baja = date('now'),
-    motivo_baja = 'Acumulación de 4 meses de adeudo'
+    motivo_baja = 'Baja automática por acumulación de 4 meses de adeudo'
 WHERE estado = 'ACTIVO'
   AND (
       SELECT COUNT(*) FROM cargos 
@@ -171,42 +249,32 @@ WHERE estado = 'ACTIVO'
         AND date('now') >= cargos.periodo_inicio
   ) >= 4;
 ```
-*(Opcional: Al dar de baja, puedes marcar como `'CANCELADO'` el 4to cargo si el alumno no tomará clases ese mes, dejando los 3 anteriores como deuda histórica).*
 
-### Flujo 4: Cuando el alumno paga
-1. Aplica el pago al cargo más antiguo primero (**regla FIFO**: primero mes 1 de atraso, luego mes 2, etc.).
-2. Recalcula `meses_atraso_consecutivos` en `inscripciones`.
+### Flujo 4: Registro de pagos (FIFO)
+- Al recibir un abono o pago, liquidar primero el cargo con `periodo_inicio` más antiguo (`ORDER BY periodo_inicio ASC`).
+- Recalcular `meses_atraso_consecutivos` en `inscripciones`.
 
 ---
 
-## 4. Buenas Prácticas y Límites en Cloudflare D1
+## 4. Reglas Operativas de Clases (Ni de más, ni de menos)
 
-### Consejos Técnicos
-* **Usa enteros para el dinero (Centavos):** En SQLite, `REAL` usa punto flotante y puede provocar errores de redondeo. Guarda `$500.00` como `50000` (`INTEGER`) y divide entre 100 en el frontend.
-* **Formato de fechas ISO-8601:** Guarda siempre las fechas como `YYYY-MM-DD` (ej. `2026-11-21`) para aprovechar nativamente `date('now')` y modificadores como `date(fecha, '+5 days')`.
-* **Transacciones (`db.batch`):** Al registrar un pago o procesar una baja, usa `env.DB.batch([...])` en Cloudflare Workers para garantizar atomicidad.
+1. **Bloqueo por límite de clases (No dar clases de más):**
+   - Al pasar lista, verificar que `cargos.clases_consumidas < cargos.clases_incluidas` para el periodo actual y que `inscripciones.estado = 'ACTIVO'`.
+   - Si ya alcanzó su límite, bloquear el registro y alertar al docente/administrador.
+2. **Consumo según tipo de asistencia:**
+   - `ASISTIO` y `FALTA_INJUSTIFICADA`: Suman `+1` a `clases_consumidas` (clase impartida o perdida por el alumno).
+   - `FALTA_JUSTIFICADA` y `CANCELADA_ESCUELA`: **No suman** a `clases_consumidas`, dejando el crédito disponible para reagendar.
+3. **Control de clases pendientes (No dejarlos sin clases):**
+   - Al cierre de cada periodo (`periodo_fin`), consultar los cargos donde `clases_consumidas < clases_incluidas` para generar el reporte de **reposiciones pendientes** o transferir ese saldo a favor al siguiente cargo mensual.
 
-### Importancia de los Índices y Cuotas de Cloudflare D1
-Los índices (`CREATE INDEX`) crean estructuras ordenadas (B-Trees) que evitan lecturas completas de tabla (*Full Table Scans*). En D1 esto es vital porque las cuotas se miden por **renglones leídos y escritos**:
+---
 
-* **Plan Gratuito de Cloudflare D1:**
-  * **Almacenamiento:** Hasta **500 MB por base de datos** (aprox. 2 a 3 millones de renglones) y hasta 5 GB totales en la cuenta (máximo 10 bases de datos).
-  * **Lecturas diarias:** Hasta **5,000,000 de renglones leídos por día**.
-  * **Escrituras diarias:** Hasta **100,000 renglones escritos por día** (`INSERT`, `UPDATE`, `DELETE`).
-  * *(Los contadores diarios se reinician a las 00:00 UTC / 6:00 PM hora del centro de México).*
-* **Plan de Pago ($5 USD/mes):** Sube a 10 GB por base de datos, 25 mil millones de lecturas/mes y 50 millones de escrituras/mes.
+## 5. Buenas Prácticas y Límites en Cloudflare D1
 
-
-
-
-
-
-
-
-
-
-
-
+- **Montos en enteros (Centavos):** Evita el tipo `REAL` para dinero; usa `INTEGER` (ej. `45000` para `$450.00`) para prevenir errores de redondeo de punto flotante.
+- **Fechas en formato ISO-8601 (`YYYY-MM-DD`):** Garantiza compatibilidad exacta con `date('now')` y modificadores como `date(fecha, '+5 days')`.
+- **Operaciones atómicas (`db.batch`):** Agrupa escrituras relacionadas (como registrar una asistencia e incrementar `clases_consumidas`) en un mismo batch para mantener integridad de datos.
+- **Uso de índices:** En el plan gratuito de D1 tienes **500 MB por base de datos** (~2 a 3 millones de filas) y **5 millones de lecturas diarias / 100,000 escrituras diarias**. Los índices definidos evitan escaneos completos de tabla (*Full Table Scans*) y mantienen el consumo diario en niveles mínimos.
 
 
 

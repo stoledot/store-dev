@@ -40,36 +40,36 @@ TEMARIO:
     
     
     
-  - Medición y geometría plana
-    - **35. Conversión de unidades de longitud, masa y capacidad**
-    - **36. Equivalencias entre horas, minutos y segundos**
-    - Ángulos, perímetros y áreas
-    - **37. Clasificación de triángulos por sus lados y ángulos**
-    - **38. Propiedades de cuadriláteros y otros polígonos**
-    - **39. Cálculo de áreas de rectángulos y triángulos**
-    - Circunferencia
-  - Geometría espacial y datos
-    - Volúmenes y conversiones
-    - **40. Interpretación de gráficas de barras y líneas**
-    - Media, mediana y moda
-- Secundaria inicial
-  - Enteros, potencias y raíces
-    - Números negativos
-    - **41. Valor absoluto y comparación de números enteros**
-    - **42. Suma, resta, multiplicación y división de números enteros**
-    - **43. Operaciones y comparación de números racionales**
-    - **44. Jerarquía de operaciones con números racionales**
-    - Potencias
-    - **45. Leyes de los exponentes**
-    - Raíces
-    - **46. Simplificación de raíces cuadradas exactas**
-    - Notación científica
-    - **47. Operaciones básicas con notación científica**
-  - Álgebra y ecuaciones
-    - **48. Traducción de frases cotidianas al lenguaje algebraico**
-    - Expresiones algebraicas
-    - **49. Reducción de términos semejantes**
-    - **50. Evaluación de expresiones algebraicas por sustitución**
+  
+    
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+
+  
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  
+    
+    
+    
+    
     - Propiedad distributiva
     - Ecuaciones lineales
     - **51. Resolución y comprobación de ecuaciones lineales de uno y dos pasos**
@@ -171,12 +171,14 @@ TEMARIO:
 -->
 
 <lectura>
+
   <meta>
     <title>Porquería Matemática: guía de supervivencia escolar</title>
     <author>Brillinury y Samuel</author>
     <summary>Conversión estructural del documento LaTeX a XML. Se conserva la organización, los ejemplos, las fórmulas, los avisos y los ejercicios del original.</summary>
     <source>porqueria_matematica.tex</source>
   </meta>
+
   <chapter id="introduccion-general" data-title="Introducción general">
     <section id="introduccion" data-title="Introducción">
       <sub-section id="antes-de-empezar" data-title="Antes de empezar">
@@ -1844,12 +1846,1800 @@ TEMARIO:
 
       <!--Medición y geometría plana-->
       <sub-section id="capitulo-03-medicion-y-geometria-plana" data-title="Medición y geometría plana">
-      
+
+        <!--- Conversión de unidades de longitud -->
+        <sub-sub-section id="capitulo-03-apartado-01-conversion-unidades-longitud" data-title="Conversión de unidades de longitud">
+          <p>Para convertir entre unidades de longitud, se utilizan factores de conversión adecuados.</p>
+          <p>Las unidades de medida de longitud son las siguientes:</p>
+          <ul>
+            <li>Milímetro (mm)</li>
+            <li>Centímetro (cm)</li>
+            <li>Metro (m)</li>
+            <li>Kilómetro (km)</li>
+          </ul>
+
+          <p>Para convertir entre estas unidades, se multiplican o dividen por los factores de conversión correspondientes:</p>
+          <ul>
+            <li>1 cm = 10 mm</li>
+            <li>1 m = 100 cm</li>
+            <li>1 km = 1000 m</li>
+          </ul>
+
+          <p>Ejemplo de conversión:</p>
+          <math-examples id="capitulo-03-apartado-01-ejemplo" data-title="Ejemplo de conversión de unidades de longitud">
+            <math-example id="capitulo-03-apartado-01-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Convierte 250 cm a metros.</p>
+              <math-display>\[
+              250 \text{ cm} = 250 \cdot \frac{1 \text{ m}}{100 \text{ cm}} = 2.5 \text{ m}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-01-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Convierte 3 km a metros.</p>
+              <math-display>\[
+              3 \text{ km} = 3 \cdot \frac{1000 \text{ m}}{1 \text{ km}} = 3000 \text{ m}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-01-ejemplo-3" data-title="Ejemplo resuelto">
+              <p>Convierte 5000 mm a metros.</p>
+              <math-display>\[
+              5000 \text{ mm} = 5000 \cdot \frac{1 \text{ m}}{1000 \text{ mm}} = 5 \text{ m}
+              \]</math-display>
+            </math-example>
+          </math-examples>
+
+        </sub-sub-section>
+
+        <!--- Conversión de unidades de masa -->
+        <sub-sub-section id="capitulo-03-apartado-02-conversion-unidades-masa" data-title="Conversión de unidades de masa">
+          <p>Para convertir entre unidades de masa, se utilizan factores de conversión adecuados.</p>
+          <p>Las unidades de medida de masa son las siguientes:</p>
+          <ul>
+            <li>Gramo (g)</li>
+            <li>Kilogramo (kg)</li>
+            <li>Tonelada (t)</li>
+          </ul>
+
+          <p>Para convertir entre estas unidades, se multiplican o dividen por los factores de conversión correspondientes:</p>
+          <ul>
+            <li>1 kg = 1000 g</li>
+            <li>1 t = 1000 kg</li>
+          </ul>
+
+          <p>Ejemplo de conversión:</p>
+          <math-examples id="capitulo-03-apartado-02-ejemplo" data-title="Ejemplo de conversión de unidades de masa">
+            <math-example id="capitulo-03-apartado-02-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Convierte 2500 g a kilogramos.</p>
+              <math-display>\[
+              2500 \text{ g} = 2500 \cdot \frac{1 \text{ kg}}{1000 \text{ g}} = 2.5 \text{ kg}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-02-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Convierte 3 t a kilogramos.</p>
+              <math-display>\[
+              3 \text{ t} = 3 \cdot \frac{1000 \text{ kg}}{1 \text{ t}} = 3000 \text{ kg}
+              \]</math-display>
+            </math-example>
+          </math-examples>
+        </sub-sub-section>
+
+  
+        <!--- Conversión de unidades de capacidad -->
+        <sub-sub-section id="capitulo-03-apartado-03-conversion-unidades-capacidad" data-title="Conversión de unidades de capacidad">
+          <p>Para convertir entre unidades de capacidad, se utilizan factores de conversión adecuados.</p>
+          <p>Las unidades de medida de capacidad son las siguientes:</p>
+          <ul>
+            <li>Mililitro (ml)</li>
+            <li>Centilitro (cl)</li>
+            <li>Decilitro (dl)</li>
+            <li>Litro (l)</li>
+          </ul>
+
+          <p>Para convertir entre estas unidades, se utilizan factores de conversión adecuados:</p>
+          <ul>
+            <li>1 l = 1000 ml</li>
+            <li>1 dl = 100 ml</li>
+            <li>1 cl = 10 ml</li>
+          </ul>
+
+          <p>Ejemplo de conversión:</p>
+          <math-examples id="capitulo-03-apartado-03-ejemplo" data-title="Ejemplo de conversión de unidades de capacidad">
+            <math-example id="capitulo-03-apartado-03-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Convierte 2500 ml a litros.</p>
+              <math-display>\[
+              2500 \text{ ml} = 2500 \cdot \frac{1 \text{ l}}{1000 \text{ ml}} = 2.5 \text{ l}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-03-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Convierte 3 l a mililitros.</p>
+              <math-display>\[
+              3 \text{ l} = 3 \cdot \frac{1000 \text{ ml}}{1 \text{ l}} = 3000 \text{ ml}
+              \]</math-display>
+            </math-example>
+          </math-examples>
+        </sub-sub-section>
+
+        <!--- **36. Equivalencias entre horas, minutos y segundos**-->
+        <sub-sub-section id="capitulo-03-apartado-04-equivalencias-horas-minutos-segundos" data-title="Equivalencias entre horas, minutos y segundos">
+          <p>Para convertir entre horas, minutos y segundos, se utilizan las siguientes equivalencias:</p>
+          <ul>
+            <li>1 hora = 60 minutos</li>
+            <li>1 minuto = 60 segundos</li>
+            <li>1 hora = 3600 segundos</li>
+            <li>1 minuto = \(\frac{1}{60}\) hora</li>
+            <li>1 segundo = \(\frac{1}{60}\) minuto</li>
+            <li>1 segundo = \(\frac{1}{3600}\) hora</li>
+          </ul>
+
+          <p>Para convertir entre estas unidades de tiempo, se pueden utilizar las equivalencias mencionadas anteriormente y aplicar las operaciones correspondientes según sea necesario.</p>
+          <p>Por ejemplo, para convertir 2 horas a minutos, se multiplica el número de horas por 60, ya que 1 hora equivale a 60 minutos.</p>
+
+
+          <p>Ejemplo de conversión:</p>
+          <math-examples id="capitulo-03-apartado-04-ejemplo" data-title="Ejemplo de conversión de tiempo">
+            <math-example id="capitulo-03-apartado-04-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Convierte 2 horas a minutos.</p>
+              <math-display>\[
+              2 \text{ h} = 2 \cdot 60 \text{ min} = 120 \text{ min}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-04-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Convierte 150 minutos a horas y minutos.</p>
+              <math-display>\[
+              150 \text{ min} = 2 \text{ h} 30 \text{ min}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-04-ejemplo-3" data-title="Ejemplo resuelto">
+              <p>Convierte 3600 segundos a horas.</p>
+              <math-display>\[
+              3600 \text{ s} = 3600 \cdot \frac{1 \text{ h}}{3600 \text{ s}} = 1 \text{ h}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-04-ejemplo-4" data-title="Ejemplo resuelto">
+              <p>Convierte 3 horas y 45 minutos a minutos.</p>
+              <math-display>\[
+              3 \text{ h} 45 \text{ min} = 3 \cdot 60 \text{ min} + 45 \text{ min} = 180 \text{ min} + 45 \text{ min} = 225 \text{ min}
+              \]</math-display>
+            </math-example>
+            <math-example id="capitulo-03-apartado-04-ejemplo-5" data-title="Ejemplo resuelto">
+              <p>Convierte 5000 segundos a horas y minutos.</p>
+              <math-display>\[
+              5000 \text{ s} = 5000 \cdot \frac{1 \text{ h}}{3600 \text{ s}} \approx 1 \text{ h} 23 \text{ min}
+              \]</math-display>
+            </math-example>
+          </math-examples>
+
+        </sub-sub-section>
+
+        <!-- Ejercicios de conversión de unidades de medida-->
+        <sub-sub-section id="capitulo-03-apartado-04-ejercicios" data-title="Ejercicios de conversión de unidades de medida">
+          <math-exercises id="capitulo-03-apartado-04-ejercicios-lista" data-title="Lista de ejercicios">
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-1" data-title="Ejercicio">
+              <p>Convierte 120 minutos a horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-2" data-title="Ejercicio">
+              <p>Convierte 2 horas y 30 minutos a minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-3" data-title="Ejercicio">
+              <p>Convierte 7200 segundos a horas.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-4" data-title="Ejercicio">
+              <p>Convierte 3 horas y 45 minutos a minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-5" data-title="Ejercicio">
+              <p>Convierte 5000 segundos a horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-6" data-title="Ejercicio">
+              <p>Convierte 1 día a horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-7" data-title="Ejercicio">
+              <p>Convierte 2 días a horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-8" data-title="Ejercicio">
+              <p>Convierte 1 semana a días, horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-9" data-title="Ejercicio">
+              <p>Convierte 2 semanas a días, horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-10" data-title="Ejercicio">
+              <p>Convierte 1 mes a días, horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-11" data-title="Ejercicio">
+              <p>Convierte 2 meses a días, horas y minutos.</p>
+            </math-exercise>
+            <math-exercise id="capitulo-03-apartado-04-ejercicio-12" data-title="Ejercicio">
+              <p>Convierte 1 año a meses, días, horas y minutos.</p>
+            </math-exercise>
+          </math-exercises>
+
+        </sub-sub-section>
       </sub-section>
 
-    </section>
+      - Ángulos, perímetros y áreas
+      <sub-section id="capitulo-03-apartado-05-angulos-perimetros-y-areas" data-title="Ángulos, perímetros y áreas">
+        
+        <!--- **37. Clasificación de triángulos por sus lados y ángulos**-->
+        <sub-sub-section id="capitulo-03-apartado-05-ejercicio-37" data-title="Clasificación de triángulos por sus lados y ángulos">
+          <p>Existen diferentes tipos de triángulos según sus lados y ángulos:</p>
+          <ul>
+            <li>Triángulo equilátero: todos sus lados son iguales.</li>
+            <li>Triángulo isósceles: tiene dos lados iguales.</li>
+            <li>Triángulo escaleno: todos sus lados son diferentes.</li>
+            <li>Triángulo acutángulo: todos sus ángulos son agudos.</li>
+            <li>Triángulo rectángulo: tiene un ángulo recto.</li>
+            <li>Triángulo obtusángulo: tiene un ángulo obtuso.</li>
+          </ul>
+          
+          <p>Los triángulos se pueden clasificar según sus lados en equiláteros, isósceles y escalenos, y según sus ángulos en acutángulos, rectángulos y obtusángulos.</p>
 
+          <math-figure id="triangulo-equilatero" data-title="Triángulo equilátero">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <!-- Triángulo -->
+              <polygon points="100,20 25,150 175,150" fill="#e0f2fe" stroke="#0284c7" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Marcas de igualdad en los 3 lados -->
+              <line x1="56" y1="81" x2="68" y2="88" stroke="#0284c7" stroke-width="2"/>
+              <line x1="144" y1="81" x2="132" y2="88" stroke="#0284c7" stroke-width="2"/>
+              <line x1="100" y1="143" x2="100" y2="157" stroke="#0284c7" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="triangulo-isosceles" data-title="Triángulo isósceles">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <!-- Triángulo -->
+              <polygon points="100,15 45,160 155,160" fill="#dcfce7" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Marcas de igualdad en los 2 lados laterales -->
+              <line x1="66" y1="85" x2="78" y2="90" stroke="#16a34a" stroke-width="2"/>
+              <line x1="134" y1="85" x2="122" y2="90" stroke="#16a34a" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="triangulo-escaleno" data-title="Triángulo escaleno">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <!-- Triángulo -->
+              <polygon points="60,25 20,155 180,155" fill="#fef3c7" stroke="#d97706" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Marcas distintas (1, 2 y 3 rayas) -->
+              <line x1="34" y1="88" x2="46" y2="92" stroke="#d97706" stroke-width="2"/>
+              
+              <line x1="115" y1="85" x2="123" y2="94" stroke="#d97706" stroke-width="2"/>
+              <line x1="120" y1="90" x2="128" y2="99" stroke="#d97706" stroke-width="2"/>
+              
+              <line x1="94" y1="148" x2="94" y2="162" stroke="#d97706" stroke-width="2"/>
+              <line x1="100" y1="148" x2="100" y2="162" stroke="#d97706" stroke-width="2"/>
+              <line x1="106" y1="148" x2="106" y2="162" stroke="#d97706" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="triangulo-rectangulo" data-title="Triángulo rectángulo">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <!-- Triángulo -->
+              <polygon points="35,25 35,155 175,155" fill="#fee2e2" stroke="#dc2626" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Cuadrado de ángulo recto (90°) -->
+              <polyline points="35,135 55,135 55,155" fill="none" stroke="#dc2626" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="triagunlo-acutangulo" data-title="Triángulo acutángulo">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <!-- Triángulo -->
+              <polygon points="85,20 25,155 170,155" fill="#f3e8ff" stroke="#9333ea" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Arcos de ángulos agudos -->
+              <path d="M 76,40 A 22,22 0 0,0 94,39" fill="none" stroke="#9333ea" stroke-width="2"/>
+              <path d="M 45,155 A 20,20 0 0,0 33,137" fill="none" stroke="#9333ea" stroke-width="2"/>
+              <path d="M 159,138 A 20,20 0 0,0 150,155" fill="none" stroke="#9333ea" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="triangulo-obtusangulo" data-title="Triángulo obtusángulo">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <!-- Triángulo -->
+              <polygon points="20,35 70,155 185,155" fill="#ffedd5" stroke="#ea580c" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Arco del ángulo obtuso -->
+              <path d="M 61,134 A 23,23 0 0,1 93,155" fill="none" stroke="#ea580c" stroke-width="2"/>
+            </svg>
+          </math-figure>
+        </sub-sub-section>
+
+        <!--- **38. Propiedades de cuadriláteros y otros polígonos**-->
+        <sub-sub-section id="propiedades-cuadrilateros" data-title="Propiedades de cuadriláteros y otros polígonos">
+          <p>Los cuadriláteros y otros polígonos tienen propiedades específicas según el número de lados y la medida de sus ángulos.</p>
+          <p>Estos son los cuadriláteros y polígonos según su clasificación de lados y proporciones entre sus lados:</p>
+          <ul>
+            <li><strong>Cuadrados:</strong> tienen cuatro lados iguales y cuatro ángulos rectos.</li>
+            <li><strong>Rectángulos:</strong> tienen cuatro lados y cuatro ángulos rectos, con lados opuestos iguales.</li>
+            <li><strong>Cuadriláteros:</strong> tienen cuatro lados. Pueden ser cuadrados, rectángulos, rombos, trapecios, entre otros.</li>
+            <li><strong>Trapecios:</strong> tienen cuatro lados, con al menos un par de lados paralelos.</li>
+            <li><strong>Rombos:</strong> tienen cuatro lados iguales y sus ángulos opuestos son iguales.</li>
+            <li><strong>Pentágonos:</strong> tienen cinco lados. Pueden ser regulares o irregulares.</li>
+            <li><strong>Hexágonos:</strong> tienen seis lados. Pueden ser regulares o irregulares.</li>
+            <li><strong>Heptágonos:</strong> tienen siete lados.</li>
+            <li><strong>Octágonos:</strong> tienen ocho lados.</li>
+            <li><strong>Polígonos regulares:</strong> todos sus lados y ángulos son iguales.</li>
+            <li><strong>Polígonos irregulares:</strong> sus lados y ángulos no son todos iguales.</li>
+          </ul>
+
+          <math-figure id="fig-cuadrado" data-title="Cuadrado">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="45,35 155,35 155,145 45,145" fill="#e0f2fe" stroke="#0284c7" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Ángulos rectos -->
+              <polyline points="45,50 60,50 60,35" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+              <polyline points="140,35 140,50 155,50" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+              <polyline points="155,130 140,130 140,145" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+              <polyline points="60,145 60,130 45,130" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+              <!-- Marcas de igualdad -->
+              <line x1="100" y1="29" x2="100" y2="41" stroke="#0284c7" stroke-width="2"/>
+              <line x1="149" y1="90" x2="161" y2="90" stroke="#0284c7" stroke-width="2"/>
+              <line x1="100" y1="139" x2="100" y2="151" stroke="#0284c7" stroke-width="2"/>
+              <line x1="39" y1="90" x2="51" y2="90" stroke="#0284c7" stroke-width="2"/>
+            </svg>
+          </math-figure>
+          
+          <math-figure id="fig-rectangulo" data-title="Rectángulo">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="25,45 175,45 175,135 25,135" fill="#dcfce7" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Ángulos rectos -->
+              <polyline points="25,60 40,60 40,45" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+              <polyline points="160,45 160,60 175,60" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+              <polyline points="175,120 160,120 160,135" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+              <polyline points="40,135 40,120 25,120" fill="none" stroke="#16a34a" stroke-width="1.5"/>
+              <!-- Marcas de lados opuestos iguales -->
+              <line x1="97" y1="39" x2="97" y2="51" stroke="#16a34a" stroke-width="2"/>
+              <line x1="103" y1="39" x2="103" y2="51" stroke="#16a34a" stroke-width="2"/>
+              <line x1="97" y1="129" x2="97" y2="141" stroke="#16a34a" stroke-width="2"/>
+              <line x1="103" y1="129" x2="103" y2="141" stroke="#16a34a" stroke-width="2"/>
+              <line x1="19" y1="90" x2="31" y2="90" stroke="#16a34a" stroke-width="2"/>
+              <line x1="169" y1="90" x2="181" y2="90" stroke="#16a34a" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="fig-cuadrilatero" data-title="Cuadrilátero">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="45,35 165,25 180,145 25,130" fill="#fef3c7" stroke="#d97706" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+          </math-figure>
+
+
+          <math-figure id="fig-trapecio" data-title="Trapecio">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="60,40 140,40 175,140 25,140" fill="#f3e8ff" stroke="#9333ea" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Flechas de paralelismo en bases -->
+              <polyline points="96,35 103,40 96,45" fill="none" stroke="#9333ea" stroke-width="2"/>
+              <polyline points="96,135 103,140 96,145" fill="none" stroke="#9333ea" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+
+          <math-figure id="fig-rombo" data-title="Rombo">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="100,20 165,90 100,160 35,90" fill="#fee2e2" stroke="#dc2626" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Marcas de igualdad en los 4 lados -->
+              <line x1="128" y1="59" x2="137" y2="51" stroke="#dc2626" stroke-width="2"/>
+              <line x1="128" y1="121" x2="137" y2="129" stroke="#dc2626" stroke-width="2"/>
+              <line x1="72" y1="121" x2="63" y2="129" stroke="#dc2626" stroke-width="2"/>
+              <line x1="72" y1="59" x2="63" y2="51" stroke="#dc2626" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+
+          <math-figure id="fig-pentagono" data-title="Pentágono">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="100,20 171,72 144,155 56,155 29,72" fill="#ffedd5" stroke="#ea580c" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="fig-hexagono" data-title="Hexágono">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="100,18 162,54 162,126 100,162 38,126 38,54" fill="#ccfbf1" stroke="#0d9488" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+          </math-figure>
+
+
+          <math-figure id="fig-heptagono" data-title="Heptágono">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="100,18 156,45 170,106 131,155 69,155 30,106 44,45" fill="#e0e7ff" stroke="#4f46e5" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+          </math-figure>
+
+
+          <math-figure id="fig-octagono" data-title="Octágono">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="73,20 127,20 166,59 166,113 127,152 73,152 34,113 34,59" fill="#fce7f3" stroke="#db2777" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+          </math-figure>
+
+
+          <math-figure id="fig-poligono-regular" data-title="Polígono regular">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="100,20 171,72 144,155 56,155 29,72" fill="#ecfccb" stroke="#65a30d" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Marcas de igualdad en todos los lados -->
+              <line x1="132" y1="51" x2="139" y2="41" stroke="#65a30d" stroke-width="2"/>
+              <line x1="152" y1="112" x2="163" y2="115" stroke="#65a30d" stroke-width="2"/>
+              <line x1="100" y1="149" x2="100" y2="161" stroke="#65a30d" stroke-width="2"/>
+              <line x1="48" y1="112" x2="37" y2="115" stroke="#65a30d" stroke-width="2"/>
+              <line x1="68" y1="51" x2="61" y2="41" stroke="#65a30d" stroke-width="2"/>
+            </svg>
+          </math-figure>
+
+          <math-figure id="fig-poligono-irregular" data-title="Polígono irregular">
+            <svg width="200" height="180" viewBox="0 0 200 180" xmlns="http://w3.org">
+              <polygon points="45,25 165,45 140,105 175,155 30,145 55,85" fill="#f1f5f9" stroke="#475569" stroke-width="3" stroke-linejoin="round"/>
+            </svg>
+          </math-figure>
+
+        </sub-sub-section>
+
+        <!--- **39. Cálculo de áreas de rectángulos y triángulos**-->
+        <sub-sub-section id="capitulo-39-calculo-areas" data-title="Cálculo de áreas de rectángulos y triángulos">
+          <p>El área de un rectángulo se calcula como el producto de su base por su altura:</p>
+          <math-display>\[A_{\text{rectángulo}} = b \cdot h\]</math-display>
+          <p>El área de un triángulo se calcula como la mitad del producto de su base por su altura:</p>
+          <math-display>\[A_{\text{triángulo}} = \frac{1}{2} b \cdot h\]</math-display>
+
+          <math-figure id="fig-area-cuadrado" data-title="Área del cuadrado">
+            <svg width="220" height="200" viewBox="0 0 220 200" xmlns="http://w3.org">
+              <!-- Cuadrado -->
+              <rect x="45" y="25" width="120" height="120" fill="#e0f2fe" stroke="#0284c7" stroke-width="3" stroke-linejoin="round"/>
+              
+              <!-- Ángulo recto -->
+              <polyline points="45,130 60,130 60,145" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+              
+              <!-- Etiquetas de los lados (l) -->
+              <text x="105" y="168" font-family="sans-serif" font-size="18" font-style="italic" font-weight="bold" fill="#0369a1" text-anchor="middle">l</text>
+              <text x="180" y="90" font-family="sans-serif" font-size="18" font-style="italic" font-weight="bold" fill="#0369a1" text-anchor="middle">l</text>
+            </svg>
+            <p>$$A = l \times l = l^2$$</p>
+          </math-figure>
+
+          <math-figure id="fig-area-triangulo" data-title="Área del triángulo">
+            <svg width="220" height="200" viewBox="0 0 220 200" xmlns="http://w3.org">
+              <!-- Triángulo -->
+              <polygon points="95,25 30,150 190,150" fill="#dcfce7" stroke="#16a34a" stroke-width="3" stroke-linejoin="round"/>
+              
+              <!-- Línea punteada de la altura (h) -->
+              <line x1="95" y1="25" x2="95" y2="150" stroke="#15803d" stroke-width="2" stroke-dasharray="5,5"/>
+              
+              <!-- Cuadro de perpendicularidad (90°) en la base -->
+              <polyline points="95,136 109,136 109,150" fill="none" stroke="#15803d" stroke-width="1.5"/>
+              
+              <!-- Etiqueta de altura (h) y base (b) -->
+              <text x="82" y="95" font-family="sans-serif" font-size="18" font-style="italic" font-weight="bold" fill="#15803d" text-anchor="middle">h</text>
+              <text x="110" y="173" font-family="sans-serif" font-size="18" font-style="italic" font-weight="bold" fill="#15803d" text-anchor="middle">b</text>
+            </svg>
+            <p>$$A = \frac{b \times h}{2}$$</p>
+          </math-figure>
+
+        </sub-sub-section>
+
+        <!--- Circunferencia-->
+        <sub-sub-section id="sub-sub-section-circunferencia" data-title="Circunferencia">
+          <p>La circunferencia es un lugar geométrico que se define como el conjunto de todos los puntos en un plano que se encuentran a una distancia constante \(r\) de un punto fijo llamado centro.</p>
+          <p>El radio \(r\) es la distancia desde el centro hasta cualquier punto de la circunferencia, y la longitud de la circunferencia se puede calcular como \(C = 2\pi r\).</p>
+          <p>El área del círculo se calcula como \(A = \pi r^2\).</p>
+
+          <math-figure id="fig-circunferencia" data-title="Circunferencia">
+            <svg width="220" height="200" viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+              <!-- Circunferencia -->
+              <circle cx="110" cy="100" r="80" fill="#fef3c7" stroke="#ca8a04" stroke-width="3"/>
+              <!-- Radio (r) -->
+              <line x1="110" y1="100" x2="190" y2="100" stroke="#b45309" stroke-width="2" stroke-dasharray="5,5"/>
+              <!-- Etiqueta del radio (r) -->
+              <text x="150" y="90" font-family="sans-serif" font-size="18" font-style="italic" font-weight="bold" fill="#b45309" text-anchor="middle">r</text>
+            </svg>
+            <p>$$A = \pi r^2$$</p>
+          </math-figure>
+        </sub-sub-section>
+
+      </sub-section>
+
+      <!--- Geometría espacial y datos-->
+      <sub-section id="sub-section-geometria-espacial-y-datos" data-title="Geometría espacial y datos">
+        <p>En esta sección se estudian las figuras tridimensionales y cómo se representan los datos relacionados con ellas.</p>
+        <!--- Volúmenes y conversiones-->
+        <sub-sub-section id="sub-sub-section-volumenes-y-conversiones" data-title="Volúmenes y conversiones">
+          <p>El volumen se refiere a la cantidad de espacio que ocupa un objeto tridimensional. Se mide en unidades cúbicas, como centímetros cúbicos (\(cm^3\)), metros cúbicos (\(m^3\)) o litros (\(L\)).</p>
+
+          <p>Algunas figuras geométricas que ocupan espacio son:
+          </p>
+          <table>
+            <tr>
+              <th>Figura</th>
+              <th>Volumen</th>
+              <th>Descripción</th>
+            </tr>
+            <tr>
+              <td>Esfera</td>
+              <td>\(\frac{4}{3}\pi r^3\)</td>
+              <td>Figura tridimensional con todos los puntos a la misma distancia del centro.</td>
+            </tr>
+            <tr>
+              <td>Cubo</td>
+              <td>\(a^3\)</td>
+              <td>Figura con seis caras cuadradas iguales.</td>
+            </tr>
+            <tr>
+              <td>Prisma rectangular</td>
+              <td>\(l \cdot w \cdot h\)</td>
+              <td>Figura con seis caras rectangulares, opuestas iguales.</td>
+            </tr>
+            <tr>
+              <td>Cilindro</td>
+              <td>\(\pi r^2 h\)</td>
+              <td>Figura con dos bases circulares y altura \(h\).</td>
+            </tr>
+            <tr>
+              <td>Cono</td>
+              <td>\(\frac{1}{3}\pi r^2 h\)</td>
+              <td>Figura con una base circular y un vértice opuesto.</td>
+            </tr>
+          </table>
+        </sub-sub-section>
+
+        <!--- **40. Interpretación de gráficas de barras y líneas**-->
+        <sub-sub-section id="sub-sub-section-interpretacion-graficas" data-title="Interpretación de gráficas de barras y líneas">
+          <sub-sub-sub-section id="sub-sub-sub-section-interpretacion-graficas" data-title="Interpretación de gráficas de barras">
+            <p>Las gráficas de barras son figuras que representan datos mediante barras de diferentes alturas o longitudes, donde cada barra corresponde a una categoría específica.</p>
+            
+            <p>El eje X es la parte horizontal de la gráfica y representa las categorías o elementos que se están comparando.</p>
+            <p>El eje Y es la parte vertical de la gráfica y muestra los valores correspondientes a cada categoría del eje X.</p>
+
+            <p>Para interpretar una gráfica de barras, observa la altura de cada barra en relación con el eje Y. La altura indica el valor correspondiente a cada categoría en el eje X.</p>
+            
+            <math-example id="interpretacion-graficas" data-title="Ejemplo de interpretación de gráfica de barras">
+              <math-figure data-title="Ejemplo de gráfica de barras">
+                <svg width="450" height="300" viewBox="0 0 450 300" xmlns="http://w3.org" style="font-family: sans-serif; background: #ffffff;">
+                  <!-- Título -->
+                  <text x="225" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Ventas Trimestrales</text>
+
+                  <!-- Líneas de cuadrícula horizontales -->
+                  <line x1="60" y1="60" x2="410" y2="60" stroke="#e0e0e0" stroke-dasharray="4" />
+                  <line x1="60" y1="110" x2="410" y2="110" stroke="#e0e0e0" stroke-dasharray="4" />
+                  <line x1="60" y1="160" x2="410" y2="160" stroke="#e0e0e0" stroke-dasharray="4" />
+                  <line x1="60" y1="210" x2="410" y2="210" stroke="#e0e0e0" stroke-dasharray="4" />
+
+                  <!-- Ejes X e Y -->
+                  <line x1="60" y1="50" x2="60" y2="250" stroke="#333" stroke-width="2" />
+                  <line x1="60" y1="250" x2="410" y2="250" stroke="#333" stroke-width="2" />
+
+                  <!-- Etiquetas Eje Y -->
+                  <text x="50" y="254" text-anchor="end" font-size="12" fill="#666">0</text>
+                  <text x="50" y="214" text-anchor="end" font-size="12" fill="#666">25</text>
+                  <text x="50" y="164" text-anchor="end" font-size="12" fill="#666">50</text>
+                  <text x="50" y="114" text-anchor="end" font-size="12" fill="#666">75</text>
+                  <text x="50" y="64" text-anchor="end" font-size="12" fill="#666">100</text>
+
+                  <!-- Barra 1 (Valor: 45 -> altura: 90px) -->
+                  <rect x="90" y="160" width="50" height="90" fill="#4f46e5" rx="4" />
+                  <text x="115" y="153" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">45</text>
+                  <text x="115" y="270" text-anchor="middle" font-size="12" fill="#333">T1</text>
+
+                  <!-- Barra 2 (Valor: 80 -> altura: 160px) -->
+                  <rect x="170" y="90" width="50" height="160" fill="#4f46e5" rx="4" />
+                  <text x="195" y="83" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">80</text>
+                  <text x="195" y="270" text-anchor="middle" font-size="12" fill="#333">T2</text>
+
+                  <!-- Barra 3 (Valor: 60 -> altura: 120px) -->
+                  <rect x="250" y="130" width="50" height="120" fill="#4f46e5" rx="4" />
+                  <text x="275" y="123" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">60</text>
+                  <text x="275" y="270" text-anchor="middle" font-size="12" fill="#333">T3</text>
+
+                  <!-- Barra 4 (Valor: 95 -> altura: 190px) -->
+                  <rect x="330" y="60" width="50" height="190" fill="#4f46e5" rx="4" />
+                  <text x="355" y="53" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">95</text>
+                  <text x="355" y="270" text-anchor="middle" font-size="12" fill="#333">T4</text>
+                </svg>
+      
+              </math-figure>
+
+              <p>Este gráfico muestra la distribución de valores para los cuatro trimestres.</p>
+              <p>Cada barra representa un trimestre y su altura corresponde al valor registrado.</p>
+              <p>Por ejemplo, el trimestre 4 tiene el valor más alto, mientras que el trimestre 1 tiene el valor más bajo.</p>
+              <p>Este tipo de gráfico es útil para comparar rápidamente los valores de diferentes categorías y observar tendencias o diferencias significativas entre ellas.</p>
+              <p>Recuerda que la altura de cada barra es proporcional al valor que representa, por lo que una barra más alta indica un valor mayor.</p>
+            </math-example>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="interpretacion-de-grafica-de-lineas" data-title="Interpretación de gráfica de líneas">
+            <p>Una gráfica de líneas conecta puntos que representan valores a lo largo del tiempo o de otra variable continua.</p>
+            <p>Permite observar tendencias, aumentos o disminuciones de manera clara.</p>
+            <p>Para interpretar una gráfica de líneas, observa la dirección de la línea que conecta los puntos. Una línea ascendente indica un aumento en los valores, mientras que una línea descendente indica una disminución. También puedes identificar patrones, tendencias y posibles anomalías en los datos.</p>
+            <math-example id="interpretacion-grafica-lineas" data-title="Ejemplo de interpretación de gráfica de líneas">
+              <svg width="450" height="300" viewBox="0 0 450 300" xmlns="http://w3.org" style="font-family: sans-serif; background: #ffffff;">
+                <!-- Título -->
+                <text x="225" y="25" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Usuarios Activos (Miles)</text>
+
+                <!-- Líneas de cuadrícula horizontales -->
+                <line x1="60" y1="60" x2="410" y2="60" stroke="#e0e0e0" stroke-dasharray="4" />
+                <line x1="60" y1="110" x2="410" y2="110" stroke="#e0e0e0" stroke-dasharray="4" />
+                <line x1="60" y1="160" x2="410" y2="160" stroke="#e0e0e0" stroke-dasharray="4" />
+                <line x1="60" y1="210" x2="410" y2="210" stroke="#e0e0e0" stroke-dasharray="4" />
+
+                <!-- Ejes X e Y -->
+                <line x1="60" y1="50" x2="60" y2="250" stroke="#333" stroke-width="2" />
+                <line x1="60" y1="250" x2="410" y2="250" stroke="#333" stroke-width="2" />
+
+                <!-- Etiquetas Eje Y -->
+                <text x="50" y="254" text-anchor="end" font-size="12" fill="#666">0</text>
+                <text x="50" y="214" text-anchor="end" font-size="12" fill="#666">25</text>
+                <text x="50" y="164" text-anchor="end" font-size="12" fill="#666">50</text>
+                <text x="50" y="114" text-anchor="end" font-size="12" fill="#666">75</text>
+                <text x="50" y="64" text-anchor="end" font-size="12" fill="#666">100</text>
+
+                <!-- Línea de tendencia -->
+                <polyline 
+                  fill="none" 
+                  stroke="#0ea5e9" 
+                  stroke-width="3" 
+                  points="90,210 165,150 240,170 315,90 390,70" 
+                />
+
+                <!-- Puntos y etiquetas -->
+                <!-- Enero: 20 -->
+                <circle cx="90" cy="210" r="5" fill="#0284c7" />
+                <text x="90" y="200" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">20</text>
+                <text x="90" y="270" text-anchor="middle" font-size="12" fill="#333">Ene</text>
+
+                <!-- Febrero: 50 -->
+                <circle cx="165" cy="150" r="5" fill="#0284c7" />
+                <text x="165" y="140" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">50</text>
+                <text x="165" y="270" text-anchor="middle" font-size="12" fill="#333">Feb</text>
+
+                <!-- Marzo: 40 -->
+                <circle cx="240" cy="170" r="5" fill="#0284c7" />
+                <text x="240" y="160" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">40</text>
+                <text x="240" y="270" text-anchor="middle" font-size="12" fill="#333">Mar</text>
+
+                <!-- Abril: 80 -->
+                <circle cx="315" cy="90" r="5" fill="#0284c7" />
+                <text x="315" y="80" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">80</text>
+                <text x="315" y="270" text-anchor="middle" font-size="12" fill="#333">Abr</text>
+
+                <!-- Mayo: 90 -->
+                <circle cx="390" cy="70" r="5" fill="#0284c7" />
+                <text x="390" y="60" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">90</text>
+                <text x="390" y="270" text-anchor="middle" font-size="12" fill="#333">May</text>
+              </svg>
+              <p>Este gráfico muestra la evolución de los valores a lo largo de los meses.</p>
+              <p>Observa cómo los puntos representan los valores de cada mes y la línea azul indica la tendencia general.</p>
+              <p>Fíjate en cómo los valores más altos se encuentran en los meses de abril y mayo, mientras que los más bajos corresponden a enero y marzo.</p>
+              <p>Este tipo de gráfico es útil para identificar tendencias y patrones en los datos a lo largo del tiempo.</p>
+            </math-example>
+          </sub-sub-sub-section>
+        </sub-sub-section>
+
+        <!--- Media-->
+        <sub-section id="media" data-title="Media">
+          <p>La media aritmética de un conjunto de datos se calcula sumando todos los valores y dividiendo entre el número de datos.</p>
+          <p>La media se representa con \(\bar{x}\).</p>
+          <p>Por ejemplo, si tenemos los datos \(2, 4, 6\), la media se calcula como:</p>
+          <math-display>\[\bar{x}=\frac{2+4+6}{3}=4\]</math-display>
+
+          <math-examples>
+            <math-example id="media-ejemplo" data-title="Ejemplo de media">
+              <p>Calcula la media de los datos \(2, 4, 6\).</p>
+              <math-display>\[\bar{x}=\frac{2+4+6}{3}=4\]</math-display>
+            </math-example>
+            <math-example id="media-ejemplo-2" data-title="Otro ejemplo de media">
+              <p>Calcula la media de los datos \(5, 10, 15\).</p>
+              <math-display>\[\bar{x}=\frac{5+10+15}{3}=10\]</math-display>
+            </math-example>
+          </math-examples>
+
+          <math-excersices>
+            <math-excercise id="media-ejercicio-1" data-title="Ejercicio de media">
+              <p>Calcula la media de los datos \(3, 6, 9\).</p>
+            </math-excercise>
+            <math-excercise id="media-ejercicio-2" data-title="Otro ejercicio de media">
+              <p>Calcula la media de los datos \(7, 14, 21\).</p>
+            </math-excercise>
+          </math-excersices>
+        </sub-section>
+
+        <!--Mediana-->
+        <sub-section id="mediana" data-title="Mediana">
+          <p>La mediana de un conjunto de datos es el valor que ocupa la posición central cuando los datos están ordenados.</p>
+          <p>Si hay un número par de datos, la mediana es el promedio de los dos valores centrales.</p>
+          <math-examples>
+            <math-example id="mediana-ejemplo" data-title="Ejemplo de mediana">
+              <p>Encuentra la mediana de los datos \(2, 4, 6\).</p>
+              <math-display>\[2, 4, 6 \implies \text{mediana} = 4\]</math-display>
+            </math-example>
+            <math-example id="mediana-ejemplo-2" data-title="Otro ejemplo de mediana">
+              <p>Encuentra la mediana de los datos \(1, 3, 5, 7\).</p>
+              <math-display>\[1, 3, 5, 7 \implies \text{mediana} = \frac{3+5}{2} = 4\]</math-display>
+            </math-example>
+          </math-examples>
+          <math-excersices>
+            <math-excercise id="mediana-ejercicio-1" data-title="Ejercicio de mediana">
+              <p>Encuentra la mediana de los datos \(3, 6, 9\).</p>
+            </math-excercise>
+            <math-excercise id="mediana-ejercicio-2" data-title="Otro ejercicio de mediana">
+              <p>Encuentra la mediana de los datos \(2, 4, 6, 8\).</p>
+            </math-excercise>
+          </math-excersices>
+        </sub-section>
+
+        <!--Moda-->
+        <sub-section id="moda" data-title="Moda">
+          <p>La moda de un conjunto de datos es el valor que más se repite.</p>
+          <math-examples>
+            <math-example id="moda-ejemplo" data-title="Ejemplo de moda">
+              <p>Encuentra la moda de los datos \(2, 4, 4, 6\).</p>
+              <math-display>\[2, 4, 4, 6 \implies \text{moda} = 4\]</math-display>
+            </math-example>
+          </math-examples>
+          <math-excersices>
+            <math-excercise id="moda-ejercicio-1" data-title="Ejercicio de moda">
+              <p>Encuentra la moda de los datos \(3, 3, 6, 9\).</p>
+            </math-excercise>
+            <math-excercise id="moda-ejercicio-2" data-title="Otro ejercicio de moda">
+              <p>Encuentra la moda de los datos \(2, 4, 4, 6, 6\).</p>
+            </math-excercise>
+          </math-excersices>
+        </sub-section>
+
+        <!--Rango-->
+        <sub-section id="rango" data-title="Rango">
+          <p>El rango de un conjunto de datos es la diferencia entre el valor máximo y el valor mínimo.</p>
+          <math-examples>
+            <math-example id="rango-ejemplo" data-title="Ejemplo de rango">
+              <p>Encuentra el rango de los datos \(2, 4, 4, 6\).</p>
+              <math-display>\[ \text{rango} = 6 - 2 = 4 \]</math-display>
+            </math-example>
+          </math-examples>
+          <math-excersices>
+            <math-excercise id="rango-ejercicio-1" data-title="Ejercicio de rango">
+              <p>Encuentra el rango de los datos \(3, 3, 6, 9\).</p>
+            </math-excercise>
+            <math-excercise id="rango-ejercicio-2" data-title="Otro ejercicio de rango">
+              <p>Encuentra el rango de los datos \(2, 4, 4, 6, 6\).</p>
+            </math-excercise>
+          </math-excersices>
+        </sub-section>
+      </sub-section>
+    </section>
   </chapter>
+
+  <chapter id="secundaria" data-title="Secundaria">
+    <!--- Secundaria inicial-->
+    <section id="secundaria-inicial" data-title="Secundaria Inicial">
+
+      <!--- Enteros, potencias y raíces-->
+      <sub-section id="enteros-potencias-raices" data-title="Enteros, potencias y raíces">
+
+        <!--- Números negativos-->
+        <sub-sub-section id="numeros-negativos" data-title="Números negativos">
+          <p>Los números negativos son aquellos menores que cero y se representan con un signo menos delante.</p>
+          <math-examples>
+            <math-example id="numeros-negativos-ejemplo" data-title="Ejemplo de números negativos">
+              <p>Identifica los números negativos en la lista \(-3, 0, 4, -1, 5\).</p>
+              <p>Los números negativos son \(-3\) y \(-1\).</p>
+            </math-example>
+          </math-examples>
+
+          <p>En la recta numérica se puede ver de la siguiente manera:</p>
+
+          <math-figure data-title="Recta numérica">
+            <svg width="700" height="100" viewBox="0 0 700 100" xmlns="http://w3.org" style="font-family: sans-serif; background: #ffffff;">
+              <!-- Definición de puntas de flecha -->
+              <defs>
+                <marker id="flecha-der" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#333" />
+                </marker>
+                <marker id="flecha-izq" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 10 1 L 0 5 L 10 9 z" fill="#333" />
+                </marker>
+              </defs>
+
+              <!-- Línea principal con flechas en ambos extremos -->
+              <line x1="25" y1="45" x2="675" y2="45" stroke="#333" stroke-width="2" marker-start="url(#flecha-izq)" marker-end="url(#flecha-der)" />
+
+              <!-- Marcas y números (espaciados cada 30px, con el 0 en x=350) -->
+              <!-- -10 -->
+              <line x1="50" y1="38" x2="50" y2="52" stroke="#333" stroke-width="1.5" />
+              <text x="50" y="70" text-anchor="middle" font-size="12" fill="#333">-10</text>
+
+              <!-- -9 -->
+              <line x1="80" y1="40" x2="80" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="80" y="70" text-anchor="middle" font-size="12" fill="#555">-9</text>
+
+              <!-- -8 -->
+              <line x1="110" y1="40" x2="110" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="110" y="70" text-anchor="middle" font-size="12" fill="#555">-8</text>
+
+              <!-- -7 -->
+              <line x1="140" y1="40" x2="140" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="140" y="70" text-anchor="middle" font-size="12" fill="#555">-7</text>
+
+              <!-- -6 -->
+              <line x1="170" y1="40" x2="170" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="170" y="70" text-anchor="middle" font-size="12" fill="#555">-6</text>
+
+              <!-- -5 -->
+              <line x1="200" y1="38" x2="200" y2="52" stroke="#333" stroke-width="1.5" />
+              <text x="200" y="70" text-anchor="middle" font-size="12" fill="#333">-5</text>
+
+              <!-- -4 -->
+              <line x1="230" y1="40" x2="230" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="230" y="70" text-anchor="middle" font-size="12" fill="#555">-4</text>
+
+              <!-- -3 -->
+              <line x1="260" y1="40" x2="260" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="260" y="70" text-anchor="middle" font-size="12" fill="#555">-3</text>
+
+              <!-- -2 -->
+              <line x1="290" y1="40" x2="290" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="290" y="70" text-anchor="middle" font-size="12" fill="#555">-2</text>
+
+              <!-- -1 -->
+              <line x1="320" y1="40" x2="320" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="320" y="70" text-anchor="middle" font-size="12" fill="#555">-1</text>
+
+              <!-- 0 (Origen destacado) -->
+              <line x1="350" y1="35" x2="350" y2="55" stroke="#dc2626" stroke-width="2.5" />
+              <text x="350" y="72" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">0</text>
+
+              <!-- 1 -->
+              <line x1="380" y1="40" x2="380" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="380" y="70" text-anchor="middle" font-size="12" fill="#555">1</text>
+
+              <!-- 2 -->
+              <line x1="410" y1="40" x2="410" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="410" y="70" text-anchor="middle" font-size="12" fill="#555">2</text>
+
+              <!-- 3 -->
+              <line x1="440" y1="40" x2="440" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="440" y="70" text-anchor="middle" font-size="12" fill="#555">3</text>
+
+              <!-- 4 -->
+              <line x1="470" y1="40" x2="470" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="470" y="70" text-anchor="middle" font-size="12" fill="#555">4</text>
+
+              <!-- 5 -->
+              <line x1="500" y1="38" x2="500" y2="52" stroke="#333" stroke-width="1.5" />
+              <text x="500" y="70" text-anchor="middle" font-size="12" fill="#333">5</text>
+
+              <!-- 6 -->
+              <line x1="530" y1="40" x2="530" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="530" y="70" text-anchor="middle" font-size="12" fill="#555">6</text>
+
+              <!-- 7 -->
+              <line x1="560" y1="40" x2="560" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="560" y="70" text-anchor="middle" font-size="12" fill="#555">7</text>
+
+              <!-- 8 -->
+              <line x1="590" y1="40" x2="590" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="590" y="70" text-anchor="middle" font-size="12" fill="#555">8</text>
+
+              <!-- 9 -->
+              <line x1="620" y1="40" x2="620" y2="50" stroke="#666" stroke-width="1.2" />
+              <text x="620" y="70" text-anchor="middle" font-size="12" fill="#555">9</text>
+
+              <!-- 10 -->
+              <line x1="650" y1="38" x2="650" y2="52" stroke="#333" stroke-width="1.5" />
+              <text x="650" y="70" text-anchor="middle" font-size="12" fill="#333">10</text>
+            </svg>
+
+          </math-figure>
+
+          <p>En esa recta numérica se muestra la posición de los números negativos y positivos, así como el cero.</p>
+
+          <math-remark data-title="Observación">
+            <p>El cero se encuentra en el centro de la recta numérica, separando los números negativos de los positivos.</p>
+            <p>Además, los números negativos se deben ver como números en sí mismos, no como componentes de la operación resta.</p>
+          </math-remark>
+
+        </sub-sub-section>
+
+        <!--- **41. Valor absoluto y comparación de números enteros**-->
+        <sub-sub-section id="valor-absoluto-comparacion" data-title="Valor absoluto y comparación de números enteros">
+          <p>El valor absoluto de un número entero es su distancia al cero en la recta numérica, sin considerar su signo.</p>
+          <p>El valor absoluto se denota con barras verticales alrededor del número: \(|a|\).</p>
+
+          <p>En la recta numérica se puede ver la distancia de un número al cero, que corresponde a su valor absoluto.</p>
+          <p>Por ejemplo, el valor absoluto de -6 es 6, ya que está a 6 unidades de distancia del cero en la recta numérica. De manera similar, el valor absoluto de 4 es 4, ya que está a 4 unidades de distancia del cero.</p>
+          <math-figure data-title="Recta numérica con valor absoluto">
+            <svg width="700" height="175" viewBox="0 0 700 175" xmlns="http://w3.org" style="font-family: sans-serif; background: #ffffff;">
+              <!-- Definición de puntas de flecha -->
+              <defs>
+                <marker id="flecha-der" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#333" />
+                </marker>
+                <marker id="flecha-izq" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 10 1 L 0 5 L 10 9 z" fill="#333" />
+                </marker>
+              </defs>
+
+              <!-- Título -->
+              <text x="350" y="22" text-anchor="middle" font-size="15" font-weight="bold" fill="#1e293b">Valor Absoluto: Distancia desde el 0</text>
+
+              <!-- ========================================================= -->
+              <!-- EJEMPLO 1: Número negativo |-6| = 6 (x=170 hasta x=350)   -->
+              <!-- ========================================================= -->
+              <!-- Corchete superior de distancia -->
+              <path d="M 170 72 L 170 58 L 348 58 L 348 72" fill="none" stroke="#2563eb" stroke-width="2" />
+              <line x1="259" y1="58" x2="259" y2="52" stroke="#2563eb" stroke-width="2" />
+              <!-- Etiqueta |-6| = 6 -->
+              <rect x="204" y="32" width="110" height="22" rx="4" fill="#eff6ff" stroke="#93c5fd" stroke-width="1" />
+              <text x="259" y="47" text-anchor="middle" font-size="12" font-weight="bold" fill="#1d4ed8">|-6| = 6 unidades</text>
+
+              <!-- ========================================================= -->
+              <!-- EJEMPLO 2: Número positivo |4| = 4 (x=350 hasta x=470)    -->
+              <!-- ========================================================= -->
+              <!-- Corchete superior de distancia -->
+              <path d="M 352 72 L 352 58 L 470 58 L 470 72" fill="none" stroke="#059669" stroke-width="2" />
+              <line x1="411" y1="58" x2="411" y2="52" stroke="#059669" stroke-width="2" />
+              <!-- Etiqueta |4| = 4 -->
+              <rect x="361" y="32" width="100" height="22" rx="4" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1" />
+              <text x="411" y="47" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">|4| = 4 unidades</text>
+
+              <!-- ========================================================= -->
+              <!-- RECTA NUMÉRICA BASE (y = 95)                              -->
+              <!-- ========================================================= -->
+              <line x1="25" y1="95" x2="675" y2="95" stroke="#333" stroke-width="2" marker-start="url(#flecha-izq)" marker-end="url(#flecha-der)" />
+
+              <!-- Segmentos resaltados sobre la recta -->
+              <line x1="170" y1="95" x2="350" y2="95" stroke="#2563eb" stroke-width="4" />
+              <line x1="350" y1="95" x2="470" y2="95" stroke="#059669" stroke-width="4" />
+
+              <!-- Marcas y números (-10 a 10, cada 30px) -->
+              <!-- -10 -->
+              <line x1="50" y1="88" x2="50" y2="102" stroke="#333" stroke-width="1.5" />
+              <text x="50" y="120" text-anchor="middle" font-size="12" fill="#333">-10</text>
+              <!-- -9 -->
+              <line x1="80" y1="90" x2="80" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="80" y="120" text-anchor="middle" font-size="12" fill="#555">-9</text>
+              <!-- -8 -->
+              <line x1="110" y1="90" x2="110" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="110" y="120" text-anchor="middle" font-size="12" fill="#555">-8</text>
+              <!-- -7 -->
+              <line x1="140" y1="90" x2="140" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="140" y="120" text-anchor="middle" font-size="12" fill="#555">-7</text>
+              <!-- -6 (Destacado) -->
+              <line x1="170" y1="88" x2="170" y2="102" stroke="#2563eb" stroke-width="2" />
+              <text x="170" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#2563eb">-6</text>
+              <!-- -5 -->
+              <line x1="200" y1="88" x2="200" y2="102" stroke="#333" stroke-width="1.5" />
+              <text x="200" y="120" text-anchor="middle" font-size="12" fill="#333">-5</text>
+              <!-- -4 -->
+              <line x1="230" y1="90" x2="230" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="230" y="120" text-anchor="middle" font-size="12" fill="#555">-4</text>
+              <!-- -3 -->
+              <line x1="260" y1="90" x2="260" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="260" y="120" text-anchor="middle" font-size="12" fill="#555">-3</text>
+              <!-- -2 -->
+              <line x1="290" y1="90" x2="290" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="290" y="120" text-anchor="middle" font-size="12" fill="#555">-2</text>
+              <!-- -1 -->
+              <line x1="320" y1="90" x2="320" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="320" y="120" text-anchor="middle" font-size="12" fill="#555">-1</text>
+
+              <!-- 0 (Origen) -->
+              <line x1="350" y1="85" x2="350" y2="105" stroke="#dc2626" stroke-width="2.5" />
+              <text x="350" y="122" text-anchor="middle" font-size="13" font-weight="bold" fill="#dc2626">0</text>
+
+              <!-- 1 -->
+              <line x1="380" y1="90" x2="380" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="380" y="120" text-anchor="middle" font-size="12" fill="#555">1</text>
+              <!-- 2 -->
+              <line x1="410" y1="90" x2="410" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="410" y="120" text-anchor="middle" font-size="12" fill="#555">2</text>
+              <!-- 3 -->
+              <line x1="440" y1="90" x2="440" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="440" y="120" text-anchor="middle" font-size="12" fill="#555">3</text>
+              <!-- 4 (Destacado) -->
+              <line x1="470" y1="88" x2="470" y2="102" stroke="#059669" stroke-width="2" />
+              <text x="470" y="120" text-anchor="middle" font-size="13" font-weight="bold" fill="#059669">4</text>
+              <!-- 5 -->
+              <line x1="500" y1="88" x2="500" y2="102" stroke="#333" stroke-width="1.5" />
+              <text x="500" y="120" text-anchor="middle" font-size="12" fill="#333">5</text>
+              <!-- 6 -->
+              <line x1="530" y1="90" x2="530" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="530" y="120" text-anchor="middle" font-size="12" fill="#555">6</text>
+              <!-- 7 -->
+              <line x1="560" y1="90" x2="560" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="560" y="120" text-anchor="middle" font-size="12" fill="#555">7</text>
+              <!-- 8 -->
+              <line x1="590" y1="90" x2="590" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="590" y="120" text-anchor="middle" font-size="12" fill="#555">8</text>
+              <!-- 9 -->
+              <line x1="620" y1="90" x2="620" y2="100" stroke="#666" stroke-width="1.2" />
+              <text x="620" y="120" text-anchor="middle" font-size="12" fill="#555">9</text>
+              <!-- 10 -->
+              <line x1="650" y1="88" x2="650" y2="102" stroke="#333" stroke-width="1.5" />
+              <text x="650" y="120" text-anchor="middle" font-size="12" fill="#333">10</text>
+
+              <!-- Puntos sólidos sobre los valores evaluados y el origen -->
+              <circle cx="170" cy="95" r="5" fill="#2563eb" />
+              <circle cx="350" cy="95" r="5" fill="#dc2626" />
+              <circle cx="470" cy="95" r="5" fill="#059669" />
+
+              <!-- Nota explicativa inferior -->
+              <text x="350" y="155" text-anchor="middle" font-size="12" fill="#475569">La distancia siempre es positiva, sin importar si el número está a la izquierda o derecha del 0.</text>
+            </svg>
+
+          </math-figure>
+
+          <p>El valor absoluto de un número indica su distancia al cero en la recta numérica, sin importar si el número es positivo o negativo.</p>
+
+          <p>En dado caso que no sean números enteros, el comportamiento es el mismo, por ejemplo, el valor absoluto de -2.5 es 2.5 y el valor absoluto de 3.7 es 3.7.</p>
+
+          <p>Por otro lado, para comparar la distancia entre dos números en la recta numérica, se utiliza el valor absoluto de su diferencia. Por ejemplo, la distancia entre -2 y 3 es \(|-2-3| = |-5| = 5\), y la distancia entre 4 y 1 es \(|4-1| = |3| = 3\).</p>
+
+          <p>En general, la distancia entre dos números \(a\) y \(b\) en la recta numérica se calcula como \(|a-b|\), lo que garantiza que siempre sea un valor positivo o cero.</p>
+
+          <math-excersices data-title="Ejercicios">
+            <math-excercise id="valor-absoluto-1" data-title="Ejercicio 1">
+              <p>Calcula el valor absoluto de -7.</p>
+            </math-excercise>
+            <math-excercise id="valor-absoluto-2" data-title="Ejercicio 2">
+              <p>Calcula la distancia entre -4 y 5 en la recta numérica.</p>
+            </math-excercise>
+          </math-excersices>
+        </sub-sub-section>
+
+        <!--- **42. Suma, resta, multiplicación y división de números enteros**-->
+        <sub-sub-section id="suma-resta-multiplicacion-division-enteros" data-title="Suma, resta, multiplicación y división de números enteros">
+          
+          <math-definition data-title="Definición de números enteros">
+            <p>Un número entero es un número que puede ser positivo, negativo o cero, y no tiene parte fraccionaria. Se denota generalmente por la letra \( \mathbb{Z} \).</p>
+          </math-definition>
+
+          <p>Los números enteros incluyen los números positivos (\(1, 2, 3, \dots\)), los números negativos (\(-1, -2, -3, \dots\)) y el cero (\(0\)).</p>
+          <p>Las operaciones básicas con números enteros siguen reglas específicas que permiten sumar, restar, multiplicar y dividir estos números de manera consistente.</p>
+
+          <p>Cuando sumas, restas, divides o multiplicas dos números positivos, el procedimiento es el usual que se aprende en aritmética básica.</p>
+
+          <p>Sin embargo, cuando se involucran números negativos, se deben seguir reglas específicas:</p>
+
+          <p>Vayamos por partes y dividamos en las posibles combinaciones de signos y cómo elaborar cada operación.</p>
+
+
+          <table>
+            <thead>
+              <tr>
+                <th>Operación</th>
+                <th>Combinación de signos</th>
+                <th>Ejemplo</th>
+                <th>Regla</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Suma</td>
+                <td>Positivo + Negativo</td>
+                <td>\(5 + (-3) = 5 - 3 = 2\)</td>
+                <td>Resta el valor absoluto del segundo del primero y conserva el signo del mayor en valor absoluto.</td>
+              </tr>
+              <tr>
+                <td>Resta</td>
+                <td>Positivo - Negativo</td>
+                <td>\(5 - (-3) = 5 + 3 = 8\)</td>
+                <td>Convierte la resta en suma del opuesto: 5 + 3 = 8.</td>
+              </tr>
+              <tr>
+                <td>Multiplicación</td>
+                <td>Positivo × Negativo</td>
+                <td>\(4 × (-2) = -8\)</td>
+                <td>El resultado es negativo.</td>
+              </tr>
+              <tr>
+                <td>División</td>
+                <td>Negativo ÷ Positivo</td>
+                <td>\(-6 ÷ 2 = -3\)</td>
+                <td>El resultado es negativo.</td>
+              </tr>
+              <tr>
+              <tr>
+                <td>Suma</td>
+                <td>Negativo + Negativo</td>
+                <td>\(-4 + (-3) = -4 - 3 = -7\)</td>
+                <td>Suma los valores absolutos y conserva el signo negativo.</td>
+              </tr>
+              <tr>
+                <td>Resta</td>
+                <td>Negativo - Negativo</td>
+                <td>\(-4 - (-3) = -4 + 3 = -1\)</td>
+                <td>Convierte la resta en suma del opuesto y opera como con signos iguales.</td>
+              </tr>
+              <tr>
+                <td>Multiplicación</td>
+                <td>Negativo × Negativo</td>
+                <td>\(-4 × (-3) = 12\)</td>
+                <td>El resultado es positivo.</td>
+              </tr>
+              <tr>
+                <td>División</td>
+                <td>Negativo ÷ Negativo</td>
+                <td>\(-6 ÷ (-2) = 3\)</td>
+                <td>El resultado es positivo.</td>
+              </tr>
+              <tr>
+                <td>Suma</td>
+                <td>Positivo + Positivo</td>
+                <td>\(4 + 3 = 7\)</td>
+                <td>Suma los valores y conserva el signo positivo.</td>
+              </tr>
+              <tr>
+                <td>Resta</td>
+                <td>Positivo - Positivo</td>
+                <td>\(4 - 3 = 1\)</td>
+                <td>Resta los valores y conserva el signo del mayor en valor absoluto.</td>
+              </tr>
+              <tr>
+                <td>Multiplicación</td>
+                <td>Positivo × Positivo</td>
+                <td>\(4 × 3 = 12\)</td>
+                <td>El resultado es positivo.</td>
+              </tr>
+              <tr>
+                <td>División</td>
+                <td>Positivo ÷ Positivo</td>
+                <td>\(6 ÷ 2 = 3\)</td>
+                <td>El resultado es positivo.</td>
+              </tr>
+              <tr>
+                <td>Suma</td>
+                <td>Positivo + Negativo</td>
+                <td>\(4 + (-3) = 4 - 3 = 1\)</td>
+                <td>Resta los valores absolutos y conserva el signo del mayor en valor absoluto.</td>
+              </tr>
+              <tr>
+                <td>Resta</td>
+                <td>Positivo - Negativo</td>
+                <td>\(4 - (-3) = 4 + 3 = 7\)</td>
+                <td>Convierte la resta en suma del opuesto y opera como con signos iguales.</td>
+              </tr>
+              <tr>
+                <td>Multiplicación</td>
+                <td>Positivo × Negativo</td>
+                <td>\(4 × (-3) = -12\)</td>
+                <td>El resultado es negativo.</td>
+              </tr>
+              <tr>
+                <td>División</td>
+                <td>Positivo ÷ Negativo</td>
+                <td>\(6 ÷ (-2) = -3\)</td>
+                <td>El resultado es negativo.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <math-excersices id="ejercicios-signos" data-title="Ejercicios sobre signos">
+            <math-exercise id="ejercicio-1" data-title="Ejercicio 1">
+              <p>Calcula: \(4 + (-3)\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-2" data-title="Ejercicio 2">
+              <p>Calcula: \(4 - (-3)\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-3" data-title="Ejercicio 3">
+              <p>Calcula: \((4)\times (-3)\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-4" data-title="Ejercicio 4">
+              <p>Calcula: \(6 \div (-2)\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-5" data-title="Ejercicio 5">
+              <p>Calcula: \((-4) + 3\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-6" data-title="Ejercicio 6">
+              <p>Calcula: \((-4) - 3\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-7" data-title="Ejercicio 7">
+              <p>Calcula: \((-4) × 3\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-8" data-title="Ejercicio 8">
+              <p>Calcula: \((-6) ÷ 2\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-9" data-title="Ejercicio 9">
+              <p>Calcula: \((-4) + (-3)\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-10" data-title="Ejercicio 10">
+              <p>Calcula: \((-4) - (-3)\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-11" data-title="Ejercicio 11">
+              <p>Calcula: \((-4) × (-3)\)</p>
+            </math-exercise>
+            <math-exercise id="ejercicio-12" data-title="Ejercicio 12">
+              <p>Calcula: \((-6) ÷ (-2)\)</p>
+            </math-exercise>
+          </math-excersices>
+
+        </sub-sub-section>
+
+        <!--- **43. Operaciones y comparación de números racionales**-->
+        <sub-sub-section id="capitulo-43-apartado-01-operaciones-comparacion" data-title="Operaciones y comparación de números racionales">
+          <p>En esta sección se estudian las operaciones y la comparación de números racionales.</p>
+          <p>Las reglas con los signos se aplican de igual forma que en los números enteros.</p>
+          <p>Se pueden realizar sumas, restas, multiplicaciones y divisiones de números racionales siguiendo las reglas de los signos.</p>
+
+          <p>Describiremos los procedimientos y ejemplos para realizar operaciones con números racionales.</p>
+
+          <sub-sub-sub-section id="suma-de-numeros-racionales" data-title="Suma de números racionales">
+            <p>La suma de números racionales se realiza siguiendo las reglas de los signos y encontrando un denominador común si es necesario.</p>
+            <math-examples>
+              <math-example id="c43-s1-ejemplo-1" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{1}{2}+\frac{1}{3}\).</p>
+                <p>El denominador común puede ser 6:</p>
+                <math-display>\[\frac{1}{2}+\frac{1}{3}=\frac{3}{6}+\frac{2}{6}=\frac{5}{6}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s1-ejemplo-2" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{2}{5}+\frac{3}{10}\).</p>
+                <p>El denominador común puede ser 10:</p>
+                <math-display>\[\frac{2}{5}+\frac{3}{10}=\frac{4}{10}+\frac{3}{10}=\frac{7}{10}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s1-ejemplo-3" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{3}{4}+\frac{5}{6}\).</p>
+                <p>El denominador común puede ser 12:</p>
+                <math-display>\[\frac{3}{4}+\frac{5}{6}=\frac{9}{12}+\frac{10}{12}=\frac{19}{12}.\]</math-display>
+              </math-example>
+
+              <p>Dentro de la suma también se pueden encontrar fracciones negativas, y se deben aplicar las reglas de los signos al sumarlas.</p>
+              <math-example id="c43-s1-ejemplo-4" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{3}{4} + \left(-\frac{5}{6}\right)\).</p>
+                <p>El denominador común puede ser 12:</p>
+                <math-display>\[\frac{3}{4} + \left(-\frac{5}{6}\right) = \frac{9}{12} - \frac{10}{12} = -\frac{1}{12}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s1-ejemplo-5" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{-2}{3} + \frac{5}{6}\).</p>
+                <p>El denominador común puede ser 6:</p>
+                <math-display>\[\frac{-2}{3} + \frac{5}{6} = \frac{-4}{6} + \frac{5}{6} = \frac{1}{6}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s1-ejemplo-6" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{-3}{5} + \left(-\frac{2}{5}\right)\).</p>
+                <p>El denominador común puede ser 5:</p>
+                <math-display>\[\frac{-3}{5} + \left(-\frac{2}{5}\right) = \frac{-3}{5} - \frac{2}{5} = \frac{-5}{5} = -1.\]</math-display>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="resta-de-numeros-racionales" data-title="Resta de números racionales">
+            <p>La resta de números racionales se realiza siguiendo las reglas de los signos y encontrando un denominador común si es necesario.</p>
+            <math-examples>
+              <math-example id="c43-s2-ejemplo-1" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{3}{4}-\frac{1}{2}\).</p>
+                <p>El denominador común puede ser 4:</p>
+                <math-display>\[\frac{3}{4}-\frac{1}{2}=\frac{3}{4}-\frac{2}{4}=\frac{1}{4}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s2-ejemplo-2" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{5}{6}-\frac{1}{3}\).</p>
+                <p>El denominador común puede ser 6:</p>
+                <math-display>\[\frac{5}{6}-\frac{1}{3}=\frac{5}{6}-\frac{2}{6}=\frac{3}{6}=\frac{1}{2}.\]</math-display>
+              </math-example>
+
+              <p>Dentro de la resta también se pueden encontrar fracciones negativas, y se deben aplicar las reglas de los signos al restarlas.</p>
+              <math-example id="c43-s2-ejemplo-3" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{3}{4}-\left(-\frac{5}{6}\right)\).</p>
+                <p>El denominador común puede ser 12:</p>
+                <math-display>\[\frac{3}{4}-\left(-\frac{5}{6}\right)=\frac{9}{12}+\frac{10}{12}=\frac{19}{12}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s2-ejemplo-4" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{-2}{3}-\frac{5}{6}\).</p>
+                <p>El denominador común puede ser 6:</p>
+                <math-display>\[\frac{-2}{3}-\frac{5}{6}=\frac{-4}{6}-\frac{5}{6}=\frac{-9}{6}=-\frac{3}{2}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s2-ejemplo-5" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{-3}{4}-\left(-\frac{5}{6}\right)\).</p>
+                <p>El denominador común puede ser 12:</p>
+                <math-display>\[\frac{-3}{4}-\left(-\frac{5}{6}\right)=\frac{-9}{12}+\frac{10}{12}=\frac{1}{12}.\]</math-display>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="multiplicacion-de-numeros-racionales" data-title="Multiplicación de números racionales">
+            <p>La multiplicación de números racionales se realiza multiplicando numeradores y denominadores directamente.</p>
+            <math-examples>
+              <math-example id="c43-s3-ejemplo-1" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{2}{3}\cdot\frac{3}{4}\).</p>
+                <math-display>\[\frac{2}{3}\cdot\frac{3}{4}=\frac{6}{12}=\frac{1}{2}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s3-ejemplo-2" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{5}{6}\cdot\frac{2}{3}\).</p>
+                <math-display>\[\frac{5}{6}\cdot\frac{2}{3}=\frac{10}{18}=\frac{5}{9}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s3-ejemplo-3" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{7}{8}\cdot\frac{4}{5}\).</p>
+                <math-display>\[\frac{7}{8}\cdot\frac{4}{5}=\frac{28}{40}=\frac{7}{10}.\]</math-display>
+              </math-example>
+              <p>Dentro de la multiplicación de números racionales también se pueden encontrar fracciones negativas, y se deben aplicar las reglas de los signos al multiplicarlas.</p>
+              <math-example id="c43-s3-ejemplo-4" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{-2}{3}\cdot\frac{5}{6}\).</p>
+                <math-display>\[\frac{-2}{3}\cdot\frac{5}{6}=\frac{-10}{18}=\frac{-5}{9}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s3-ejemplo-5" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{-3}{4}\cdot\frac{-2}{5}\).</p>
+                <math-display>\[\frac{-3}{4}\cdot\frac{-2}{5}=\frac{6}{20}=\frac{3}{10}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s3-ejemplo-6" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{3}{4}\cdot\frac{-5}{6}\).</p>
+                <math-display>\[\frac{3}{4}\cdot\frac{-5}{6}=\frac{-15}{24}=\frac{-5}{8}.\]</math-display>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+          <sub-sub-sub-section id="division-de-numeros-racionales" data-title="División de números racionales">
+            <p>La división de números racionales se realiza multiplicando por el inverso del divisor.</p>
+            <math-examples>
+              <math-example id="c43-s4-ejemplo-1" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{2}{3}\div\frac{3}{4}\).</p>
+                <math-display>\[\frac{2}{3}\div\frac{3}{4}=\frac{2}{3}\cdot\frac{4}{3}=\frac{8}{9}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s4-ejemplo-2" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{5}{6}\div\frac{2}{3}\).</p>
+                <math-display>\[\frac{5}{6}\div\frac{2}{3}=\frac{5}{6}\cdot\frac{3}{2}=\frac{15}{12}=\frac{5}{4}.\]</math-display>
+              </math-example>
+              <p>Dentro de la división de números racionales también se pueden encontrar fracciones negativas, y se deben aplicar las reglas de los signos al multiplicar por el inverso del divisor.</p>
+              <math-example id="c43-s4-ejemplo-3" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{-2}{3}\div\frac{5}{6}\).</p>
+                <math-display>\[\frac{-2}{3}\div\frac{5}{6}=\frac{-2}{3}\cdot\frac{6}{5}=\frac{-12}{15}=\frac{-4}{5}.\]</math-display>
+              </math-example>
+              <math-example id="c43-s4-ejemplo-4" data-title="Ejemplo resuelto">
+                <p>Calcula \(\frac{3}{4}\div\frac{-2}{5}\).</p>
+                <math-display>\[\frac{3}{4}\div\frac{-2}{5}=\frac{3}{4}\cdot\frac{-5}{2}=\frac{-15}{8}.\]</math-display>
+              </math-example>
+            </math-examples>
+          </sub-sub-sub-section>
+
+        </sub-sub-section>
+
+        <!--- **44. Jerarquía de operaciones con números racionales**-->
+        <sub-sub-section id="jerarquia-de-operaciones-con-numeros-racionales" data-title="Jerarquía de operaciones con números racionales">
+          <p>Al realizar operaciones con números racionales, se debe seguir la jerarquía de operaciones:</p>
+          <ol>
+            <li>Paréntesis</li>
+            <li>Exponentes</li>
+            <li>Multiplicación y división (de izquierda a derecha)</li>
+            <li>Suma y resta (de izquierda a derecha)</li>
+          </ol>
+          <p>Es importante seguir esta jerarquía para obtener resultados correctos al realizar operaciones con números racionales.</p>
+
+          <math-examples>
+            <math-example id="c44-s1-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Calcula \(2 + 3 \cdot 4\).</p>
+              <math-display>\[2 + 3 \cdot 4 = 2 + 12 = 14.\]</math-display>
+              <p>Primero se realiza la multiplicación antes de la suma, según la jerarquía de operaciones.</p>
+            </math-example>
+            <math-example id="c44-s1-ejemplo-2" data-title="Ejemplo resuelto">
+              <p>Calcula \((2 + 3) \cdot 4\).</p>
+              <math-display>\[(2 + 3) \cdot 4 = 5 \cdot 4 = 20.\]</math-display>
+              <p>Primero se realiza la operación dentro del paréntesis antes de la multiplicación.</p>
+            </math-example>
+            <math-example id="c44-s1-ejemplo-3" data-title="Ejemplo resuelto">
+              <p>Calcula \(2 + 3 \cdot 4 - 5\).</p>
+              <math-display>\[2 + 3 \cdot 4 - 5 = 2 + 12 - 5 = 14 - 5 = 9.\]</math-display>
+              <p>Primero se realiza la multiplicación antes de la suma y la resta, siguiendo la jerarquía de operaciones.</p>
+            </math-example>
+            <math-example id="c44-s1-ejemplo-4" data-title="Ejemplo resuelto">
+              <p>Calcula \((2 + 3) \cdot (4 - 5)\).</p>
+              <math-display>\[(2 + 3) \cdot (4 - 5) = 5 \cdot (-1) = -5.\]</math-display>
+              <p>Primero se realizan las operaciones dentro de los paréntesis antes de la multiplicación.</p>
+            </math-example> 
+            <math-example id="c44-s1-ejemplo-5" data-title="Ejemplo resuelto">
+              <p>Calcula \(2 \cdot (3 + 4) - 5\).</p>
+              <math-display>\[2 \cdot (3 + 4) - 5 = 2 \cdot 7 - 5 = 14 - 5 = 9.\]</math-display>
+              <p>Primero se realiza la operación dentro del paréntesis antes de la multiplicación y la resta.</p>
+            </math-example>
+            <math-example id="c44-s1-ejemplo-6" data-title="Ejemplo resuelto">
+              <p>Calcula \((2 + 3) \cdot 4 - 5\).</p>
+              <math-display>\[(2 + 3) \cdot 4 - 5 = 5 \cdot 4 - 5 = 20 - 5 = 15.\]</math-display>
+              <p>Primero se realiza la operación dentro del paréntesis antes de la multiplicación y la resta.</p>
+            </math-example>
+          </math-examples>
+        </sub-sub-section>
+
+
+      </sub-section>
+
+      <!--Potencias-->
+      <sub-section id="c44-s2-potencias" data-title="Potencias">
+        <!--- Potencias-->
+        <sub-sub-section id="c44-s2-sub-sub-potencias" data-title="¿Qué es una potencia?">
+          <p>Una potencia es una forma abreviada de multiplicar un número por sí mismo varias veces:</p>
+          <p>Para indicar potencias se utiliza un número llamado base y un exponente que indica cuántas veces se multiplica la base por sí misma.</p>
+          <p>La nomenclatura para expresar potencias es \(a^n\), donde \(a\) es la base y \(n\) el exponente.</p>
+
+          <p>Por ejemplo, \(2^3\) significa multiplicar 2 por sí mismo 3 veces:</p>
+          <math-display>\[2^3 = 2 \cdot 2 \cdot 2 = 8\]</math-display>
+          <p>En general, una potencia indica cuántas veces se multiplica la base por sí misma.</p>
+        </sub-sub-section>
+
+        <!--- **45. Leyes de los exponentes**-->
+        <sub-sub-section id="c44-s2-sub-sub-leyes-exponentes" data-title="Leyes de los exponentes">
+          <p>Las leyes de los exponentes se refieren a las reglas que permiten simplificar y manipular expresiones que involucran potencias con la misma base.</p>
+          <p>Estas leyes son fundamentales para simplificar cálculos y resolver problemas que involucran potencias.</p>
+          <p>Vamos a ir explicando cada ley y haciendo ejemplos para entender mejor su aplicación.</p>
+          
+          <math-formula data-title="Cuando multiplicamos potencias con la misma base">
+            <math-display>\[a^m \cdot a^n = a^{m+n}\]</math-display>
+          </math-formula>
+
+          <math-examples>
+            <math-example id="c44-s2-ejemplo-1" data-title="Ejemplo resuelto">
+              <p>Calcula \(2^3 \cdot 2^4\).</p>
+              <math-display>\[2^3 \cdot 2^4 = 2^{3+4} = 2^7 = 128\]</math-display>
+            </math-example>
+            <p>Cuando multiplicamos potencias con la misma base, sumamos los exponentes para obtener la potencia resultante.</p>
+          </math-examples>
+
+          <math-formula data-title="Cuando dividimos potencias con la misma base">
+            <math-display>\[\frac{a^m}{a^n} = a^{m-n}\]</math-display>
+          </math-formula>
+
+          <math-examples>
+            <math-example id="c44-s2-ejemplo-3" data-title="Ejemplo resuelto">
+              <p>Calcula \(\frac{2^5}{2^3}\).</p>
+              <math-display>\[\frac{2^5}{2^3} = 2^{5-3} = 2^2 = 4\]</math-display>
+            </math-example>
+            <p>Cuando dividimos potencias con la misma base, restamos los exponentes para obtener la potencia resultante.</p>
+          </math-examples>
+
+          <math-formula data-title="Cuando elevamos una potencia a otra potencia">
+            <math-display>\[(a^m)^n = a^{m \cdot n}\]</math-display>
+          </math-formula>
+
+          <math-examples>
+            <math-example id="c44-s2-ejemplo-4" data-title="Ejemplo resuelto">
+              <p>Calcula \((2^3)^4\).</p>
+              <math-display>\[(2^3)^4 = 2^{3 \cdot 4} = 2^{12} = 4096\]</math-display>
+            </math-example>
+            <p>Cuando elevamos una potencia a otra potencia, multiplicamos los exponentes para obtener la potencia resultante.</p>
+          </math-examples>
+          
+          <math-formula data-title="Potencia de exponente cero">
+            <math-display>\[a^0 = 1\]</math-display>
+          </math-formula>
+
+          <math-examples>
+            <math-example id="c44-s2-ejemplo-5" data-title="Ejemplo resuelto">
+              <p>Calcula \(5^0\).</p>
+              <math-display>\[5^0 = 1\]</math-display>
+            </math-example>
+            <p>Cualquier número elevado a la potencia cero es igual a 1.</p>
+          </math-examples>
+
+          <math-formula data-title="Potencia de exponente negativo">
+            <math-display>\[a^{-n} = \frac{1}{a^n}\]</math-display>
+          </math-formula>
+
+          <math-examples>
+            <math-example id="c44-s2-ejemplo-6" data-title="Ejemplo resuelto">
+              <p>Calcula \(2^{-3}\).</p>
+              <math-display>\[2^{-3} = \frac{1}{2^3} = \frac{1}{8}\]</math-display>
+            </math-example>
+            <p>Cualquier número elevado a un exponente negativo es igual al inverso de la potencia con exponente positivo.</p>
+          </math-examples>
+
+          
+          <math-remark data-title="Advertencia">
+            <p>No confundas la potencia de exponente negativo con la de exponente positivo. Recuerda que \(a^{-n} = \frac{1}{a^n}\).</p>
+          </math-remark>
+
+          <math-remark data-title="Consejo">
+            <p>Recuerda que las leyes de los exponentes se aplican solo cuando la base es la misma. Por ejemplo, \(a^m \cdot a^n = a^{m+n}\) solo es válida si la base \(a\) es la misma en ambos factores.</p>
+            <p>Cuando la base es diferente no se pueden aplicar directamente las leyes de los exponentes. Por ejemplo, \(2^3 \cdot 3^3\) no se puede simplificar como \((2\cdot3)^3\).</p>
+          </math-remark>
+          
+          <p>En resumen, las leyes de los exponentes son las siguientes:</p>
+
+          <math-formula data-title="Leyes de los exponentes">
+            <math-display>\[a^m \cdot a^n = a^{m+n}\]</math-display>
+            <math-display>\[\frac{a^m}{a^n} = a^{m-n}\]</math-display>
+            <math-display>\[(a^m)^n = a^{m \cdot n}\]</math-display>
+            <math-display>\[a^{-n} = \frac{1}{a^n}\]</math-display>
+            <math-display>\[a^0 = 1\]</math-display>
+            <math-display>\[\frac{a^m}{a^n} = a^{m-n}\]</math-display>
+            <math-display>\[(a\cdot b)^n = a^n \cdot b^n\]</math-display>
+            <math-display>\[\left(\frac{a}{b}\right)^n = \frac{a^n}{b^n}\]</math-display>
+            <math-display>\[a^{-m} \cdot a^m = 1\]</math-display>
+          </math-formula>
+
+        </sub-sub-section>
+
+        <!--- Raíces-->
+        <sub-sub-section id="capitulo-02-apartado-02-raices" data-title="Raíces">
+          <p>La raíz de un número se refiere a otro número que, elevado a cierta potencia, nos da el número original. Por ejemplo, la raíz cuadrada de 9 es 3, porque \(3^2 = 9\).</p>
+          <p>Para escribir una raíz se utilizan los símbolos de raíz. Por ejemplo, la raíz cuadrada de un número \(a\) se escribe como \(\sqrt{a}\), y la raíz cúbica se escribe como \(\sqrt[3]{a}\).</p>
+          <p>Ejemplos de raíces:</p>
+          <math-display>\[\sqrt{9} = 3\]</math-display>
+          <math-display>\[\sqrt{16} = 4\]</math-display>
+          <math-display>\[\sqrt[3]{27} = 3\]</math-display>
+          <p>En general, la raíz \(n\)-ésima de un número \(a\) es un número \(b\) tal que \(b^n = a\).</p>
+
+          <p>Las raíces también son potencias, pues la raíz \(n\)-ésima de un número \(a\) se puede expresar como \(a^{\frac{1}{n}}\). Por ejemplo, \(\sqrt{a} = a^{\frac{1}{2}}\) y \(\sqrt[3]{a} = a^{\frac{1}{3}}\).</p>
+
+          <math-examples>
+            <p>Ejemplos de raíces expresadas como potencias fraccionarias:</p>
+            <math-display>\[\sqrt{a} = a^{\frac{1}{2}}\]</math-display>
+            <math-display>\[\sqrt[3]{a} = a^{\frac{1}{3}}\]</math-display>
+            <math-display>\[\sqrt[4]{a} = a^{\frac{1}{4}}\]</math-display>
+          </math-examples>
+        </sub-sub-section>
+
+        <!--Potencias fraccionarias -->
+        <sub-sub-section id="capitulo-02-apartado-03-potencias-fraccionarias" data-title="Potencias fraccionarias">
+          <p>Una potencia fraccionaria se refiere a una potencia cuyo exponente es una fracción. Por ejemplo, \(a^{\frac{1}{2}}\) es una potencia fraccionaria que representa la raíz cuadrada de \(a\), y \(a^{\frac{1}{3}}\) representa la raíz cúbica de \(a\).</p>
+          <p>En general, una potencia fraccionaria \(a^{\frac{m}{n}}\) se puede interpretar como la raíz \(n\)-ésima de \(a\) elevada a la potencia \(m\):</p>
+          <math-display>\[a^{\frac{m}{n}} = \left(\sqrt[n]{a}\right)^m\]</math-display>
+
+          <math-examples>
+            <p>Ejemplos de potencias fraccionarias:</p>
+            <math-display>\[a^{\frac{1}{2}} = \sqrt{a}\]</math-display>
+            <math-display>\[a^{\frac{1}{3}} = \sqrt[3]{a}\]</math-display>
+            <math-display>\[a^{\frac{3}{2}} = (\sqrt{a})^3\]</math-display>
+          </math-examples>
+
+          <p>Explicado de forma más sencilla, cuando elevas un número a una fracción \(\frac{m}{n}\), primero tomas la raíz \(n\)-ésima del número y luego lo elevas a la potencia \(m\).</p>
+
+          <math-excersices>
+            <p>Ejercicios sobre potencias fraccionarias:</p>
+            <math-exercise id="c2-s3-ejercicio-1" data-title="Ejercicio 1">
+              <p>Escribe \(\sqrt[5]{a}\) como una potencia fraccionaria.</p>
+            </math-exercise>
+            <math-exercise id="c2-s3-ejercicio-2" data-title="Ejercicio 2">
+              <p>Calcula \((\sqrt{b})^4\) como una potencia fraccionaria.</p>
+            </math-exercise>
+            <math-exercise id="c2-s3-ejercicio-3" data-title="Ejercicio 3">
+              <p>Escribe \(\sqrt[4]{c}\) como una potencia fraccionaria.</p>
+            </math-exercise>
+            <math-exercise id="c2-s3-ejercicio-4" data-title="Ejercicio 4">
+              <p>Calcula \((\sqrt[3]{d})^2\) como una potencia fraccionaria.</p>
+            </math-exercise>
+          </math-excersices>
+        </sub-sub-section>
+
+        <!--- **46. Simplificación de raíces cuadradas exactas**-->
+        <sub-sub-section id="c2-s3-apartado-46" data-title="Simplificación de raíces cuadradas exactas">
+          <p>Una raíz cuadrada exacta es aquella cuyo resultado es un número entero.</p>
+          
+
+          <p>Por ejemplo, \(\sqrt{16} = 4\) es una raíz cuadrada exacta, mientras que \(\sqrt{20}\aprox 4.47\) no lo es, porque 16 es un cuadrado perfecto (\(4^2 = 16\)) y 20 no lo es.</p>
+
+          <math-definition id="c2-s3-definicion-1" data-title="Definición de número cuadrado">
+            <p>Un número cuadrado es aquel que se puede expresar como el cuadrado de un número entero, es decir, un número de la forma \(n^2\) donde \(n\) es un número entero.</p>
+            <p>Por ejemplo, 16 es un número cuadrado porque se puede expresar como \(4^2\), donde 4 es un número entero.</p>
+          </math-definition>
+
+          <p>Para saber cuándo una raíz cuadrada es exacta debes aprenderte la tabla de los primeros números naturales elevados al cuadrado.</p>
+          <table>
+            <tr>
+              <th>Número</th>
+              <th>Cuadrado</th>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>4</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>9</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>16</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>25</td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>36</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>49</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td>64</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td>81</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td>100</td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td>121</td>
+            </tr>
+            <tr>
+              <td>12</td>
+              <td>144</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td>169</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td>196</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td>225</td>
+            </tr>
+            <tr>
+              <td>16</td>
+              <td>256</td>
+            </tr>
+            <tr>
+              <td>17</td>
+              <td>289</td>
+            </tr>
+            <tr>
+              <td>18</td>
+              <td>324</td>
+            </tr>
+            <tr>
+              <td>19</td>
+              <td>361</td>
+            </tr>
+            <tr>
+              <td>20</td>
+              <td>400</td>
+            </tr>
+          </table>
+
+          <p>Así, si te sabes la tabla de los cuadrados perfectos, podrás identificar rápidamente si una raíz cuadrada es exacta.</p>
+          <p>Por ejemplo, \(\sqrt{16}\) es exacta porque 16 es un númerocuadrado (\(4^2 = 16\)).</p>
+
+          <p>Ahora, en el caso en que una raíz cuadrada tenga un radicando (número de adentro)  que no sea un número cuadrado, entonces, tienes que buscar los factores de ese número y ver si alguno de ellos es un número cuadrado. Esto te permitirá simplificar la raíz cuadrada extrayendo la raíz de ese factor.</p>
+
+          <math-examples>
+            <math-example id="c2-s3-ejemplo-45-1" data-title="Ejemplo resuelto">
+              <p>Simplifica \(\sqrt{18}\).</p>
+              <math-display>\[\sqrt{18} = \sqrt{9\cdot 2} = \sqrt{9}\cdot\sqrt{2} = 3\sqrt{2}\]</math-display>
+              <p>En este caso, 18 no es un número cuadrado, pero tiene un factor que sí lo es: 9. Por lo tanto, podemos simplificar la raíz cuadrada extrayendo la raíz de 9.</p>
+            </math-example>
+            <math-example id="c2-s3-ejemplo-45-2" data-title="Ejemplo resuelto">
+              <p>Simplifica \(\sqrt{72}\).</p>
+              <math-display>\[\sqrt{72} = \sqrt{36\cdot 2} = \sqrt{36}\cdot\sqrt{2} = 6\sqrt{2}\]</math-display>
+              <p>En este caso, 72 no es un número cuadrado, pero tiene un factor que sí lo es: 36. Por lo tanto, podemos simplificar la raíz cuadrada extrayendo la raíz de 36.</p>
+            </math-example>
+          </math-examples>
+
+          <math-excersice id="c2-s3-ejercicio-45" data-title="Ejercicio">
+            <p>Simplifica las siguientes raíces cuadradas:</p>
+            <ol>
+              <li>\(\sqrt{32}\)</li>
+              <li>\(\sqrt{50}\)</li>
+              <li>\(\sqrt{98}\)</li>
+            </ol>
+          </math-excersice>
+          <p>Recuerda que para simplificar una raíz cuadrada, debes buscar factores que sean cuadrados perfectos y extraer su raíz.</p>
+        </sub-sub-section>
+
+        <!--- Notación científica-->
+        <sub-sub-section id="c2-s3-apartado-46-notacion-cientifica" data-title="Notación científica">
+          <p>La notación científica se utiliza para expresar números muy grandes o muy pequeños de manera compacta:</p>
+          <p>Todo surge de la necesidad de representar números extremadamente grandes o pequeños de manera más manejable. En notación científica, un número se expresa como el producto de un número decimal \(a\) y una potencia de 10, es decir, \(a \times 10^n\), donde \(1 \leq a < 10\) y \(n\) es un número entero.</p>
+          <p>Por ejemplo:</p>
+          <math-display>\[3.2 \times 10^4 = 32000\]</math-display>
+          <math-display>\[4.5 \times 10^{-3} = 0.0045\]</math-display>
+          <p>Si el exponente es positivo, el número se multiplica por 10 tantas veces como indique el exponente. Si el exponente es negativo, el número se divide por 10 tantas veces como indique el exponente.</p>
+          <p>Por ejemplo, \(3.2 \times 10^4 = 32000\) y \(4.5 \times 10^{-3} = 0.0045\).</p>
+          
+          <p>Si el exponente es cero, el número se considera igual a 1, ya que cualquier número elevado a la potencia de cero es 1.</p>
+          <p>Por ejemplo, \(5 \times 10^0 = 5\) y \(1 \times 10^0 = 1\).</p>
+          <p>Si el exponente es negativo, el número se convierte en una fracción con 1 en el numerador y \(10\) elevado al valor absoluto del exponente en el denominador. Por ejemplo, \(2 \times 10^{-3} = \frac{2}{10^3} = 0.002\).</p>
+
+          <p>En términos simples, se recorre el punto decimal tantas posiciones como indique el exponente: hacia la derecha si el exponente es positivo y hacia la izquierda si el exponente es negativo.</p>
+          
+          <math-examples>
+            <math-example>
+              <p>Expresa \(4500\) en notación científica:</p>
+              <math-display>\[4500 = 4.5 \times 10^3\]</math-display>
+            </math-example>
+            <math-example>
+              <p>Expresa \(0.0072\) en notación científica:</p>
+              <math-display>\[0.0072 = 7.2 \times 10^{-3}\]</math-display>
+            </math-example>
+          </math-examples>
+          <p>Recuerda que la notación científica es especialmente útil en ciencias y matemáticas cuando se trabaja con números extremadamente grandes o pequeños, ya que permite simplificar cálculos y representar los valores de manera más clara.</p>
+          <p>Además, facilita la comparación de magnitudes y la identificación rápida del orden de tamaño de los números, lo cual es fundamental en contextos científicos y de ingeniería.</p>
+
+          <math-excercises id="c2-s3-apartado-46-notacion-cientifica-ejercicios" data-title="Ejercicios">
+            <math-exercise>
+              <p>Expresa \(12000\) en notación científica:</p>
+              <math-display>\[12000 = 1.2 \times 10^4\]</math-display>
+            </math-exercise>
+            <math-exercise>
+              <p>Expresa \(0.00056\) en notación científica:</p>
+              <math-display>\[0.00056 = 5.6 \times 10^{-4}\]</math-display>
+            </math-exercise>
+          </math-excercises>
+        </sub-sub-section>
+
+        <!--- **47. Operaciones básicas con notación científica**-->
+        <sub-sub-section id="capitulo-02-apartado-47-operaciones-basicas-notacion-cientifica" data-title="Operaciones básicas con notación científica">
+          <p>En notación científica, las operaciones básicas se realizan considerando los coeficientes y las potencias de 10 por separado.</p>
+          <math-examples>
+            <math-example>
+              <p>Suma: \((3 \times 10^4) + (2 \times 10^4)\)</p>
+              <math-display>\[(3 \times 10^4) + (2 \times 10^4) = 5 \times 10^4\]</math-display>
+            </math-example>
+            <math-example>
+              <p>Multiplicación: \((4 \times 10^3) \cdot (2 \times 10^5)\)</p>
+              <math-display>\[(4 \times 10^3) \cdot (2 \times 10^5) = 8 \times 10^8\]</math-display>
+            </math-example>
+            <math-example>
+              <p>División: \((6 \times 10^7) \div (2 \times 10^3)\)</p>
+              <math-display>\[(6 \times 10^7) \div (2 \times 10^3) = 3 \times 10^4\]</math-display>
+            </math-example>
+            <math-example>
+              <p>Resta: \((5 \times 10^6) - (3 \times 10^6)\)</p>
+              <math-display>\[(5 \times 10^6) - (3 \times 10^6) = 2 \times 10^6\]</math-display>
+            </math-example>
+          </math-examples>
+
+          <math-excersices id="c2-s3-apartado-47-operaciones-basicas-notacion-cientifica-ejercicios" data-title="Ejercicios">
+            <math-exercise>
+              <p>Calcula \((3 \times 10^4) + (4 \times 10^4)\).</p>
+              <math-display>\[(3 \times 10^4) + (4 \times 10^4) = 7 \times 10^4\]</math-display>
+            </math-exercise>
+            <math-exercise>
+              <p>Calcula \((5 \times 10^3) \cdot (2 \times 10^2)\).</p>
+              <math-display>\[(5 \times 10^3) \cdot (2 \times 10^2) = 1 \times 10^6\]</math-display>
+            </math-exercise>
+            <math-exercise>
+              <p>Calcula \((8 \times 10^6) \div (2 \times 10^3)\).</p>
+              <math-display>\[(8 \times 10^6) \div (2 \times 10^3) = 4 \times 10^3\]</math-display>
+            </math-exercise>
+            <math-exercise>
+              <p>Calcula \((7 \times 10^5) - (3 \times 10^5)\).</p>
+              <math-display>\[(7 \times 10^5) - (3 \times 10^5) = 4 \times 10^5\]</math-display>
+            </math-exercise>
+          </math-excersices>
+        </sub-sub-section>
+
+      </sub-section>
+
+      <!--- Álgebra y ecuaciones-->
+      <sub-section id="capitulo-03-algebra-y-ecuaciones" data-title="Álgebra y ecuaciones">
+        <!--¿Qué es una variable?-->
+        <sub-sub-section id="capitulo-03-apartado-47-que-es-una-variable" data-title="¿Qué es una variable?">
+          <p>Una variable es un símbolo, generalmente una letra, que representa un valor que puede cambiar.</p>
+          <p>Por ejemplo, en la expresión \(x + 5\), \(x\) es una variable que puede tomar diferentes valores.</p>
+          <p>En este caso, \(x\) puede representar cualquier número, y su valor puede variar según el contexto.</p>
+          <p>La expresión algebraica \(x + 5\) indica que al valor de la variable \(x\) se le suma 5. Entonces, si \(x=3\), el valor de la expresión sería \(x+5 = 3 + 5 = 8\).</p>
+
+          <p>En la vida cotidiana, las variables nos permiten representar cantidades que pueden cambiar, como la temperatura, la velocidad o el precio de un producto.</p>
+          <p>Por ejemplo, si \(t\) representa la temperatura, \(v\) la velocidad y \(p\) el precio, podemos escribir expresiones algebraicas que describan cómo cambian estas cantidades en función de otras variables.</p>
+
+          <math-example data-title="Ejemplos de variables en la vida cotidiana">
+            <p>Si \(t\) representa la temperatura, podemos tener \(t = 25\) grados.</p>
+            <p>Si \(v\) representa la velocidad, podemos tener \(v = 60\) km/h.</p>
+            <p>Si \(p\) representa el precio, podemos tener \(p = 100\) unidades monetarias.</p>
+            <p>Para expresar cuál es el área de un rectángulo, podemos usar la variable \(A\) para el área, \(b\) para la base y \(h\) para la altura, y escribir \(A = b \times h\).</p>
+            <p>Por ejemplo, si la base del rectángulo es \(b = 5\) y la altura es \(h = 10\), entonces el área sería \(A = 5 \times 10 = 50\).</p>
+          </math-example>
+        </sub-sub-section>
+
+        <!--¿Qué es el álgebra?-->
+
+        <!--¿Qué es una expresión algebraica?-->
+
+        <!--- **48. Traducción de frases cotidianas al lenguaje algebraico**-->
+        <sub-sub-section id="capitulo-03-apartado-48-traduccion-frases-algebraico" data-title="Traducción de frases cotidianas al lenguaje algebraico">
+          <p>En esta sección aprenderemos a traducir frases cotidianas al lenguaje algebraico utilizando variables y operaciones matemáticas.</p>
+        </sub-sub-section>
+
+        <!--- **49. Reducción de términos semejantes**    -->
+
+        <!--- **50. Evaluación de expresiones algebraicas por sustitución**-->
+
+
+      </sub-section>
+
+      
+    </section>
+  </chapter>
+
+
+
   
   <section id="primaria" data-title="Primaria">
     <sub-section id="capitulo-01-aritm-tica-los-n-meros-y-sus-problemas" data-title="Aritmética: los números y sus problemas">
