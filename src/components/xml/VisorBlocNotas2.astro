@@ -1,0 +1,744 @@
+---
+// src/components/VisorBlocNotas.astro
+// Ajusta las rutas según la estructura de tu proyecto:
+import RenderLecturaXML from './RenderLecturaXml.astro';
+import RenderIndiceTemario from './RenderIndiceTemario.astro';
+import type { NodoXML } from '../../features/xml/xmlParser';
+
+
+interface Props {
+  nodo: NodoXML;
+  tituloLibro?: string;
+}
+
+const { 
+  nodo,
+  tituloLibro = "Cuaderno de Estudio" 
+} = Astro.props;
+---
+
+<div id="notepad-app" class="relative flex min-h-screen w-full flex-col bg-slate-200/80 font-sans text-slate-800 selection:bg-indigo-200">
+  
+  <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
+  <header class="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 bg-white/95 px-4 py-2.5 shadow-sm backdrop-blur">
+    
+    <!-- Izquierda: Botón Temario + Título -->
+    <div class="flex items-center gap-3">
+      <button 
+        id="btn-toggle-toc" 
+        type="button"
+        class="flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-expanded="false"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+        <span>Temario</span>
+      </button>
+      <h1 class="hidden truncate text-sm font-semibold text-slate-800 sm:block max-w-xs">
+        {tituloLibro}
+      </h1>
+    </div>
+
+    <!-- Centro: Buscador en vivo -->
+    <div class="relative flex-1 max-w-md">
+      <div class="relative">
+        <input 
+          id="notepad-search-input" 
+          type="search" 
+          placeholder="Buscar tema, fórmula o concepto..." 
+          class="w-full rounded-lg border border-slate-300 bg-slate-100/70 py-1.5 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        />
+        <svg class="pointer-events-none absolute left-2.5 top-2 size-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
+        </svg>
+      </div>
+
+      <!-- Contenedor flotante de Cards de Resultados -->
+      <div 
+        id="search-results-dropdown" 
+        class="absolute left-0 right-0 top-full z-50 mt-2 hidden max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+      >
+        <div id="search-results-list" class="flex flex-col gap-2"></div>
+      </div>
+    </div>
+
+    <!-- Derecha: Navegador de Hojas -->
+    <div class="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1">
+      <button 
+        id="btn-prev-sheet" 
+        type="button" 
+        title="Hoja anterior (Flecha Arriba/Izquierda)"
+        class="rounded p-1 text-slate-600 transition hover:bg-slate-200 disabled:opacity-30"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-1 text-xs font-medium text-slate-600">
+        <span>Hoja</span>
+        <input 
+          id="sheet-number-input" 
+          type="number" 
+          min="1" 
+          value="1" 
+          class="w-11 rounded border border-slate-300 bg-white px-1 py-0.5 text-center font-bold text-indigo-700 focus:border-indigo-500 focus:outline-none"
+        />
+        <span>de <strong id="total-sheets-label">1</strong></span>
+      </div>
+
+      <button 
+        id="btn-next-sheet" 
+        type="button" 
+        title="Siguiente hoja (Flecha Abajo/Derecha)"
+        class="rounded p-1 text-slate-600 transition hover:bg-slate-200 disabled:opacity-30"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MENÚ DESPLEGABLE DEL TEMARIO (Drawer Lateral) -->
+  <aside 
+    id="toc-drawer" 
+    class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] -translate-x-full flex-col border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-in-out"
+    aria-hidden="true"
+  >
+    <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+      <span class="font-bold text-slate-800">Índice de Contenido</span>
+      <button id="btn-close-toc" type="button" class="rounded-lg p-1 text-slate-500 hover:bg-slate-100">
+        <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav id="toc-container" class="flex-1 overflow-y-auto p-3">
+      <ol class="space-y-1">
+        <RenderIndiceTemario nodo={nodo} />
+      </ol>
+    </nav>
+  </aside>
+
+  <!-- Fondo oscuro al abrir el temario -->
+  <div id="toc-backdrop" class="fixed inset-0 z-40 hidden bg-slate-900/40 backdrop-blur-xs transition-opacity"></div>
+
+  <!-- ÁREA PRINCIPAL DEL BLOC DE NOTAS -->
+  <main class="relative mx-auto flex w-full max-w-4xl flex-1 flex-col items-center px-3 py-6 sm:px-6">
+    
+    <!-- Contenedor 3D del Bloc -->
+    <div id="notepad-perspective" class="relative w-full transition-[height] duration-300 ease-out" style="perspective: 2200px;">
+      
+      <!-- DIBUJO SUPERIOR DEL ENGARGOLADO (Espiral metálico fijo arriba) -->
+      <div class="notepad-spiral-binding pointer-events-none relative z-30 h-9 w-full select-none" aria-hidden="true"></div>
+
+      <!-- Aquí se inyectarán dinámicamente las hojas generadas -->
+      <div id="notepad-sheets-stage" class="relative w-full">
+        <div class="flex h-64 items-center justify-center rounded-b-xl bg-white p-8 text-slate-400 shadow">
+          Preparando hojas del bloc...
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Indicador de ayuda inferior -->
+    <p class="mt-4 text-center text-xs text-slate-500">
+      💡 Haz clic en el borde <strong>derecho</strong> o <strong>inferior</strong> de la hoja para avanzar (o desliza hacia arriba en móvil).
+    </p>
+  </main>
+
+  <!-- CONTENEDOR OCULTO DONDE ASTRO RENDERIZA TU XML ORIGINAL -->
+  <div id="raw-book-source" class="pointer-events-none fixed -left-[9999px] top-0 w-full max-w-4xl opacity-0" aria-hidden="true">
+    <RenderLecturaXML nodo={nodo} />
+  </div>
+
+</div>
+
+<style is:global>
+  /* 1. Dibujo SVG repetible del engargolado metálico en la parte superior */
+  .notepad-spiral-binding {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3C!-- Perforación en el papel --%3E%3Ccircle cx='18' cy='27' r='4.5' fill='%23334155'/%3E%3Ccircle cx='18' cy='27' r='3.5' fill='%231e293b'/%3E%3C!-- Sombra del arillo --%3E%3Cpath d='M13 27 C 11 10, 21 4, 23 12' stroke='%23000000' stroke-opacity='0.2' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3C!-- Arillo metálico doble --%3E%3Cpath d='M14 27 C 12 8, 22 3, 22 14' stroke='%2394a3b8' stroke-width='3.2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M14 27 C 12 8, 22 3, 22 14' stroke='%23f8fafc' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-position: center bottom;
+    margin-bottom: -14px; /* Superpone los arillos sobre el borde superior de la hoja */
+  }
+
+  /* 2. Estilos de cada Hoja del Bloc */
+  .notepad-sheet {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #fffef9; /* Tono papel marfil suave */
+    /* Líneas horizontales sutiles tipo cuaderno */
+    background-image: linear-gradient(to bottom, transparent 31px, rgba(148, 163, 184, 0.14) 32px);
+    background-size: 100% 32px;
+    border-radius: 0.25rem 0.25rem 0.85rem 0.85rem;
+    box-shadow: 
+      0 10px 25px -5px rgba(15, 23, 42, 0.12),
+      0 4px 10px -2px rgba(15, 23, 42, 0.06),
+      inset 0 2px 0 rgba(255, 255, 255, 0.9);
+    border: 1px solid #e2e8f0;
+    border-top: 2px solid #cbd5e1;
+    
+    /* Configuración 3D para doblar hacia arriba */
+    transform-origin: top center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease, box-shadow 0.65s ease;
+    will-change: transform, opacity;
+    padding: 2.25rem 1.75rem 2.75rem 1.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .notepad-sheet {
+      padding: 2.5rem 3rem 3rem 3rem;
+    }
+  }
+
+  /* Efecto de hoja doblada hacia arriba (ya leída) */
+  .notepad-sheet.flipped-up {
+    transform: rotateX(175deg) translateY(-10px);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 -20px 30px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Hojas que están debajo en la pila */
+  .notepad-sheet.stacked-below {
+    transform: rotateX(0deg) scale(0.992) translateY(4px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Hoja activa actual */
+  .notepad-sheet.active-sheet {
+    transform: rotateX(0deg) scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+    position: relative; /* Permite que su altura variable empuje el contenedor */
+  }
+
+  /* Zonas visuales sutiles en bordes para clic */
+  .sheet-edge-hint-next {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, transparent 50%, rgba(99, 102, 241, 0.12) 50%);
+    border-bottom-right-radius: 0.85rem;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const rawSource = document.getElementById('raw-book-source');
+    const stage = document.getElementById('notepad-sheets-stage');
+    
+    // Controles UI
+    const btnPrev = document.getElementById('btn-prev-sheet') as HTMLButtonElement;
+    const btnNext = document.getElementById('btn-next-sheet') as HTMLButtonElement;
+    const sheetInput = document.getElementById('sheet-number-input') as HTMLInputElement;
+    const totalLabel = document.getElementById('total-sheets-label');
+
+    // Temario Drawer
+    const btnToggleToc = document.getElementById('btn-toggle-toc');
+    const btnCloseToc = document.getElementById('btn-close-toc');
+    const tocDrawer = document.getElementById('toc-drawer');
+    const tocBackdrop = document.getElementById('toc-backdrop');
+
+    // Buscador
+    const searchInput = document.getElementById('notepad-search-input') as HTMLInputElement;
+    const searchDropdown = document.getElementById('search-results-dropdown');
+    const searchList = document.getElementById('search-results-list');
+
+    if (!rawSource || !stage) return;
+
+    let sheets: HTMLElement[] = [];
+    let currentSheetIndex = 0;
+    const idToSheetMap = new Map<string, number>();
+    interface SearchItem {
+      id: string;
+      title: string;
+      snippet: string;
+      sheetIndex: number;
+    }
+    let searchIndex: SearchItem[] = [];
+
+    /**
+     * 1. PAGINACIÓN INTELIGENTE AL 130% DEL VIEWPORT
+     * Reconstruye contenedores divididos a medias y protege etiquetas <math-*> como atómicas.
+     */
+    function buildNotepadSheets() {
+      let rootContainer = rawSource!.firstElementChild as HTMLElement | null;
+      if (
+        rootContainer &&
+        rootContainer.children.length === 1 &&
+        rootContainer.firstElementChild!.children.length > 2
+      ) {
+        rootContainer = rootContainer.firstElementChild as HTMLElement;
+      }
+      if (!rootContainer) return;
+
+      stage!.innerHTML = '';
+      sheets = [];
+      idToSheetMap.clear();
+      searchIndex = [];
+
+      // Límite exacto: 130% de la altura de la pantalla
+      const MAX_SHEET_HEIGHT = window.innerHeight * 1.3;
+
+      let currentSheet = createSheetElement(0);
+      stage!.appendChild(currentSheet);
+      sheets.push(currentSheet);
+
+      // Crea una nueva hoja en el DOM con position: relative (active-sheet) para medir alturas reales
+      function startNewSheet(): HTMLElement {
+        const nextSheet = createSheetElement(sheets.length);
+        stage!.appendChild(nextSheet);
+        sheets.push(nextSheet);
+        return nextSheet;
+      }
+
+      // Detecta si el nodo es un elemento <math-algo> o <math> indivisible
+      function isAtomicMathElement(el: Element): boolean {
+        const tag = el.tagName.toLowerCase();
+        return tag.startsWith('math-') || tag === 'math';
+      }
+
+      // Determina si un elemento es atómico (no se debe partir por dentro)
+      function isIndivisibleNode(el: HTMLElement): boolean {
+        if (isAtomicMathElement(el)) return true;
+
+        const tag = el.tagName.toLowerCase();
+        const atomicTags = ['img', 'svg', 'canvas', 'video', 'iframe', 'table', 'pre', 'hr', 'br'];
+        if (atomicTags.includes(tag)) return true;
+
+        const elementChildren = Array.from(el.children);
+        if (elementChildren.length === 0) return true;
+
+        // Si es un bloque compacto que contiene <math-*> adentro, mantenerlo unido
+        const hasMathChild = elementChildren.some((child) => isAtomicMathElement(child));
+        if (hasMathChild && ['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span'].includes(tag)) {
+          return true;
+        }
+
+        return false;
+      }
+
+      // Clona la estructura exterior de un contenedor para reconstruirlo en la hoja siguiente
+      function cloneWrapperShell(original: HTMLElement, isContinuation: boolean): HTMLElement {
+        const shell = original.cloneNode(false) as HTMLElement;
+        if (isContinuation) {
+          shell.removeAttribute('id');
+          shell.classList.remove('scroll-mt-32');
+          shell.dataset.continued = 'true';
+        }
+        return shell;
+      }
+
+      // Obtiene la ruta de contenedores padres entre `sheetRoot` y `node` para reconstruirlos tras un salto
+      function getWrapperChain(node: HTMLElement, sheetRoot: HTMLElement): HTMLElement[] {
+        const chain: HTMLElement[] = [];
+        let curr: HTMLElement | null = node;
+        while (curr && curr !== sheetRoot) {
+          chain.unshift(curr);
+          curr = curr.parentElement;
+        }
+        return chain;
+      }
+
+      /**
+       * Inserta recursivamente un nodo en `targetParent` dentro de `currentSheet`.
+       * Si excede MAX_SHEET_HEIGHT (130%), reconstruye el contenedor en una hoja nueva.
+       */
+      function appendWithPagination(sourceNode: Node, targetParent: HTMLElement) {
+        if (sourceNode.nodeType === Node.TEXT_NODE) {
+          if (!sourceNode.textContent?.trim()) return;
+          targetParent.appendChild(sourceNode.cloneNode(true));
+          return;
+        }
+
+        if (sourceNode.nodeType !== Node.ELEMENT_NODE) return;
+        const sourceEl = sourceNode as HTMLElement;
+
+        // Salto de sección mayor si ya llevamos más del 85% del límite (110% viewport) y llega un H1
+        if (
+          sourceEl.tagName === 'H1' &&
+          currentSheet.scrollHeight > MAX_SHEET_HEIGHT * 0.85
+        ) {
+          currentSheet = startNewSheet();
+          targetParent = currentSheet;
+        }
+
+        // Caso 1: Elemento atómico (<math-*>, imagen, tabla, párrafo corto, etc.)
+        if (isIndivisibleNode(sourceEl)) {
+          const clone = sourceEl.cloneNode(true) as HTMLElement;
+          targetParent.appendChild(clone);
+
+          const sheetHasOtherContent =
+            currentSheet.textContent!.trim().length > clone.textContent!.trim().length ||
+            currentSheet.children.length > 1;
+
+          if (currentSheet.scrollHeight > MAX_SHEET_HEIGHT && sheetHasOtherContent) {
+            targetParent.removeChild(clone);
+
+            const ancestorChain = getWrapperChain(targetParent, currentSheet);
+            currentSheet = startNewSheet();
+
+            let newParent: HTMLElement = currentSheet;
+            for (const wrapper of ancestorChain) {
+              const shell = cloneWrapperShell(wrapper, true);
+              newParent.appendChild(shell);
+              newParent = shell;
+            }
+
+            newParent.appendChild(clone);
+          }
+          return;
+        }
+
+        // Caso 2: Contenedor divisible (<section>, <div>, <article>, <ul>, <ol>, etc.)
+        const fullClone = sourceEl.cloneNode(true) as HTMLElement;
+        targetParent.appendChild(fullClone);
+
+        if (currentSheet.scrollHeight <= MAX_SHEET_HEIGHT) {
+          return;
+        }
+
+        // Si excede el 130%, lo quitamos y lo reconstruimos hijo por hijo
+        targetParent.removeChild(fullClone);
+
+        let currentWrapper = cloneWrapperShell(sourceEl, false);
+        targetParent.appendChild(currentWrapper);
+
+        if (currentSheet.scrollHeight > MAX_SHEET_HEIGHT && currentSheet.children.length > 1) {
+          targetParent.removeChild(currentWrapper);
+          const ancestorChain = getWrapperChain(targetParent, currentSheet);
+          currentSheet = startNewSheet();
+
+          let newParent: HTMLElement = currentSheet;
+          for (const wrapper of ancestorChain) {
+            const shell = cloneWrapperShell(wrapper, true);
+            newParent.appendChild(shell);
+            newParent = shell;
+          }
+          currentWrapper = cloneWrapperShell(sourceEl, false);
+          newParent.appendChild(currentWrapper);
+        }
+
+        const childNodes = Array.from(sourceEl.childNodes);
+        for (const child of childNodes) {
+          const sheetBefore = currentSheet;
+          appendWithPagination(child, currentWrapper);
+
+          if (currentSheet !== sheetBefore) {
+            const matchingContinuation = currentSheet.querySelector(
+              `[data-continued="true"]:last-of-type`
+            ) as HTMLElement | null;
+            if (matchingContinuation && matchingContinuation.tagName === sourceEl.tagName) {
+              currentWrapper = matchingContinuation;
+            }
+          }
+        }
+
+        if (currentWrapper.children.length === 0 && !currentWrapper.textContent?.trim()) {
+          currentWrapper.remove();
+        }
+      }
+
+      // Ejecutar paginación sobre todos los bloques raíz de RenderLecturaXML
+      const topBlocks = Array.from(rootContainer.childNodes);
+      for (const block of topBlocks) {
+        appendWithPagination(block, currentSheet);
+      }
+
+      // Eliminar última hoja si quedó vacía
+      if (sheets.length > 1 && sheets[sheets.length - 1].children.length === 0) {
+        const emptyLast = sheets.pop()!;
+        emptyLast.remove();
+      }
+
+      // Decoración final de hojas, indexación de IDs y buscador (.scroll-mt-32)
+      sheets.forEach((sheet, idx) => {
+        if (idx > 0) {
+          sheet.classList.remove('active-sheet');
+          sheet.classList.add('stacked-below');
+        }
+
+        const footer = document.createElement('div');
+        footer.className = 'mt-8 flex items-center justify-between border-t border-slate-200/80 pt-3 text-xs text-slate-400 select-none';
+        footer.innerHTML = `<span>Bloc de estudio</span><span>Hoja ${idx + 1} de ${sheets.length}</span>`;
+        sheet.appendChild(footer);
+
+        const cornerHint = document.createElement('div');
+        cornerHint.className = 'sheet-edge-hint-next';
+        sheet.appendChild(cornerHint);
+
+        sheet.querySelectorAll('[id]').forEach((el) => {
+          if (el.id && !idToSheetMap.has(el.id)) {
+            idToSheetMap.set(el.id, idx);
+          }
+        });
+
+        sheet.querySelectorAll('.scroll-mt-32').forEach((el, itemIdx) => {
+          const htmlEl = el as HTMLElement;
+          if (!htmlEl.id) {
+            htmlEl.id = `search-anchor-${idx}-${itemIdx}`;
+          }
+          if (!idToSheetMap.has(htmlEl.id)) {
+            idToSheetMap.set(htmlEl.id, idx);
+          }
+
+          const heading = htmlEl.querySelector('h1, h2, h3, h4, strong');
+          const rawText = (htmlEl.innerText || '').replace(/\s+/g, ' ').trim();
+          const title = heading ? (heading.textContent || '').trim() : rawText.slice(0, 55) + '...';
+          const snippet = rawText.slice(0, 130) + (rawText.length > 130 ? '...' : '');
+
+          if (rawText.length > 0) {
+            searchIndex.push({
+              id: htmlEl.id,
+              title,
+              snippet,
+              sheetIndex: idx
+            });
+          }
+        });
+      });
+
+      if (totalLabel) totalLabel.textContent = String(sheets.length);
+      if (sheetInput) sheetInput.max = String(sheets.length);
+
+      // Liberar memoria del contenedor oculto
+      rawSource!.innerHTML = '';
+
+      goToSheet(0);
+    }
+
+    function createSheetElement(index: number): HTMLElement {
+      const sheet = document.createElement('article');
+      sheet.className = 'notepad-sheet stacked-below prose prose-slate max-w-none';
+      sheet.dataset.sheetIndex = String(index);
+      sheet.style.zIndex = String(100 - index);
+      return sheet;
+    }
+
+    /**
+     * 2. CAMBIO DE HOJA CON ANIMACIÓN 3D TIPO BLOC
+     */
+    function goToSheet(targetIndex: number, highlightElementId?: string) {
+      if (sheets.length === 0) return;
+      const clamped = Math.max(0, Math.min(targetIndex, sheets.length - 1));
+      currentSheetIndex = clamped;
+
+      sheets.forEach((sheet, idx) => {
+        sheet.classList.remove('active-sheet', 'flipped-up', 'stacked-below');
+        if (idx < currentSheetIndex) {
+          sheet.classList.add('flipped-up');
+        } else if (idx === currentSheetIndex) {
+          sheet.classList.add('active-sheet');
+        } else {
+          sheet.classList.add('stacked-below');
+        }
+      });
+
+      if (sheetInput) sheetInput.value = String(currentSheetIndex + 1);
+      if (btnPrev) btnPrev.disabled = currentSheetIndex === 0;
+      if (btnNext) btnNext.disabled = currentSheetIndex === sheets.length - 1;
+
+      if (highlightElementId) {
+        setTimeout(() => {
+          const targetEl = document.getElementById(highlightElementId);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetEl.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-50/40', 'rounded-lg', 'transition-all');
+            setTimeout(() => {
+              targetEl.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50/40');
+            }, 1800);
+          }
+        }, 320);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    /**
+     * 3. NAVEGACIÓN POR CLIC EN BORDES (DERECHO / INFERIOR / IZQUIERDO / SUPERIOR)
+     */
+    stage.addEventListener('click', (e: MouseEvent) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) return;
+      const target = e.target as HTMLElement;
+      if (target.closest('a, button, summary, input, select, textarea, details')) return;
+
+      const rect = stage.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const isRightZone = clickX > rect.width * 0.82;
+      const isBottomZone = clickY > rect.height - 90;
+      const isLeftZone = clickX < rect.width * 0.18;
+      const isTopZone = clickY < 75;
+
+      if (isRightZone || isBottomZone) {
+        goToSheet(currentSheetIndex + 1);
+      } else if (isLeftZone || isTopZone) {
+        goToSheet(currentSheetIndex - 1);
+      }
+    });
+
+    /**
+     * 4. NAVEGACIÓN TÁCTIL EN MÓVIL (SWIPE DE ABAJO HACIA ARRIBA / ARRIBA HACIA ABAJO)
+     */
+    let touchStartY = 0;
+    let touchStartX = 0;
+
+    stage.addEventListener('touchstart', (e: TouchEvent) => {
+      touchStartY = e.changedTouches[0].screenY;
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    stage.addEventListener('touchend', (e: TouchEvent) => {
+      const touchEndY = e.changedTouches[0].screenY;
+      const touchEndX = e.changedTouches[0].screenX;
+      const deltaY = touchStartY - touchEndY;
+      const deltaX = Math.abs(touchStartX - touchEndX);
+
+      if (Math.abs(deltaY) > 65 && Math.abs(deltaY) > deltaX * 1.5) {
+        const atBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 40;
+        const atTop = window.scrollY <= 40;
+
+        if (deltaY > 0 && atBottom) {
+          goToSheet(currentSheetIndex + 1);
+        } else if (deltaY < 0 && atTop) {
+          goToSheet(currentSheetIndex - 1);
+        }
+      }
+    }, { passive: true });
+
+    /**
+     * 5. CONTROLES DE TECLADO Y BARRA SUPERIOR
+     */
+    btnPrev?.addEventListener('click', () => goToSheet(currentSheetIndex - 1));
+    btnNext?.addEventListener('click', () => goToSheet(currentSheetIndex + 1));
+
+    sheetInput?.addEventListener('change', () => {
+      const val = parseInt(sheetInput.value, 10);
+      if (!isNaN(val)) goToSheet(val - 1);
+    });
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        goToSheet(currentSheetIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        goToSheet(currentSheetIndex - 1);
+      }
+    });
+
+    /**
+     * 6. INTEGRACIÓN CON TEMARIO DESPLEGABLE (RenderIndiceTemario.astro)
+     */
+    function toggleToc(open?: boolean) {
+      const shouldOpen = open !== undefined ? open : tocDrawer?.classList.contains('-translate-x-full');
+      if (shouldOpen) {
+        tocDrawer?.classList.remove('-translate-x-full');
+        tocBackdrop?.classList.remove('hidden');
+        btnToggleToc?.setAttribute('aria-expanded', 'true');
+      } else {
+        tocDrawer?.classList.add('-translate-x-full');
+        tocBackdrop?.classList.add('hidden');
+        btnToggleToc?.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    btnToggleToc?.addEventListener('click', () => toggleToc());
+    btnCloseToc?.addEventListener('click', () => toggleToc(false));
+    tocBackdrop?.addEventListener('click', () => toggleToc(false));
+
+    tocDrawer?.addEventListener('click', (e: MouseEvent) => {
+      const link = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!link) return;
+
+      e.preventDefault();
+      const targetId = link.getAttribute('href')?.slice(1);
+      if (targetId && idToSheetMap.has(targetId)) {
+        const sheetIdx = idToSheetMap.get(targetId)!;
+        toggleToc(false);
+        goToSheet(sheetIdx, targetId);
+      }
+    });
+
+    /**
+     * 7. BUSCADOR EN VIVO CON CARDS RECTANGULARES (.scroll-mt-32)
+     */
+    searchInput?.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      if (!searchList || !searchDropdown) return;
+
+      if (query.length < 2) {
+        searchDropdown.classList.add('hidden');
+        searchList.innerHTML = '';
+        return;
+      }
+
+      const matches = searchIndex.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.snippet.toLowerCase().includes(query)
+      );
+
+      searchDropdown.classList.remove('hidden');
+
+      if (matches.length === 0) {
+        searchList.innerHTML = `<p class="p-3 text-center text-xs text-slate-500">No se encontraron coincidencias para "${searchInput.value}".</p>`;
+        return;
+      }
+
+      searchList.innerHTML = matches
+        .slice(0, 12)
+        .map(
+          (item) => `
+          <button 
+            type="button" 
+            data-jump-sheet="${item.sheetIndex}" 
+            data-jump-id="${item.id}"
+            class="flex w-full flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50/70 p-2.5 text-left transition hover:border-indigo-300 hover:bg-indigo-50/60"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="truncate text-xs font-bold text-indigo-900">${item.title}</span>
+              <span class="shrink-0 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">
+                Hoja ${item.sheetIndex + 1}
+              </span>
+            </div>
+            <p class="line-clamp-2 text-xs text-slate-600">${item.snippet}</p>
+          </button>
+        `
+        )
+        .join('');
+    });
+
+    searchList?.addEventListener('click', (e: MouseEvent) => {
+      const card = (e.target as HTMLElement).closest('button[data-jump-sheet]') as HTMLButtonElement | null;
+      if (!card) return;
+
+      const sheetIdx = parseInt(card.dataset.jumpSheet || '0', 10);
+      const targetId = card.dataset.jumpId || '';
+
+      searchDropdown?.classList.add('hidden');
+      goToSheet(sheetIdx, targetId);
+    });
+
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (!searchInput?.contains(e.target as Node) && !searchDropdown?.contains(e.target as Node)) {
+        searchDropdown?.classList.add('hidden');
+      }
+    });
+
+    setTimeout(buildNotepadSheets, 150);
+  });
+</script>

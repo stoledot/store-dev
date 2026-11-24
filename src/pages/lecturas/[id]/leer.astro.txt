@@ -1,0 +1,594 @@
+---
+//src/pages/lecturas/[id]/leer.astro
+import Layout from "../../../layouts/Layout.astro";
+
+import { env } from "cloudflare:workers";
+
+import {
+  accountsEnabled,
+  getCustomerEmail,
+} from "../../../features/auth/customer";
+
+import { getCustomerByEmail } from "../../../features/customers_new/db";
+
+import {
+  getLecturasCustomerByCustomerId,
+  getLecturaById,
+} from "../../../features/lecturas/db";
+
+import { parsearXML } from "../../../features/xml/xmlParser";
+import { extractMetaXml } from "../../../features/lecturas/utils";
+
+import RenderLecturaXml from "../../../components/xml/RenderLecturaXml.astro";
+import RenderIndiceTemario from "../../../components/xml/RenderIndiceTemario.astro";
+import FlipbookReader from "../../../components/xml/FlipbookReader.astro";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/lecturas");
+}
+
+// ----------------------------------------------------
+// AUTENTICACIÓN
+// ----------------------------------------------------
+
+const accountRequired = await accountsEnabled();
+
+let customer = null;
+
+if (accountRequired) {
+  const email = await getCustomerEmail(Astro.cookies);
+
+  if (!email) {
+    return Astro.redirect("/account");
+  }
+
+  customer = await getCustomerByEmail(env.DB,email);
+
+  if (!customer) {
+    return Astro.redirect("/account");
+  }
+}
+
+// ----------------------------------------------------
+// LECTURA
+// ----------------------------------------------------
+
+const lectura = await getLecturaById(env.DB, Number(id));
+
+if (!lectura) {
+  return Astro.redirect("/lecturas");
+}
+
+// ----------------------------------------------------
+// ACCESO A LA LECTURA
+// ----------------------------------------------------
+
+// Si tu proyecto tiene un sistema específico de permisos,
+// conserva aquí exactamente la validación de [id].astro.
+
+if (customer) {
+  const lecturasCustomer =
+    await getLecturasCustomerByCustomerId(env.DB, customer.id);
+
+  const tieneAcceso =
+    lecturasCustomer?.some((item) => item.school_lectura_id === Number(id));
+
+  // Si tu lectura no es pública y requiere autorización,
+  // valida aquí según las reglas de tu sistema.
+}
+
+// ----------------------------------------------------
+// XML
+// ----------------------------------------------------
+
+const nodo = parsearXML(lectura.content_xml);
+
+const metaXml = extractMetaXml(nodo);
+
+const pageTitle = metaXml?.title ?? "Lectura";
+
+// ----------------------------------------------------
+// DATOS
+// ----------------------------------------------------
+
+const titulo = metaXml?.title ?? "Lectura";
+const autor = metaXml?.author ?? "Autor desconocido";
+---
+
+<Layout title={`Leer: ${titulo}`} fullWidth>
+  <div
+    class="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500/30"
+    data-reading-id={id}
+    id="xml-reading"
+  >
+    <!-- ================================================= -->
+    <!-- ENCABEZADO DEL LECTOR                             -->
+    <!-- ================================================= -->
+
+    <header
+      class="sticky top-0 z-40 border-b border-white/10 bg-slate-950/90 backdrop-blur-xl"
+    >
+      <div
+        class="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-3 sm:px-6"
+      >
+        <!-- Regresar -->
+
+        <a
+          href={`/lecturas/${id}`}
+          class="group flex min-w-0 items-center gap-3 text-slate-400 transition hover:text-white"
+        >
+          <span
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition group-hover:border-indigo-400/30 group-hover:bg-indigo-500/10"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </span>
+
+          <span class="hidden text-sm font-medium sm:block">
+            Volver a la lectura
+          </span>
+        </a>
+
+        <!-- Título -->
+
+        <div class="min-w-0 flex-1 text-center">
+          <h1
+            class="truncate text-sm font-semibold text-white sm:text-base"
+            title={titulo}
+          >
+            {titulo}
+          </h1>
+
+          <p class="truncate text-xs text-slate-500">
+            {autor}
+          </p>
+        </div>
+
+        <!-- Acciones -->
+
+        <div class="flex shrink-0 items-center gap-2">
+          <!-- Índice -->
+
+          <button
+            id="fb-toc-toggle"
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+            title="Mostrar u ocultar índice"
+            aria-label="Mostrar u ocultar índice"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+
+          <!-- Pantalla completa -->
+
+          <button
+            id="fb-fullscreen"
+            type="button"
+            class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
+            title="Pantalla completa"
+            aria-label="Pantalla completa"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8 3H5a2 2 0 00-2 2v3m13-5h3a2 2 0 012 2v3M3 16v3a2 2 0 002 2h3m13-5v3a2 2 0 01-2 2h-3"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ================================================= -->
+    <!-- ÁREA PRINCIPAL                                    -->
+    <!-- ================================================= -->
+
+    <div
+      id="fb-reader-layout"
+      class="relative mx-auto flex min-h-[calc(100vh-64px)] max-w-[1600px]"
+    >
+      <!-- ================================================= -->
+      <!-- SIDEBAR / ÍNDICE                                  -->
+      <!-- ================================================= -->
+
+      <aside
+        id="fb-sidebar"
+        class="absolute inset-y-0 left-0 z-30 flex w-80 max-w-[85vw] -translate-x-full flex-col border-r border-white/10 bg-slate-900 shadow-2xl transition-transform duration-300 lg:relative lg:translate-x-0"
+      >
+        <!-- Encabezado del índice -->
+
+        <div class="border-b border-white/10 p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-semibold text-white">
+                Contenido
+              </h2>
+
+              <p class="mt-1 text-xs text-slate-500">
+                Navega por los temas
+              </p>
+            </div>
+
+            <button
+              id="fb-sidebar-close"
+              type="button"
+              class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/10 hover:text-white lg:hidden"
+              aria-label="Cerrar índice"
+            >
+              &times;
+            </button>
+          </div>
+
+          <!-- Búsqueda -->
+
+          <div class="relative">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+
+            <input
+              type="search"
+              id="reading-toc-search"
+              data-reading-toc-search
+              placeholder="Buscar tema..."
+              class="w-full rounded-xl border border-white/10 bg-slate-950 py-3 pl-10 pr-4 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+        </div>
+
+        <!-- Índice generado por el XML -->
+
+        <div
+          id="reading-toc"
+          class="flex-1 overflow-y-auto p-4"
+        >
+          <RenderIndiceTemario nodo={nodo} />
+        </div>
+
+        <!-- Resultados de búsqueda -->
+
+        <div
+          id="reading-toc-results"
+          class="hidden flex-1 overflow-y-auto p-4"
+        ></div>
+
+        <!-- Pie del índice -->
+
+        <div
+          class="border-t border-white/10 p-4 text-center text-xs text-slate-500"
+        >
+          <span>Índice de la lectura</span>
+        </div>
+      </aside>
+
+      <!-- ================================================= -->
+      <!-- CONTENIDO DEL LIBRO                               -->
+      <!-- ================================================= -->
+
+      <section
+        id="book-stage"
+        class="flex min-w-0 flex-1 flex-col items-center justify-center overflow-hidden px-3 py-6 sm:px-6 lg:px-8"
+      >
+        <!-- Área del flipbook -->
+
+        <div class="relative flex w-full flex-1 items-center justify-center">
+          <FlipbookReader title={titulo}>
+            <RenderLecturaXml nodo={nodo} />
+          </FlipbookReader>
+        </div>
+
+        <!-- ================================================= -->
+        <!-- CONTROLES                                         -->
+        <!-- ================================================= -->
+
+        <div
+          class="mt-6 flex w-full max-w-4xl flex-wrap items-center justify-center gap-3 rounded-2xl border border-white/10 bg-slate-900/80 p-3 shadow-xl backdrop-blur-lg sm:p-4"
+        >
+          <!-- Anterior -->
+
+          <button
+            id="fb-prev"
+            type="button"
+            class="flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white disabled:opacity-40"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+
+            <span>Anterior</span>
+          </button>
+
+          <!-- Indicador -->
+
+          <div
+            id="fb-page-indicator"
+            class="min-w-[100px] text-center text-sm font-medium text-slate-400"
+          >
+            Página 1
+          </div>
+
+          <!-- Siguiente -->
+
+          <button
+            id="fb-next"
+            type="button"
+            class="flex h-11 items-center gap-2 rounded-xl border border-indigo-500/20 bg-indigo-500/10 px-4 text-sm font-medium text-indigo-300 transition hover:bg-indigo-500/20 hover:text-indigo-200"
+          >
+            <span>Siguiente</span>
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+
+          <!-- Separador -->
+
+          <div class="hidden h-8 w-px bg-white/10 sm:block"></div>
+
+          <!-- Ir a página -->
+
+          <div class="flex items-center gap-2">
+            <label
+              for="fb-page-jump"
+              class="text-xs text-slate-500"
+            >
+              Ir a
+            </label>
+
+            <input
+              id="fb-page-jump"
+              type="number"
+              min="1"
+              placeholder="1"
+              class="h-11 w-16 rounded-xl border border-white/10 bg-slate-950 px-3 text-center text-sm text-white outline-none focus:border-indigo-500/50"
+            />
+
+            <button
+              id="fb-page-jump-button"
+              type="button"
+              class="h-11 rounded-xl bg-white/10 px-3 text-sm text-white transition hover:bg-white/20"
+            >
+              Ir
+            </button>
+          </div>
+
+          <!-- Sonido -->
+
+          <button
+            id="fb-sound-toggle"
+            type="button"
+            class="flex h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-slate-400 transition hover:bg-white/10 hover:text-white"
+            title="Activar o desactivar sonido"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M11 5L6 9H3v6h3l5 4V5z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15.54 8.46a5 5 0 010 7.07"
+              />
+            </svg>
+
+            <span>Sonido</span>
+          </button>
+        </div>
+
+        <!-- Mensaje -->
+
+        <p class="mt-4 text-center text-xs text-slate-600">
+          Usa las flechas del teclado para cambiar de página
+        </p>
+      </section>
+    </div>
+
+    <!-- ================================================= -->
+    <!-- OVERLAY SIDEBAR EN MÓVIL                          -->
+    <!-- ================================================= -->
+
+    <div
+      id="fb-sidebar-overlay"
+      class="fixed inset-0 z-20 hidden bg-black/60 backdrop-blur-sm lg:hidden"
+    ></div>
+
+  </div>
+</Layout>
+
+<script>
+  const fullscreenButton = document.querySelector("#fb-fullscreen");
+  const readerLayout = document.querySelector("#fb-reader-layout");
+
+  fullscreenButton?.addEventListener("click", async () => {
+    if (!document.fullscreenElement) {
+      await readerLayout?.requestFullscreen?.();
+    } else {
+      await document.exitFullscreen?.();
+    }
+  });
+
+  const sidebar = document.querySelector("#fb-sidebar");
+  const sidebarOverlay = document.querySelector("#fb-sidebar-overlay");
+  const tocToggle = document.querySelector("#fb-toc-toggle");
+  const sidebarClose = document.querySelector("#fb-sidebar-close");
+
+  const openSidebar = () => {
+    sidebar?.classList.remove("-translate-x-full");
+    sidebarOverlay?.classList.remove("hidden");
+  };
+
+  const closeSidebar = () => {
+    sidebar?.classList.add("-translate-x-full");
+    sidebarOverlay?.classList.add("hidden");
+  };
+
+  tocToggle?.addEventListener("click", () => {
+    if (sidebar?.classList.contains("-translate-x-full")) {
+      openSidebar();
+    } else {
+      closeSidebar();
+    }
+  });
+
+  sidebarClose?.addEventListener("click", closeSidebar);
+  sidebarOverlay?.addEventListener("click", closeSidebar);
+
+  // En pantallas grandes el índice siempre permanece visible.
+  const handleResponsiveSidebar = () => {
+    if (window.innerWidth >= 1024) {
+      sidebar?.classList.remove("-translate-x-full");
+      sidebarOverlay?.classList.add("hidden");
+    }
+  };
+
+  window.addEventListener("resize", handleResponsiveSidebar);
+</script>
+
+<script>
+  const searchInput = document.querySelector<HTMLInputElement>(
+    "[data-reading-toc-search]"
+  );
+
+  const tocOriginal = document.querySelector("#reading-toc");
+  const tocResults = document.querySelector("#reading-toc-results");
+
+  searchInput?.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+
+    if (!query) {
+      tocOriginal?.classList.remove("hidden");
+      tocResults?.classList.add("hidden");
+      if (tocResults) tocResults.innerHTML = "";
+      return;
+    }
+
+    const links = tocOriginal?.querySelectorAll("a") ?? [];
+
+    const matchingLinks = Array.from(links).filter((link) =>
+      link.textContent?.toLowerCase().includes(query)
+    );
+
+    tocOriginal?.classList.add("hidden");
+    tocResults?.classList.remove("hidden");
+
+    if (!tocResults) return;
+
+    if (matchingLinks.length === 0) {
+      tocResults.innerHTML = `
+        <div class="py-10 text-center text-sm text-slate-500">
+          No se encontraron temas
+        </div>
+      `;
+      return;
+    }
+
+    tocResults.innerHTML = "";
+
+    matchingLinks.forEach((link) => {
+      const clone = link.cloneNode(true) as HTMLAnchorElement;
+
+      clone.classList.add(
+        "block",
+        "rounded-xl",
+        "border",
+        "border-white/5",
+        "bg-white/5",
+        "px-4",
+        "py-3",
+        "text-sm",
+        "text-slate-300",
+        "transition",
+        "hover:bg-white/10",
+        "hover:text-white"
+      );
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "mb-2";
+      wrapper.appendChild(clone);
+
+      tocResults.appendChild(wrapper);
+    });
+  });
+</script>
+
+<style is:global>
+ #fb-page-indicator{font-size:11px!important;min-width:76px!important}
+ #fb-reader-layout #fb-prev,#fb-reader-layout #fb-next,#fb-reader-layout #fb-sound-toggle,#fb-reader-layout #fb-page-jump-button{height:34px!important;padding-left:10px!important;padding-right:10px!important;font-size:11px!important;border-radius:9px!important}
+ #fb-reader-layout #fb-page-jump{height:34px!important;width:54px!important;font-size:11px!important}
+ #fb-reader-layout #fb-page-jump-button{background:rgba(255,255,255,.07)!important}
+ #fb-reader-layout section#book-stage{padding-top:12px!important;padding-bottom:12px!important}
+</style>

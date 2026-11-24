@@ -1,0 +1,811 @@
+---
+// src/components/VisorBlocNotas.astro
+// Ajusta las rutas según la estructura de tu proyecto:
+import RenderLecturaXML from './RenderLecturaXml.astro';
+import RenderIndiceTemario from './RenderIndiceTemario.astro';
+import type { NodoXML } from '../../features/xml/xmlParser';
+
+interface Props {
+  nodo: NodoXML;
+  tituloLibro?: string;
+}
+
+const { 
+  nodo,
+  tituloLibro = "Cuaderno de Estudio" 
+} = Astro.props;
+---
+
+<div id="notepad-app" class="relative flex min-h-screen w-full flex-col bg-slate-200/85 font-sans text-slate-800 selection:bg-indigo-200">
+  
+  <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
+  <header class="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-slate-300 bg-white/95 px-4 py-2.5 shadow-sm backdrop-blur">
+    
+    <!-- Izquierda: Botón Temario + Título -->
+    <div class="flex items-center gap-3">
+      <button 
+        id="btn-toggle-toc" 
+        type="button"
+        class="flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        aria-expanded="false"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+        <span>Temario</span>
+      </button>
+      <h1 class="hidden max-w-xs truncate text-sm font-semibold text-slate-800 sm:block">
+        {tituloLibro}
+      </h1>
+    </div>
+
+    <!-- Centro: Buscador en vivo -->
+    <div class="relative max-w-md flex-1">
+      <div class="relative">
+        <input 
+          id="notepad-search-input" 
+          type="search" 
+          placeholder="Buscar tema, fórmula o concepto..." 
+          class="w-full rounded-lg border border-slate-300 bg-slate-100/70 py-1.5 pl-9 pr-3 text-sm text-slate-800 placeholder-slate-400 transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        />
+        <svg class="pointer-events-none absolute left-2.5 top-2 size-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
+        </svg>
+      </div>
+
+      <!-- Contenedor flotante de Cards de Resultados -->
+      <div 
+        id="search-results-dropdown" 
+        class="absolute left-0 right-0 top-full z-50 mt-2 hidden max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+      >
+        <div id="search-results-list" class="flex flex-col gap-2"></div>
+      </div>
+    </div>
+
+    <!-- Derecha: Navegador de Páginas -->
+    <div class="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1">
+      <button 
+        id="btn-prev-sheet-top" 
+        type="button" 
+        title="Página anterior (Flecha Izquierda)"
+        class="rounded p-1 text-slate-600 transition hover:bg-slate-200 disabled:opacity-30"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-1 text-xs font-medium text-slate-600">
+        <span>Pág.</span>
+        <input 
+          id="sheet-number-input" 
+          type="number" 
+          min="1" 
+          value="1" 
+          class="w-12 rounded border border-slate-300 bg-white px-1 py-0.5 text-center font-bold text-indigo-700 focus:border-indigo-500 focus:outline-none"
+        />
+        <span>de <strong id="total-sheets-label">1</strong></span>
+      </div>
+
+      <button 
+        id="btn-next-sheet-top" 
+        type="button" 
+        title="Página siguiente (Flecha Derecha)"
+        class="rounded p-1 text-slate-600 transition hover:bg-slate-200 disabled:opacity-30"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MENÚ DESPLEGABLE DEL TEMARIO (Drawer Lateral) -->
+  <aside 
+    id="toc-drawer" 
+    class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] -translate-x-full flex-col border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300 ease-in-out"
+    aria-hidden="true"
+  >
+    <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+      <span class="font-bold text-slate-800">Índice de Contenido</span>
+      <button id="btn-close-toc" type="button" class="rounded-lg p-1 text-slate-500 hover:bg-slate-100">
+        <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav id="toc-container" class="flex-1 overflow-y-auto p-3">
+      <ol class="space-y-1">
+        <RenderIndiceTemario nodo={nodo} />
+      </ol>
+    </nav>
+  </aside>
+
+  <!-- Fondo oscuro al abrir el temario -->
+  <div id="toc-backdrop" class="fixed inset-0 z-40 hidden bg-slate-900/40 backdrop-blur-xs transition-opacity"></div>
+
+  <!-- ÁREA PRINCIPAL DEL CUADERNO ENGARGOLADO -->
+  <main class="relative mx-auto flex w-full max-w-4xl flex-1 flex-col items-center px-3 py-6 sm:px-6">
+    
+    <!-- Contenedor Adaptable 3D del Cuaderno -->
+    <div id="notebook-wrapper" class="relative w-full" style="perspective: 2400px;">
+      
+      <!-- ENGARGOLADO METÁLICO REALISTA EN EL BORDE IZQUIERDO -->
+      <div class="notebook-left-spiral pointer-events-none absolute inset-y-3 -left-3 z-30 w-9 select-none sm:-left-4 sm:w-11" aria-hidden="true"></div>
+
+      <!-- Escenario adaptable de hojas (toma automáticamente el alto de la hoja activa) -->
+      <div id="notebook-sheets-stage" class="relative w-full">
+        <div class="flex min-h-[75vh] items-center justify-center rounded-r-2xl rounded-l-md border border-slate-300 bg-[#fffef9] p-8 pl-12 text-slate-400 shadow-lg">
+          <div class="flex items-center gap-3">
+            <span class="size-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent"></span>
+            <span>Preparando páginas del cuaderno...</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTONES INFERIORES DE NAVEGACIÓN -->
+    <div class="mt-6 flex w-full items-center justify-between gap-4">
+      <button
+        id="btn-prev-sheet-bottom"
+        type="button"
+        class="flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-40"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        <span>Página anterior</span>
+      </button>
+
+      <span id="bottom-page-indicator" class="text-xs font-medium text-slate-500">
+        Página 1 de 1
+      </span>
+
+      <button
+        id="btn-next-sheet-bottom"
+        type="button"
+        class="flex items-center gap-2 rounded-xl border border-indigo-600 bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-40"
+      >
+        <span>Página siguiente</span>
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    <p class="mt-3 text-center text-xs text-slate-500">
+      💡 Haz clic en el borde <strong>derecho</strong> de la hoja (o desliza de derecha a izquierda en móvil) para pasar de página.
+    </p>
+  </main>
+
+  <!-- CONTENEDOR OCULTO DONDE ASTRO RENDERIZA TU XML ORIGINAL -->
+  <div id="raw-book-source" class="pointer-events-none fixed -left-[9999px] top-0 w-full max-w-4xl opacity-0" aria-hidden="true">
+    <RenderLecturaXML nodo={nodo} />
+  </div>
+
+</div>
+
+<style is:global>
+  /* 1. Engargolado metálico realista doble en el lado izquierdo */
+  .notebook-left-spiral {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='36' viewBox='0 0 44 36'%3E%3Cdefs%3E%3ClinearGradient id='wireGrad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23475569'/%3E%3Cstop offset='28%25' stop-color='%23cbd5e1'/%3E%3Cstop offset='48%25' stop-color='%23ffffff'/%3E%3Cstop offset='72%25' stop-color='%2394a3b8'/%3E%3Cstop offset='100%25' stop-color='%231e293b'/%3E%3C/linearGradient%3E%3CradialGradient id='holeGrad' cx='50%25' cy='50%25' r='50%25'%3E%3Cstop offset='55%25' stop-color='%230f172a'/%3E%3Cstop offset='85%25' stop-color='%23334155'/%3E%3Cstop offset='100%25' stop-color='%2364748b'/%3E%3C/radialGradient%3E%3C/defs%3E%3C!-- Perforación rectangular redondeada en el papel --%3E%3Crect x='25' y='11' width='11' height='10' rx='3.5' fill='url(%23holeGrad)'/%3E%3Crect x='25.5' y='11.5' width='10' height='9' rx='3' fill='none' stroke='%23000000' stroke-opacity='0.35' stroke-width='0.8'/%3E%3C!-- Sombra proyectada por el alambre sobre la hoja --%3E%3Cpath d='M 4 19 C 12 24, 24 24, 31 20' stroke='%230f172a' stroke-opacity='0.24' stroke-width='4.2' fill='none' stroke-linecap='round'/%3E%3C!-- Alambre superior del arillo doble --%3E%3Cpath d='M 3 13 C 10 8, 24 8, 31 14' stroke='url(%23wireGrad)' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3C!-- Alambre inferior del arillo doble --%3E%3Cpath d='M 3 18 C 10 13, 24 13, 31 18.5' stroke='url(%23wireGrad)' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-y;
+    background-position: left top;
+  }
+
+  /* 2. Hojas adaptables del cuaderno con animación 3D hacia la izquierda */
+  .notebook-sheet {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 78vh; /* Se adapta hacia abajo si el contenido es más alto, y mantiene aspecto de hoja completa si es breve */
+    background-color: #fffef9;
+    /* Líneas de cuaderno rayado sutil + línea vertical roja de margen */
+    background-image: 
+      linear-gradient(to right, transparent 46px, rgba(244, 63, 94, 0.22) 47px, transparent 48px),
+      linear-gradient(to bottom, transparent 31px, rgba(148, 163, 184, 0.14) 32px);
+    background-size: 100% 100%, 100% 32px;
+    border-radius: 0.35rem 1rem 1rem 0.35rem;
+    border: 1px solid #cbd5e1;
+    border-left: 3px solid #94a3b8;
+    /* Efecto de grosor de pila de hojas en el borde derecho e inferior */
+    box-shadow: 
+      3px 3px 0 #f8fafc,
+      4px 4px 0 #cbd5e1,
+      7px 7px 0 #f1f5f9,
+      8px 8px 0 #94a3b8,
+      0 18px 32px -10px rgba(15, 23, 42, 0.18);
+    padding: 2.25rem 1.75rem 2.75rem 3.5rem;
+    
+    /* Configuración 3D: pivote en el engargolado izquierdo */
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transition: 
+      transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.45s ease,
+      box-shadow 0.65s ease;
+    will-change: transform, opacity;
+  }
+
+  @media (min-width: 640px) {
+    .notebook-sheet {
+      background-image: 
+        linear-gradient(to right, transparent 62px, rgba(244, 63, 94, 0.24) 63px, transparent 64px),
+        linear-gradient(to bottom, transparent 31px, rgba(148, 163, 184, 0.14) 32px);
+      padding: 2.5rem 3.25rem 3rem 4.75rem;
+    }
+  }
+
+  /* Estado 1: Hoja ya pasada (doblada hacia la izquierda como libreta) */
+  .notebook-sheet.flipped-left {
+    transform: rotateY(-172deg) translateX(-6px);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: -20px 10px 35px rgba(15, 23, 42, 0.28);
+  }
+
+  /* Estado 2: Hoja en espera debajo en la pila */
+  .notebook-sheet.stacked-right {
+    transform: rotateY(0deg) scale(0.996);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Estado 3: Hoja activa actual (position: relative hace que el contenedor se adapte a su altura real) */
+  .notebook-sheet.active-sheet {
+    position: relative;
+    transform: rotateY(0deg) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Mientras se mide su altura real antes de paginar */
+  .notebook-sheet.measuring-sheet {
+    position: relative !important;
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+  }
+
+  /* Esquina inferior derecha con indicación visual de pasar página */
+  .sheet-corner-fold {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, transparent 50%, rgba(99, 102, 241, 0.14) 50%);
+    border-bottom-right-radius: 1rem;
+    pointer-events: none;
+    transition: width 0.2s ease, height 0.2s ease;
+  }
+
+  .notebook-sheet:hover .sheet-corner-fold {
+    width: 46px;
+    height: 46px;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const rawSource = document.getElementById('raw-book-source');
+    const stage = document.getElementById('notebook-sheets-stage');
+
+    // Controles UI superiores e inferiores
+    const btnPrevTop = document.getElementById('btn-prev-sheet-top') as HTMLButtonElement;
+    const btnNextTop = document.getElementById('btn-next-sheet-top') as HTMLButtonElement;
+    const btnPrevBottom = document.getElementById('btn-prev-sheet-bottom') as HTMLButtonElement;
+    const btnNextBottom = document.getElementById('btn-next-sheet-bottom') as HTMLButtonElement;
+    const sheetInput = document.getElementById('sheet-number-input') as HTMLInputElement;
+    const totalLabel = document.getElementById('total-sheets-label');
+    const bottomPageIndicator = document.getElementById('bottom-page-indicator');
+
+    // Temario Drawer
+    const btnToggleToc = document.getElementById('btn-toggle-toc');
+    const btnCloseToc = document.getElementById('btn-close-toc');
+    const tocDrawer = document.getElementById('toc-drawer');
+    const tocBackdrop = document.getElementById('toc-backdrop');
+
+    // Buscador
+    const searchInput = document.getElementById('notepad-search-input') as HTMLInputElement;
+    const searchDropdown = document.getElementById('search-results-dropdown');
+    const searchList = document.getElementById('search-results-list');
+
+    if (!rawSource || !stage) return;
+
+    let sheets: HTMLElement[] = [];
+    let currentSheetIndex = 0;
+    const idToSheetMap = new Map<string, number>();
+
+    interface SearchItem {
+      id: string;
+      title: string;
+      snippet: string;
+      sheetIndex: number;
+    }
+    let searchIndex: SearchItem[] = [];
+
+    // Etiquetas/secciones que fuerzan cambio automático de página
+    const STRUCTURAL_BREAK_TAGS = new Set([
+      'chapter',
+      'part',
+      'section',
+      'sub-section',
+      'sub-sub-section'
+    ]);
+
+    /**
+     * 1. PAGINACIÓN INTELIGENTE CON SALTO EN SECCIONES Y ALTURA ADAPTABLE
+     */
+    function buildNotebookSheets() {
+      let rootContainer = rawSource!.firstElementChild as HTMLElement | null;
+      if (
+        rootContainer &&
+        rootContainer.children.length === 1 &&
+        rootContainer.firstElementChild!.children.length > 1
+      ) {
+        rootContainer = rootContainer.firstElementChild as HTMLElement;
+      }
+      if (!rootContainer) return;
+
+      stage!.innerHTML = '';
+      sheets = [];
+      idToSheetMap.clear();
+      searchIndex = [];
+
+      // Límite de referencia al 130% del viewport antes de dividir bloques largos
+      const MAX_SHEET_HEIGHT = Math.max(680, window.innerHeight * 1.3);
+
+      let currentSheet = createSheetElement(0, true);
+      stage!.appendChild(currentSheet);
+      sheets.push(currentSheet);
+
+      function startNewSheet(): HTMLElement {
+        currentSheet.classList.remove('measuring-sheet');
+        currentSheet.classList.add('stacked-right');
+
+        const nextSheet = createSheetElement(sheets.length, true);
+        stage!.appendChild(nextSheet);
+        sheets.push(nextSheet);
+        currentSheet = nextSheet;
+        return nextSheet;
+      }
+
+      // Detecta etiquetas estructurales (<chapter>, <part>, <section>, <sub-section>, <sub-sub-section>)
+      function isStructuralSection(el: HTMLElement): boolean {
+        const tag = el.tagName.toLowerCase();
+        if (STRUCTURAL_BREAK_TAGS.has(tag)) return true;
+        const xmlTag = (el.dataset.xmlTag || el.dataset.type || '').toLowerCase();
+        return STRUCTURAL_BREAK_TAGS.has(xmlTag);
+      }
+
+      // Detecta elementos <math-algo> o <math> que jamás deben partirse
+      function isAtomicMathElement(el: Element): boolean {
+        const tag = el.tagName.toLowerCase();
+        return tag.startsWith('math-') || tag === 'math';
+      }
+
+      function isIndivisibleNode(el: HTMLElement): boolean {
+        if (isAtomicMathElement(el)) return true;
+
+        const tag = el.tagName.toLowerCase();
+        const atomicTags = ['img', 'svg', 'canvas', 'video', 'iframe', 'table', 'pre', 'hr', 'br'];
+        if (atomicTags.includes(tag)) return true;
+
+        const elementChildren = Array.from(el.children);
+        if (elementChildren.length === 0) return true;
+
+        const hasMathChild = elementChildren.some((c) => isAtomicMathElement(c));
+        if (hasMathChild && ['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span'].includes(tag)) {
+          return true;
+        }
+
+        return false;
+      }
+
+      function cloneWrapperShell(original: HTMLElement, isContinuation: boolean): HTMLElement {
+        const shell = original.cloneNode(false) as HTMLElement;
+        if (isContinuation) {
+          shell.removeAttribute('id');
+          shell.classList.remove('scroll-mt-32');
+          shell.dataset.continued = 'true';
+        }
+        return shell;
+      }
+
+      function getWrapperChain(node: HTMLElement, sheetRoot: HTMLElement): HTMLElement[] {
+        const chain: HTMLElement[] = [];
+        let curr: HTMLElement | null = node;
+        while (curr && curr !== sheetRoot) {
+          chain.unshift(curr);
+          curr = curr.parentElement;
+        }
+        return chain;
+      }
+
+      function currentSheetHasContent(): boolean {
+        return currentSheet.textContent!.trim().length > 0 || currentSheet.querySelector('img, svg, math, [class*="math"]') !== null;
+      }
+
+      function appendWithPagination(sourceNode: Node, targetParent: HTMLElement): HTMLElement {
+        if (sourceNode.nodeType === Node.TEXT_NODE) {
+          if (!sourceNode.textContent?.trim()) return targetParent;
+          targetParent.appendChild(sourceNode.cloneNode(true));
+          return targetParent;
+        }
+
+        if (sourceNode.nodeType !== Node.ELEMENT_NODE) return targetParent;
+        const sourceEl = sourceNode as HTMLElement;
+
+        // 1. Si llega una nueva sección estructural (<chapter>, <part>, <section>, <sub-section>, <sub-sub-section>)
+        // y la página actual ya tiene contenido, cambiamos automáticamente a una página nueva
+        if (isStructuralSection(sourceEl) && currentSheetHasContent()) {
+          const ancestorChain = getWrapperChain(targetParent, currentSheet);
+          startNewSheet();
+
+          let rebuiltParent: HTMLElement = currentSheet;
+          for (const wrapper of ancestorChain) {
+            const shell = cloneWrapperShell(wrapper, true);
+            rebuiltParent.appendChild(shell);
+            rebuiltParent = shell;
+          }
+          targetParent = rebuiltParent;
+        }
+
+        // 2. Si es un nodo atómico (<math-*>, párrafo corto, imagen, tabla)
+        if (isIndivisibleNode(sourceEl)) {
+          const clone = sourceEl.cloneNode(true) as HTMLElement;
+          targetParent.appendChild(clone);
+
+          const measuredHeight = currentSheet.getBoundingClientRect().height;
+          if (measuredHeight > MAX_SHEET_HEIGHT && currentSheetHasContent()) {
+            // Verificar que no sea el único bloque de la hoja
+            const textWithoutClone = currentSheet.textContent!.trim().length - clone.textContent!.trim().length;
+            if (textWithoutClone > 0 || currentSheet.children.length > 1) {
+              targetParent.removeChild(clone);
+
+              const ancestorChain = getWrapperChain(targetParent, currentSheet);
+              startNewSheet();
+
+              let rebuiltParent: HTMLElement = currentSheet;
+              for (const wrapper of ancestorChain) {
+                const shell = cloneWrapperShell(wrapper, true);
+                rebuiltParent.appendChild(shell);
+                rebuiltParent = shell;
+              }
+              rebuiltParent.appendChild(clone);
+              return rebuiltParent;
+            }
+          }
+          return targetParent;
+        }
+
+        // 3. Contenedor divisible: probar primero si cabe entero
+        const fullClone = sourceEl.cloneNode(true) as HTMLElement;
+        targetParent.appendChild(fullClone);
+
+        if (currentSheet.getBoundingClientRect().height <= MAX_SHEET_HEIGHT) {
+          return targetParent;
+        }
+
+        // Si excede la altura, quitarlo y reconstruirlo hijo por hijo
+        targetParent.removeChild(fullClone);
+
+        let currentWrapper = cloneWrapperShell(sourceEl, false);
+        targetParent.appendChild(currentWrapper);
+
+        const childNodes = Array.from(sourceEl.childNodes);
+        for (const child of childNodes) {
+          const sheetBefore = currentSheet;
+          const updatedWrapper = appendWithPagination(child, currentWrapper);
+
+          if (currentSheet !== sheetBefore) {
+            currentWrapper = updatedWrapper;
+          }
+        }
+
+        if (currentWrapper.children.length === 0 && !currentWrapper.textContent?.trim()) {
+          currentWrapper.remove();
+        }
+
+        return targetParent;
+      }
+
+      // Procesar todo el contenido raíz
+      const topBlocks = Array.from(rootContainer.childNodes);
+      for (const block of topBlocks) {
+        appendWithPagination(block, currentSheet);
+      }
+
+      // Quitar clase de medición de la última hoja
+      currentSheet.classList.remove('measuring-sheet');
+      currentSheet.classList.add('stacked-right');
+
+      // Eliminar última hoja si quedó vacía
+      if (sheets.length > 1 && !sheets[sheets.length - 1].textContent?.trim()) {
+        const emptySheet = sheets.pop()!;
+        emptySheet.remove();
+      }
+
+      // Decoración final, numeración de páginas e indexación para Temario y Buscador
+      sheets.forEach((sheet, idx) => {
+        const footer = document.createElement('div');
+        footer.className = 'mt-10 flex items-center justify-between border-t border-slate-200/80 pt-3 text-xs text-slate-400 select-none';
+        footer.innerHTML = `<span>Cuaderno de estudio</span><span>Página ${idx + 1} de ${sheets.length}</span>`;
+        sheet.appendChild(footer);
+
+        const corner = document.createElement('div');
+        corner.className = 'sheet-corner-fold';
+        sheet.appendChild(corner);
+
+        // Indexar todos los IDs para el Temario
+        sheet.querySelectorAll('[id]').forEach((el) => {
+          if (el.id && !idToSheetMap.has(el.id)) {
+            idToSheetMap.set(el.id, idx);
+          }
+        });
+
+        // Indexar elementos .scroll-mt-32 para las cards del Buscador
+        sheet.querySelectorAll('.scroll-mt-32').forEach((el, itemIdx) => {
+          const htmlEl = el as HTMLElement;
+          if (!htmlEl.id) {
+            htmlEl.id = `search-anchor-${idx}-${itemIdx}`;
+          }
+          if (!idToSheetMap.has(htmlEl.id)) {
+            idToSheetMap.set(htmlEl.id, idx);
+          }
+
+          const heading = htmlEl.querySelector('h1, h2, h3, h4, strong');
+          const rawText = (htmlEl.innerText || '').replace(/\s+/g, ' ').trim();
+          const title = heading ? (heading.textContent || '').trim() : rawText.slice(0, 55) + '...';
+          const snippet = rawText.slice(0, 130) + (rawText.length > 130 ? '...' : '');
+
+          if (rawText.length > 0) {
+            searchIndex.push({
+              id: htmlEl.id,
+              title,
+              snippet,
+              sheetIndex: idx
+            });
+          }
+        });
+      });
+
+      if (totalLabel) totalLabel.textContent = String(sheets.length);
+      if (sheetInput) sheetInput.max = String(sheets.length);
+
+      // Liberar el DOM oculto original
+      rawSource!.innerHTML = '';
+
+      goToSheet(0);
+    }
+
+    function createSheetElement(index: number, measuring = false): HTMLElement {
+      const sheet = document.createElement('article');
+      sheet.className = `notebook-sheet prose prose-slate max-w-none ${measuring ? 'measuring-sheet' : 'stacked-right'}`;
+      sheet.dataset.sheetIndex = String(index);
+      sheet.style.zIndex = String(1000 - index);
+      return sheet;
+    }
+
+    /**
+     * 2. ANIMACIÓN PROPIA DE PASO DE PÁGINA HACIA LA IZQUIERDA (CON ALTURA ADAPTABLE)
+     */
+    function goToSheet(targetIndex: number, highlightElementId?: string) {
+      if (sheets.length === 0) return;
+      const clamped = Math.max(0, Math.min(targetIndex, sheets.length - 1));
+      currentSheetIndex = clamped;
+
+      sheets.forEach((sheet, idx) => {
+        sheet.classList.remove('active-sheet', 'flipped-left', 'stacked-right', 'measuring-sheet');
+        if (idx < currentSheetIndex) {
+          sheet.classList.add('flipped-left');
+        } else if (idx === currentSheetIndex) {
+          sheet.classList.add('active-sheet');
+        } else {
+          sheet.classList.add('stacked-right');
+        }
+      });
+
+      // Actualizar contadores y estado de botones superiores e inferiores
+      const pageNum = currentSheetIndex + 1;
+      const total = sheets.length;
+      const isFirst = currentSheetIndex === 0;
+      const isLast = currentSheetIndex === total - 1;
+
+      if (sheetInput) sheetInput.value = String(pageNum);
+      if (bottomPageIndicator) bottomPageIndicator.textContent = `Página ${pageNum} de ${total}`;
+
+      if (btnPrevTop) btnPrevTop.disabled = isFirst;
+      if (btnPrevBottom) btnPrevBottom.disabled = isFirst;
+      if (btnNextTop) btnNextTop.disabled = isLast;
+      if (btnNextBottom) btnNextBottom.disabled = isLast;
+
+      if (highlightElementId) {
+        setTimeout(() => {
+          const targetEl = document.getElementById(highlightElementId);
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetEl.classList.add('ring-2', 'ring-indigo-400', 'bg-indigo-50/40', 'rounded-lg', 'transition-all');
+            setTimeout(() => {
+              targetEl.classList.remove('ring-2', 'ring-indigo-400', 'bg-indigo-50/40');
+            }, 1800);
+          }
+        }, 320);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    /**
+     * 3. CLIC EN BORDES DE LA HOJA (DERECHO PARA AVANZAR / IZQUIERDO PARA RETROCEDER)
+     */
+    stage.addEventListener('click', (e: MouseEvent) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) return;
+
+      const target = e.target as HTMLElement;
+      if (target.closest('a, button, summary, input, select, textarea, details, math-field, [class*="math"]')) return;
+
+      const rect = stage.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+
+      if (clickX > rect.width * 0.84) {
+        goToSheet(currentSheetIndex + 1);
+      } else if (clickX < rect.width * 0.14) {
+        goToSheet(currentSheetIndex - 1);
+      }
+    });
+
+    /**
+     * 4. GESTO TÁCTIL HORIZONTAL EN MÓVIL (SWIPE DERECHA -> IZQUIERDA)
+     */
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    stage.addEventListener('touchstart', (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    stage.addEventListener('touchend', (e: TouchEvent) => {
+      const deltaX = touchStartX - e.changedTouches[0].screenX;
+      const deltaY = Math.abs(touchStartY - e.changedTouches[0].screenY);
+
+      if (Math.abs(deltaX) > 65 && Math.abs(deltaX) > deltaY * 1.6) {
+        if (deltaX > 0) {
+          goToSheet(currentSheetIndex + 1);
+        } else {
+          goToSheet(currentSheetIndex - 1);
+        }
+      }
+    }, { passive: true });
+
+    /**
+     * 5. BOTONES SUPERIORES, INFERIORES Y TECLADO
+     */
+    btnPrevTop?.addEventListener('click', () => goToSheet(currentSheetIndex - 1));
+    btnNextTop?.addEventListener('click', () => goToSheet(currentSheetIndex + 1));
+    btnPrevBottom?.addEventListener('click', () => goToSheet(currentSheetIndex - 1));
+    btnNextBottom?.addEventListener('click', () => goToSheet(currentSheetIndex + 1));
+
+    sheetInput?.addEventListener('change', () => {
+      const val = parseInt(sheetInput.value, 10);
+      if (!isNaN(val)) goToSheet(val - 1);
+    });
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowRight') {
+        goToSheet(currentSheetIndex + 1);
+      } else if (e.key === 'ArrowLeft') {
+        goToSheet(currentSheetIndex - 1);
+      }
+    });
+
+    /**
+     * 6. MENÚ DESPLEGABLE DEL TEMARIO (RenderIndiceTemario.astro)
+     */
+    function toggleToc(open?: boolean) {
+      const shouldOpen = open !== undefined ? open : tocDrawer?.classList.contains('-translate-x-full');
+      if (shouldOpen) {
+        tocDrawer?.classList.remove('-translate-x-full');
+        tocBackdrop?.classList.remove('hidden');
+        btnToggleToc?.setAttribute('aria-expanded', 'true');
+      } else {
+        tocDrawer?.classList.add('-translate-x-full');
+        tocBackdrop?.classList.add('hidden');
+        btnToggleToc?.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    btnToggleToc?.addEventListener('click', () => toggleToc());
+    btnCloseToc?.addEventListener('click', () => toggleToc(false));
+    tocBackdrop?.addEventListener('click', () => toggleToc(false));
+
+    tocDrawer?.addEventListener('click', (e: MouseEvent) => {
+      const link = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!link) return;
+
+      e.preventDefault();
+      const targetId = link.getAttribute('href')?.slice(1);
+      if (targetId && idToSheetMap.has(targetId)) {
+        const sheetIdx = idToSheetMap.get(targetId)!;
+        toggleToc(false);
+        goToSheet(sheetIdx, targetId);
+      }
+    });
+
+    /**
+     * 7. BUSCADOR EN VIVO CON CARDS RECTANGULARES (.scroll-mt-32)
+     */
+    searchInput?.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      if (!searchList || !searchDropdown) return;
+
+      if (query.length < 2) {
+        searchDropdown.classList.add('hidden');
+        searchList.innerHTML = '';
+        return;
+      }
+
+      const matches = searchIndex.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.snippet.toLowerCase().includes(query)
+      );
+
+      searchDropdown.classList.remove('hidden');
+
+      if (matches.length === 0) {
+        searchList.innerHTML = `<p class="p-3 text-center text-xs text-slate-500">No se encontraron coincidencias para "${searchInput.value}".</p>`;
+        return;
+      }
+
+      searchList.innerHTML = matches
+        .slice(0, 12)
+        .map(
+          (item) => `
+          <button 
+            type="button" 
+            data-jump-sheet="${item.sheetIndex}" 
+            data-jump-id="${item.id}"
+            class="flex w-full flex-col gap-1 rounded-lg border border-slate-200 bg-slate-50/70 p-2.5 text-left transition hover:border-indigo-300 hover:bg-indigo-50/60"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="truncate text-xs font-bold text-indigo-900">${item.title}</span>
+              <span class="shrink-0 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">
+                Pág. ${item.sheetIndex + 1}
+              </span>
+            </div>
+            <p class="line-clamp-2 text-xs text-slate-600">${item.snippet}</p>
+          </button>
+        `
+        )
+        .join('');
+    });
+
+    searchList?.addEventListener('click', (e: MouseEvent) => {
+      const card = (e.target as HTMLElement).closest('button[data-jump-sheet]') as HTMLButtonElement | null;
+      if (!card) return;
+
+      const sheetIdx = parseInt(card.dataset.jumpSheet || '0', 10);
+      const targetId = card.dataset.jumpId || '';
+
+      searchDropdown?.classList.add('hidden');
+      goToSheet(sheetIdx, targetId);
+    });
+
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (!searchInput?.contains(e.target as Node) && !searchDropdown?.contains(e.target as Node)) {
+        searchDropdown?.classList.add('hidden');
+      }
+    });
+
+    // Ejecutar paginación tras renderizado inicial
+    setTimeout(buildNotebookSheets, 180);
+  });
+</script>

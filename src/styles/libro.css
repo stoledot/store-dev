@@ -1,0 +1,170 @@
+/* =========================================
+   1. REGLAS DE IMPRESIÓN Y PAGINACIÓN
+   ========================================= */
+@page {
+  size: 148mm 210mm; /* Tamaño A5 */
+  margin: 20mm 18mm 20mm 18mm;
+
+  @bottom-center {
+    content: counter(page);
+    font-family: Georgia, serif;
+    font-size: 9pt;
+    color: #5c5346;
+  }
+}
+
+/* Márgenes asimétricos reales para libro (más espacio en el lomo interior) */
+@page :left {
+  margin-left: 15mm;
+  margin-right: 22mm;
+}
+
+@page :right {
+  margin-left: 22mm;
+  margin-right: 15mm;
+}
+
+/* Ocultar número en la portada */
+@page :first {
+  @bottom-center { content: none; }
+}
+
+.capitulo {
+  break-before: page;
+}
+
+/* =========================================
+   2. DISEÑO VISUAL DE LIBRO ABIERTO (PANTALLA)
+   ========================================= */
+@media screen {
+  /* Fondo de escritorio oscuro/neutro para resaltar el libro */
+  body {
+    background-color: #2c2a29;
+    margin: 0;
+    padding: 2rem 1rem;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden; /* Evita scroll horizontal innecesario */
+  }
+
+  .pagedjs_pages {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem 0;
+    max-width: max-content;
+    margin: 0 auto;
+
+    /* Ajuste de tamaño para que el libro abierto quepa bien en pantalla */
+    transform: scale(0.75);
+    transform-origin: top center;
+    margin-bottom: -15%; /* Compensa el espacio vacío inferior que deja el scale */
+    }
+
+  /* Estilo base de cada hoja (Papel beige/crema) */
+  .pagedjs_page {
+    background-color: #f6f1e3; /* Color papel crema cálido */
+    color: #2b2620; /* Tinta gris muy oscuro (más suave que el negro puro) */
+    position: relative;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+  }
+
+  /* La portada (Página 1) va sola a la derecha, como en un libro real cerrado/abriéndose */
+  .pagedjs_first_page {
+    grid-column: 2;
+    border-radius: 2px 6px 6px 2px;
+    box-shadow: 
+      inset 12px 0 20px -10px rgba(0, 0, 0, 0.15), /* Sombra sutil del lomo */
+      0 15px 35px rgba(0, 0, 0, 0.45);
+  }
+
+  /* PÁGINAS IZQUIERDAS (Pares): Sombra del pliegue hacia el borde derecho */
+  .pagedjs_left_page {
+    border-radius: 6px 2px 2px 6px;
+    background: linear-gradient(
+      to right,
+      #f2ecdc 0%,
+      #f7f3e6 88%,
+      #e6dec8 98%,
+      #cfc5ad 100% /* Oscurecimiento del pliegue central */
+    );
+    box-shadow: 
+      inset -15px 0 25px -12px rgba(0, 0, 0, 0.25), /* Profundidad en el centro */
+      -8px 12px 25px rgba(0, 0, 0, 0.35);
+  }
+
+  /* PÁGINAS DERECHAS (Impares, excepto portada): Sombra del pliegue hacia el borde izquierdo */
+  .pagedjs_right_page:not(.pagedjs_first_page) {
+    border-radius: 2px 6px 6px 2px;
+    background: linear-gradient(
+      to left,
+      #f2ecdc 0%,
+      #f7f3e6 88%,
+      #e6dec8 98%,
+      #cfc5ad 100% /* Oscurecimiento del pliegue central */
+    );
+    box-shadow: 
+      inset 15px 0 25px -12px rgba(0, 0, 0, 0.25), /* Profundidad en el centro */
+      8px 12px 25px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Efecto de grosor de hojas apiladas en los bordes exteriores */
+  .pagedjs_left_page::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: -6px;
+    width: 6px;
+    background: repeating-linear-gradient(
+      to right,
+      #dfd7c3,
+      #dfd7c3 1px,
+      #f6f1e3 1px,
+      #f6f1e3 2px
+    );
+    border-radius: 4px 0 0 4px;
+    box-shadow: -2px 2px 5px rgba(0,0,0,0.3);
+  }
+
+  .pagedjs_right_page::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    right: -6px;
+    width: 6px;
+    background: repeating-linear-gradient(
+      to left,
+      #dfd7c3,
+      #dfd7c3 1px,
+      #f6f1e3 1px,
+      #f6f1e3 2px
+    );
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  }
+}
+
+/* =========================================
+   3. RESPONSIVO (En pantallas pequeñas, 1 sola hoja)
+   ========================================= */
+@media screen and (max-width: 1100px) {
+  .pagedjs_pages {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    transform: scale(1);
+    margin-bottom: 0;
+  }
+  .pagedjs_first_page {
+    grid-column: 1;
+  }
+  .pagedjs_left_page,
+  .pagedjs_right_page {
+    border-radius: 4px;
+    background: #f6f1e3;
+  }
+  .pagedjs_left_page::before,
+  .pagedjs_right_page::after {
+    display: none;
+  }
+}

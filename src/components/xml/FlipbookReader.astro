@@ -1,0 +1,296 @@
+---
+// src/components/xml/FlipbookReader.astro
+interface Props { title?: string; }
+const { title = "Lectura" } = Astro.props;
+---
+
+<div id="flipbook-wrapper" class="flex min-w-0 w-full flex-col items-center">
+  <div id="raw-xml-html" aria-hidden="true"><slot /></div>
+  <div id="flipbook-container" class="relative mx-auto shadow-2xl"></div>
+</div>
+
+<script>
+  // @ts-ignore page-flip does not provide TypeScript declarations.
+  import { PageFlip } from 'page-flip';
+
+  let pageFlip: any = null;
+  let initializing = false;
+  let initialized = false;
+  let resizeTimer: number | undefined;
+  let soundEnabled = false;
+  let currentIndex = 0;
+  let totalPages = 0;
+  let tocListenersBound = false;
+  const tocPageMap = new Map<string, number>();
+  let hashNavigationBound = false;
+
+  const root = document.getElementById('xml-reading');
+  const readingId = root?.dataset.readingId || 'default';
+  const progressKey = `reading-progress-${readingId}`;
+  const sound = new Audio('/sounds/page-flip.mp3');
+  sound.volume = 0.35;
+
+  function savedIndex() {
+    try { const n = Number(localStorage.getItem(progressKey)); return Number.isInteger(n) && n >= 0 ? n : 0; }
+    catch { return 0; }
+  }
+  function save(index: number) { try { localStorage.setItem(progressKey, String(index)); } catch {} }
+  function dimensions() {
+    const stage = document.getElementById('book-stage');
+    const available = Math.max(300, (stage?.clientWidth || window.innerWidth) - 24);
+    const mobile = window.innerWidth < 768;
+    const width = mobile ? Math.min(available, 430) : Math.min(Math.floor(available / 2), 520);
+    const height = Math.max(420, Math.min(window.innerHeight * 0.70, 760));
+    return { width, height, mobile };
+  }
+
+  // Pagina después de que estilos, fuentes y MathJax estén renderizados,
+  // usando una plantilla de página real (incluye padding y footer).
+  function paginate(source: HTMLElement, width: number, height: number): string[] {
+    const pages: string[] = [];
+    tocPageMap.clear();
+    const measurePage = document.createElement('div');
+    measurePage.className = 'fb-page-inner fb-measure-page';
+    measurePage.style.cssText = `position:fixed;left:-10000px;top:0;visibility:hidden;width:${width}px;height:${height}px;`;
+    const measureContent = document.createElement('div');
+    measureContent.className = 'fb-content';
+    const measureFooter = document.createElement('footer');
+    measureFooter.className = 'fb-page-footer';
+    measureFooter.style.height = '36px';
+    measurePage.append(measureContent, measureFooter);
+    document.body.appendChild(measurePage);
+
+    let current = document.createElement('div');
+    current.className = 'fb-content';
+    measureContent.replaceChildren(current);
+    const overflow = () => measureContent.scrollHeight > measureContent.clientHeight + 1;
+    const idsFor = (node: Element) => [node, ...Array.from(node.querySelectorAll('[id]'))]
+      .map(el => (el as Element).id).filter(Boolean);
+    const registerIds = (node: Element, pageIndex: number) => idsFor(node).forEach(id => {
+      if (!tocPageMap.has(id)) tocPageMap.set(id, pageIndex);
+    });
+    const flush = () => {
+      if (!current.childNodes.length) return;
+      const pageIndex = pages.length;
+      Array.from(current.children).forEach(el => registerIds(el, pageIndex));
+      pages.push(current.innerHTML);
+      current = document.createElement('div'); current.className = 'fb-content';
+      measureContent.replaceChildren(current);
+    };
+    const addBlock = (block: Element, forceBreak = false) => {
+      const clone = block.cloneNode(true) as HTMLElement;
+      if (forceBreak && current.childNodes.length) flush();
+      current.appendChild(clone);
+      if (overflow() && current.childNodes.length > 1) {
+        current.removeChild(clone); flush(); current.appendChild(clone);
+      }
+      // bloques altos se conservan completos; el CSS y la tipografía se miden primero.
+    };
+
+    const atomicSelector = 'p, ul, ol, li, math-definition, math-remark, math-formula, math-example, math-exercise, math-figure, math-examples, math-exercises, math-solutions, math-solution, table, img, svg, blockquote, figure, details';
+    const walk = (node: Element) => {
+      const tag = node.tagName.toLowerCase();
+      if (tag === 'meta' || node.closest('meta')) return;
+      if (tag === 'chapter' || tag === 'section') {
+        const header = node.querySelector(':scope > header');
+        if (header) {
+          const titlePage = document.createElement('div');
+          titlePage.className = `fb-structural-title-page fb-title-${tag}`;
+          titlePage.innerHTML = header.outerHTML;
+          if (node.id) titlePage.id = node.id;
+          addBlock(titlePage, true);
+          flush(); // página de título dedicada
+        }
+        const body = node.querySelector(':scope > div');
+        if (body) Array.from(body.children).forEach(child => walk(child));
+        else Array.from(node.children).filter(child => child !== header).forEach(child => walk(child));
+        return;
+      }
+      if (tag === 'sub-sub-section') {
+        const heading = node.querySelector(':scope > h5');
+        const content = node.querySelector(':scope > div');
+        const headingBlock = document.createElement('div');
+        headingBlock.className = 'fb-subsub-heading';
+        if (heading) headingBlock.innerHTML = heading.outerHTML;
+        addBlock(headingBlock, true);
+        if (content) Array.from(content.children).forEach(child => walk(child));
+        else Array.from(node.children).filter(child => child !== heading).forEach(child => walk(child));
+        return;
+      }
+      if (node.matches(atomicSelector)) {
+        // Recorre contenedores con bloques internos para evitar duplicar su contenido.
+        const nested = node.querySelector(atomicSelector);
+        if (nested && ['li','math-definition','math-remark','math-example','math-exercise','math-figure','math-examples','math-exercises','math-solutions','math-solution','figure','blockquote','details'].includes(tag)) {
+          addBlock(node, node.hasAttribute('data-page-break'));
+        } else addBlock(node, node.hasAttribute('data-page-break'));
+        return;
+      }
+      Array.from(node.children).forEach(child => walk(child));
+    };
+    Array.from(source.children).forEach(child => walk(child));
+    flush();
+    document.body.removeChild(measurePage);
+    return pages;
+  }
+
+  function update(index: number) {
+    currentIndex = index;
+    const indicator = document.getElementById('fb-page-indicator');
+    if (indicator) indicator.textContent = `Página ${index + 1} de ${totalPages}`;
+    const input = document.getElementById('fb-page-jump') as HTMLInputElement | null;
+    if (input) { input.value = String(index + 1); input.max = String(totalPages); }
+  }
+
+  function goToInput() {
+    const input = document.getElementById('fb-page-jump') as HTMLInputElement | null;
+    const n = Number(input?.value) - 1;
+    if (pageFlip && Number.isInteger(n) && n >= 0 && n < totalPages) pageFlip.turnToPage(n);
+    else if (input) input.value = String(currentIndex + 1);
+  }
+  document.getElementById('fb-page-jump-button')?.addEventListener('click', goToInput);
+  document.getElementById('fb-page-jump')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') goToInput(); });
+
+  function jumpToAnchor(id: string) {
+    if (!id || !pageFlip) return;
+    let index = tocPageMap.get(id);
+    if (index === undefined) {
+      const pages = Array.from(document.querySelectorAll<HTMLElement>('#flipbook-container .page'));
+      index = pages.findIndex(page => Array.from(page.querySelectorAll('[id]')).some(el => el.id === id));
+    }
+    if (index !== undefined && index >= 0) { pageFlip.turnToPage(index); }
+    else {
+      const target = document.getElementById(id);
+      const page = target?.closest('#flipbook-container .page');
+      const fallback = page ? Array.from(document.querySelectorAll('#flipbook-container .page')).indexOf(page) : -1;
+      if (fallback >= 0) pageFlip.turnToPage(fallback);
+    }
+  }
+
+  function bindToc() {
+    if (tocListenersBound) return;
+    tocListenersBound = true;
+    // Delegación: funciona también con enlaces clonados dinámicamente por el buscador.
+    ['reading-toc', 'reading-toc-results'].forEach(containerId => {
+      const container = document.getElementById(containerId);
+      container?.addEventListener('click', event => {
+        const target = event.target as HTMLElement;
+        const link = target.closest<HTMLAnchorElement>('a[href^="#"]');
+        if (!link) return;
+        const raw = link.getAttribute('href')?.slice(1) || '';
+        let id = raw;
+        try { id = decodeURIComponent(raw); } catch {}
+        if (!id) return;
+        event.preventDefault();
+        jumpToAnchor(id);
+        try { history.replaceState(null, '', `#${encodeURIComponent(id)}`); } catch {}
+      });
+    });
+  }
+
+  async function init(target = 0) {
+    if (initializing) return; initializing = true;
+    try {
+      await document.fonts.ready;
+      const source = document.getElementById('raw-xml-html');
+      const container = document.getElementById('flipbook-container');
+      if (!source || !container) return;
+      source.style.cssText = 'position:fixed;left:-10000px;top:0;width:1000px;visibility:hidden;display:block;pointer-events:none;';
+      const mathJax = (window as any).MathJax;
+      if (mathJax?.typesetPromise) { try { await mathJax.typesetPromise([source]); } catch (e) { console.warn('MathJax typesetting before pagination failed', e); } }
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      if (pageFlip) { pageFlip.destroy(); pageFlip = null; }
+      const { width, height, mobile } = dimensions();
+      const htmlPages = paginate(source, width, height);
+      if (!htmlPages.length) return;
+      totalPages = htmlPages.length;
+      container.innerHTML = '';
+      htmlPages.forEach((html, i) => {
+        const page = document.createElement('div'); page.className = 'page fb-book-page';
+        page.innerHTML = `<div class="fb-page-inner"><div class="fb-content">${html}</div><footer class="fb-page-footer"><span class="fb-book-title">${document.title}</span><span class="fb-page-number">${i + 1}</span></footer></div>`;
+        container.appendChild(page);
+      });
+      pageFlip = new PageFlip(container, { width, height, size:'fixed', showCover:false, usePortrait:mobile, flippingTime:550, maxShadowOpacity:0.22, mobileScrollSupport:false, autoSize:false });
+      pageFlip.loadFromHTML(container.querySelectorAll('.page'));
+      const safe = Math.max(0, Math.min(target, htmlPages.length - 1));
+      if (safe) pageFlip.turnToPage(safe);
+      update(safe); save(safe);
+      pageFlip.on('flip', (e: { data: number }) => { const index = Number(e.data); update(index); save(index); if (soundEnabled) { sound.currentTime=0; sound.play().catch(()=>{}); } });
+      bindToc();
+      if (!hashNavigationBound) {
+        hashNavigationBound = true;
+        window.addEventListener('hashchange', () => { const raw = location.hash.slice(1); if (raw) { let decoded = raw; try { decoded = decodeURIComponent(raw); } catch {} jumpToAnchor(decoded); } });
+      }
+      if (location.hash) { let hash = location.hash.slice(1); try { hash = decodeURIComponent(hash); } catch {} setTimeout(() => jumpToAnchor(hash), 80); }
+    } catch (err) { console.error('Error al inicializar Flipbook:', err); }
+    finally { initializing = false; }
+  }
+
+  document.getElementById('fb-prev')?.addEventListener('click', () => pageFlip?.flipPrev());
+  document.getElementById('fb-next')?.addEventListener('click', () => pageFlip?.flipNext());
+  document.getElementById('fb-sound-toggle')?.addEventListener('click', event => {
+    soundEnabled = !soundEnabled; const button = event.currentTarget as HTMLElement;
+    button.querySelector('span')?.replaceChildren(document.createTextNode(soundEnabled ? 'Sonido' : 'Sonido apagado'));
+  });
+  document.addEventListener('keydown', e => { if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return; if (e.key==='ArrowRight') pageFlip?.flipNext(); if (e.key==='ArrowLeft') pageFlip?.flipPrev(); });
+  window.addEventListener('resize', () => { window.clearTimeout(resizeTimer); resizeTimer=window.setTimeout(() => init(pageFlip?.getCurrentPageIndex() ?? currentIndex), 250); });
+  function start() { if (initialized) return; initialized=true; init(savedIndex()); }
+  document.addEventListener('astro:page-load', start);
+  if (document.readyState === 'complete') start(); else window.addEventListener('load', start, { once:true });
+</script>
+
+<style is:global>
+  #flipbook-container { perspective: 1800px; }
+  #flipbook-container .page {
+    position: relative; overflow: hidden; background: #f3ead9 !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,.16), inset 0 0 4px rgba(120,90,50,.08);
+  }
+  #flipbook-container .fb-page-inner {
+    position: relative; display:flex; flex-direction:column; box-sizing:border-box;
+    width:100%; height:100%; overflow:hidden; color:#38332b;
+    background: linear-gradient(90deg,rgba(120,90,50,.045),transparent 8%,transparent 92%,rgba(120,90,50,.04)),
+      linear-gradient(135deg,#faf4e8,#f3ead9 55%,#f7efdf) !important;
+    box-shadow: inset 0 0 12px rgba(120,90,50,.07);
+  }
+  #flipbook-container .fb-content {
+    position:relative; z-index:1; flex:1; min-height:0; box-sizing:border-box; overflow:hidden;
+    padding:25px 30px 18px; color:#38332b; font-family:Georgia,"Times New Roman",serif;
+    font-size:16px; line-height:1.75;
+  }
+  #flipbook-container .fb-content h1,#flipbook-container .fb-content h2,#flipbook-container .fb-content h3,
+  #flipbook-container .fb-content h4,#flipbook-container .fb-content h5 {
+    color:#373025; font-family:Georgia,"Times New Roman",serif; line-height:1.4;
+  }
+  #flipbook-container .fb-content p { color:#38332b; margin-bottom:.85em; }
+  #flipbook-container .fb-content math-definition,#flipbook-container .fb-content math-remark,
+  #flipbook-container .fb-content math-example,#flipbook-container .fb-content math-exercise { display:block; color:#38332b; margin:1em 0; }
+  #flipbook-container .fb-content img { max-width:100%; height:auto; border-radius:3px; box-shadow:0 2px 8px rgba(0,0,0,.10); }
+  #flipbook-container .fb-page-footer {
+    position:relative; z-index:2; flex-shrink:0; height:36px; display:flex; align-items:center;
+    justify-content:space-between; padding:0 20px; border-top:1px solid rgba(120,90,50,.12);
+    color:#8b806e; font-family:Georgia,"Times New Roman",serif; font-size:11px;
+  }
+  #flipbook-container .fb-book-title { opacity:.75; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:75%; }
+  #flipbook-container .fb-page-number { color:#786b57; }
+  #flipbook-container .page.--left { box-shadow:inset -8px 0 12px -12px rgba(0,0,0,.25); }
+  #flipbook-container .page.--right { box-shadow:inset 8px 0 12px -12px rgba(0,0,0,.25); }
+  @media(max-width:767px) { #flipbook-container .fb-content { padding:20px 20px 12px; font-size:15px; line-height:1.65; } #flipbook-container .fb-page-footer { padding:0 12px; } }
+</style>
+
+<style is:global>
+  #raw-xml-html { display:block; }
+  #flipbook-container .fb-content { font-size:14px !important; line-height:1.55 !important; padding:17px 20px 12px !important; }
+  #flipbook-container .fb-content p { margin:0 0 .65em !important; }
+  #flipbook-container .fb-content h1 {font-size:1.25rem!important}
+  #flipbook-container .fb-content h2 {font-size:1.12rem!important}
+  #flipbook-container .fb-content h3 {font-size:1rem!important}
+  #flipbook-container .fb-content h4,#flipbook-container .fb-content h5 {font-size:.92rem!important}
+  #flipbook-container .fb-page-inner {background:linear-gradient(90deg,rgba(120,90,50,.035),transparent 9%,transparent 91%,rgba(120,90,50,.04)),linear-gradient(135deg,#faf5ea,#f2e8d5 55%,#f7efdf)!important;color:#38332b;}
+  #flipbook-container .fb-structural-title-page {min-height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:22px 14px;}
+  #flipbook-container .fb-structural-title-page header {border:0!important;background:transparent!important;padding:0!important;width:100%;}
+  #flipbook-container .fb-structural-title-page header p {font-size:.65rem!important;letter-spacing:.16em!important;}
+  #flipbook-container .fb-structural-title-page h2 {font-size:1.35rem!important;line-height:1.4!important;margin-top:.75rem!important;}
+  #flipbook-container .fb-title-chapter h2 {font-size:1.55rem!important;}
+  #flipbook-container .fb-subsub-heading {padding:3px 0 8px;border-bottom:1px solid rgba(120,90,50,.15);margin-bottom:8px;}
+  #flipbook-container .fb-page-footer {height:28px!important;font-size:10px!important;padding:0 12px!important;}
+  @media(max-width:767px){#flipbook-container .fb-content{padding:14px 15px 10px!important;font-size:13px!important;}}
+</style>
