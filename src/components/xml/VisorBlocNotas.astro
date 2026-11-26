@@ -3,19 +3,22 @@
 import RenderLecturaXML from './RenderLecturaXml.astro';
 import RenderIndiceTemario from './RenderIndiceTemario.astro';
 import type { NodoXML } from '../../features/xml/xmlParser';
+import type { PlanLectura } from '../../features/lecturas/planes-lecturas';
 
 interface Props {
   nodo: NodoXML;
   tituloLibro?: string;
+  planLectura?: PlanLectura;
 }
 
 const {
   nodo,
-  tituloLibro = "Cuaderno de Estudio"
+  tituloLibro = "Cuaderno de Estudio",
+  planLectura
 } = Astro.props;
 ---
 
-<div id="notepad-app" data-title={tituloLibro} class="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-stone-300/80 font-sans text-stone-800 selection:bg-amber-200/80">
+<div id="notepad-app" data-title={tituloLibro} {...(planLectura ? { 'data-reading-plan-id': planLectura.id, 'data-reading-plan': JSON.stringify(planLectura) } : {})} class="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-stone-300/80 font-sans text-stone-800 selection:bg-amber-200/80">
 
   <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
   <header class="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-stone-300 bg-[#fbf8f1]/95 px-4 py-2.5 shadow-sm backdrop-blur">
@@ -98,6 +101,24 @@ const {
       </button>
     </div>
   </header>
+
+  {planLectura ? (
+  <section class="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 border-b border-stone-300/70 bg-[#fbf8f1]/80 px-5 py-3" aria-label="Avance del plan de lectura">
+    
+      <div class="min-w-0">
+        <p class="text-[10px] font-semibold uppercase tracking-wider text-stone-500">Plan de lectura</p>
+        <h2 id="reading-plan-name" class="truncate text-sm font-bold text-stone-800">{planLectura.name}</h2>
+      </div>
+    
+    
+      <div class="flex w-40 shrink-0 items-center gap-2">
+        <div class="h-2 flex-1 overflow-hidden rounded-full bg-stone-200" role="progressbar" aria-label="Avance de estudio" aria-valuemin="0" aria-valuemax="100" aria-valuenow={planLectura.porcentaje}>
+          <div id="reading-plan-progress" class="h-full rounded-full bg-amber-700 transition-all" style={`width: ${planLectura.porcentaje}%`}></div>
+        </div>
+        <span id="reading-plan-percent" class="w-10 text-right text-xs font-bold text-amber-950">{planLectura.porcentaje}%</span>
+      </div>
+  </section>
+  ) : null}
 
   <!-- MENÚ DESPLEGABLE DEL TEMARIO (Drawer Lateral) -->
   <aside
@@ -298,6 +319,12 @@ const {
 </style>
 
 <script>
+  type ClientPlan = {
+    id: number;
+    porcentaje: number;
+    temas: Array<{ idhtml: string; titulo: string; isSelected: boolean; isCompleted?: boolean }>;
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     const rawSource = document.getElementById('raw-book-source');
     const stage = document.getElementById('notepad-sheets-stage');
@@ -322,6 +349,7 @@ const {
     const searchInput = document.getElementById('notepad-search-input') as HTMLInputElement | null;
     const searchDropdown = document.getElementById('search-results-dropdown');
     const searchList = document.getElementById('search-results-list');
+    const app = document.getElementById('notepad-app');
 
     if (!rawSource || !stage) return;
 
@@ -329,6 +357,8 @@ const {
     let currentSheetIndex = 0;
     let flipCleanupTimer: number | null = null;
     const idToSheetMap = new Map<string, number>();
+    const READING_POSITION_KEY = 'visor-bloc-notas:reading-container-id';
+    let readingSaveTimer: number | null = null;
 
     interface SearchItem {
       id: string;
@@ -338,19 +368,41 @@ const {
     }
     let searchIndex: SearchItem[] = [];
 
-    const STRUCTURAL_TAGS = new Set([
-      'chapter',
-      'part',
-      'section',
-      'sub-section',
-      'sub-sub-section'
-    ]);
+    function saveReadingContainer(id: string) {
+      if (!id) return;
+      try {
+        localStorage.setItem(READING_POSITION_KEY, id);
+      } catch {
+        // El visor sigue funcionando si el navegador bloquea localStorage.
+      }
+    }
+
+    function saveCurrentReadingContainer() {
+      const sheet = sheets[currentSheetIndex];
+      if (!sheet) return;
+
+      const containers = Array.from(
+        sheet.querySelectorAll<HTMLElement>('.scroll-mt-32[id]')
+      )
+        .map((element) => ({ element, top: element.getBoundingClientRect().top }))
+        .filter(({ element }) => {
+          const rect = element.getBoundingClientRect();
+          return rect.bottom > 0 && rect.top < window.innerHeight;
+        })
+        .sort((a, b) => a.top - b.top);
+
+      const readingLine = window.innerHeight * 0.4;
+      const current = containers.filter(({ top }) => top <= readingLine).pop() ?? containers[0];
+      if (current) saveReadingContainer(current.element.id);
+    }
+
+    const STRUCTURAL_TAGS = new Set(['chapter', 'part', 'section', 'sub-section', 'sub-sub-section']);
 
     // Agrega aquí las etiquetas XML que no deben aparecer en las hojas.
     // Al omitir una etiqueta, también se omite todo su contenido descendiente.
     // Usa nombres en minúsculas: ['meta', 'title', 'author'].
-    const OMITIR_TAGS = new Set<string>(['meta']);
-    const OMITIR_CLASSES = new Set<string>(['meta']);
+    const OMITIR_TAGS = new Set<string>(['meta', ]);
+    const OMITIR_CLASSES = new Set<string>(['meta', 'bloc-omitir']);
 
     function shouldOmitElement(el: HTMLElement): boolean {
       const omitted = (value: string | null | undefined) =>
@@ -375,62 +427,6 @@ const {
       });
     }
 
-    function isStructuralBreakElement(el: HTMLElement): boolean {
-      const tag = el.tagName.toLowerCase();
-      if (STRUCTURAL_TAGS.has(tag)) return true;
-
-      const xmlTag = (
-        el.getAttribute('data-xml-tag') ||
-        el.getAttribute('data-tag') ||
-        el.getAttribute('data-type') ||
-        ''
-      ).toLowerCase();
-      if (STRUCTURAL_TAGS.has(xmlTag)) return true;
-
-      for (const cls of Array.from(el.classList)) {
-        const lower = cls.toLowerCase();
-        if (
-          lower === 'chapter' ||
-          lower === 'part' ||
-          lower === 'section' ||
-          lower === 'sub-section' ||
-          lower === 'sub-sub-section' ||
-          lower === 'xml-chapter' ||
-          lower === 'xml-part' ||
-          lower === 'xml-section' ||
-          lower === 'xml-sub-section' ||
-          lower === 'xml-sub-sub-section'
-        ) {
-          return true;
-        }
-      }
-
-      return false;
-    }
-
-    function isAtomicMathElement(el: Element): boolean {
-      const tag = el.tagName.toLowerCase();
-      return tag.startsWith('math-') || tag === 'math';
-    }
-
-    function isIndivisibleNode(el: HTMLElement): boolean {
-      if (isAtomicMathElement(el)) return true;
-
-      const tag = el.tagName.toLowerCase();
-      const atomicTags = ['img', 'svg', 'canvas', 'video', 'iframe', 'table', 'pre', 'hr', 'br'];
-      if (atomicTags.includes(tag)) return true;
-
-      const children = Array.from(el.children);
-      if (children.length === 0) return true;
-
-      const hasMathChild = children.some((child) => isAtomicMathElement(child));
-      if (hasMathChild && ['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'question'].includes(tag)) {
-        return true;
-      }
-
-      return false;
-    }
-
     function createSheetElement(index: number): { sheet: HTMLElement; body: HTMLElement } {
       const sheet = document.createElement('article');
       sheet.className = 'notepad-sheet measuring-sheet prose prose-stone max-w-none';
@@ -443,9 +439,7 @@ const {
       return { sheet, body };
     }
 
-    /**
-     * PAGINACIÓN ESTRUCTURAL + LÍMITE DEL 130% CON ALTURA ADAPTABLE
-     */
+    /** Divide el árbol renderizado en bloques de contenido y conserva íntegros los .in-one-page. */
     function buildNotepadSheets() {
       let rootContainer = rawSource!.firstElementChild as HTMLElement | null;
       if (
@@ -462,14 +456,11 @@ const {
       idToSheetMap.clear();
       searchIndex = [];
 
-      const MAX_SHEET_HEIGHT = window.innerHeight * 2;
-
       let active = createSheetElement(0);
       stage!.appendChild(active.sheet);
       sheets.push(active.sheet);
 
       function startNewSheet() {
-        // Si la hoja actual quedó completamente vacía, reutilizarla
         if (active.body.children.length === 0 && !active.body.textContent?.trim()) {
           return;
         }
@@ -479,101 +470,60 @@ const {
         sheets.push(active.sheet);
       }
 
-      function cloneWrapperShell(original: HTMLElement, isContinuation: boolean): HTMLElement {
-        const shell = original.cloneNode(false) as HTMLElement;
-        if (isContinuation) {
-          shell.removeAttribute('id');
-          shell.classList.remove('scroll-mt-32');
-          shell.dataset.continued = 'true';
+      type ContentBlock = { node: Node; ancestors: HTMLElement[]; keepTogether: boolean; structural: boolean };
+      const blocks: ContentBlock[] = [];
+      const collect = (node: Node, ancestors: HTMLElement[]) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.textContent?.trim()) blocks.push({ node, ancestors, keepTogether: false, structural: false });
+          return;
         }
-        return shell;
-      }
+        if (!(node instanceof HTMLElement) || shouldOmitElement(node)) return;
 
-      function rebuildAncestorsOnNewSheet(ancestorChain: HTMLElement[]): HTMLElement {
-        startNewSheet();
-        let currentParent = active.body;
-        for (const wrapper of ancestorChain) {
-          const shell = cloneWrapperShell(wrapper, true);
-          currentParent.appendChild(shell);
-          currentParent = shell;
+        const xmlTag = (node.getAttribute('data-xml-tag') || node.getAttribute('data-tag') || node.getAttribute('data-type') || '').toLowerCase();
+        const structural = STRUCTURAL_TAGS.has(node.tagName.toLowerCase()) || STRUCTURAL_TAGS.has(xmlTag);
+        if (node.classList.contains('in-one-page') || node.children.length === 0) {
+          blocks.push({ node, ancestors, keepTogether: node.classList.contains('in-one-page'), structural });
+          return;
         }
-        return currentParent;
-      }
+        const nextAncestors = [...ancestors, node];
+        for (const child of Array.from(node.childNodes)) collect(child, nextAncestors);
+      };
 
-      function getAncestorChain(targetParent: HTMLElement): HTMLElement[] {
-        const chain: HTMLElement[] = [];
-        let curr: HTMLElement | null = targetParent;
-        while (curr && curr !== active.body) {
-          chain.unshift(curr);
-          curr = curr.parentElement;
-        }
-        return chain;
-      }
-
-      function processNode(sourceNode: Node, targetParent: HTMLElement): HTMLElement {
-        if (sourceNode.nodeType === Node.TEXT_NODE) {
-          const text = sourceNode.textContent || '';
-          if (text.trim().length > 0) {
-            targetParent.appendChild(sourceNode.cloneNode(true));
-          }
-          return targetParent;
-        }
-
-        if (sourceNode.nodeType !== Node.ELEMENT_NODE) return targetParent;
-        const sourceEl = sourceNode as HTMLElement;
-        if (shouldOmitElement(sourceEl)) return targetParent;
-
-        // Salto automático ante <chapter>, <part>, <section>, <sub-section>, <sub-sub-section>
-        if (isStructuralBreakElement(sourceEl)) {
-          const hasPreviousContent =
-            active.body.children.length > 0 || (active.body.textContent || '').trim().length > 0;
-          if (hasPreviousContent) {
-            const chain = getAncestorChain(targetParent);
-            targetParent = rebuildAncestorsOnNewSheet(chain);
-          }
-        }
-
-        // Caso 1: Elemento indivisible (<math-*>, imagen, tabla, párrafo corto, etc.)
-        if (isIndivisibleNode(sourceEl)) {
-          const clone = sourceEl.cloneNode(true) as HTMLElement;
-          targetParent.appendChild(clone);
-
-          const measuredHeight = active.sheet.getBoundingClientRect().height;
-          const hasOtherNodes =
-            active.body.children.length > 1 ||
-            (active.body.textContent || '').trim().length > (clone.textContent || '').trim().length;
-
-          if (measuredHeight > MAX_SHEET_HEIGHT && hasOtherNodes) {
-            targetParent.removeChild(clone);
-            const chain = getAncestorChain(targetParent);
-            targetParent = rebuildAncestorsOnNewSheet(chain);
-            targetParent.appendChild(clone);
-          }
-          return targetParent;
-        }
-
-        // Caso 2: Contenedor divisible
-        const wrapper = cloneWrapperShell(sourceEl, false);
-        targetParent.appendChild(wrapper);
-
-        let activeWrapper = wrapper;
-        for (const child of Array.from(sourceEl.childNodes)) {
-          const updatedWrapper = processNode(child, activeWrapper);
-          activeWrapper = updatedWrapper;
-        }
-
-        if (activeWrapper.children.length === 0 && !(activeWrapper.textContent || '').trim()) {
-          activeWrapper.remove();
-        }
-
-        return activeWrapper.parentElement || active.body;
-      }
-
-      // Si la raíz también está en OMITIR_TAGS, no se procesa ninguno de sus hijos.
       if (!shouldOmitElement(rootContainer)) {
-        for (const topNode of Array.from(rootContainer.childNodes)) {
-          processNode(topNode, active.body);
+        for (const child of Array.from(rootContainer.childNodes)) collect(child, []);
+      }
+
+      const copiedIds = new Set<string>();
+      const appendBlock = (block: ContentBlock) => {
+        let parent = active.body;
+        for (const ancestor of block.ancestors) {
+          const shell = ancestor.cloneNode(false) as HTMLElement;
+          if (shell.id) {
+            if (copiedIds.has(shell.id)) shell.removeAttribute('id');
+            else copiedIds.add(shell.id);
+          }
+          parent.appendChild(shell);
+          parent = shell;
         }
+        const clone = block.node.cloneNode(true) as Node;
+        if (clone instanceof HTMLElement) {
+          Array.from(clone.querySelectorAll<HTMLElement>('*')).reverse().forEach((child) => {
+            if (shouldOmitElement(child)) child.remove();
+          });
+        }
+        parent.appendChild(clone);
+      };
+
+      for (const block of blocks) {
+        if (block.structural && active.body.children.length) startNewSheet();
+        appendBlock(block);
+        if (!block.keepTogether && active.sheet.getBoundingClientRect().height > window.innerHeight * 1.35 && active.body.children.length > 1) {
+          const last = active.body.lastElementChild;
+          if (last) last.remove();
+          startNewSheet();
+          appendBlock(block);
+        }
+        if (block.keepTogether) startNewSheet();
       }
 
       active.sheet.classList.remove('measuring-sheet');
@@ -581,6 +531,14 @@ const {
       // Eliminar última hoja si quedó vacía
       if (sheets.length > 1) {
         const lastBody = sheets[sheets.length - 1].querySelector('.notepad-sheet-body');
+        if (lastBody) {
+          // Descarta las carcasas de continuación si no hubo contenido después de la hoja exclusiva.
+          Array.from(lastBody.querySelectorAll<HTMLElement>('[data-continued="true"]'))
+            .reverse()
+            .forEach((wrapper) => {
+              if (!wrapper.textContent?.trim() && wrapper.children.length === 0) wrapper.remove();
+            });
+        }
         if (lastBody && lastBody.children.length === 0 && !(lastBody.textContent || '').trim()) {
           const emptySheet = sheets.pop()!;
           emptySheet.remove();
@@ -630,12 +588,91 @@ const {
         });
       });
 
+      // Configura este endpoint según tu API. Se espera { porcentaje, tema: { isCompleted } } en la respuesta.
+      const plan = app?.dataset.readingPlan ? JSON.parse(app.dataset.readingPlan) as ClientPlan : null;
+      if (plan) {
+        const updateProgress = (percentage: number) => {
+          const value = Math.max(0, Math.min(100, percentage));
+          const progress = document.getElementById('reading-plan-progress') as HTMLElement | null;
+          const label = document.getElementById('reading-plan-percent');
+          const bar = progress?.parentElement;
+          progress?.style.setProperty('width', `${value}%`);
+          bar?.setAttribute('aria-valuenow', String(value));
+          if (label) label.textContent = `${value}%`;
+        };
+
+        for (const tema of plan.temas.filter((item) => item.isSelected)) {
+          const target = sheets
+            .map((sheet) => sheet.querySelector<HTMLElement>(`#${CSS.escape(tema.idhtml)}`))
+            .find((element): element is HTMLElement => Boolean(element));
+          if (!target || target.querySelector('[data-mark-reading-topic]')) continue;
+
+          if (tema.isCompleted) {
+            const status = document.createElement('span');
+            status.className = 'mt-3 inline-flex items-center rounded-lg border border-emerald-700/20 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800';
+            status.textContent = 'Tema completado';
+            target.appendChild(status);
+            continue;
+          }
+
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.dataset.markReadingTopic = 'true';
+          button.className = 'mt-3 inline-flex rounded-lg border border-amber-800/25 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-950 transition hover:bg-amber-100 disabled:opacity-60';
+          button.textContent = 'Marcar como leída';
+          target.appendChild(button);
+
+          button.addEventListener('click', async () => {
+            button.disabled = true;
+            button.textContent = 'Guardando…';
+            try {
+              const response = await fetch(`/api/lecturas/planes/${plan.id}/temas/${encodeURIComponent(tema.idhtml)}/leida`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isCompleted: true })
+              });
+              if (!response.ok) throw new Error('No se pudo actualizar el tema');
+
+              const result = await response.json() as { porcentaje?: number; tema?: { isCompleted?: boolean } };
+              tema.isCompleted = result.tema?.isCompleted ?? true;
+              const status = document.createElement('span');
+              status.className = 'mt-3 inline-flex items-center rounded-lg border border-emerald-700/20 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800';
+              status.textContent = 'Tema completado';
+              button.replaceWith(status);
+              const readCount = plan.temas.filter((item) => item.isSelected && item.isCompleted).length;
+              const calculatedPercentage = plan.temas.filter((item) => item.isSelected).length
+                ? Math.round((readCount / plan.temas.filter((item) => item.isSelected).length) * 100)
+                : 0;
+              plan.porcentaje = result.porcentaje ?? calculatedPercentage;
+              updateProgress(plan.porcentaje);
+            } catch (error) {
+              console.error(error);
+              button.disabled = false;
+              button.textContent = 'Marcar como leída';
+            }
+          });
+        }
+      }
+
       if (totalLabel) totalLabel.textContent = String(sheets.length);
       if (sheetInput) sheetInput.max = String(sheets.length);
 
       rawSource!.innerHTML = '';
 
-      showInitialSheet(0);
+      let savedId = '';
+      try {
+        savedId = localStorage.getItem(READING_POSITION_KEY) || '';
+      } catch {
+        // Si localStorage no está disponible, se abre la primera hoja.
+      }
+
+      const savedSheetIndex = savedId ? idToSheetMap.get(savedId) : undefined;
+      showInitialSheet(savedSheetIndex ?? 0);
+      if (savedSheetIndex !== undefined) {
+        requestAnimationFrame(() => {
+          document.getElementById(savedId)?.scrollIntoView({ block: 'center' });
+        });
+      }
     }
 
     function showInitialSheet(index: number) {
@@ -656,6 +693,11 @@ const {
     function goToSheet(targetIndex: number, highlightElementId?: string) {
       if (sheets.length === 0) return;
       const clamped = Math.max(0, Math.min(targetIndex, sheets.length - 1));
+      if (highlightElementId) {
+        saveReadingContainer(highlightElementId);
+      } else {
+        saveCurrentReadingContainer();
+      }
       if (clamped === currentSheetIndex) {
         if (highlightElementId) scrollToHighlight(highlightElementId);
         return;
@@ -731,6 +773,16 @@ const {
         }
       }, 450);
     }
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (readingSaveTimer !== null) window.clearTimeout(readingSaveTimer);
+        readingSaveTimer = window.setTimeout(saveCurrentReadingContainer, 250);
+      },
+      { passive: true }
+    );
+    window.addEventListener('pagehide', saveCurrentReadingContainer);
 
     function updateNavigationUI() {
       const total = sheets.length;

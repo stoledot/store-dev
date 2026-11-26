@@ -14,6 +14,7 @@ import RenderLecturaXml from '../../components/xml/RenderLecturaXml.astro';
 import RenderIndiceTemario from '../../components/xml/RenderIndiceTemario.astro';
 import { extractMetaXml } from '../../features/lecturas/utils';
 import FlipbookReader from '../../components/xml/FlipbookReader.astro';
+import PlanesLecturas from './PlanesLecturas.astro';
 
 if (!(await accountsEnabled())) return Astro.redirect('/',303);
 
@@ -51,6 +52,12 @@ const { doc, error } = parseXml(xml);
 if (!doc) return Astro.redirect('/account/lecturas', 303);
 if (error) return Astro.redirect('/account/lecturas', 303);
 
+
+
+
+/**
+ * Lógica para los planes
+ */
 
 
 ---
@@ -139,6 +146,11 @@ if (error) return Astro.redirect('/account/lecturas', 303);
           </p>
         </div>
       </div>
+    </section>
+
+    <section class="mt-16">
+      <h2 class="text-2xl font-bold">Planes de lectura</h2>
+      <PlanesLecturas customerId={customerId} lecturaId={Number(id)} nodo={nodo} />
     </section>
   </main>
 </Layout>

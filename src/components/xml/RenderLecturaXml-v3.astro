@@ -1,0 +1,257 @@
+---
+//src/components/xml/RenderLecturaXml.astro
+import type { NodoXML } from "../../features/xml/xmlParser";
+
+interface Props {
+  nodo: NodoXML;
+}
+
+const { nodo } = Astro.props;
+const esElemento = nodo.tipo === "elemento";
+const etiqueta = esElemento ? nodo.etiqueta : "";
+const titulo = esElemento 
+  ? nodo.atributos["data-title"] ?? nodo.atributos.title ?? ""
+  : "";
+const numeroTema = esElemento
+  ? nodo.atributos.id?.match(/^tema-(\d{3})$/)?.[1]
+  : undefined;
+const nivel = esElemento && nodo.atributos["data-difficulty"]
+  ? nodo.atributos["data-difficulty"].toLowerCase()
+  : "";
+const numeroEjercicio = esElemento
+  ? nodo.atributos.id?.match(/-ej-(\d+)$/)?.[1]
+  : undefined;
+---
+
+{!esElemento ? (
+  nodo.valor
+) : etiqueta === "lectura" ? (
+  <article class="render-lectura-content mx-auto w-full max-w-none space-y-2 rounded-lg bg-[#f4f1e8] text-black">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </article>
+) : etiqueta === "meta" ? (
+  <div class="sr-only text-black meta" aria-hidden="true">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </div>
+) : etiqueta === "title" ? (
+  <span>{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</span>
+) : etiqueta === "summary" ? (
+  <p class="mt-2 max-w-3xl text-base leading-7 text-black sm:text-lg">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </p>
+) 
+
+: etiqueta === "chapter" ? (
+  <section id={nodo.atributos.id} class="fb-chapter-block scroll-mt-32">
+    {titulo && (
+      <header class="fb-structural-heading border-b border-white/10 bg-white/[0.03] px-3 py-2.5 sm:px-4 text-black">
+        <p class="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-black">Capítulo</p>
+        <h2 id={nodo.atributos.id ? `${nodo.atributos.id}-heading` : undefined} class="mt-0.5 text-xl font-bold tracking-tight text-black sm:text-2xl">
+          {titulo}
+        </h2>
+      </header>
+    )}
+    <div class="space-y-2 p-2 sm:p-3">
+      {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+    </div>
+  </section>
+)
+: etiqueta === "section" ? (
+  <section
+    id={nodo.atributos.id}
+    aria-labelledby={nodo.atributos.id ? `${nodo.atributos.id}-heading` : undefined}
+    class="fb-section-block scroll-mt-32 "
+  >
+    {titulo && (
+      <header class="fb-structural-heading border-b border-white/10 bg-white/[0.03] px-3 py-2 sm:px-4 text-black">
+        <p class="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-black">Sección</p>
+        <h2 id={nodo.atributos.id ? `${nodo.atributos.id}-heading` : undefined} class="mt-0.5 text-xl font-bold tracking-tight text-black sm:text-2xl">
+          {titulo}
+        </h2>
+      </header>
+    )}
+    <div class="space-y-2 p-2 sm:p-3">
+      {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+    </div>
+  </section>
+) : etiqueta === "sub-section" ? (
+  <section id={nodo.atributos.id} class="scroll-mt-32 scroll-mt-6 ">
+    <header class="mb-2 flex items-start gap-2 border-b border-white/10 pb-2">
+      {numeroTema && (
+        <span class="grid size-7 shrink-0 place-items-center rounded-lg bg-cyan-300/10 text-xs font-extrabold tabular-nums text-black ring-1 ring-cyan-300/20" aria-label={`Tema ${Number(numeroTema)}`}>
+          {Number(numeroTema)}
+        </span>
+      )}
+      <div class="min-w-0">
+        <p class="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-black">Tema{numeroTema ? ` ${Number(numeroTema)}` : ""}</p>
+        {titulo && <h3 class="mt-0.5 text-lg font-bold leading-snug text-black sm:text-xl">{titulo}</h3>}
+      </div>
+    </header>
+    <div class="space-y-2">
+      {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+    </div>
+  </section>
+) : etiqueta === "sub-sub-section" ? (
+  <section id={nodo.atributos.id} class="scroll-mt-32 space-y-2">
+    {titulo && <h5 class="flex items-center gap-2 text-base font-semibold text-black"><span class="h-4 w-0.5 rounded-full bg-cyan-400" aria-hidden="true"></span>{titulo}</h5>}
+    
+    <div class="space-y-2">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
+  </section>
+) : etiqueta === "sub-sub-sub-section" ? (
+  <section id={nodo.atributos.id} class="scroll-mt-32 space-y-2">
+    {titulo && <h5 class="flex items-center gap-2 text-sm font-medium text-black"><span class="h-3.5 w-0.5 rounded-full bg-cyan-400/70" aria-hidden="true"></span>{titulo}</h5>}
+    <div class="space-y-2">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
+  </section>
+) : 
+etiqueta === "p" ? (
+  <p class="scroll-mt-32 text-[0.96rem] leading-7 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</p>
+) : etiqueta === "ul" ? (
+  <ul class="scroll-mt-32 my-2 space-y-1 pl-5 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</ul>
+) : etiqueta === "li" ? (
+  <li class="pl-0.5 leading-7 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</li>
+) : etiqueta === "math-definition" ? (
+  <aside class="scroll-mt-32 rounded-lg border border-emerald-300/15 bg-emerald-300/[0.055] p-2.5" aria-label={titulo || "Definición"}>
+    <div class="mb-1.5 flex items-center gap-2 text-sm font-bold text-black"><span class="grid size-6 place-items-center rounded-md bg-emerald-300/10 text-black" aria-hidden="true">✓</span>{titulo || "Definición"}</div>
+    <div class="space-y-2 leading-7 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
+  </aside>
+) : etiqueta === "math-remark" ? (
+  <aside class="scroll-mt-32 rounded-lg border border-amber-300/15 bg-amber-200/[0.055] p-2.5" aria-label={titulo || "Observación"}>
+    <p class="mb-1.5 text-sm font-bold text-black">{titulo || "Para tener en cuenta"}</p>
+    <div class="space-y-2 leading-7 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
+  </aside>
+) : etiqueta === "math-formula" ? (
+  <figure class="scroll-mt-32 my-2 overflow-x-auto rounded-lg border border-violet-300/15 bg-violet-300/[0.055] px-2.5 py-2 text-center">
+    {titulo && <figcaption class="mb-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-black">{titulo}</figcaption>}
+    <div class="min-w-max font-mono text-base leading-7 text-black sm:text-lg" role="math" aria-label={titulo || "Fórmula matemática"}>
+      {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+    </div>
+  </figure>
+) : etiqueta === "math-example" ? (
+  <section id={nodo.atributos.id} class="scroll-mt-32 overflow-hidden rounded-lg border border-sky-300/15 bg-sky-300/[0.045]">
+    <header class="flex items-center gap-2 border-b border-sky-300/10 bg-sky-300/[0.04] px-2.5 py-2">
+      <span class="grid size-6 place-items-center rounded-md bg-sky-300/10 text-xs font-bold text-black" aria-hidden="true">✓</span>
+      <h5 class="text-sm font-bold text-black">{titulo || "Ejemplo resuelto"}</h5>
+    </header>
+    <div class="space-y-2 p-2.5 leading-7 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
+  </section>
+) : etiqueta === "math-examples" ? (
+  <section class="scroll-mt-32 space-y-2" aria-label={titulo || "Ejemplos"}>
+    {titulo && <h5 class="text-sm font-bold text-black">{titulo}</h5>}
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </section>
+) : etiqueta === "math-exercises" ? (
+  <section class="scroll-mt-32 space-y-2" aria-label={titulo || "Ejercicios"}>
+    <h5 class="flex items-center gap-2 text-sm font-bold text-black"><span class="grid size-6 place-items-center rounded-md bg-orange-300/10 text-black" aria-hidden="true">✎</span>{titulo || "Practica lo aprendido"}</h5>
+    <ol class="space-y-2">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</ol>
+  </section>
+) : etiqueta === "math-exercise" ? (
+  <li id={nodo.atributos.id} class="scroll-mt-32 rounded-lg border border-orange-300/15 bg-orange-200/[0.045] p-2.5">
+    <div class="mb-2 flex flex-wrap items-center gap-2">
+      <span class="text-[0.65rem] font-bold uppercase tracking-wider text-orange-200">Ejercicio{numeroEjercicio ? ` ${numeroEjercicio}` : ""}</span>
+      {nivel && <span class="rounded-full bg-orange-200/10 px-2 py-0.5 text-[0.65rem] font-semibold text-orange-100 ring-1 ring-orange-200/15">{nivel === "basic" ? "Básico" : nivel === "intermediate" ? "Intermedio" : nivel === "advanced" ? "Avanzado" : nivel}</span>}
+    </div>
+    <div class="space-y-2 leading-7 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
+  </li>
+) : etiqueta === "math-solutions" ? (
+  <section class="scroll-mt-32 space-y-2" aria-label={titulo || "Soluciones"}>
+    <h5 class="text-sm font-bold text-black">{titulo || "Soluciones"}</h5>
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </section>
+) : etiqueta === "math-solution" ? (
+  <details class="scroll-mt-32 group rounded-lg border border-white/10 bg-white/[0.025] open:border-cyan-300/20 open:bg-cyan-300/[0.035]">
+    <summary class="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-cyan-100 marker:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400">
+      <span>Ver solución</span><span class="text-sm text-cyan-300 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+    </summary>
+    <div class="space-y-2 border-t border-white/10 px-3 py-2.5 leading-7 text-black">{nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}</div>
+  </details>
+) : etiqueta === "table" ? (
+  <div class="scroll-mt-32 my-3 overflow-x-auto rounded-lg border border-white/10 bg-[#101b2b] shadow-sm">
+    <table class="w-full border-collapse text-left text-sm text-black">
+      {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+    </table>
+  </div>
+) : etiqueta === "thead" ? (
+  <thead class="border-b border-white/10 bg-white/[0.04] text-xs font-bold uppercase tracking-wider text-black">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </thead>
+) : etiqueta === "tbody" ? (
+  <tbody class="divide-y divide-white/[0.06] bg-transparent text-black">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </tbody>
+) : etiqueta === "tr" ? (
+  <tr class="transition-colors hover:bg-white/[0.035]">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </tr>
+) : etiqueta === "th" ? (
+  <th scope="col" class="whitespace-nowrap px-2.5 py-2 font-bold">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </th>
+) : etiqueta === "td" ? (
+  <td class="px-2.5 py-2 leading-relaxed">
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </td>
+ 
+): etiqueta === "math-figure" ? (
+  <figure
+    id={nodo.atributos.id}
+    class="scroll-mt-32 my-3 rounded-lg border border-sky-300/15 bg-sky-300/[0.035] p-2.5 shadow-sm text-black"
+  >
+    {titulo && (
+      <figcaption class="mb-2 text-center text-[0.65rem] font-bold uppercase tracking-wider text-black">
+        {titulo}
+      </figcaption>
+    )}
+    <div class="flex min-h-24 w-full items-center justify-center overflow-x-auto rounded-lg border border-white/[0.06] bg-black/10 p-2 text-black [&_svg]:h-auto [&_svg]:max-w-full">
+      {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+    </div>
+  </figure>
+): ["svg", "g", "path", "polygon", "polyline", "rect", "circle", "ellipse", "line", "text", "tspan", "defs", "marker", "use"].includes(etiqueta) ? (
+  (() => {
+    const Tag = etiqueta as any;
+    return (
+      <Tag {...nodo.atributos}>
+        {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+      </Tag>
+    );
+  })()
+
+
+) : (
+  <div class="scroll-mt-32 rounded-md border border-dashed border-white/15 bg-white/[0.025] px-2.5 py-2">
+    <span class="sr-only">Contenido: </span>
+    {nodo.hijos.map((hijo) => <Astro.self nodo={hijo} />)}
+  </div>
+)
+
+}
+
+<style is:global>
+  /* El contenido conserva un tono cálido y limpio dentro de las hojas oscuras del visor. */
+  .render-lectura-content,
+  .render-lectura-content * {
+    color: #111 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .render-lectura-content * {
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+
+  .render-lectura-content h2,
+  .render-lectura-content h3,
+  .render-lectura-content h5,
+  .render-lectura-content .fb-structural-heading p {
+    font-weight: 700 !important;
+    letter-spacing: -0.015em;
+  }
+
+  .render-lectura-content h2 { font-size: 1.35rem; line-height: 1.3; }
+  .render-lectura-content h3 { font-size: 1.15rem; line-height: 1.35; }
+  .render-lectura-content h5 { font-size: 1rem; line-height: 1.4; }
+
+  .render-lectura-content summary { cursor: pointer; }
+</style>

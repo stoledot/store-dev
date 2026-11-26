@@ -1,0 +1,605 @@
+---
+// src/pages/lecturas/[id].astro (o componente integrado)
+import { env } from 'cloudflare:workers';
+export const prerender = false;
+import { type NodoXML } from '../../features/xml/xmlParser';
+import { getPlanesEstudioConTemasLecturasByCustomerId, getLecturasByCustomerId, getLecturasCustomerByCustomerId, getLecturaById } from '../../features/lecturas/db';
+import { NodoXMLToTemasLectura } from '../../features/lecturas/planes-lecturas';
+
+interface Props {
+  customerId: number;
+  lecturaId: number;
+  nodo: NodoXML;
+}
+
+const { customerId = 0, lecturaId = 0, nodo = null } = Astro.props;
+
+if (customerId === 0) return Astro.redirect('/account/lecturas', 303);
+if (lecturaId === 0) return Astro.redirect('/account/lecturas', 303);
+if (nodo === null) return Astro.redirect('/account/lecturas', 303);
+
+const planesLecturaFromDB = await getPlanesEstudioConTemasLecturasByCustomerId(env.DB, customerId);
+const temasLecturas = NodoXMLToTemasLectura(nodo);
+
+// Mapa auxiliar para resolver el título real de temasPropios desde el XML
+const mapaTitulosXML = new Map(
+  temasLecturas.map(t => [String(t.idhtml).toLowerCase().trim(), t.titulo])
+);
+
+const planesLecturas = planesLecturaFromDB.map(plan => ({
+  id: plan.id,
+  name: plan.name,
+  description: plan.description,
+  created: plan.created ?? null,
+  updated: plan.updated ?? null,
+  temasPropios: plan.temas.map(tema => {
+    const key = String(tema.id_html_tema_lectura).toLowerCase().trim();
+    return {
+      idhtml: tema.id_html_tema_lectura,
+      titulo: mapaTitulosXML.get(key) || tema.id_html_tema_lectura,
+      tipo: '',
+      nivel: 0,
+      isCompleted: Boolean(tema.is_completed)
+    };
+  }),
+  todosTemas: temasLecturas.map(tema => ({
+    idhtml: tema.idhtml,
+    titulo: tema.titulo,
+    tipo: tema.tipo,
+    nivel: tema.nivel,
+    isCompleted: plan.temas.some(
+      t => String(t.id_html_tema_lectura).toLowerCase().trim() === String(tema.idhtml).toLowerCase().trim() && Boolean(t.is_completed)
+    ),
+    isSelected: plan.temas.some(
+      t => String(t.id_html_tema_lectura).toLowerCase().trim() === String(tema.idhtml).toLowerCase().trim()
+    )
+  }))
+}));
+---
+
+<section 
+  id="planes-lectura-wrapper" 
+  data-customer-id={customerId} 
+  data-lectura-id={lecturaId}
+  class="flex flex-col gap-6"
+>
+  {/* Panel desplegable para crear un plan nuevo */}
+  <details id="acordeon-crear-plan" class="group overflow-hidden rounded-2xl border border-indigo-200 bg-indigo-50/40 shadow-sm">
+    <summary class="flex cursor-pointer list-none items-center justify-between px-6 py-4 text-base font-bold text-indigo-950 select-none hover:bg-indigo-50/80 [&::-webkit-details-marker]:hidden">
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-xs">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </span>
+        <span>Crear nuevo plan de lectura</span>
+      </div>
+      <svg class="h-5 w-5 text-indigo-600 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    </summary>
+
+    <form id="form-crear-plan" class="flex flex-col gap-4 border-t border-indigo-100 bg-white p-6">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          <label for="nuevo-plan-nombre" class="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            Nombre del plan *
+          </label>
+          <input 
+            id="nuevo-plan-nombre"
+            name="name"
+            type="text" 
+            required
+            placeholder="Ej. Repaso Módulo 1"
+            class="rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="nuevo-plan-desc" class="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            Descripción
+          </label>
+          <input 
+            id="nuevo-plan-desc"
+            name="description"
+            type="text" 
+            placeholder="Breve objetivo de este plan..."
+            class="rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          />
+        </div>
+      </div>
+
+        {temasLecturas.length > 0 && (
+        <div class="flex flex-col gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wide text-slate-600">
+            Selecciona los temas iniciales
+            </span>
+            
+            {/* Cambiamos a grid-cols-1 (y máximo md:grid-cols-2) y damos un poco más de altura máxima (max-h-64) */}
+            <ul class="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50/70 p-3 md:grid-cols-2">
+            {temasLecturas.map((tema) => (
+                <li>
+                {/* items-start alinea el checkbox con la primera línea cuando el texto ocupa varios renglones */}
+                <label class="check-crear-item flex h-full cursor-pointer items-start gap-2.5 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 transition-colors hover:border-indigo-300 hover:bg-slate-50">
+                    
+                    {/* shrink-0 evita que el cuadro del checkbox se aplaste si el texto es muy largo */}
+                    <input
+                    type="checkbox"
+                    name="nuevos_temas"
+                    value={tema.idhtml}
+                    class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    
+                    {/* Eliminamos 'truncate' y usamos 'leading-snug' para un interlineado cómodo */}
+                    <span
+                    class="leading-snug break-words"
+                    style={`padding-left: ${Math.max(0, tema.nivel - 1) * 10}px`}
+                    >
+                    {tema.titulo}
+                    </span>
+                </label>
+                </li>
+            ))}
+            </ul>
+        </div>
+        )}
+
+
+      <div class="flex items-center justify-end gap-3 pt-1">
+        <span id="crear-plan-feedback" class="text-xs font-medium text-slate-500"></span>
+        <button 
+          type="submit" 
+          id="btn-crear-plan"
+          class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Guardar nuevo plan
+        </button>
+      </div>
+    </form>
+  </details>
+
+  {/* Listado de planes existentes */}
+  <div id="planes-grid" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+    {planesLecturas.map(plan => {
+      const total = plan.temasPropios.length;
+      const completados = plan.temasPropios.filter(t => t.isCompleted).length;
+      const porcentajeInicial = total > 0 ? Math.round((completados / total) * 100) : 0;
+
+      return (
+        <article 
+          id={`plan-${plan.id}`} 
+          data-plan-id={plan.id}
+          class="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+        >
+          {/* Cabecera */}
+          <div class="flex flex-col gap-2">
+            <div class="flex items-start justify-between gap-3">
+              <h2 data-plan-field="title" data-plan-id={plan.id} title="Doble clic para editar" class="cursor-text rounded text-lg font-bold leading-snug text-slate-900">{plan.name?.trim() ? plan.name : <span class="inline-flex items-center gap-1.5 text-sm font-medium italic text-slate-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M4 20l4.5-1 11-11a1.875 1.875 0 0 0-2.65-2.65l-11 11L4 20Z" /></svg><span>Editar nombre</span></span>}</h2>
+              <span 
+                id={`porcentaje-avance-${plan.id}`}
+                class="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-600"
+              >
+                {porcentajeInicial}%
+              </span>
+            </div>
+
+            <p data-plan-field="description" data-plan-id={plan.id} title="Doble clic para editar" class="line-clamp-2 cursor-text rounded text-sm text-slate-600">{plan.description?.trim() ? plan.description : <span class="inline-flex items-center gap-1.5 italic text-slate-400"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M4 20l4.5-1 11-11a1.875 1.875 0 0 0-2.65-2.65l-11 11L4 20Z" /></svg><span>Editar descripción</span></span>}</p>
+
+            {/* Barra de progreso */}
+            <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+              <div 
+                id={`barra-avance-${plan.id}`}
+                class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-300"
+                style={`width: ${porcentajeInicial}%`}
+              ></div>
+            </div>
+
+            {/* Fechas */}
+            <div class="mt-2 flex flex-wrap justify-between gap-2 border-t border-slate-100 pt-2.5 text-xs text-slate-500">
+              <span>
+                Creado: <strong id={`created-${plan.id}`} class="font-medium text-slate-700">{plan.created ?? 'No disponible'}</strong>
+              </span>
+              <span>
+                Actualizado: <strong id={`updated-${plan.id}`} class="font-medium text-slate-700">{plan.updated ?? 'No disponible'}</strong>
+              </span>
+            </div>
+          </div>
+
+          {/* Desplegable 1: Temas del Plan */}
+          <details class="group overflow-hidden rounded-xl border border-slate-200 bg-slate-50" open>
+            <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800 select-none hover:bg-slate-100/70 [&::-webkit-details-marker]:hidden">
+              <span>Temas del Plan ({plan.temasPropios.length})</span>
+              <svg class="h-4 w-4 text-slate-500 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+
+            <ul id={`lista-propios-${plan.id}`} class="flex flex-col gap-2 border-t border-slate-200 bg-white p-3">
+              {plan.temasPropios.length === 0 ? (
+                <li class="py-2 text-center text-xs text-slate-400">Sin temas asignados</li>
+              ) : (
+                plan.temasPropios.map(tema => (
+                  <li class={`flex items-start justify-between gap-3 rounded-lg px-3 py-2.5 text-sm leading-snug ${tema.isCompleted ? 'bg-emerald-50/60 text-slate-800' : 'bg-slate-50 text-slate-600'}`}>
+                    <div class="flex min-w-0 items-start gap-2.5">
+                      <span class={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${tema.isCompleted ? 'bg-emerald-500' : 'bg-slate-300'}`}></span>
+                      <span class="break-words">{tema.titulo}</span>
+                    </div>
+                    <span class={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-medium ${tema.isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200/70 text-slate-600'}`}>
+                      {tema.isCompleted ? 'Completado' : 'Pendiente'}
+                    </span>
+                  </li>
+                ))
+              )}
+            </ul>
+          </details>
+
+          {/* Continuar leyendo este plan */}
+          <a
+            href={`/lecturas/${lecturaId}/${plan.id}/leer`}
+            class="mt-auto inline-flex w-full items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Continuar con el plan
+          </a>
+
+          {/* Desplegable 2: Editar Temas */}
+          <details class="group overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+            <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800 select-none hover:bg-slate-100/70 [&::-webkit-details-marker]:hidden">
+              <span>Editar Temas</span>
+              <svg class="h-4 w-4 text-slate-500 transition-transform duration-200 group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+
+            <div class="border-t border-slate-200 bg-white p-3">
+              <label class="mb-3 block">
+                <span class="sr-only">Buscar tema</span>
+                <input
+                  type="search"
+                  data-topic-search={plan.id}
+                  placeholder="Buscar tema..."
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                />
+              </label>
+              <ul class="flex max-h-72 flex-col gap-2 overflow-y-auto pr-1">
+                {plan.todosTemas.map(tema => (
+                  <li data-topic-name={tema.titulo.toLowerCase()}>
+                    <label 
+                      class={`flex cursor-pointer items-start gap-2.5 rounded-lg border px-3 py-2.5 text-sm leading-snug transition-colors ${
+                        tema.isSelected 
+                          ? 'border-indigo-200 bg-indigo-50/70 font-medium text-indigo-950' 
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <input 
+                        type="checkbox" 
+                        name="temas" 
+                        value={tema.idhtml} 
+                        checked={tema.isSelected}
+                        data-titulo={tema.titulo}
+                        data-completed={tema.isCompleted ? 'true' : 'false'}
+                        class="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span class="break-words">{tema.titulo}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+
+            </div>
+          </details>
+
+          <button
+            type="button"
+            data-plan-id={plan.id}
+            data-title={plan.name ?? ''}
+            data-description={plan.description ?? ''}
+            class="btn-actualizar w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-indigo-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Actualizar
+          </button>
+        </article>
+      );
+    })}
+  </div>
+
+
+
+</section>
+
+<script>
+  const planesGrid = document.getElementById('planes-grid');
+
+  function renderPlanField(field: HTMLElement, value: string) {
+    field.dataset.value = value;
+    if (value) {
+      field.textContent = value;
+      return;
+    }
+
+    const hint = document.createElement('span');
+    hint.className = 'inline-flex items-center gap-1.5 text-sm font-medium italic text-slate-400';
+    hint.innerHTML = '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M4 20l4.5-1 11-11a1.875 1.875 0 0 0-2.65-2.65l-11 11L4 20Z" /></svg>';
+    const label = document.createElement('span');
+    label.textContent = field.dataset.planField === 'title' ? 'Editar nombre' : 'Editar descripción';
+    hint.appendChild(label);
+    field.replaceChildren(hint);
+  }
+
+  planesGrid?.addEventListener('dblclick', (event) => {
+    const field = (event.target as HTMLElement).closest<HTMLElement>('[data-plan-field]');
+    if (!field || field.querySelector('[data-inline-editor]')) return;
+
+    const isDescription = field.dataset.planField === 'description';
+    const editor = document.createElement(isDescription ? 'textarea' : 'input');
+    editor.dataset.inlineEditor = 'true';
+    editor.value = field.textContent?.trim() ?? '';
+    editor.dataset.originalValue = editor.value;
+    editor.className = 'w-full rounded-md border border-indigo-400 bg-white px-2 py-1 text-inherit outline-none focus:ring-2 focus:ring-indigo-500/20';
+    if (editor instanceof HTMLTextAreaElement) {
+      editor.rows = 3;
+      editor.classList.add('resize-y');
+    }
+
+    field.replaceChildren(editor);
+    editor.focus();
+    editor.select();
+  });
+
+  planesGrid?.addEventListener('focusout', (event) => {
+    const editor = event.target as HTMLInputElement | HTMLTextAreaElement;
+    if (!editor.matches('[data-inline-editor]')) return;
+
+    const field = editor.closest<HTMLElement>('[data-plan-field]');
+    if (!field) return;
+    const value = editor.value.trim();
+    renderPlanField(field, value);
+
+    field.closest<HTMLElement>('[data-plan-id]')?.dispatchEvent(new CustomEvent('plan:field-updated', {
+      bubbles: true,
+      detail: {
+        planId: field.dataset.planId,
+        field: field.dataset.planField,
+        value
+      }
+    }));
+  });
+
+  planesGrid?.addEventListener('keydown', (event) => {
+    const editor = event.target as HTMLInputElement | HTMLTextAreaElement;
+    if (!editor.matches('[data-inline-editor]')) return;
+    const field = editor.closest<HTMLElement>('[data-plan-field]');
+    const shouldSave = editor instanceof HTMLInputElement
+      ? event.key === 'Enter'
+      : event.key === 'Enter' && (event.ctrlKey || event.metaKey);
+
+    if (shouldSave) {
+      event.preventDefault();
+      editor.blur();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      editor.value = editor.dataset.originalValue ?? editor.value;
+      editor.blur();
+    }
+  });
+</script>
+
+
+
+
+<script>
+  document.querySelectorAll<HTMLInputElement>('[data-topic-search]').forEach((input) => {
+    input.addEventListener('input', () => {
+      const query = input.value.trim().toLocaleLowerCase();
+      const list = input.closest('div')?.querySelector('ul');
+      list?.querySelectorAll<HTMLLIElement>(':scope > li[data-topic-name]').forEach((item) => {
+        item.hidden = !item.dataset.topicName?.toLocaleLowerCase().includes(query);
+      });
+    });
+  });
+</script>
+
+<script>
+  const wrapper = document.getElementById('planes-lectura-wrapper');
+  const customerId = wrapper?.dataset.customerId;
+  const lecturaId = wrapper?.dataset.lecturaId;
+
+  document.getElementById('planes-grid')?.addEventListener('plan:field-updated', (event) => {
+    const detail = (event as CustomEvent<{ planId: string; field: string; value: string }>).detail;
+    const button = document.querySelector<HTMLButtonElement>(`#plan-${detail.planId} .btn-actualizar`);
+    if (!button) return;
+
+    if (detail.field === 'title') button.dataset.title = detail.value;
+    if (detail.field === 'description') button.dataset.description = detail.value;
+  });
+
+  // Función auxiliar para alternar clases Tailwind en checkboxes
+  function bindCheckboxStyles(selector: string) {
+    document.querySelectorAll<HTMLInputElement>(selector).forEach(input => {
+      input.addEventListener('change', (e) => {
+        const target = e.target as HTMLInputElement;
+        const label = target.closest('label');
+        if (!label) return;
+
+        if (target.checked) {
+          label.classList.remove('border-slate-200', 'bg-white', 'text-slate-700', 'hover:bg-slate-50');
+          label.classList.add('border-indigo-200', 'bg-indigo-50/70', 'font-medium', 'text-indigo-950');
+        } else {
+          label.classList.remove('border-indigo-200', 'bg-indigo-50/70', 'font-medium', 'text-indigo-950');
+          label.classList.add('border-slate-200', 'bg-white', 'text-slate-700', 'hover:bg-slate-50');
+        }
+      });
+    });
+  }
+
+  bindCheckboxStyles('input[name="temas"]');
+  bindCheckboxStyles('input[name="nuevos_temas"]');
+
+  // 1. Machote POST para CREAR un plan nuevo
+  const formCrear = document.getElementById('form-crear-plan') as HTMLFormElement | null;
+  const btnCrear = document.getElementById('btn-crear-plan') as HTMLButtonElement | null;
+  const feedbackCrear = document.getElementById('crear-plan-feedback');
+
+  formCrear?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!btnCrear) return;
+
+    const formData = new FormData(formCrear);
+    const name = String(formData.get('name') ?? '').trim();
+    const description = String(formData.get('description') ?? '').trim();
+    const temasSeleccionados = Array.from(
+      formCrear.querySelectorAll<HTMLInputElement>('input[name="nuevos_temas"]:checked')
+    ).map(cb => cb.value);
+
+    if (!name) return;
+
+    const textoOriginal = btnCrear.textContent;
+    btnCrear.disabled = true;
+    btnCrear.textContent = 'Creando...';
+    if (feedbackCrear) feedbackCrear.textContent = '';
+
+    try {
+      // --- AQUÍ VA TU ENDPOINT REAL PARA CREAR ---
+      const response = await fetch('/api/lecturas/planes/crear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: Number(customerId),
+          lecturaId: Number(lecturaId),
+          name,
+          description,
+          temas: temasSeleccionados
+        })
+      });
+
+      if (!response.ok) throw new Error('Error al crear el plan');
+
+      // const nuevoPlan = await response.json();
+
+      // Limpiar formulario y estilos de checkboxes
+      formCrear.reset();
+      formCrear.querySelectorAll<HTMLLabelElement>('label.check-crear-item').forEach(label => {
+        label.classList.remove('border-indigo-200', 'bg-indigo-50/70', 'font-medium', 'text-indigo-950');
+        label.classList.add('border-slate-200', 'bg-white', 'text-slate-700', 'hover:bg-slate-50');
+      });
+
+      if (feedbackCrear) {
+        feedbackCrear.textContent = '¡Plan creado con éxito!';
+        feedbackCrear.className = 'text-xs font-medium text-emerald-600';
+      }
+
+      setTimeout(() => {
+        const acordeon = document.getElementById('acordeon-crear-plan') as HTMLDetailsElement | null;
+        if (acordeon) acordeon.open = false;
+        if (feedbackCrear) feedbackCrear.textContent = '';
+        btnCrear.textContent = textoOriginal;
+        btnCrear.disabled = false;
+      }, 1200);
+
+      // Recargar la página o actualizar la lista de planes después de crear uno nuevo
+      location.reload();
+
+    } catch (error) {
+      console.error(error);
+      if (feedbackCrear) {
+        feedbackCrear.textContent = 'No se pudo crear el plan.';
+        console.log(error);
+        feedbackCrear.className = 'text-xs font-medium text-rose-600';
+      }
+      btnCrear.textContent = textoOriginal;
+      btnCrear.disabled = false;
+    }
+  });
+
+  // 2. Machote POST para ACTUALIZAR un plan existente
+  document.querySelectorAll<HTMLButtonElement>('.btn-actualizar').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const button = e.currentTarget as HTMLButtonElement;
+      const planId = button.dataset.planId;
+      const card = document.getElementById(`plan-${planId}`);
+      if (!card || !planId) return;
+
+      const checkboxes = card.querySelectorAll<HTMLInputElement>('input[name="temas"]:checked');
+      const temasSeleccionados = Array.from(checkboxes).map(cb => ({
+        idhtml: cb.value,
+        titulo: cb.dataset.titulo,
+        isCompleted: cb.dataset.completed === 'true'
+      }));
+
+      const textoOriginal = button.textContent;
+      button.disabled = true;
+      button.textContent = 'Actualizando...';
+
+      const name = button.dataset.title ?? '';
+      const description = button.dataset.description ?? '';
+
+
+      try {
+        // --- AQUÍ VA TU ENDPOINT REAL PARA ACTUALIZAR ---
+        const response = await fetch(`/api/lecturas/planes/${planId}/actualizar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerId: Number(customerId),
+            lecturaId: Number(lecturaId),
+            planId: Number(planId),
+            name: name,
+            description: description,
+            temas: temasSeleccionados.map(t => t.idhtml)
+          })
+        });
+
+        if (!response.ok) throw new Error('Error en la petición');
+        
+        //return Response.json({ success: true }, { status: 200 });
+        interface DataResponse {
+            success: boolean;
+            porcentaje?: number;
+            updated?: string;
+            created?: string;
+        }
+        
+
+        const data: DataResponse = await response.json();
+
+        if (!data.success) throw new Error('Error al actualizar el plan');
+
+        const total = temasSeleccionados.length;
+        const completados = temasSeleccionados.filter(t => t.isCompleted).length;
+        const porcentajeCalculado = total > 0 ? Math.round((completados / total) * 100) : 0;
+
+        const nuevoPorcentaje = data.porcentaje ?? porcentajeCalculado;
+        const nuevaFechaUpdated = data.updated ?? new Date().toLocaleDateString('es-MX');
+
+        // Actualizar fechas y porcentaje en el DOM
+        if (data.created) {
+          const elCreated = document.getElementById(`created-${planId}`);
+          if (elCreated) elCreated.textContent = data.created;
+        }
+        const elUpdated = document.getElementById(`updated-${planId}`);
+        if (elUpdated) elUpdated.textContent = nuevaFechaUpdated;
+
+        const elPorcentaje = document.getElementById(`porcentaje-avance-${planId}`);
+        const elBarra = document.getElementById(`barra-avance-${planId}`);
+        if (elPorcentaje) elPorcentaje.textContent = `${nuevoPorcentaje}%`;
+        if (elBarra) elBarra.style.width = `${nuevoPorcentaje}%`;
+
+        button.textContent = '¡Actualizado!';
+        setTimeout(() => {
+          button.textContent = textoOriginal;
+          button.disabled = false;
+        }, 1500);
+
+        //Recargar página
+        location.reload();
+
+      } catch (error) {
+        console.error(error);
+        button.textContent = 'Error al actualizar';
+        setTimeout(() => {
+          button.textContent = textoOriginal;
+          button.disabled = false;
+        }, 2000);
+      }
+    });
+  });
+</script>

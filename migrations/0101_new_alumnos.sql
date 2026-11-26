@@ -1,4 +1,3 @@
--- Habilitar llaves foráneas (recomendado en SQLite/D1)
 
 CREATE TABLE alumnos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

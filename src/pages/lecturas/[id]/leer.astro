@@ -1,14 +1,12 @@
 ---
 //src/pages/lecturas/[id]/leer.astro
 import Layout from "../../../layouts/Layout.astro";
-
 import { env } from "cloudflare:workers";
-
 import {
   accountsEnabled,
   getCustomerEmail,
 } from "../../../features/auth/customer";
-import LibroPrint from "../../../components/xml/LibroPrint.astro";
+
 import { getCustomerByEmail } from "../../../features/customers_new/db";
 
 import {
@@ -19,9 +17,6 @@ import {
 import { parsearXML } from "../../../features/xml/xmlParser";
 import { extractMetaXml } from "../../../features/lecturas/utils";
 
-import RenderLecturaXml from "../../../components/xml/RenderLecturaXml.astro";
-import RenderIndiceTemario from "../../../components/xml/RenderIndiceTemario.astro";
-import FlipbookReader from "../../../components/xml/FlipbookReader.astro";
 import VisorBlocNotas from "../../../components/xml/VisorBlocNotas.astro";
 
 const { id } = Astro.params;
@@ -78,6 +73,9 @@ if (customer) {
 
   // Si tu lectura no es pública y requiere autorización,
   // valida aquí según las reglas de tu sistema.
+  if(!tieneAcceso) {
+    return Astro.redirect("/lecturas");
+  }
 }
 
 // ----------------------------------------------------
