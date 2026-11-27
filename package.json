@@ -44,6 +44,8 @@
     "bootstrap": "^5.3.8",
     "linkedom": "^0.18.15",
     "markdown-it": "^15.0.0",
+    "page-flip": "^2.0.7",
+    "pagedjs": "^0.4.3",
     "stripe": "^22.4.0",
     "uqr": "^0.1.3"
   },

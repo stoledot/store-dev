@@ -1,0 +1,342 @@
+---
+/**
+ * XmlNodeBookViewer.astro
+ * Renderiza una estructura recursiva `NodoXML` en un libro paginado con Paged.js
+ * y animado en 3D con StPageFlip, manteniendo el mínimo de JS en el cliente.
+ */
+
+import type { NodoXML } from "../../features/xml/xmlParser";
+
+interface Props {
+  /** Nodo raíz o arreglo de nodos de tipo NodoXML */
+  raiz: NodoXML | NodoXML[];
+  /** Dimensiones de cada página individual */
+  anchoPagina?: number;
+  altoPagina?: number;
+  /** Título opcional de portada si el XML no incluye uno */ 
+  tituloPortada?: string;
+}
+
+const {
+  raiz,
+  anchoPagina = 420,
+  altoPagina = 595,
+  tituloPortada,
+} = Astro.props;
+
+// Escapa caracteres especiales para renderizado seguro en HTML estático
+function escaparHTML(texto: string): string {
+  return texto
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Serializa los atributos del NodoXML conservando id y data-title
+function serializarAtributos(atributos: Record<string, string>): string {
+  return Object.entries(atributos || {})
+    .map(([clave, valor]) => `${clave}="${escaparHTML(String(valor))}"`)
+    .join(" ");
+}
+
+/**
+ * Transforma recursivamente el árbol `NodoXML` en HTML semántico en tiempo de compilación (0 JS cliente).
+ * Soporta <chapter>, <section>, <sub-section> (y subniveles anidados) con id y data-title.
+ */
+function renderizarNodoXML(nodo: NodoXML, nivelJerarquia = 1): string {
+  if (nodo.tipo === "texto") {
+    return escaparHTML(nodo.valor);
+  }
+
+  const tag = nodo.etiqueta.toLowerCase();
+  const attrs = nodo.atributos || {};
+  const title = attrs["data-title"] || attrs["title"] || "";
+  const idAttr = attrs["id"] ? `id="${escaparHTML(attrs["id"])}"` : "";
+  const dataTitleAttr = title ? `data-title="${escaparHTML(title)}"` : "";
+
+  const esCapitulo = tag === "chapter";
+  const esSeccion = tag === "section";
+  const esSubSeccion = tag === "sub-section" || tag === "subsection";
+
+  // 1. Estructuras jerárquicas principales del libro
+  if (esCapitulo || esSeccion || esSubSeccion) {
+    const nivelEncabezado = esCapitulo ? 1 : esSeccion ? 2 : Math.min(nivelJerarquia, 6);
+    const encabezadoHTML = title
+      ? `<h${nivelEncabezado} class="titulo-jerarquia nivel-${nivelEncabezado}">${escaparHTML(title)}</h${nivelEncabezado}>`
+      : "";
+
+    const hijosHTML = nodo.hijos
+      .map((hijo) => renderizarNodoXML(hijo, nivelEncabezado + 1))
+      .join("");
+
+    const claseContenedor = esCapitulo
+      ? "xml-chapter"
+      : esSeccion
+      ? "xml-section"
+      : "xml-subsection";
+
+    const etiquetaHTML = esCapitulo ? "article" : "section";
+
+    return `<${etiquetaHTML} ${idAttr} ${dataTitleAttr} class="${claseContenedor}">${encabezadoHTML}${hijosHTML}</${etiquetaHTML}>`;
+  }
+
+  // 2. Etiquetas internas de contenido (párrafos, listas, citas, etc.)
+  const mapaEtiquetas: Record<string, string> = {
+    p: "p",
+    paragraph: "p",
+    text: "p",
+    b: "strong",
+    strong: "strong",
+    i: "em",
+    em: "em",
+    ul: "ul",
+    ol: "ol",
+    li: "li",
+    quote: "blockquote",
+    blockquote: "blockquote",
+    code: "code",
+    pre: "pre",
+    br: "br",
+    hr: "hr",
+  };
+
+  const etiquetaDestino = mapaEtiquetas[tag] || "div";
+  const claseExtra = mapaEtiquetas[tag] ? "" : ` class="xml-nodo-${escaparHTML(tag)}"`;
+  const attrsSerializados = serializarAtributos(attrs);
+  const espacioAttrs = attrsSerializados ? ` ${attrsSerializados}` : "";
+
+  // Etiquetas vacías (self-closing)
+  if (etiquetaDestino === "br" || etiquetaDestino === "hr") {
+    return `<${etiquetaDestino}${espacioAttrs} />`;
+  }
+
+  const contenidoHijos = nodo.hijos
+    .map((hijo) => renderizarNodoXML(hijo, nivelJerarquia))
+    .join("");
+
+  return `<${etiquetaDestino}${claseExtra}${espacioAttrs}>${contenidoHijos}</${etiquetaDestino}>`;
+}
+
+const nodosRaiz = Array.isArray(raiz) ? raiz : [raiz];
+const htmlCompilado = nodosRaiz.map((n) => renderizarNodoXML(n, 1)).join("");
+---
+
+<div
+  class="visor-libro-wrapper"
+  data-width={anchoPagina}
+  data-height={altoPagina}
+>
+  <!-- Fuente HTML pre-compilada en servidor (invisible al usuario) -->
+  <template id="xml-book-source">
+    {tituloPortada && (
+      <section class="xml-portada">
+        <h1>{tituloPortada}</h1>
+      </section>
+    )}
+    <Fragment set:html={htmlCompilado} />
+  </template>
+
+  <!-- Lienzo donde Paged.js construye las páginas temporalmente -->
+  <div id="pagedjs-staging" aria-hidden="true"></div>
+
+  <!-- Escenario 3D final controlado por PageFlip -->
+  <div class="escena-libro">
+    <div id="flipbook-stage" class="flipbook-container"></div>
+  </div>
+
+  <!-- Controles mínimos de navegación -->
+  <nav class="controles-libro" aria-label="Navegación de páginas">
+    <button type="button" id="btn-prev" aria-label="Página anterior">← Anterior</button>
+    <span id="indicador-pagina">Paginando...</span>
+    <button type="button" id="btn-next" aria-label="Página siguiente">Siguiente →</button>
+  </nav>
+</div>
+
+<!-- Reglas editoriales CSS Paged Media -->
+<style is:global define:vars={{ anchoPx: `${anchoPagina}px`, altoPx: `${altoPagina}px` }}>
+  @page {
+    size: var(--anchoPx) var(--altoPx);
+    margin: 28px 24px 36px 24px;
+
+    @bottom-center {
+      content: counter(page);
+      font-family: Georgia, serif;
+      font-size: 11px;
+      color: #666;
+    }
+  }
+
+  .xml-portada {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    break-after: page;
+  }
+
+  /* Cada <chapter> inicia en una página nueva */
+  .xml-chapter {
+    break-before: page;
+  }
+
+  .xml-chapter:first-child {
+    break-before: auto;
+  }
+
+  /* Evita títulos huérfanos al final de la página */
+  .titulo-jerarquia {
+    break-after: avoid;
+    font-family: Georgia, serif;
+    color: #1f1c18;
+    margin-top: 0;
+  }
+
+  .nivel-1 {
+    font-size: 1.5rem;
+    border-bottom: 1px solid #d8d0c5;
+    padding-bottom: 0.35rem;
+    margin-bottom: 1rem;
+  }
+
+  .nivel-2 {
+    font-size: 1.15rem;
+    margin-top: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .nivel-3,
+  .nivel-4 {
+    font-size: 1rem;
+    font-style: italic;
+    margin-top: 0.85rem;
+    margin-bottom: 0.4rem;
+  }
+
+  #pagedjs-staging p,
+  .pagedjs_page p {
+    font-family: Georgia, serif;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    text-align: justify;
+    margin: 0 0 0.75rem 0;
+    color: #2b2723;
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* Estilos de hoja física para StPageFlip */
+  .pagedjs_page {
+    background-color: #fdfbf7 !important;
+    box-shadow: inset 12px 0 24px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e4ddd2;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+</style>
+
+<style>
+  .visor-libro-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.5rem;
+  }
+
+  #pagedjs-staging {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    visibility: hidden;
+  }
+
+  .escena-libro {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 620px;
+  }
+
+  .controles-libro {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .controles-libro button {
+    padding: 0.45rem 0.9rem;
+    border: 1px solid #ccc2b4;
+    background: #fdfbf7;
+    color: #2b2723;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .controles-libro button:hover {
+    background: #f2ece1;
+  }
+</style>
+
+<!-- Script mínimo de cliente: conecta Paged.js con PageFlip -->
+<script>
+  // pagedjs does not provide TypeScript declarations.
+  // @ts-ignore
+  import { Previewer } from "pagedjs";
+  // @ts-ignore
+  import { PageFlip } from "page-flip";
+
+  async function iniciarLibro() {
+    const wrapper = document.querySelector<HTMLElement>(".visor-libro-wrapper");
+    const template = document.getElementById("xml-book-source") as HTMLTemplateElement;
+    const staging = document.getElementById("pagedjs-staging");
+    const stage = document.getElementById("flipbook-stage");
+    const indicador = document.getElementById("indicador-pagina");
+
+    if (!wrapper || !template || !staging || !stage) return;
+
+    const width = Number(wrapper.dataset.width || 420);
+    const height = Number(wrapper.dataset.height || 595);
+
+    // 1. Paged.js divide el HTML estático en cajas de página exactas
+    const paged = new Previewer();
+    const flow = await paged.preview(template.content.cloneNode(true), [], staging);
+
+    // 2. Transfiere las páginas generadas al contenedor de PageFlip
+    const paginas = Array.from(staging.querySelectorAll<HTMLElement>(".pagedjs_page"));
+    paginas.forEach((pagina) => {
+      pagina.classList.add("page");
+      stage.appendChild(pagina);
+    });
+    staging.remove();
+
+    // 3. Inicializa la animación 3D de giro de página
+    const pageFlip = new PageFlip(stage, {
+      width,
+      height,
+      size: "fixed",
+      showCover: true,
+      maxShadowOpacity: 0.4,
+      mobileScrollSupport: false,
+    });
+
+    pageFlip.loadFromHTML(stage.querySelectorAll(".page"));
+
+    const actualizarContador = () => {
+      if (indicador) {
+        indicador.textContent = `Página ${pageFlip.getCurrentPageIndex() + 1} de ${flow.total}`;
+      }
+    };
+
+    actualizarContador();
+    pageFlip.on("flip", actualizarContador);
+
+    document.getElementById("btn-prev")?.addEventListener("click", () => pageFlip.flipPrev());
+    document.getElementById("btn-next")?.addEventListener("click", () => pageFlip.flipNext());
+  }
+
+  iniciarLibro();
+</script>

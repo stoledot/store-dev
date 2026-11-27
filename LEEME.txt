@@ -1,7 +1,11 @@
-Índice horizontal para el temario XML
+Plan de estudio para lecturas Astro
 
-Contenido:
-- src/components/xml/RenderIndiceTemario.astro: índice recursivo con grupos desplegables.
-- src/pages/lecturas/[id].astro: barra horizontal fija debajo del encabezado, búsqueda y contenido integrado.
+El paquete contiene las rutas bajo src/, las funciones de acceso D1, los dos componentes XML de referencia (incluido VisorBlocNotas) y una migración con el esquema de tablas proporcionado.
 
-Copia la carpeta src del ZIP en la raíz del proyecto, conservando las rutas. Requiere el tipo NodoXML ya existente en src/features/xml/xmlParser.ts.
+Integración
+1. Copia la carpeta src/ del ZIP en la raíz del proyecto, conservando rutas.
+2. Aplica migrations/plan-estudio-customers-lecturas.sql a la base D1 después de crear customers y school_lecturas.
+3. La página de lectura requiere los módulos existentes de autenticación, clientes, lecturas y parser XML que aparecen en los imports.
+4. El visor de plan está en /lecturas/{id}/estudiar/{planId}. Las APIs validan sesión, propiedad del plan y acceso del cliente a la lectura.
+
+El selector toma los identificadores id de los nodos XML sub-section, sub-sub-section y sub-sub-sub-section. Marcar un nodo de la jerarquía incluye también a sus descendientes. Para ver temas concretos, el árbol debe usar id estables y únicos.

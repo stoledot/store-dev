@@ -17,8 +17,12 @@ import Turnstile from '../../features/auth/Turnstile.astro';
 
 if (!(await accountsEnabled())) return Astro.redirect('/', 303);
 // Already signed in → account.
-const returnTo = customerReturnTo(Astro.url.searchParams.get('next'));
+const goBackRef = Astro.url.searchParams.get('goBackRef') ?? '/';
+
+const returnTo = customerReturnTo(Astro.url.searchParams.get('next') ?? goBackRef);
 if (await getCustomerEmail(Astro.cookies)) return Astro.redirect(returnTo, 303);
+
+
 
 let sent = false;
 let error = Astro.url.searchParams.get('error') === 'expired' ? 'Ese enlace ha caducado. Solicita uno nuevo.' : Astro.url.searchParams.get('error') === 'email-moved' ? 'Este correo ya no es el principal de la cuenta. Inicia sesión con el correo nuevo.' : '';
@@ -63,21 +67,24 @@ if (Astro.request.method === 'POST') {
       ) : (
         <Fragment>
           <h2>Únete a los grupos gratuitos de ayuda comunitaria en matemáticas.</h2>
-          <p class="mb-5 text-sm text-muted">Entra con tu número de cliente y contraseña, o solicita un enlace de acceso a tu correo.</p>
+          {/* <p class="mb-5 text-sm text-muted">Entra con tu número de cliente y contraseña, o solicita un enlace de acceso a tu correo.</p>*/}
           {error && (
             <p class="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {error}
             </p>
           )}
-          <form method="POST" class="space-y-3 rounded-2xl border border-line p-4">
+          {
+            /*<form method="POST" class="space-y-3 rounded-2xl border border-line p-4">
             <input type="hidden" name="action" value="password" />
             <input type="hidden" name="next" value={returnTo} />
             <label class="grid gap-1 text-sm font-medium">Número de cliente<input name="client_number" type="text" inputmode="numeric" pattern="[0-9]{10}" minlength="10" maxlength="10" required placeholder="10 dígitos" autocomplete="username" class="rounded-lg border border-line px-3 py-2 font-normal" /></label>
             <label class="grid gap-1 text-sm font-medium">Contraseña<input name="password" type="password" required maxlength="200" autocomplete="current-password" class="rounded-lg border border-line px-3 py-2 font-normal" /></label>
             <div class="flex justify-center"><Turnstile /></div>
             <button type="submit" class="w-full rounded-md bg-brand px-4 py-2.5 font-medium text-on-brand">Entrar con contraseña</button>
-          </form>
-          <div class="my-5 text-center text-xs uppercase tracking-widest text-muted">o usa un enlace seguro</div>
+          </form> */
+          }
+          
+          <div class="my-5 text-center text-xs uppercase tracking-widest text-muted">Usa un enlace seguro</div>
           <form method="POST" class="space-y-3 rounded-2xl border border-line p-4">
             <input type="hidden" name="action" value="magic" />
             <input type="hidden" name="next" value={returnTo} />

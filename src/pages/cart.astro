@@ -9,6 +9,12 @@ import { stripeDestination } from '../features/shipping/destination';
 import ProductImage from '../features/products/ProductImage.astro';
 import { enabledMethods, isMethodAvailable } from '../features/payments';
 import { catalogPath } from '../features/settings/home';
+import { accountsEnabled, getCustomerEmail } from '../features/auth/customer';
+
+const customerEmail = await accountsEnabled() ? await getCustomerEmail(Astro.cookies) : null;
+if(!customerEmail) {
+  return Astro.redirect('/account/login?next=' + encodeURIComponent(Astro.url.pathname + Astro.url.search), 303);
+}
 
 // Cart switched off in Settings → browse-only catalog, no cart page.
 if (!(Astro.locals.settings?.cartEnabled ?? true)) return Astro.redirect('/', 302);

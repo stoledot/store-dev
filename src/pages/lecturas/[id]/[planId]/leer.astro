@@ -1,0 +1,168 @@
+---
+//src/pages/lecturas/[id]/leer.astro
+import Layout from "../../../../layouts/Layout.astro";
+import { env } from "cloudflare:workers";
+import {
+  accountsEnabled,
+  getCustomerEmail,
+} from "../../../../features/auth/customer";
+
+import { getCustomerByEmail } from "../../../../features/customers_new/db";
+
+import {
+  getLecturasCustomerByCustomerId,
+  getLecturaById,
+getPlanEstudioConTemasLecturasByPlanId,
+getPorcentajeAvanceTemasPlanesEstudioCustomersLecturas,
+} from "../../../../features/lecturas/db";
+
+import { parsearXML } from "../../../../features/xml/xmlParser";
+import { extractMetaXml } from "../../../../features/lecturas/utils";
+
+import VisorBlocNotas from "../../../../components/xml/VisorBlocNotas.astro";
+import { NodoXMLToTemasLectura, type PlanLectura, filtrarNodoPorTemas } from "../../../../features/lecturas/planes-lecturas";
+    
+const { id, planId } = Astro.params;
+
+if (!id || !planId) {
+  return Astro.redirect("/lecturas");
+}
+
+// ----------------------------------------------------
+// AUTENTICACIÓN
+// ----------------------------------------------------
+
+const accountRequired = await accountsEnabled();
+
+let customer = null;
+
+if (accountRequired) {
+  const email = await getCustomerEmail(Astro.cookies);
+
+  if (!email) {
+    return Astro.redirect("/account");
+  }
+
+  customer = await getCustomerByEmail(env.DB,email);
+
+  if (!customer) {
+    return Astro.redirect("/account");
+  }
+}
+
+// ----------------------------------------------------
+// LECTURA
+// ----------------------------------------------------
+
+const lectura = await getLecturaById(env.DB, Number(id));
+
+if (!lectura) {
+  return Astro.redirect("/lecturas");
+}
+
+// ----------------------------------------------------
+// ACCESO A LA LECTURA
+// ----------------------------------------------------
+
+// Si tu proyecto tiene un sistema específico de permisos,
+// conserva aquí exactamente la validación de [id].astro.
+
+if (customer?.id) {
+  const lecturasCustomer =
+    await getLecturasCustomerByCustomerId(env.DB, customer.id);
+
+  const tieneAcceso =
+    lecturasCustomer?.some((item) => item.school_lectura_id === Number(id));
+
+  // Si tu lectura no es pública y requiere autorización,
+  // valida aquí según las reglas de tu sistema.
+  if(!tieneAcceso) {
+    return Astro.redirect("/lecturas");
+  }
+}
+
+
+
+
+//import '../../../../src/styles/libro.css'
+
+//-------------------------------------------------------
+// PLAN DE LECTURA
+//-------------------------------------------------------
+
+/**
+ * 
+export type TemaLectura = {
+    idhtml: string;
+    titulo: string;
+    tipo: string;
+    nivel: number;
+    isSelected: boolean;
+    isCompleted?: boolean;
+}
+
+
+export type PlanLectura = {
+    id: number;
+    name: string;
+    description: string;
+    porcentaje: number;
+    createdAt: Date;
+    updatedAt: Date;
+    temas: TemaLectura[];
+}
+ */
+const porcentaje = await getPorcentajeAvanceTemasPlanesEstudioCustomersLecturas(env.DB, Number(planId));
+const planesLecturaFromDB = await getPlanEstudioConTemasLecturasByPlanId(env.DB, Number(planId));
+const temasLecturasPlan = planesLecturaFromDB.temas.map((tema) => ({
+    idhtml: tema.id_html_tema_lectura,
+    titulo: "",
+    tipo: "",
+    nivel: 0,
+    isSelected: true,
+    isCompleted: tema.is_completed,
+}));
+const planLectura: PlanLectura = {
+    id: Number(planId),
+    name: planesLecturaFromDB.name,
+    description: planesLecturaFromDB.description,
+    createdAt: new Date(planesLecturaFromDB.created),
+    updatedAt: new Date(planesLecturaFromDB.updated),
+    porcentaje: porcentaje,
+    temas: temasLecturasPlan
+};
+
+
+//
+// ----------------------------------------------------
+// XML 
+// ----------------------------------------------------
+
+const nodo = parsearXML(lectura.content_xml);
+const nodoFiltrado = filtrarNodoPorTemas(nodo, temasLecturasPlan);
+
+
+
+const metaXml = extractMetaXml(nodo);
+
+const pageTitle = metaXml?.title ?? "Lectura";
+
+// ----------------------------------------------------
+// DATOS
+// ----------------------------------------------------
+
+const titulo = metaXml?.title ?? "Lectura";
+
+//
+
+
+
+
+
+
+
+---
+
+<Layout title={pageTitle} fullWidth={true}>
+  <VisorBlocNotas nodo={nodoFiltrado} tituloLibro={titulo} planLectura={planLectura} />
+</Layout>

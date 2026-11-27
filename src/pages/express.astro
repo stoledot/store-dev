@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import { env } from 'cloudflare:workers';
+import { accountsEnabled, getCustomerEmail } from '../features/auth/customer';
 import Layout from '../layouts/Layout.astro';
 import { formatPrice } from '../config';
 import { getProductByPublicId } from '../features/products/db';
@@ -19,6 +20,13 @@ import { hasSubscriptionProduct } from '../features/subscriptions/purchaseGuard'
 // store's default). Two sources: "Buy now" (a single product_id [+ variant/extras])
 // or the whole cart (no product_id → reads the cart cookie). Skips the full cart
 // page; the chosen method posts to /api/checkout, carrying the same source.
+
+
+const customerEmail = await accountsEnabled() ? await getCustomerEmail(Astro.cookies) : null;
+if(!customerEmail) {
+  return Astro.redirect('/account/login?next=' + encodeURIComponent(Astro.url.pathname + Astro.url.search), 303);
+}
+
 const isPost = Astro.request.method === 'POST';
 const form = isPost ? await Astro.request.formData() : null;
 const fld = (n: string) => (form?.get(n) ?? Astro.url.searchParams.get(n) ?? '').toString().trim();

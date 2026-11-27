@@ -1,0 +1,1031 @@
+---
+// src/components/VisorBlocNotas.astro
+import RenderLecturaXML from './RenderLecturaXml.astro';
+import RenderIndiceTemario from './RenderIndiceTemario.astro';
+import type { NodoXML } from '../../features/xml/xmlParser';
+
+interface Props {
+  nodo: NodoXML;
+  tituloLibro?: string;
+}
+
+const {
+  nodo,
+  tituloLibro = "Cuaderno de Estudio"
+} = Astro.props;
+---
+
+<div id="notepad-app" data-title={tituloLibro} class="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-stone-300/80 font-sans text-stone-800 selection:bg-amber-200/80">
+
+  <!-- BARRA SUPERIOR DE NAVEGACIÓN -->
+  <header class="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-stone-300 bg-[#fbf8f1]/95 px-4 py-2.5 shadow-sm backdrop-blur">
+
+    <!-- Izquierda: Botón Temario + Título -->
+    <div class="flex items-center gap-3">
+      <button
+        id="btn-toggle-toc"
+        type="button"
+        class="flex items-center gap-2 rounded-lg border border-stone-300 bg-stone-100/80 px-3 py-1.5 text-sm font-medium text-stone-700 transition hover:bg-amber-100/70 hover:text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-600/40"
+        aria-expanded="false"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10" />
+        </svg>
+        <span>Temario</span>
+      </button>
+      <h1 class="hidden max-w-xs truncate text-sm font-semibold text-stone-800 sm:block">
+        {tituloLibro}
+      </h1>
+    </div>
+
+    <!-- Centro: Buscador en vivo -->
+    <div class="relative max-w-md flex-1">
+      <div class="relative">
+        <input
+          id="notepad-search-input"
+          type="search"
+          placeholder="Buscar tema, fórmula o concepto..."
+          class="w-full rounded-lg border border-stone-300 bg-stone-100/80 py-1.5 pl-9 pr-3 text-sm text-stone-800 placeholder-stone-400 transition focus:border-amber-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+        />
+        <svg class="pointer-events-none absolute left-2.5 top-2 size-4 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0Z" />
+        </svg>
+      </div>
+
+      <!-- Contenedor flotante de Cards de Resultados -->
+      <div
+        id="search-results-dropdown"
+        class="absolute left-0 right-0 top-full z-50 mt-2 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 bg-[#fdfbf6] p-2 shadow-xl"
+      >
+        <div id="search-results-list" class="flex flex-col gap-2"></div>
+      </div>
+    </div>
+
+    <!-- Derecha: Navegador de Hojas -->
+    <div class="flex items-center gap-1.5 rounded-lg border border-stone-300 bg-stone-100/80 px-2 py-1">
+      <button
+        id="btn-prev-sheet"
+        type="button"
+        title="Página anterior"
+        class="rounded p-1 text-stone-600 transition hover:bg-stone-200 disabled:opacity-30"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-1 text-xs font-medium text-stone-600">
+        <span>Hoja</span>
+        <input
+          id="sheet-number-input"
+          type="number"
+          min="1"
+          value="1"
+          class="w-12 rounded border border-stone-300 bg-white px-1 py-0.5 text-center font-bold text-amber-900 focus:border-amber-600 focus:outline-none"
+        />
+        <span>de <strong id="total-sheets-label">1</strong></span>
+      </div>
+
+      <button
+        id="btn-next-sheet"
+        type="button"
+        title="Página siguiente"
+        class="rounded p-1 text-stone-600 transition hover:bg-stone-200 disabled:opacity-30"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MENÚ DESPLEGABLE DEL TEMARIO (Drawer Lateral) -->
+  <aside
+    id="toc-drawer"
+    class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] -translate-x-full flex-col border-r border-stone-200 bg-[#fbf8f1] shadow-2xl transition-transform duration-300 ease-in-out"
+    aria-hidden="true"
+  >
+    <div class="flex items-center justify-between border-b border-stone-200 px-4 py-3">
+      <span class="font-bold text-stone-800">Índice de Contenido</span>
+      <button id="btn-close-toc" type="button" class="rounded-lg p-1 text-stone-500 hover:bg-stone-200/60">
+        <svg class="size-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav id="toc-container" class="flex-1 overflow-y-auto p-3">
+      <ol class="space-y-1">
+        <RenderIndiceTemario nodo={nodo} />
+      </ol>
+    </nav>
+  </aside>
+
+  <!-- Fondo oscuro al abrir el temario -->
+  <div id="toc-backdrop" class="fixed inset-0 z-40 hidden bg-stone-900/40 backdrop-blur-xs transition-opacity"></div>
+
+  <!-- ÁREA PRINCIPAL DEL BLOC DE NOTAS -->
+  <main class="relative mx-auto flex w-full max-w-4xl flex-1 flex-col items-center px-3 pb-8 pt-4 sm:px-6">
+
+    <!-- Contenedor 3D del Bloc (sin área muerta de scroll) -->
+    <div id="notepad-perspective" class="relative w-full" style="perspective: 2400px;">
+
+      <!-- AROS METÁLICOS REALISTAS POR ENCIMA DE LA HOJA -->
+      <div class="notepad-spiral-rings pointer-events-none relative z-40 h-12 w-full select-none" aria-hidden="true"></div>
+
+      <!-- Escenario de hojas -->
+      <div id="notepad-sheets-stage" class="relative w-full">
+        <div class="notepad-paper-texture flex min-h-[75vh] items-center justify-center rounded-b-2xl p-8 text-stone-500 shadow-lg">
+          Preparando hojas del bloc...
+        </div>
+      </div>
+
+      <!-- Base de cartón rígido inferior del bloc -->
+      <div class="mx-1 h-2.5 rounded-b-2xl border-x border-b border-stone-500/40 bg-gradient-to-b from-stone-400 to-stone-500 shadow-md" aria-hidden="true"></div>
+    </div>
+
+    <!-- BOTONES INFERIORES DE NAVEGACIÓN -->
+    <div class="mt-5 flex w-full max-w-4xl items-center justify-between gap-4">
+      <button
+        id="btn-bottom-prev"
+        type="button"
+        class="flex items-center gap-2 rounded-xl border border-stone-300 bg-[#fbf8f1] px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition hover:border-amber-600/50 hover:bg-amber-50 hover:text-amber-950 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-40"
+      >
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        <span>Página anterior</span>
+      </button>
+
+      <span id="bottom-page-indicator" class="text-xs font-medium text-stone-600">
+        Página 1 de 1
+      </span>
+
+      <button
+        id="btn-bottom-next"
+        type="button"
+        class="flex items-center gap-2 rounded-xl border border-amber-800/20 bg-amber-900 px-4 py-2.5 text-sm font-semibold text-[#fdfbf6] shadow-sm transition hover:bg-amber-800 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-40"
+      >
+        <span>Página siguiente</span>
+        <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- CONTENEDOR OCULTO DONDE ASTRO RENDERIZA EL XML ORIGINAL -->
+  <div id="raw-book-source" class="pointer-events-none fixed -left-[9999px] top-0 w-full max-w-4xl opacity-0" aria-hidden="true">
+    <RenderLecturaXML nodo={nodo} />
+  </div>
+
+</div>
+
+<style is:global>
+  /* 1. ENGARGOLADO REALISTA DE DOBLE ALAMBRE POR ENCIMA DE LA HOJA */
+  .notepad-spiral-rings {
+    /* SVG de alta definición con gradiente metálico 3D, reflejo especular, sombra proyectada sobre el papel y perforaciones oscuras */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='48' viewBox='0 0 44 48'%3E%3Cdefs%3E%3ClinearGradient id='metalWire' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23475569'/%3E%3Cstop offset='28%25' stop-color='%23cbd5e1'/%3E%3Cstop offset='50%25' stop-color='%23ffffff'/%3E%3Cstop offset='75%25' stop-color='%2394a3b8'/%3E%3Cstop offset='100%25' stop-color='%23334155'/%3E%3C/linearGradient%3E%3ClinearGradient id='wireVertical' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2364748b'/%3E%3Cstop offset='22%25' stop-color='%23f8fafc'/%3E%3Cstop offset='55%25' stop-color='%2394a3b8'/%3E%3Cstop offset='88%25' stop-color='%23475569'/%3E%3Cstop offset='100%25' stop-color='%231e293b'/%3E%3C/linearGradient%3E%3CradialGradient id='punchHole' cx='50%25' cy='55%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%231c1917'/%3E%3Cstop offset='75%25' stop-color='%23292524'/%3E%3Cstop offset='100%25' stop-color='%2357534e'/%3E%3C/radialGradient%3E%3C/defs%3E%3C!-- Perforación rectangular/ovalada en el papel beige --%3E%3Crect x='15.5' y='32' width='13' height='8.5' rx='4' fill='url(%23punchHole)'/%3E%3Crect x='15.5' y='39.5' width='13' height='1.5' rx='0.75' fill='%23ffffff' fill-opacity='0.55'/%3E%3C!-- Sombra proyectada de los dos alambres sobre la hoja --%3E%3Cpath d='M19.5 36.5 C 18.5 14, 21.5 5, 22.5 5' stroke='%23000000' stroke-opacity='0.24' stroke-width='4.2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M25.5 36.5 C 24.5 14, 27.5 5, 28.5 5' stroke='%23000000' stroke-opacity='0.24' stroke-width='4.2' fill='none' stroke-linecap='round'/%3E%3C!-- Alambre izquierdo del arillo doble (pasa por encima de la hoja hasta entrar en el hoyo) --%3E%3Cpath d='M18.5 36.5 C 18.2 12, 20.5 3.5, 21.5 3.5 C 22.5 3.5, 21.8 14, 21.2 21' stroke='url(%23wireVertical)' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3C!-- Alambre derecho del arillo doble --%3E%3Cpath d='M24.5 36.5 C 24.2 12, 26.5 3.5, 27.5 3.5 C 28.5 3.5, 27.8 14, 27.2 21' stroke='url(%23wireVertical)' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3C!-- Brillo especular fino en el lomo superior de cada aro --%3E%3Cpath d='M19.3 18 C 19.5 9, 20.6 4.8, 21.3 4.8' stroke='%23ffffff' stroke-opacity='0.85' stroke-width='0.9' fill='none' stroke-linecap='round'/%3E%3Cpath d='M25.3 18 C 25.5 9, 26.6 4.8, 27.3 4.8' stroke='%23ffffff' stroke-opacity='0.85' stroke-width='0.9' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-position: center bottom;
+    margin-bottom: -24px; /* Baja los aros para que monten físicamente por encima del borde superior de la hoja */
+    filter: drop-shadow(0 3px 3px rgba(28, 25, 23, 0.22));
+  }
+
+  /* 2. TEXTURA Y COLOR DE PAPEL BEIGE SUAVE (LISO, SIN RAYAS DE CUADERNO) */
+  .notepad-paper-texture {
+    background-color: #f6efe0; /* Tono papel crema/beige cálido ligeramente envejecido */
+    background-image:
+      radial-gradient(ellipse at top left, rgba(255, 252, 245, 0.65) 0%, transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(214, 198, 169, 0.35) 0%, transparent 65%),
+      linear-gradient(180deg, rgba(180, 160, 128, 0.14) 0%, rgba(246, 239, 224, 0) 45px);
+  }
+
+  /* 3. ESTILOS DE CADA HOJA DEL BLOC */
+  .notepad-sheet {
+    width: 100%;
+    min-height: 75vh;
+    /* 1. Tono base más cálido y tostado (antes era #f6efe0) */
+    background-color: #eadcc3;
+
+    /* 2. Degradado radial + ruido sutil para simular desgaste en las orillas */
+    background-image: 
+      radial-gradient(circle at 50% 45%, rgba(255, 250, 235, 0.45) 0%, rgba(196, 174, 138, 0.35) 100%),
+      repeating-linear-gradient(0deg, rgba(139, 115, 85, 0.02) 0px, rgba(139, 115, 85, 0.02) 1px, transparent 1px, transparent 3px);
+
+    /* 3. Borde exterior e interior más tostado para dar profundidad de papel viejo */
+    border: 1px solid #cbb998;
+    border-top: 2px solid #bfa984;
+    box-shadow: 
+      0 14px 30px -5px rgba(45, 35, 20, 0.22),
+      0 6px 12px -2px rgba(45, 35, 20, 0.12),
+      inset 0 0 38px rgba(168, 140, 98, 0.28),
+      inset 0 2px 0 rgba(255, 248, 230, 0.65);
+      
+    /* Eje superior para doblar la hoja hacia arriba */
+    transform-origin: top center;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+    padding: 2.75rem 1.75rem 2.75rem 1.75rem;
+
+    /* Por defecto oculta con display: none para eliminar cualquier scroll muerto */
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  @media (min-width: 640px) {
+    .notepad-sheet {
+      padding: 3rem 3.25rem 3rem 3.25rem;
+    }
+  }
+
+  /* Hoja en medición inicial */
+  .notepad-sheet.measuring-sheet {
+    display: flex;
+    position: relative;
+    visibility: hidden;
+  }
+
+  /* Hoja activa visible (flujo normal, adaptable al contenido) */
+  .notepad-sheet.active-sheet {
+    display: flex;
+    position: relative;
+    z-index: 20;
+    opacity: 1;
+    transform: rotateX(0deg) translateY(0);
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.9s ease, box-shadow 1.2s ease;
+  }
+
+  /* Hoja animándose hacia arriba al avanzar (sale volteándose por el espiral) */
+  .notepad-sheet.animating-flip-up {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 30;
+    pointer-events: none;
+    transform: rotateX(176deg) translateY(-8px);
+    opacity: 0;
+    box-shadow: 0 -24px 36px rgba(28, 25, 23, 0.28);
+    transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), opacity 1.05s ease, box-shadow 1.2s ease;
+  }
+
+  /* Estado inicial cuando una hoja regresa desde arriba (al retroceder página) */
+  .notepad-sheet.animating-from-top {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 30;
+    pointer-events: none;
+    transform: rotateX(170deg) translateY(-6px);
+    opacity: 0.15;
+  }
+
+  /* Esquina inferior derecha sutil para indicar avance */
+  .sheet-edge-hint-next {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, transparent 50%, rgba(180, 145, 95, 0.18) 50%);
+    border-bottom-right-radius: 1rem;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const rawSource = document.getElementById('raw-book-source');
+    const stage = document.getElementById('notepad-sheets-stage');
+    const tituloLibro = document.getElementById('notepad-app')?.dataset.title || 'Bloc de estudio';
+
+    // Controles UI superiores e inferiores
+    const btnPrev = document.getElementById('btn-prev-sheet') as HTMLButtonElement | null;
+    const btnNext = document.getElementById('btn-next-sheet') as HTMLButtonElement | null;
+    const btnBottomPrev = document.getElementById('btn-bottom-prev') as HTMLButtonElement | null;
+    const btnBottomNext = document.getElementById('btn-bottom-next') as HTMLButtonElement | null;
+    const sheetInput = document.getElementById('sheet-number-input') as HTMLInputElement | null;
+    const totalLabel = document.getElementById('total-sheets-label');
+    const bottomIndicator = document.getElementById('bottom-page-indicator');
+
+    // Temario Drawer
+    const btnToggleToc = document.getElementById('btn-toggle-toc');
+    const btnCloseToc = document.getElementById('btn-close-toc');
+    const tocDrawer = document.getElementById('toc-drawer');
+    const tocBackdrop = document.getElementById('toc-backdrop');
+
+    // Buscador
+    const searchInput = document.getElementById('notepad-search-input') as HTMLInputElement | null;
+    const searchDropdown = document.getElementById('search-results-dropdown');
+    const searchList = document.getElementById('search-results-list');
+
+    if (!rawSource || !stage) return;
+
+    let sheets: HTMLElement[] = [];
+    let currentSheetIndex = 0;
+    let flipCleanupTimer: number | null = null;
+    const idToSheetMap = new Map<string, number>();
+    const READING_POSITION_KEY = 'visor-bloc-notas:reading-container-id';
+    let readingSaveTimer: number | null = null;
+
+    interface SearchItem {
+      id: string;
+      title: string;
+      snippet: string;
+      sheetIndex: number;
+    }
+    let searchIndex: SearchItem[] = [];
+
+    function saveReadingContainer(id: string) {
+      if (!id) return;
+      try {
+        localStorage.setItem(READING_POSITION_KEY, id);
+      } catch {
+        // El visor sigue funcionando si el navegador bloquea localStorage.
+      }
+    }
+
+    function saveCurrentReadingContainer() {
+      const sheet = sheets[currentSheetIndex];
+      if (!sheet) return;
+
+      const containers = Array.from(
+        sheet.querySelectorAll<HTMLElement>('.scroll-mt-32[id]')
+      )
+        .map((element) => ({ element, top: element.getBoundingClientRect().top }))
+        .filter(({ element }) => {
+          const rect = element.getBoundingClientRect();
+          return rect.bottom > 0 && rect.top < window.innerHeight;
+        })
+        .sort((a, b) => a.top - b.top);
+
+      const readingLine = window.innerHeight * 0.4;
+      const current = containers.filter(({ top }) => top <= readingLine).pop() ?? containers[0];
+      if (current) saveReadingContainer(current.element.id);
+    }
+
+    const STRUCTURAL_TAGS = new Set([
+      'chapter',
+      'part',
+      'section',
+      'sub-section',
+      'sub-sub-section'
+    ]);
+
+    // Cualquier clase de esta lista fuerza una hoja exclusiva para ese elemento.
+    const IN_ONE_PAGE_CLASSES = ['in-one-page'];
+
+    // Agrega aquí las etiquetas XML que no deben aparecer en las hojas.
+    // Al omitir una etiqueta, también se omite todo su contenido descendiente.
+    // Usa nombres en minúsculas: ['meta', 'title', 'author'].
+    const OMITIR_TAGS = new Set<string>(['meta', ]);
+    const OMITIR_CLASSES = new Set<string>(['meta', 'bloc-omitir']);
+
+    function shouldOmitElement(el: HTMLElement): boolean {
+      const omitted = (value: string | null | undefined) =>
+        Boolean(value && OMITIR_TAGS.has(value.trim().toLowerCase()));
+
+      if (omitted(el.tagName)) return true;
+
+      // RenderLecturaXml puede convertir una etiqueta XML en un div/span;
+      // en ese caso se identifica por data-xml-tag, data-tag o data-type.
+      if (
+        omitted(el.getAttribute('data-xml-tag')) ||
+        omitted(el.getAttribute('data-tag')) ||
+        omitted(el.getAttribute('data-type'))
+      ) {
+        return true;
+      }
+
+      // También reconoce clases como "meta" o "xml-meta".
+      return Array.from(el.classList).some((className) => {
+        const normalized = className.toLowerCase().replace(/^(xml|element)-/, '');
+        return OMITIR_CLASSES.has(normalized);
+      });
+    }
+
+    function isStructuralBreakElement(el: HTMLElement): boolean {
+      const tag = el.tagName.toLowerCase();
+      if (STRUCTURAL_TAGS.has(tag)) return true;
+
+      const xmlTag = (
+        el.getAttribute('data-xml-tag') ||
+        el.getAttribute('data-tag') ||
+        el.getAttribute('data-type') ||
+        ''
+      ).toLowerCase();
+      if (STRUCTURAL_TAGS.has(xmlTag)) return true;
+
+      for (const cls of Array.from(el.classList)) {
+        const lower = cls.toLowerCase();
+        if (
+          lower === 'chapter' ||
+          lower === 'part' ||
+          lower === 'section' ||
+          lower === 'sub-section' ||
+          lower === 'sub-sub-section' ||
+          lower === 'xml-chapter' ||
+          lower === 'xml-part' ||
+          lower === 'xml-section' ||
+          lower === 'xml-sub-section' ||
+          lower === 'xml-sub-sub-section'
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function isAtomicMathElement(el: Element): boolean {
+      const tag = el.tagName.toLowerCase();
+    
+      return tag.startsWith('math-') || tag === 'math';
+    }
+
+    function hasOnePageClass(el: HTMLElement): boolean {
+      return IN_ONE_PAGE_CLASSES.some((className) => el.classList.contains(className));
+    }
+
+
+
+    function isIndivisibleNode(el: HTMLElement): boolean {
+      if (isAtomicMathElement(el)) return true;
+
+      const tag = el.tagName.toLowerCase();
+      const atomicTags = ['img', 'svg', 'canvas', 'video', 'iframe', 'table', 'pre', 'hr', 'br'];
+      if (atomicTags.includes(tag)) return true;
+
+      const children = Array.from(el.children);
+      if (children.length === 0) return true;
+
+      const hasMathChild = children.some((child) => isAtomicMathElement(child));
+      if (hasMathChild && ['p', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'question'].includes(tag)) {
+        return true;
+      }
+
+      
+      return false;
+    }
+
+
+    function createSheetElement(index: number): { sheet: HTMLElement; body: HTMLElement } {
+      const sheet = document.createElement('article');
+      sheet.className = 'notepad-sheet measuring-sheet prose prose-stone max-w-none';
+      sheet.dataset.sheetIndex = String(index);
+
+      const body = document.createElement('div');
+      body.className = 'notepad-sheet-body flex-1';
+      sheet.appendChild(body);
+
+      return { sheet, body };
+    }
+
+    /**
+     * PAGINACIÓN ESTRUCTURAL + LÍMITE DEL 130% CON ALTURA ADAPTABLE
+     */
+    function buildNotepadSheets() {
+      let rootContainer = rawSource!.firstElementChild as HTMLElement | null;
+      if (
+        rootContainer &&
+        rootContainer.children.length === 1 &&
+        rootContainer.firstElementChild!.children.length > 1
+      ) {
+        rootContainer = rootContainer.firstElementChild as HTMLElement;
+      }
+      if (!rootContainer) return;
+
+      stage!.innerHTML = '';
+      sheets = [];
+      idToSheetMap.clear();
+      searchIndex = [];
+
+      const MAX_SHEET_HEIGHT = window.innerHeight * 2;
+
+      let active = createSheetElement(0);
+      stage!.appendChild(active.sheet);
+      sheets.push(active.sheet);
+
+      function startNewSheet() {
+        // Si la hoja actual quedó completamente vacía, reutilizarla
+        if (active.body.children.length === 0 && !active.body.textContent?.trim()) {
+          return;
+        }
+        active.sheet.classList.remove('measuring-sheet');
+        active = createSheetElement(sheets.length);
+        stage!.appendChild(active.sheet);
+        sheets.push(active.sheet);
+      }
+
+      function cloneWrapperShell(original: HTMLElement, isContinuation: boolean): HTMLElement {
+        const shell = original.cloneNode(false) as HTMLElement;
+        if (isContinuation) {
+          shell.removeAttribute('id');
+          shell.classList.remove('scroll-mt-32');
+          shell.dataset.continued = 'true';
+        }
+        return shell;
+      }
+
+      function rebuildAncestorsOnNewSheet(ancestorChain: HTMLElement[]): HTMLElement {
+        startNewSheet();
+        let currentParent = active.body;
+        for (const wrapper of ancestorChain) {
+          const shell = cloneWrapperShell(wrapper, true);
+          currentParent.appendChild(shell);
+          currentParent = shell;
+        }
+        return currentParent;
+      }
+
+      function getAncestorChain(targetParent: HTMLElement): HTMLElement[] {
+        const chain: HTMLElement[] = [];
+        let curr: HTMLElement | null = targetParent;
+        while (curr && curr !== active.body) {
+          chain.unshift(curr);
+          curr = curr.parentElement;
+        }
+        return chain;
+      }
+
+      function processNode(sourceNode: Node, targetParent: HTMLElement): HTMLElement {
+        if (sourceNode.nodeType === Node.TEXT_NODE) {
+          const text = sourceNode.textContent || '';
+          if (text.trim().length > 0) {
+            targetParent.appendChild(sourceNode.cloneNode(true));
+          }
+          return targetParent;
+        }
+
+        if (sourceNode.nodeType !== Node.ELEMENT_NODE) return targetParent;
+        const sourceEl = sourceNode as HTMLElement;
+        if (shouldOmitElement(sourceEl)) return targetParent;
+
+        if (hasOnePageClass(sourceEl)) {
+          // Guarda la ruta para continuar dentro de los contenedores después de la hoja exclusiva.
+          const ancestorChain = getAncestorChain(targetParent);
+
+          // Quita envoltorios vacíos creados al recorrer el árbol antes de llegar a este nodo.
+          for (const ancestor of [...ancestorChain].reverse()) {
+            if (!ancestor.textContent?.trim() && ancestor.children.length === 0) {
+              ancestor.remove();
+            }
+          }
+
+          // Cierra la hoja anterior y coloca el elemento completo, con sus hijos, en una hoja sola.
+          startNewSheet();
+          const exclusiveClone = sourceEl.cloneNode(true) as HTMLElement;
+          Array.from(exclusiveClone.querySelectorAll<HTMLElement>('*'))
+            .reverse()
+            .forEach((child) => {
+              if (shouldOmitElement(child)) child.remove();
+            });
+          active.body.appendChild(exclusiveClone);
+
+          // Fuerza que el contenido siguiente empiece después de la hoja exclusiva.
+          startNewSheet();
+          let continuationParent = active.body;
+          for (const ancestor of ancestorChain) {
+            const shell = cloneWrapperShell(ancestor, true);
+            continuationParent.appendChild(shell);
+            continuationParent = shell;
+          }
+          return continuationParent;
+        }
+
+        // Salto automático ante <chapter>, <part>, <section>, <sub-section>, <sub-sub-section>
+        if (isStructuralBreakElement(sourceEl)) {
+          const hasPreviousContent =
+            active.body.children.length > 0 || (active.body.textContent || '').trim().length > 0;
+          if (hasPreviousContent) {
+            const chain = getAncestorChain(targetParent);
+            targetParent = rebuildAncestorsOnNewSheet(chain);
+          }
+        }
+
+        // Caso 1: Elemento indivisible (<math-*>, imagen, tabla, párrafo corto, etc.)
+        if (isIndivisibleNode(sourceEl)) {
+          const clone = sourceEl.cloneNode(true) as HTMLElement;
+          targetParent.appendChild(clone);
+
+          const measuredHeight = active.sheet.getBoundingClientRect().height;
+          const hasOtherNodes =
+            active.body.children.length > 1 ||
+            (active.body.textContent || '').trim().length > (clone.textContent || '').trim().length;
+
+          if (measuredHeight > MAX_SHEET_HEIGHT && hasOtherNodes) {
+            targetParent.removeChild(clone);
+            const chain = getAncestorChain(targetParent);
+            targetParent = rebuildAncestorsOnNewSheet(chain);
+            targetParent.appendChild(clone);
+          }
+          return targetParent;
+        }
+
+        // Caso 2: Contenedor divisible
+        const wrapper = cloneWrapperShell(sourceEl, false);
+        targetParent.appendChild(wrapper);
+
+        let activeWrapper = wrapper;
+        for (const child of Array.from(sourceEl.childNodes)) {
+          const updatedWrapper = processNode(child, activeWrapper);
+          activeWrapper = updatedWrapper;
+        }
+
+        if (activeWrapper.children.length === 0 && !(activeWrapper.textContent || '').trim()) {
+          activeWrapper.remove();
+        }
+
+        return activeWrapper.parentElement || active.body;
+      }
+
+      // Si la raíz también está en OMITIR_TAGS, no se procesa ninguno de sus hijos.
+      if (!shouldOmitElement(rootContainer)) {
+        for (const topNode of Array.from(rootContainer.childNodes)) {
+          processNode(topNode, active.body);
+        }
+      }
+
+      active.sheet.classList.remove('measuring-sheet');
+
+      // Eliminar última hoja si quedó vacía
+      if (sheets.length > 1) {
+        const lastBody = sheets[sheets.length - 1].querySelector('.notepad-sheet-body');
+        if (lastBody) {
+          // Descarta las carcasas de continuación si no hubo contenido después de la hoja exclusiva.
+          Array.from(lastBody.querySelectorAll<HTMLElement>('[data-continued="true"]'))
+            .reverse()
+            .forEach((wrapper) => {
+              if (!wrapper.textContent?.trim() && wrapper.children.length === 0) wrapper.remove();
+            });
+        }
+        if (lastBody && lastBody.children.length === 0 && !(lastBody.textContent || '').trim()) {
+          const emptySheet = sheets.pop()!;
+          emptySheet.remove();
+        }
+      }
+
+      // Decorar hojas e indexar IDs y buscador
+      sheets.forEach((sheet, idx) => {
+        const footer = document.createElement('div');
+        footer.className =
+          'mt-8 flex items-center justify-between border-t border-stone-300/80 pt-3 text-xs text-stone-500 select-none';
+        footer.innerHTML = `<span>${tituloLibro || 'Bloc de estudio'}</span><span>Página ${idx + 1} de ${sheets.length}</span>`;
+        sheet.appendChild(footer);
+
+        const cornerHint = document.createElement('div');
+        cornerHint.className = 'sheet-edge-hint-next';
+        sheet.appendChild(cornerHint);
+
+        sheet.querySelectorAll('[id]').forEach((el) => {
+          if (el.id && !idToSheetMap.has(el.id)) {
+            idToSheetMap.set(el.id, idx);
+          }
+        });
+
+        sheet.querySelectorAll('.scroll-mt-32').forEach((el, itemIdx) => {
+          const htmlEl = el as HTMLElement;
+          if (!htmlEl.id) {
+            htmlEl.id = `search-anchor-${idx}-${itemIdx}`;
+          }
+          if (!idToSheetMap.has(htmlEl.id)) {
+            idToSheetMap.set(htmlEl.id, idx);
+          }
+
+          const heading = htmlEl.querySelector('h1, h2, h3, h4, strong');
+          const rawText = (htmlEl.innerText || '').replace(/\s+/g, ' ').trim();
+          const title = heading ? (heading.textContent || '').trim() : rawText.slice(0, 55) + '...';
+          const snippet = rawText.slice(0, 130) + (rawText.length > 130 ? '...' : '');
+
+          if (rawText.length > 0) {
+            searchIndex.push({
+              id: htmlEl.id,
+              title,
+              snippet,
+              sheetIndex: idx
+            });
+          }
+        });
+      });
+
+      if (totalLabel) totalLabel.textContent = String(sheets.length);
+      if (sheetInput) sheetInput.max = String(sheets.length);
+
+      rawSource!.innerHTML = '';
+
+      let savedId = '';
+      try {
+        savedId = localStorage.getItem(READING_POSITION_KEY) || '';
+      } catch {
+        // Si localStorage no está disponible, se abre la primera hoja.
+      }
+
+      const savedSheetIndex = savedId ? idToSheetMap.get(savedId) : undefined;
+      showInitialSheet(savedSheetIndex ?? 0);
+      if (savedSheetIndex !== undefined) {
+        requestAnimationFrame(() => {
+          document.getElementById(savedId)?.scrollIntoView({ block: 'center' });
+        });
+      }
+    }
+
+    function showInitialSheet(index: number) {
+      if (sheets.length === 0) return;
+      currentSheetIndex = Math.max(0, Math.min(index, sheets.length - 1));
+      sheets.forEach((s, idx) => {
+        s.classList.remove('active-sheet', 'animating-flip-up', 'animating-from-top');
+        if (idx === currentSheetIndex) {
+          s.classList.add('active-sheet');
+        }
+      });
+      updateNavigationUI();
+    }
+
+    /**
+     * CAMBIO DE HOJA HACIA ARRIBA CON ANIMACIÓN PROLONGADA (1.2s) Y SIN SCROLL MUERTO
+     */
+    function goToSheet(targetIndex: number, highlightElementId?: string) {
+      if (sheets.length === 0) return;
+      const clamped = Math.max(0, Math.min(targetIndex, sheets.length - 1));
+      if (highlightElementId) {
+        saveReadingContainer(highlightElementId);
+      } else {
+        saveCurrentReadingContainer();
+      }
+      if (clamped === currentSheetIndex) {
+        if (highlightElementId) scrollToHighlight(highlightElementId);
+        return;
+      }
+
+      if (flipCleanupTimer) {
+        window.clearTimeout(flipCleanupTimer);
+        flipCleanupTimer = null;
+      }
+
+      const prevIndex = currentSheetIndex;
+      const isForward = clamped > prevIndex;
+      currentSheetIndex = clamped;
+
+      const outgoingSheet = sheets[prevIndex];
+      const incomingSheet = sheets[currentSheetIndex];
+
+      // Limpiar estados previos en el resto de hojas
+      sheets.forEach((s, idx) => {
+        if (idx !== prevIndex && idx !== currentSheetIndex) {
+          s.classList.remove('active-sheet', 'animating-flip-up', 'animating-from-top');
+        }
+      });
+
+      if (isForward) {
+        // La hoja nueva aparece debajo en flujo normal y la actual se dobla lentamente hacia arriba
+        incomingSheet.classList.remove('animating-flip-up', 'animating-from-top');
+        incomingSheet.classList.add('active-sheet');
+
+        outgoingSheet.classList.remove('active-sheet', 'animating-from-top');
+        void outgoingSheet.offsetWidth; // Forzar reflow para disparar transición
+        outgoingSheet.classList.add('animating-flip-up');
+
+        flipCleanupTimer = window.setTimeout(() => {
+          outgoingSheet.classList.remove('animating-flip-up');
+        }, 1220);
+      } else {
+        // Al retroceder, la hoja anterior baja desde el engargolado superior sobre la actual
+        outgoingSheet.classList.add('active-sheet');
+
+        incomingSheet.classList.remove('active-sheet', 'animating-flip-up');
+        incomingSheet.classList.add('animating-from-top');
+        void incomingSheet.offsetWidth;
+
+        requestAnimationFrame(() => {
+          incomingSheet.classList.remove('animating-from-top');
+          incomingSheet.classList.add('active-sheet');
+        });
+
+        flipCleanupTimer = window.setTimeout(() => {
+          outgoingSheet.classList.remove('active-sheet', 'animating-flip-up', 'animating-from-top');
+        }, 1220);
+      }
+
+      updateNavigationUI();
+
+      if (highlightElementId) {
+        scrollToHighlight(highlightElementId);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function scrollToHighlight(elementId: string) {
+      setTimeout(() => {
+        const targetEl = document.getElementById(elementId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetEl.classList.add('ring-2', 'ring-amber-600/70', 'bg-amber-100/50', 'rounded-lg', 'transition-all');
+          setTimeout(() => {
+            targetEl.classList.remove('ring-2', 'ring-amber-600/70', 'bg-amber-100/50');
+          }, 1800);
+        }
+      }, 450);
+    }
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (readingSaveTimer !== null) window.clearTimeout(readingSaveTimer);
+        readingSaveTimer = window.setTimeout(saveCurrentReadingContainer, 250);
+      },
+      { passive: true }
+    );
+    window.addEventListener('pagehide', saveCurrentReadingContainer);
+
+    function updateNavigationUI() {
+      const total = sheets.length;
+      const currentHuman = currentSheetIndex + 1;
+      const isFirst = currentSheetIndex === 0;
+      const isLast = currentSheetIndex >= total - 1;
+
+      if (sheetInput) sheetInput.value = String(currentHuman);
+      if (btnPrev) btnPrev.disabled = isFirst;
+      if (btnNext) btnNext.disabled = isLast;
+      if (btnBottomPrev) btnBottomPrev.disabled = isFirst;
+      if (btnBottomNext) btnBottomNext.disabled = isLast;
+      if (bottomIndicator) bottomIndicator.textContent = `Página ${currentHuman} de ${total}`;
+    }
+
+    // Navegación por clic en bordes de la hoja
+    stage.addEventListener('click', (e: MouseEvent) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) return;
+      const target = e.target as HTMLElement;
+      if (target.closest('a, button, summary, input, select, textarea, details')) return;
+
+      const rect = stage.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const isRightZone = clickX > rect.width * 0.85;
+      const isBottomZone = clickY > rect.height - 80;
+      const isLeftZone = clickX < rect.width * 0.15;
+
+      if (isRightZone || isBottomZone) {
+        goToSheet(currentSheetIndex + 1);
+      } else if (isLeftZone) {
+        goToSheet(currentSheetIndex - 1);
+      }
+    });
+
+    // Gestos táctiles en móvil (deslizar hacia arriba avanza, hacia abajo retrocede)
+    let touchStartY = 0;
+    let touchStartX = 0;
+
+    stage.addEventListener(
+      'touchstart',
+      (e: TouchEvent) => {
+        touchStartY = e.changedTouches[0].screenY;
+        touchStartX = e.changedTouches[0].screenX;
+      },
+      { passive: true }
+    );
+
+    stage.addEventListener(
+      'touchend',
+      (e: TouchEvent) => {
+        const touchEndY = e.changedTouches[0].screenY;
+        const touchEndX = e.changedTouches[0].screenX;
+        const deltaY = touchStartY - touchEndY;
+        const deltaX = Math.abs(touchStartX - touchEndX);
+
+        if (Math.abs(deltaY) > 70 && Math.abs(deltaY) > deltaX * 1.5) {
+          const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 40;
+          const atTop = window.scrollY <= 40;
+
+          if (deltaY > 0 && atBottom) {
+            goToSheet(currentSheetIndex + 1);
+          } else if (deltaY < 0 && atTop) {
+            goToSheet(currentSheetIndex - 1);
+          }
+        }
+      },
+      { passive: true }
+    );
+
+    // Eventos de botones superiores, inferiores y teclado
+    btnPrev?.addEventListener('click', () => goToSheet(currentSheetIndex - 1));
+    btnNext?.addEventListener('click', () => goToSheet(currentSheetIndex + 1));
+    btnBottomPrev?.addEventListener('click', () => goToSheet(currentSheetIndex - 1));
+    btnBottomNext?.addEventListener('click', () => goToSheet(currentSheetIndex + 1));
+
+    sheetInput?.addEventListener('change', () => {
+      const val = parseInt(sheetInput.value, 10);
+      if (!isNaN(val)) goToSheet(val - 1);
+    });
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        goToSheet(currentSheetIndex + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        goToSheet(currentSheetIndex - 1);
+      }
+    });
+
+    // Temario desplegable
+    function toggleToc(open?: boolean) {
+      const shouldOpen = open !== undefined ? open : tocDrawer?.classList.contains('-translate-x-full');
+      if (shouldOpen) {
+        tocDrawer?.classList.remove('-translate-x-full');
+        tocBackdrop?.classList.remove('hidden');
+        btnToggleToc?.setAttribute('aria-expanded', 'true');
+      } else {
+        tocDrawer?.classList.add('-translate-x-full');
+        tocBackdrop?.classList.add('hidden');
+        btnToggleToc?.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    btnToggleToc?.addEventListener('click', () => toggleToc());
+    btnCloseToc?.addEventListener('click', () => toggleToc(false));
+    tocBackdrop?.addEventListener('click', () => toggleToc(false));
+
+    tocDrawer?.addEventListener('click', (e: MouseEvent) => {
+      const link = (e.target as HTMLElement).closest('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!link) return;
+
+      e.preventDefault();
+      const targetId = link.getAttribute('href')?.slice(1);
+      if (targetId && idToSheetMap.has(targetId)) {
+        const sheetIdx = idToSheetMap.get(targetId)!;
+        toggleToc(false);
+        goToSheet(sheetIdx, targetId);
+      }
+    });
+
+    // Buscador en vivo con cards rectangulares
+    searchInput?.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase();
+      if (!searchList || !searchDropdown) return;
+
+      if (query.length < 2) {
+        searchDropdown.classList.add('hidden');
+        searchList.innerHTML = '';
+        return;
+      }
+
+      const matches = searchIndex.filter(
+        (item) => item.title.toLowerCase().includes(query) || item.snippet.toLowerCase().includes(query)
+      );
+
+      searchDropdown.classList.remove('hidden');
+
+      if (matches.length === 0) {
+        searchList.innerHTML = `<p class="p-3 text-center text-xs text-stone-500">No se encontraron coincidencias para "${searchInput.value}".</p>`;
+        return;
+      }
+
+      searchList.innerHTML = matches
+        .slice(0, 12)
+        .map(
+          (item) => `
+          <button
+            type="button"
+            data-jump-sheet="${item.sheetIndex}"
+            data-jump-id="${item.id}"
+            class="flex w-full flex-col gap-1 rounded-lg border border-stone-200 bg-stone-50/80 p-2.5 text-left transition hover:border-amber-400 hover:bg-amber-50/70"
+          >
+            <div class="flex items-center justify-between gap-2">
+              <span class="truncate text-xs font-bold text-amber-950">${item.title}</span>
+              <span class="shrink-0 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900">
+                Página ${item.sheetIndex + 1}
+              </span>
+            </div>
+            <p class="line-clamp-2 text-xs text-stone-600">${item.snippet}</p>
+          </button>
+        `
+        )
+        .join('');
+    });
+
+    searchList?.addEventListener('click', (e: MouseEvent) => {
+      const card = (e.target as HTMLElement).closest('button[data-jump-sheet]') as HTMLButtonElement | null;
+      if (!card) return;
+
+      const sheetIdx = parseInt(card.dataset.jumpSheet || '0', 10);
+      const targetId = card.dataset.jumpId || '';
+
+      searchDropdown?.classList.add('hidden');
+      goToSheet(sheetIdx, targetId);
+    });
+
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (!searchInput?.contains(e.target as Node) && !searchDropdown?.contains(e.target as Node)) {
+        searchDropdown?.classList.add('hidden');
+      }
+    });
+
+    setTimeout(buildNotepadSheets, 180);
+  });
+</script>

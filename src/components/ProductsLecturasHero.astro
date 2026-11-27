@@ -1,0 +1,75 @@
+---
+interface Props {
+  productsLecturas: {
+    p_name: string;
+    l_title: string;
+    product_id: number;
+    lectura_id: number;
+    p_subname: string;
+    pl_display_section: string;
+    p_image_key: string;
+    p_slug: string;
+  }[];
+}
+
+const { productsLecturas = [] } = Astro.props;
+
+const heroProducts = productsLecturas.filter(
+  (item) => item.pl_display_section === "hero-index"
+);
+---
+
+{heroProducts.length > 0 && (
+  <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex flex-col gap-10">
+      {heroProducts.map((product) => (
+        <article class="group w-full bg-white dark:bg-neutral-900 rounded-3xl overflow-hidden border border-neutral-200/80 dark:border-neutral-800 shadow-sm hover:shadow-2xl transition-all duration-300">
+          <a
+            href={`/products/${product.p_slug}`}
+            class="grid grid-cols-1 lg:grid-cols-12 items-stretch focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+          >
+            {/* Contenedor de imagen (7 de 12 columnas en escritorio) */}
+            <div class="relative lg:col-span-7 aspect-square sm:aspect-[16/10] lg:aspect-auto lg:min-h-[460px] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+              <img
+                src={product.p_image_key}
+                alt={product.p_name}
+                loading="lazy"
+                class="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+              />
+              {/* Etiqueta flotante con el título de la lectura */}
+              {product.l_title && (
+                <span class="absolute top-4 left-4 bg-white/90 dark:bg-neutral-950/85 backdrop-blur-md text-neutral-800 dark:text-neutral-200 text-xs font-medium tracking-wide uppercase px-3.5 py-1.5 rounded-full shadow-sm">
+                  {product.l_title}
+                </span>
+              )}
+            </div>
+
+            {/* Información del súper producto (5 de 12 columnas en escritorio) */}
+            <div class="lg:col-span-5 flex flex-col justify-center p-8 sm:p-10 lg:p-12">
+              <h3 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white tracking-tight group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
+                {product.p_name}
+              </h3>
+
+              {product.p_subname && (
+                <p class="mt-4 text-base sm:text-lg text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                  {product.p_subname}
+                </p>
+              )}
+
+              {/* Indicador visual de acción */}
+              <div class="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white">
+                <span>Explorar producto</span>
+                <span
+                  aria-hidden="true"
+                  class="transition-transform duration-300 group-hover:translate-x-1.5"
+                >
+                  →
+                </span>
+              </div>
+            </div>
+          </a>
+        </article>
+      ))}
+    </div>
+  </section>
+)}

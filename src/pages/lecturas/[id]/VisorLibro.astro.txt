@@ -1,0 +1,1048 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { env } from 'cloudflare:workers';
+export const prerender = false;
+import { accountsEnabled, getCustomerEmail} from '../../../features/auth/customer';
+import { renderCourseTex } from '../../../features/mathTexts/render';
+import { parseReadingXml } from '../../../features/mathTexts/xmlReading';
+import { parseXml } from '../../../features/lecturas/lectura_xml_to_html';
+import { getCustomerByEmail } from '../../../features/customers_new/db';
+import { getLecturasByCustomerId, getLecturasCustomerByCustomerId, getLecturaById } from '../../../features/lecturas/db';
+import { parsearXML, extractOnly, convertirNodoXMLaHTML } from '../../../features/xml/xmlParser';
+import RenderLecturaXml from '../../../components/xml/RenderLecturaXml.astro';
+import RenderIndiceTemario from '../../../components/xml/RenderIndiceTemario.astro';
+import { extractMetaXml } from '../../../features/lecturas/utils';
+import FlipbookReader from '../../../components/xml/FlipbookReader.astro';
+
+if (!(await accountsEnabled())) return Astro.redirect('/',303);
+
+const email=await getCustomerEmail(Astro.cookies); 
+if(!email) return Astro.redirect('/account/login',303);
+const customerId = (await getCustomerByEmail(env.DB, email))?.id;
+if (!customerId) return Astro.redirect('/account/login',303);
+
+const id = Astro.params.id;
+
+
+const tieneAcceso = new Set(
+  ((await getLecturasCustomerByCustomerId(env.DB, customerId)) ?? []).map(
+    lectura => lectura.school_lectura_id,
+  ),
+).has(Number(id));
+if (!tieneAcceso) return Astro.redirect('/account/lecturas', 303);
+
+const lectura = await getLecturaById(env.DB, Number(id));
+
+const readingXml = lectura?.content_xml ?? "";
+
+const nodo = parsearXML(readingXml);
+
+const metaXml = extractMetaXml(nodo);
+
+
+
+export type NodoXML =
+  | { tipo: "texto"; valor: string }
+  | {
+      tipo: "elemento";
+      etiqueta: string;
+      atributos: Record<string, string>;
+      hijos: NodoXML[];
+    };
+
+interface Props {
+  titulo?: string;
+  autor?: string;
+  contenidoHtml?: string;
+  contenidoXml?: NodoXML | NodoXML[];
+}
+
+const {
+  titulo = metaXml?.title ?? "Título del Libro",
+  autor = metaXml?.author ?? "Autor Desconocido",
+  contenidoHtml = nodo ? convertirNodoXMLaHTML(nodo) : "",
+  contenidoXml,
+} = Astro.props;
+
+
+
+function renderizarNodoXML(nodo: NodoXML | NodoXML[]): string {
+  if (Array.isArray(nodo)) {
+    return nodo.map(renderizarNodoXML).join("");
+  }
+
+  if (nodo.tipo === "texto") {
+    return nodo.valor
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  const atributosStr = Object.entries(nodo.atributos || {})
+    .map(([k, v]) => `${k}="${v.replace(/"/g, "&quot;")}"`)
+    .join(" ");
+
+  const hijosHtml = (nodo.hijos || []).map(renderizarNodoXML).join("");
+  const apertura = atributosStr ? `<${nodo.etiqueta} ${atributosStr}>` : `<${nodo.etiqueta}>`;
+
+  return `${apertura}${hijosHtml}</${nodo.etiqueta}>`;
+}
+
+const htmlDesdeXml = contenidoXml ? renderizarNodoXML(contenidoXml) : "";
+const contenidoFinal = `${htmlDesdeXml}\n${contenidoHtml}`.trim();
+
+
+
+
+
+---
+<Layout title={titulo} fullWidth={true}>
+  <div class="escenario-lectura">
+    <header class="barra-herramientas">
+      <div class="info-libro">
+        <span class="titulo-doc">{titulo}</span>
+        <span class="separador">•</span>
+        <span class="autor-doc">{autor}</span>
+      </div>
+      <div class="controles-navegacion">
+        
+        <button style= "display:none;" class="hidden" id="btn-modo-hojas" aria-label="Cambiar vista de hojas" title="Alternar 1 o 2 hojas">
+          <svg id="icono-dos-hojas" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          <svg id="icono-una-hoja" class="oculto" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+            <line x1="8" y1="6" x2="16" y2="6"></line>
+            <line x1="8" y1="10" x2="16" y2="10"></line>
+          </svg>
+        </button>
+
+        <button id="btn-anterior" aria-label="Página anterior" title="Página anterior">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        
+
+        <span id="indicador-pagina">Portada</span>
+        <button id="btn-siguiente" aria-label="Página siguiente" title="Página siguiente">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="fuente-contenido" class="oculto" set:html={contenidoFinal} />
+    <div id="medidor-pagina" class="pagina-medicion" aria-hidden="true"></div>
+
+    <main class="mesa-lectura">
+      <div id="libro-contenedor" class="libro-wrapper"></div>
+    </main>
+  </div>
+
+
+  <div id="datos-libro" data-titulo={titulo} data-autor={autor} class="oculto"></div>
+</Layout>
+
+<script>
+  // @ts-ignore page-flip does not provide TypeScript declarations.
+  import { PageFlip } from "page-flip";
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+        // Espera a que MathJax esté listo y renderiza las fórmulas en #fuente-contenido ANTES de medir alturas
+    async function renderizarMathJaxEnFuente(contenedor: HTMLElement) {
+      const mj = (window as any).MathJax;
+      if (!mj) return;
+
+      try {
+        // Si MathJax v3 está cargando, esperamos su promesa startup
+        if (mj.startup && mj.startup.promise) {
+          await mj.startup.promise;
+        }
+        // Renderizamos las fórmulas dentro del contenedor oculto antes de medir
+        if (typeof mj.typesetPromise === "function") {
+          await mj.typesetPromise([contenedor]);
+        } else if (typeof mj.typeset === "function") {
+          mj.typeset([contenedor]);
+        }
+      } catch (err) {
+        console.warn("Error al renderizar MathJax antes de paginar:", err);
+      }
+    }
+
+
+
+
+
+    const contenedorLibro = document.getElementById("libro-contenedor");
+    const fuenteContenido = document.getElementById("fuente-contenido");
+    const medidor = document.getElementById("medidor-pagina");
+    const datosLibro = document.getElementById("datos-libro");
+    const indicadorPagina = document.getElementById("indicador-pagina");
+    const btnAnterior = document.getElementById("btn-anterior") as HTMLButtonElement;
+    const btnSiguiente = document.getElementById("btn-siguiente") as HTMLButtonElement;
+
+    if (!contenedorLibro || !fuenteContenido || !medidor || !datosLibro) return;
+
+    const titulo = datosLibro.dataset.titulo || "Libro";
+    const autor = datosLibro.dataset.autor || "";
+
+    // Proporción exacta de la hoja (ancho / alto). Ejemplo: 3/4 = 0.75, 2/3 = 0.66
+    const PROPORCION_HOJA = 3 / 4;
+
+    let pageFlip: PageFlip | null = null;
+    let anchoActual = window.innerWidth;
+
+    function obtenerBloquesPaginables(contenedor: Element): Element[] {
+      const etiquetasContenedoras = new Set(["SECTION", "ARTICLE", "DIV", "LECTURA", "MAIN"]);
+      const bloques: Element[] = [];
+
+      Array.from(contenedor.children).forEach((hijo) => {
+        const esCajaMatematica =
+          hijo.classList.contains("math-definition") ||
+          hijo.classList.contains("math-example") ||
+          hijo.classList.contains("math-exercise");
+
+        if (etiquetasContenedoras.has(hijo.tagName) && !esCajaMatematica && hijo.children.length > 0) {
+          bloques.push(...obtenerBloquesPaginables(hijo));
+        } else {
+          bloques.push(hijo);
+        }
+      });
+
+      return bloques;
+    }
+
+
+    // ---> AQUÍ VA EL PASO 1 (las referencias del botón y la variable de estado)
+    const btnModoHojas = document.getElementById("btn-modo-hojas") as HTMLButtonElement;
+    const iconoDosHojas = document.getElementById("icono-dos-hojas");
+    const iconoUnaHoja = document.getElementById("icono-una-hoja");
+    let modoUnaHojaUsuario: boolean | null = null;
+
+    // ---> AQUÍ VA EL PASO 2 (reemplaza tu antigua function calcularDimensionesHoja() por esta)
+    function calcularDimensionesHoja() {
+      const mesa = document.querySelector(".mesa-lectura") as HTMLElement;
+      const esPantallaChica = window.innerWidth < 768;
+
+      const esVistaUnaHoja = esPantallaChica
+        ? true
+        : modoUnaHojaUsuario !== null
+          ? modoUnaHojaUsuario
+          : false;
+
+      if (iconoDosHojas && iconoUnaHoja) {
+        iconoDosHojas.classList.toggle("oculto", !esVistaUnaHoja);
+        iconoUnaHoja.classList.toggle("oculto", esVistaUnaHoja);
+      }
+
+      const paddingMesaX = esVistaUnaHoja ? 24 : 64;
+      const paddingMesaY = esVistaUnaHoja ? 24 : 48;
+
+      const anchoDisponible = (mesa ? mesa.clientWidth : window.innerWidth) - paddingMesaX;
+      const altoDisponible = (mesa ? mesa.clientHeight : window.innerHeight - 65) - paddingMesaY;
+
+      const numHojasVisibles = esVistaUnaHoja ? 1 : 2;
+
+      let altoHoja = altoDisponible;
+      let anchoHoja = Math.round(altoHoja * PROPORCION_HOJA);
+
+      if (anchoHoja * numHojasVisibles > anchoDisponible) {
+        anchoHoja = Math.floor(anchoDisponible / numHojasVisibles);
+        altoHoja = Math.round(anchoHoja / PROPORCION_HOJA);
+      }
+
+      return { anchoHoja, altoHoja, esMovil: esVistaUnaHoja };
+    }
+
+    // 3. Agrega el evento click del botón (junto a btnAnterior y btnSiguiente):
+    btnModoHojas?.addEventListener("click", () => {
+      const actualmenteUnaHoja = modoUnaHojaUsuario !== null ? modoUnaHojaUsuario : window.innerWidth < 768;
+      modoUnaHojaUsuario = !actualmenteUnaHoja;
+
+      const paginaActual = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
+      construirLibro(paginaActual);
+    });
+
+        // Prepara el medidor como una hoja completa idéntica a las reales (con encabezado y pie incluidos)
+    function prepararMedidorHojaCompleta(anchoHoja: number, altoHoja: number): HTMLElement {
+      medidor!.className = "pagina pagina-papel pagina-izquierda";
+      medidor!.style.cssText = `
+        position: fixed !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        width: ${anchoHoja}px !important;
+        height: ${altoHoja}px !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+      `;
+
+      // Metemos la estructura completa real: encabezado + cuerpo + pie de página
+      medidor!.innerHTML = `
+        <div class="contenido-pagina" style="
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          height: 100%;
+          width: 100%;
+          box-sizing: border-box;
+        ">
+          <div class="encabezado-pagina">${titulo}</div>
+          <div id="medidor-cuerpo" class="cuerpo-texto" style="
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+            display: flow-root;
+          "></div>
+          <div class="pie-pagina">999</div>
+        </div>
+      `;
+
+      return document.getElementById("medidor-cuerpo")!;
+    }
+
+    
+
+
+    function sincronizarMedidorConHojaReal(anchoHoja: number, altoHoja: number) {
+      const hojaMolde = document.createElement("div");
+      hojaMolde.className = "pagina pagina-papel pagina-izquierda";
+      hojaMolde.style.cssText = `
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        width: ${anchoHoja}px;
+        height: ${altoHoja}px;
+        visibility: hidden;
+        box-sizing: border-box;
+      `;
+
+      // Forzamos grid-template-rows: auto 1fr auto para que descuente
+      // exactamente la altura del encabezado, del pie de página y de los paddings
+      hojaMolde.innerHTML = `
+        <div class="contenido-pagina" style="
+          display: grid;
+          grid-template-rows: auto 1fr auto;
+          height: 100%;
+          width: 100%;
+          box-sizing: border-box;
+        ">
+          <div class="encabezado-pagina">${titulo}</div>
+          <div class="cuerpo-texto" style="min-height: 0; overflow: hidden;"></div>
+          <div class="pie-pagina">999</div>
+        </div>
+      `;
+
+      document.body.appendChild(hojaMolde);
+      const cuerpoMolde = hojaMolde.querySelector(".cuerpo-texto") as HTMLElement;
+      const rectCuerpo = cuerpoMolde.getBoundingClientRect();
+
+      // Restamos 28px (1 renglón) de seguridad sobre el alto neto que dejó el grid entre encabezado y pie
+      const anchoUtil = Math.floor(rectCuerpo.width);
+      const altoUtil = Math.floor(rectCuerpo.height) - 28;
+
+      document.body.removeChild(hojaMolde);
+
+      medidor!.className = "pagina-medicion cuerpo-texto";
+      medidor!.style.cssText = `
+        position: fixed !important;
+        top: -9999px !important;
+        left: -9999px !important;
+        width: ${anchoUtil}px !important;
+        height: ${altoUtil}px !important;
+        max-height: ${altoUtil}px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+        visibility: hidden !important;
+        box-sizing: border-box !important;
+        display: flow-root !important;
+      `;
+    }
+
+
+    function dividirParrafoConBusquedaBinaria(
+        parrafo: HTMLElement,
+        medidorEl: HTMLElement,
+        paginasHTML: string[]
+      ): HTMLElement | null 
+    {
+      const palabras = (parrafo.textContent || "").split(/\s+/).filter(Boolean);
+      if (palabras.length === 0) return null;
+
+      const pActual = parrafo.cloneNode(false) as HTMLElement;
+      medidorEl.appendChild(pActual);
+
+      let inicio = 1;
+      let fin = palabras.length;
+      let mejorCorte = 0;
+
+      while (inicio <= fin) {
+        const medio = Math.floor((inicio + fin) / 2);
+        pActual.textContent = palabras.slice(0, medio).join(" ");
+
+        if (medidorEl.scrollHeight <= medidorEl.clientHeight) {
+          mejorCorte = medio;
+          inicio = medio + 1;
+        } else {
+          fin = medio - 1;
+        }
+      }
+
+      if (mejorCorte === 0) {
+        if (medidorEl.children.length > 1) {
+          medidorEl.removeChild(pActual);
+          paginasHTML.push(medidorEl.innerHTML);
+          medidorEl.innerHTML = "";
+          return parrafo;
+        }
+        pActual.textContent = palabras[0];
+        mejorCorte = 1;
+      } else {
+        pActual.textContent = palabras.slice(0, mejorCorte).join(" ");
+      }
+
+      if (mejorCorte >= palabras.length) {
+        return null;
+      }
+
+      paginasHTML.push(medidorEl.innerHTML);
+      medidorEl.innerHTML = "";
+
+      const pRestante = parrafo.cloneNode(false) as HTMLElement;
+      pRestante.style.textIndent = "0";
+      pRestante.textContent = palabras.slice(mejorCorte).join(" ");
+      return pRestante;
+    }
+
+    function construirLibro(paginaInicial = 0) {
+      const mesaLectura = document.querySelector(".mesa-lectura");
+      if (!mesaLectura) return;
+
+      // 1. Si ya existía una instancia, la destruimos y recreamos el contenedor limpio
+      if (pageFlip) {
+        pageFlip.destroy();
+        pageFlip = null;
+      }
+
+      // Recrear #libro-contenedor porque pageFlip.destroy() lo remueve del DOM
+      mesaLectura.innerHTML = `<div id="libro-contenedor" class="libro-wrapper"></div>`;
+      const contenedorActual = document.getElementById("libro-contenedor")!;
+
+      if (pageFlip) {
+        pageFlip.destroy();
+        pageFlip = null;
+      }
+      contenedorLibro!.innerHTML = "";
+
+      const { anchoHoja, altoHoja, esMovil } = calcularDimensionesHoja();
+      sincronizarMedidorConHojaReal(anchoHoja, altoHoja);
+
+      const colaNodos: HTMLElement[] = obtenerBloquesPaginables(fuenteContenido!).map(
+        (n) => n.cloneNode(true) as HTMLElement
+      );
+
+      const paginasHTML: string[] = [];
+      medidor!.innerHTML = "";
+
+      const MAX_ITERACIONES = 5000;
+      let iteraciones = 0;
+
+      while (colaNodos.length > 0 && iteraciones < MAX_ITERACIONES) {
+        iteraciones++;
+        const nodoActual = colaNodos.shift()!;
+
+        medidor!.appendChild(nodoActual);
+
+        if (medidor!.scrollHeight <= medidor!.clientHeight) {
+          continue;
+        }
+
+        medidor!.removeChild(nodoActual);
+
+        if (nodoActual.tagName === "P" && !nodoActual.querySelector("svg, img, table, mjx-container, .MathJax")) {
+          const sobrante = dividirParrafoConBusquedaBinaria(nodoActual, medidor!, paginasHTML);
+          if (sobrante) {
+            colaNodos.unshift(sobrante);
+          }
+        } else {
+          if (medidor!.children.length > 0) {
+            paginasHTML.push(medidor!.innerHTML);
+            medidor!.innerHTML = "";
+            colaNodos.unshift(nodoActual);
+          } else {
+            medidor!.appendChild(nodoActual);
+            paginasHTML.push(medidor!.innerHTML);
+            medidor!.innerHTML = "";
+          }
+        }
+      }
+
+      if (medidor!.innerHTML.trim() !== "") {
+        paginasHTML.push(medidor!.innerHTML);
+      }
+      medidor!.innerHTML = "";
+
+      const fragmento = document.createDocumentFragment();
+
+      const portada = document.createElement("div");
+      portada.className = "pagina pagina-dura portada";
+      portada.setAttribute("data-density", "hard");
+      portada.innerHTML = `
+        <div class="contenido-portada">
+          <div class="marco-dorado">
+            <p class="etiqueta-editorial">EDICIÓN DIGITAL</p>
+            <h1>${titulo}</h1>
+            <div class="ornamento">❧</div>
+            <p class="autor-portada">${autor}</p>
+          </div>
+        </div>
+      `;
+      fragmento.appendChild(portada);
+
+      if (!esMovil) {
+        const guardaInicio = document.createElement("div");
+        guardaInicio.className = "pagina pagina-guarda";
+        guardaInicio.innerHTML = `<div class="contenido-pagina"></div>`;
+        fragmento.appendChild(guardaInicio);
+      }
+
+      paginasHTML.forEach((html, idx) => {
+        const numPagina = idx + 1;
+        const esPar = numPagina % 2 === 0;
+        const pagina = document.createElement("div");
+        pagina.className = `pagina pagina-papel ${esPar ? "pagina-izquierda" : "pagina-derecha"}`;
+        pagina.innerHTML = `
+          <div class="contenido-pagina">
+            <div class="encabezado-pagina">${esPar ? titulo : autor}</div>
+            <div class="cuerpo-texto">${html}</div>
+            <div class="pie-pagina">${numPagina}</div>
+          </div>
+          <div class="sombra-lomo"></div>
+        `;
+        fragmento.appendChild(pagina);
+      });
+
+      if (!esMovil && paginasHTML.length % 2 !== 0) {
+        const paginaExtra = document.createElement("div");
+        paginaExtra.className = "pagina pagina-papel pagina-izquierda";
+        paginaExtra.innerHTML = `<div class="contenido-pagina"></div><div class="sombra-lomo"></div>`;
+        fragmento.appendChild(paginaExtra);
+      }
+
+      const contraportada = document.createElement("div");
+      contraportada.className = "pagina pagina-dura contraportada";
+      contraportada.setAttribute("data-density", "hard");
+      contraportada.innerHTML = `
+        <div class="contenido-portada">
+          <div class="ornamento">❦</div>
+          <p class="fin-texto">FIN</p>
+        </div>
+      `;
+      fragmento.appendChild(contraportada);
+
+            // 1. Donde agregas las páginas:
+      contenedorActual.appendChild(fragmento);
+
+      // 2. Donde inicializas PageFlip:
+      pageFlip = new PageFlip(contenedorActual, {
+        width: anchoHoja,
+        height: altoHoja,
+        size: "fixed",
+        maxShadowOpacity: 0.45,
+        showCover: true,
+        mobileScrollSupport: false,
+        usePortrait: esMovil,
+        flippingTime: 750,
+        startPage: Math.min(paginaInicial, paginasHTML.length + 1),
+      });
+
+
+      pageFlip.loadFromHTML(document.querySelectorAll(".pagina"));
+
+      const totalPaginas = pageFlip.getPageCount();
+
+      const actualizarEstadoUI = (indiceActual: number) => {
+        if (!indicadorPagina) return;
+        if (indiceActual === 0) {
+          indicadorPagina.textContent = "Portada";
+        } else if (indiceActual >= totalPaginas - 1) {
+          indicadorPagina.textContent = "Contraportada";
+        } else {
+          indicadorPagina.textContent = `Pág. ${indiceActual} de ${totalPaginas - 2}`;
+        }
+        if (btnAnterior) btnAnterior.disabled = indiceActual === 0;
+        if (btnSiguiente) btnSiguiente.disabled = indiceActual >= totalPaginas - 1;
+      };
+
+      pageFlip.on("flip", (e) => {
+        actualizarEstadoUI(e.data as number);
+      });
+
+      actualizarEstadoUI(pageFlip.getCurrentPageIndex());
+    }
+
+    btnAnterior?.addEventListener("click", () => pageFlip?.flipPrev());
+    btnSiguiente?.addEventListener("click", () => pageFlip?.flipNext());
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") pageFlip?.flipPrev();
+      if (e.key === "ArrowRight") pageFlip?.flipNext();
+    });
+
+    let timeoutResize: number;
+    window.addEventListener("resize", () => {
+      if (window.innerWidth === anchoActual) return;
+      anchoActual = window.innerWidth;
+
+      clearTimeout(timeoutResize);
+      timeoutResize = window.setTimeout(() => {
+        const paginaActual = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
+        construirLibro(paginaActual);
+      }, 250);
+    });
+
+        // Primero renderizamos MathJax en el contenido oculto y LUEGO calculamos las páginas
+    (async () => {
+      if (fuenteContenido) {
+        await renderizarMathJaxEnFuente(fuenteContenido);
+      }
+      construirLibro(0);
+    })();
+
+
+    construirLibro(0);
+  });
+</script>
+
+<style is:global>
+  :root {
+    --color-fondo-mesa: #1a1817;
+    --color-papel: #fbf8f1;
+    --color-papel-sombra: #efe9dc;
+    --color-tinta: #24201d;
+    --color-tinta-suave: #7a7067;
+    --color-cubierta: #2c1e16;
+    --color-dorado: #c5a059;
+  }
+
+  .oculto {
+    display: none !important;
+  }
+
+  .escenario-lectura {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: radial-gradient(circle at center, #2b2725 0%, var(--color-fondo-mesa) 100%);
+    color: #f4f1ea;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+
+  .barra-herramientas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 2rem;
+    background: rgba(18, 16, 15, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  .info-libro {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .titulo-doc {
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .autor-doc,
+  .separador {
+    color: #9e958d;
+  }
+
+  .controles-navegacion {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .controles-navegacion button {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .controles-navegacion button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: var(--color-dorado);
+  }
+
+  .controles-navegacion button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  #indicador-pagina {
+    font-size: 0.85rem;
+    min-width: 105px;
+    text-align: center;
+    color: #d6cfc7;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mesa-lectura {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+  }
+
+  .libro-wrapper {
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+  }
+
+  .pagina-medicion {
+    position: fixed;
+    top: -9999px;
+    left: -9999px;
+    visibility: hidden;
+    pointer-events: none;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .pagina {
+    background-color: var(--color-papel);
+    color: var(--color-tinta);
+    overflow: hidden;
+    user-select: none;
+    height: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .pagina-papel {
+    background-image: radial-gradient(rgba(160, 145, 120, 0.08) 1px, transparent 0);
+    background-size: 16px 16px;
+  }
+
+  .sombra-lomo {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 36px;
+    pointer-events: none;
+  }
+
+  .pagina-izquierda .sombra-lomo {
+    right: 0;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.14) 0%, rgba(0, 0, 0, 0.04) 40%, transparent 100%);
+  }
+
+  .pagina-derecha .sombra-lomo {
+    left: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.14) 0%, rgba(0, 0, 0, 0.04) 40%, transparent 100%);
+  }
+
+
+  .contenido-pagina {
+    width: 100%;
+    height: 100%;
+    padding: 2.2rem 2.75rem;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    box-sizing: border-box;
+  }
+
+
+  .encabezado-pagina {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-tinta-suave);
+    text-align: center;
+    padding-bottom: 0.75rem;
+  }
+
+  .encabezado-pagina {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+
+
+  .cuerpo-texto {
+    height: 100%;
+    min-height: 0;
+    padding-bottom: 0; /* Quita el padding interno para que clientHeight sea 100% área de texto */
+    box-sizing: border-box;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    text-align: justify;
+    hyphens: auto;
+    overflow: hidden;
+  }
+
+  .cuerpo-texto h1,
+  .cuerpo-texto h2,
+  .cuerpo-texto h3,
+  .cuerpo-texto h4,
+  .cuerpo-texto h5 {
+    font-weight: 700;
+    text-align: left;
+    color: #14110f;
+    margin-top: 0.3rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.25;
+  }
+
+  .cuerpo-texto h1 {
+    font-size: 1.65rem;
+    border-bottom: 2px solid rgba(197, 160, 89, 0.55);
+    padding-bottom: 0.35rem;
+  }
+
+  .cuerpo-texto h2 {
+    font-size: 1.38rem;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.35);
+    padding-bottom: 0.25rem;
+  }
+
+  .cuerpo-texto h3 {
+    font-size: 1.18rem;
+  }
+
+  .cuerpo-texto p {
+    margin: 0 0 0.85rem 0;
+    text-indent: 1.4em;
+  }
+
+  .cuerpo-texto h1 + p,
+  .cuerpo-texto h2 + p,
+  .cuerpo-texto h3 + p {
+    text-indent: 0;
+  }
+
+  .cuerpo-texto h1 + p::first-letter,
+  .cuerpo-texto h2 + p::first-letter {
+    float: left;
+    font-size: 3.1rem;
+    line-height: 0.82;
+    padding-right: 0.12em;
+    padding-top: 0.05em;
+    font-weight: 700;
+    color: var(--color-cubierta);
+  }
+
+  /* Bloques matemáticos */
+  .math-definition,
+  .math-example,
+  .math-exercise {
+    margin: 0.85rem 0;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .math-definition {
+    background: rgba(197, 160, 89, 0.12);
+    border-left: 3px solid var(--color-dorado);
+  }
+
+  .math-example {
+    background: rgba(44, 30, 22, 0.05);
+    border-left: 3px solid #6b5344;
+  }
+
+  .math-exercise {
+    background: rgba(36, 32, 29, 0.04);
+    border: 1px dashed rgba(36, 32, 29, 0.25);
+  }
+
+  .math-box-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-cubierta);
+    margin-bottom: 0.4rem;
+  }
+
+  .math-definition p,
+  .math-example p,
+  .math-exercise p {
+    text-indent: 0 !important;
+    margin-bottom: 0.45rem;
+  }
+
+  .math-definition p:last-child,
+  .math-example p:last-child,
+  .math-exercise p:last-child {
+    margin-bottom: 0;
+  }
+
+  .math-figure {
+    margin: 0.85rem 0;
+    text-align: center;
+  }
+
+  .math-figure svg {
+    max-width: 100%;
+    max-height: 220px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .math-figure figcaption {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--color-tinta-suave);
+    margin-top: 0.4rem;
+  }
+
+  .pie-pagina {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 0.8rem;
+    color: var(--color-tinta-suave);
+    text-align: center;
+    padding-top: 0.1rem; /* El espacio de respiración va aquí, fuera de .cuerpo-texto */
+  }
+
+  .pagina-dura {
+    background: linear-gradient(135deg, #38261c 0%, var(--color-cubierta) 100%);
+    color: var(--color-dorado);
+    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.7);
+  }
+
+  .pagina-guarda {
+    background-color: #e8e0d0;
+    box-shadow: inset -10px 0 25px rgba(0, 0, 0, 0.12);
+  }
+
+  .contenido-portada {
+    height: 100%;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    text-align: center;
+  }
+
+  .marco-dorado {
+    width: 100%;
+    height: 100%;
+    border: 2px solid rgba(197, 160, 89, 0.55);
+    outline: 1px solid rgba(197, 160, 89, 0.25);
+    outline-offset: -8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-sizing: border-box;
+  }
+
+  .etiqueta-editorial {
+    font-size: 0.72rem;
+    letter-spacing: 0.25em;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+  }
+
+  .contenido-portada h1 {
+    font-family: Georgia, serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+    color: #f3e5c8;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .ornamento {
+    font-size: 1.8rem;
+    margin: 1.5rem 0;
+    color: var(--color-dorado);
+  }
+
+  .autor-portada {
+    font-family: Georgia, serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #e0cfa8;
+    margin: 0;
+  }
+
+  .fin-texto {
+    letter-spacing: 0.3em;
+    font-size: 0.9rem;
+  }
+
+  /* Esto obliga al navegador a sumar TODOS los margin-top y margin-bottom
+   de títulos, párrafos, saltos de línea y cajas matemáticas dentro de scrollHeight */
+  .pagina-medicion,
+  .cuerpo-texto {
+    display: flow-root;
+  }
+
+
+  @media (max-width: 768px) {
+    .mesa-lectura {
+      padding: 0.75rem;
+    }
+
+    .contenido-pagina {
+      padding: 1.2rem 1.35rem;
+    }
+
+    .cuerpo-texto {
+      font-size: 0.98rem;
+      line-height: 1.52;
+    }
+
+    .barra-herramientas {
+      padding: 0.6rem 1rem;
+    }
+
+    .autor-doc,
+    .separador {
+      display: none;
+    }
+  }
+
+  @media (max-width: 767px) {
+    #btn-modo-hojas {
+      display: none !important;
+    }
+  }
+
+</style>

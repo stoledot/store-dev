@@ -13,6 +13,8 @@ import { parsearXML, extractOnly } from '../../features/xml/xmlParser';
 import RenderLecturaXml from '../../components/xml/RenderLecturaXml.astro';
 import RenderIndiceTemario from '../../components/xml/RenderIndiceTemario.astro';
 import { extractMetaXml } from '../../features/lecturas/utils';
+import FlipbookReader from '../../components/xml/FlipbookReader.astro';
+import PlanesLecturas from './PlanesLecturas.astro';
 
 if (!(await accountsEnabled())) return Astro.redirect('/',303);
 
@@ -52,394 +54,103 @@ if (error) return Astro.redirect('/account/lecturas', 303);
 
 
 
+
+/**
+ * Lógica para los planes
+ */
+
+
 ---
-<Layout title="Lectura">
-<div
-  id="xml-reading"
-  data-xml={xml}
-  data-back-href={backHref}
-  class="mx-auto max-w-7xl px-3 pb-28 pt-5 sm:px-6 sm:pb-12 sm:pt-8"
->
-  <a
-    href={backHref}
-    class="inline-flex min-h-10 items-center text-sm font-medium text-muted underline underline-offset-4 hover:text-brand"
-  >
-    ← Volver a mis lecturas
-  </a>
-  <!-- PORTADA -->
-  <header 
-    id="reading-header" 
-    class="group relative my-6 overflow-hidden rounded-[2rem] border border-line bg-gradient-to-br from-paper via-paper to-surface p-6 shadow-sm transition-all duration-300 hover:shadow-md sm:my-8 sm:p-10"
-  >
-    <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-10">
-      
-      <!-- Columna de Texto (8 columnas si hay imagen cuadrada, 12 si no hay) -->
-      <div class={lectura?.image_url ? "lg:col-span-8" : "lg:col-span-12"}>
-        
-        <!-- Etiqueta amigable tipo píldora -->
-        <div class="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-brand">
-          <span class="h-1.5 w-1.5 rounded-full bg-brand"></span>
-          {lectura?.type === "book" ? "Libro" : "Biblioteca de aprendizaje"}
-        </div>
+<Layout title={metaXml.title ?? "Lectura"}>
+  <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
+    <a
+      href="/account/lecturas"
+      class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-brand"
+    >
+      <span aria-hidden="true">←</span>
+      Mis lecturas
+    </a>
 
-        <!-- Título principal -->
-        <h1 
-          id="reading-title" 
-          class="mt-4 break-words font-serif text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl lg:text-5xl"
-        >
-          {metaXml.title ?? "Cargando lectura..."}
-        </h1>
-
-        <!-- Resumen -->
-        {metaXml.summary && (
-          <p 
-            id="reading-summary" 
-            class="mt-4 max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
-          >
-            {metaXml.summary}
-          </p>
+    <section class="overflow-hidden rounded-[2rem] border border-line bg-paper shadow-xl">
+      <div class="grid lg:grid-cols-5">
+        <!-- Portada -->
+        {lectura?.image_url && (
+          <div class="flex items-center justify-center bg-surface p-6 sm:p-10 lg:col-span-2">
+            <div class="relative w-full max-w-sm overflow-hidden rounded-2xl shadow-2xl">
+              <img
+                src={lectura.image_url}
+                alt={metaXml.title ?? "Portada de lectura"}
+                class="aspect-square w-full object-cover"
+              />
+            </div>
+          </div>
         )}
 
-        <!-- Metadatos separados sutilmente -->
-        <div 
-          id="reading-meta" 
-          class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line/60 pt-5 text-sm font-medium text-muted"
-        ></div>
-      </div>
+        <!-- Información -->
+        <div class={lectura?.image_url
+          ? "flex flex-col justify-center p-6 sm:p-10 lg:col-span-3"
+          : "flex flex-col justify-center p-6 sm:p-10 lg:col-span-5"}>
 
-      <!-- Columna de Imagen Cuadrada (4 columnas en escritorio, centrada en móvil) -->
-      {lectura?.image_url && (
-        <div class="mx-auto w-full max-w-[260px] sm:max-w-[300px] lg:col-span-4 lg:max-w-none">
-          <div class="relative aspect-square w-full overflow-hidden rounded-3xl border border-line/80 bg-surface shadow-md">
-            <img
-              src={lectura.image_url}
-              alt={metaXml.title ?? "Ilustración de la lectura"}
-              loading="eager"
-              class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-            />
-            <!-- Brillo sutil en el borde interior -->
-            <div class="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-black/5"></div>
+          <div class="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-brand">
+            <span>📚</span>
+            {lectura?.type === "book" ? "Libro" : "Lectura"}
           </div>
-        </div>
-      )}
 
-    </div>
-  </header>
+          <h1 class="font-serif text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            {metaXml.title ?? "Lectura"}
+          </h1>
 
-    <!-- ÍNDICE VERTICAL DESPLEGABLE -->
-    <!-- ÍNDICE REPLEGADO DESDE EL PRINCIPIO -->
-  <aside
-    class="sticky top-0 z-40 -mx-3 border-y border-line bg-surface/95 px-3 py-2.5 shadow-sm backdrop-blur sm:-mx-6 sm:px-6"
-    aria-label="Navegación de la lectura"
-  >
-    <nav class="mx-auto max-w-7xl" aria-label="Índice de lectura">
-      <!-- Fila superior compacta: botón desplegable del índice, enlace inicio, buscador y X -->
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-3">
-          <button
-            type="button"
-            id="reading-toc-toggle"
-            aria-expanded="false"
-            aria-controls="reading-toc-panel"
-            class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold uppercase tracking-wide text-slate-700 transition-colors hover:bg-indigo-50 hover:text-indigo-800 focus-visible:outline-2 focus-visible:outline-brand"
-          >
-            <span
-              id="reading-toc-chevron"
-              class="text-xs transition-transform duration-200"
-              aria-hidden="true"
+          {metaXml.author && (
+            <p class="mt-4 text-lg text-muted">
+              <span class="font-medium">Por:</span> {metaXml.author}
+            </p>
+          )}
+
+          {metaXml.date && (
+            <p class="mt-2 text-sm text-muted">
+              {metaXml.date}
+            </p>
+          )}
+
+          {metaXml.summary && (
+            <div class="mt-8">
+              <h2 class="mb-3 text-sm font-bold uppercase tracking-wider text-muted">
+                Acerca de esta lectura
+              </h2>
+              <p class="max-w-2xl text-base leading-8 text-muted sm:text-lg">
+                {metaXml.summary}
+              </p>
+            </div>
+          )}
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a
+              href={`/lecturas/${id}/leer`}
+              class="inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl bg-brand px-8 py-4 font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
             >
-              ▸
-            </span>
-            <span id="reading-toc-heading">En esta lectura</span>
-          </button>
+              <span>📖</span>
+              <span>Continuar leyendo</span>
+              <span aria-hidden="true">→</span>
+            </a>
 
-          <a
-            href="#reading-header"
-            class="text-xs font-semibold text-brand underline underline-offset-4 hover:opacity-80"
-          >
-            ↑ Inicio
-          </a>
-        </div>
-
-        <div class="flex w-full items-center gap-1.5 sm:w-72">
-          <div class="relative flex-1">
-            <label for="reading-toc-search" class="sr-only">Buscar tema en el índice</label>
-            <input
-              id="reading-toc-search"
-              data-reading-toc-search
-              type="text"
-              autocomplete="off"
-              placeholder="Buscar tema…"
-              class="h-9 w-full rounded-xl border border-line bg-paper px-3 text-xs text-slate-900 placeholder:text-muted focus-visible:outline-2 focus-visible:outline-brand"
-            />
+            <a
+              href="/account/lecturas"
+              class="inline-flex min-h-14 items-center justify-center rounded-2xl border border-line bg-surface px-6 py-4 font-semibold transition hover:bg-paper"
+            >
+              Volver a la biblioteca
+            </a>
           </div>
 
-          <!-- Botón X: limpia búsqueda, cierra submenús y repliega todo el índice -->
-          <button
-            type="button"
-            id="reading-toc-clear"
-            aria-label="Limpiar búsqueda y replegar índice"
-            title="Limpiar búsqueda y replegar índice"
-            class="hidden size-9 shrink-0 items-center justify-center rounded-xl border border-line bg-paper text-sm font-bold text-slate-500 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-brand"
-          >
-            ✕
-          </button>
+          <p class="mt-5 text-sm text-muted">
+            Tu progreso de lectura se guardará automáticamente.
+          </p>
         </div>
       </div>
+    </section>
 
-      <!-- Panel desplegable (oculto por defecto con 'hidden') -->
-      <div id="reading-toc-panel" class="hidden">
-        <!-- 1. Temario original (vertical) -->
-        <ol
-          id="reading-toc"
-          class="mt-2 flex max-h-[55dvh] flex-col space-y-1 overflow-y-auto border-t border-line/60 pt-2 text-sm"
-        >
-          <RenderIndiceTemario nodo={nodo} />
-        </ol>
-
-        <!-- 2. Vista de resultados de búsqueda (vertical) -->
-        <ol
-          id="reading-toc-results"
-          class="mt-2 hidden max-h-[55dvh] flex-col space-y-1.5 overflow-y-auto border-t border-line/60 pt-2 text-sm"
-          aria-live="polite"
-        ></ol>
-      </div>
-    </nav>
-  </aside>
-
-
-  <!-- CONTENIDO -->
-  <article id="reading-content" class="mt-5 min-w-0 space-y-6 sm:mt-7 sm:space-y-8">
-    <RenderLecturaXml nodo={nodo}/>
-  </article>
-
-  <div
-    id="reading-error"
-    class="hidden mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-sm leading-6 text-red-800"
-    role="alert"
-  ></div>
-</div>
-
-<script>
-  function initFullContentSearch() {
-    const searchInput = document.querySelector<HTMLInputElement>('[data-reading-toc-search]');
-    const clearBtn = document.getElementById('reading-toc-clear');
-    const toggleBtn = document.getElementById('reading-toc-toggle');
-    const chevron = document.getElementById('reading-toc-chevron');
-    const tocPanel = document.getElementById('reading-toc-panel');
-    const tocOriginal = document.getElementById('reading-toc');
-    const tocResults = document.getElementById('reading-toc-results');
-    const tocHeading = document.getElementById('reading-toc-heading');
-    const contentRoot = document.getElementById('reading-content');
-
-    if (!searchInput || !tocPanel || !tocOriginal || !tocResults || !contentRoot) return;
-
-    const normalize = (text: string) =>
-      text
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-    const escapeHtml = (str: string) =>
-      str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-
-    const updateClearButtonState = () => {
-      if (!clearBtn) return;
-      const isPanelOpen = !tocPanel.classList.contains('hidden');
-      const hasText = searchInput.value.trim().length > 0;
-      const hasOpenDetails = tocOriginal.querySelector('details[open]') !== null;
-
-      if (isPanelOpen || hasText || hasOpenDetails) {
-        clearBtn.classList.remove('hidden');
-        clearBtn.classList.add('flex');
-      } else {
-        clearBtn.classList.add('hidden');
-        clearBtn.classList.remove('flex');
-      }
-    };
-
-    const setPanelOpen = (open: boolean) => {
-      if (open) {
-        tocPanel.classList.remove('hidden');
-        toggleBtn?.setAttribute('aria-expanded', 'true');
-        chevron?.classList.add('rotate-90');
-      } else {
-        tocPanel.classList.add('hidden');
-        toggleBtn?.setAttribute('aria-expanded', 'false');
-        chevron?.classList.remove('rotate-90');
-      }
-      updateClearButtonState();
-    };
-
-    toggleBtn?.addEventListener('click', () => {
-      const isCurrentlyOpen = !tocPanel.classList.contains('hidden');
-      setPanelOpen(!isCurrentlyOpen);
-    });
-
-    tocOriginal.addEventListener('toggle', updateClearButtonState, true);
-
-    const searchableBlocks = Array.from(
-      contentRoot.querySelectorAll<HTMLElement>('section[id], li[id]')
-    ).map((el) => {
-      const id = el.id;
-      const headingEl = el.querySelector(
-        ':scope > header h2, :scope > header h3, :scope > h4, :scope > header h5, :scope > div > span'
-      );
-      const title = headingEl?.textContent?.trim() || 'Sección de la lectura';
-
-      const clone = el.cloneNode(true) as HTMLElement;
-      clone.querySelectorAll('section[id], li[id]').forEach((child) => child.remove());
-      const rawText = clone.textContent?.replace(/\s+/g, ' ').trim() || '';
-
-      return {
-        id,
-        title,
-        normalizedTitle: normalize(title),
-        rawText,
-        normalizedText: normalize(rawText),
-      };
-    });
-
-    const buildSnippet = (rawText: string, query: string) => {
-      const normText = normalize(rawText);
-      const matchIndex = normText.indexOf(query);
-      if (matchIndex === -1) return '';
-
-      const start = Math.max(0, matchIndex - 45);
-      const end = Math.min(rawText.length, matchIndex + query.length + 65);
-      let snippet = rawText.slice(start, end).trim();
-
-      if (start > 0) snippet = '…' + snippet;
-      if (end < rawText.length) snippet = snippet + '…';
-
-      return escapeHtml(snippet);
-    };
-
-    const resetAll = () => {
-      searchInput.value = '';
-      tocResults.innerHTML = '';
-      tocResults.classList.add('hidden');
-      tocResults.classList.remove('flex');
-      tocOriginal.classList.remove('hidden');
-
-      tocOriginal.querySelectorAll<HTMLDetailsElement>('details[open]').forEach((details) => {
-        details.open = false;
-      });
-
-      if (tocHeading) tocHeading.textContent = 'En esta lectura';
-      setPanelOpen(false);
-    };
-
-    clearBtn?.addEventListener('click', resetAll);
-
-    searchInput.addEventListener('input', () => {
-      const rawQuery = searchInput.value.trim();
-      const query = normalize(rawQuery);
-
-      if (!query) {
-        tocResults.innerHTML = '';
-        tocResults.classList.add('hidden');
-        tocResults.classList.remove('flex');
-        tocOriginal.classList.remove('hidden');
-        if (tocHeading) tocHeading.textContent = 'En esta lectura';
-        updateClearButtonState();
-        return;
-      }
-
-      setPanelOpen(true);
-      tocOriginal.classList.add('hidden');
-      tocResults.classList.remove('hidden');
-      tocResults.classList.add('flex');
-
-      const matches = searchableBlocks.filter(
-        (block) => block.normalizedTitle.includes(query) || block.normalizedText.includes(query)
-      );
-
-      if (tocHeading) {
-        tocHeading.textContent = `Resultados (${matches.length})`;
-      }
-
-      if (matches.length === 0) {
-        tocResults.innerHTML = `
-          <li class="px-2 py-1.5 text-xs text-muted">
-            No se encontró "<strong>${escapeHtml(rawQuery)}</strong>" en el contenido.
-          </li>
-        `;
-        updateClearButtonState();
-        return;
-      }
-
-      tocResults.innerHTML = matches
-        .map((match) => {
-          const snippet = buildSnippet(match.rawText, query);
-          return `
-            <li class="w-full">
-              <a
-                href="#${match.id}"
-                class="flex w-full flex-col rounded-xl border border-line bg-paper px-3 py-2 text-left transition-colors hover:border-brand hover:bg-indigo-50"
-              >
-                <span class="line-clamp-1 text-xs font-bold text-indigo-800">
-                  ${escapeHtml(match.title)}
-                </span>
-                ${
-                  snippet
-                    ? `<span class="mt-0.5 line-clamp-2 text-xs leading-4 text-slate-600">${snippet}</span>`
-                    : ''
-                }
-              </a>
-            </li>
-          `;
-        })
-        .join('');
-
-      updateClearButtonState();
-    });
-
-    tocResults.addEventListener('click', (e) => {
-      const link = (e.target as HTMLElement).closest('a');
-      if (!link) return;
-
-      const targetId = link.getAttribute('href')?.slice(1);
-      resetAll();
-
-      if (targetId) {
-        const targetEl = document.getElementById(targetId);
-        if (targetEl) {
-          const parentDetails = targetEl.closest('details');
-          if (parentDetails) parentDetails.open = true;
-
-          targetEl.classList.add('ring-2', 'ring-brand', 'ring-offset-2');
-          setTimeout(() => {
-            targetEl.classList.remove('ring-2', 'ring-brand', 'ring-offset-2');
-          }, 2200);
-        }
-      }
-    });
-
-    tocOriginal.addEventListener('click', (e) => {
-      const link = (e.target as HTMLElement).closest('a');
-      if (link) {
-        resetAll();
-      }
-    });
-
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        resetAll();
-        searchInput.blur();
-      }
-    });
-
-    setPanelOpen(false);
-  }
-
-  initFullContentSearch();
-  document.addEventListener('astro:page-load', initFullContentSearch);
-</script>
+    <section class="mt-16">
+      <h2 class="text-2xl font-bold">Planes de lectura</h2>
+      <PlanesLecturas customerId={customerId} lecturaId={Number(id)} nodo={nodo} />
+    </section>
+  </main>
 </Layout>

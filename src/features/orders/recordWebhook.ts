@@ -15,7 +15,7 @@ import { markPendingSettled } from '../payments/lightning/pending';
 import { purgeStockProductCache } from '../cache/purge';
 import { settleSubprogramObligation } from '../school/subprogramSettlement';
 import { releaseExpiredPaymentBundle, settlePaymentBundle } from '../school/paymentBundles';
-import { getProductLecturasByProductIds, setLecturasCustomerByLecturaIdsCustomerId } from '../lecturas/db';
+import { getProductLecturasByProductIds, setLecturaCustomer, setLecturasCustomerByLecturaIdsCustomerId } from '../lecturas/db';
 import { getCustomerByEmail } from '../customers_new/db';
 
 /**
@@ -131,19 +131,34 @@ export async function settleLecturasCustomer(
   // Implementation for settling a lecturas customer goes here.
   // This typically involves marking the lectura as paid, updating related records,
   // and possibly sending notifications to the customer.
-  const productsIds = paidOrder.items?.map(item => Number(item.productId)) ?? [];
-  if (productsIds.length === 0) return;
-  const lecturasIds = (await getProductLecturasByProductIds(env.DB, productsIds)).map(pl => pl.lectura_id);
   const getCustomerId = await getCustomerByEmail(env.DB, paidOrder.email ?? '');
   if (!getCustomerId) {
     throw new Error('Customer not found for the provided email');
   }
-  const success = await setLecturasCustomerByLecturaIdsCustomerId(env.DB, lecturasIds, Number(getCustomerId?.id));
-  if (!success) {
-    throw new Error('Failed to set lecturas for customer');
+  const productsIds = paidOrder.items?.map(item => Number(item.productId)) ?? [];
+  if (productsIds.length === 0) return;
+  const productsLecturas = await getProductLecturasByProductIds(env.DB, productsIds);
+  for (const pl of productsLecturas) {
+    const expiration_days = pl.expiration_days ?? 360;
+    const purchase_date = new Date() ;
+    const number_of_plans = pl.number_of_plans ?? 2;
+    const simultaneous_devices = pl.simultaneous_devices ?? 2;
+    const expiration_date = new Date();
+    expiration_date.setDate(purchase_date.getDate() + expiration_days);
+    const success = await setLecturaCustomer(
+      env.DB,
+      pl.lectura_id,
+      Number(getCustomerId?.id),
+      expiration_date.toISOString(),
+      purchase_date.toISOString(),
+      number_of_plans,
+      simultaneous_devices
+    );
+    // If setting the lectura customer fails, we throw an error to ensure the process is halted and the failure is logged.
+    if (!success) {
+      throw new Error(`Failed to set lectura customer for lectura_id ${pl.lectura_id}`);
+    }
   }
-  // Here you would typically update the database to mark these products as paid for the customer.
-  // For example, you might iterate over productsIds and update the corresponding lectura records.
 }
 
 export async function recordPaidWebhookOrder(

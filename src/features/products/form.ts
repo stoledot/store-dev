@@ -29,6 +29,8 @@ export function parseProductForm(
   const name = String(form.get('name') ?? '').trim();
   if (!name) return { error: 'Name is required.' };
 
+  const subname = String(form.get('subname') ?? '').trim() || null;
+
   const price = Number(String(form.get('price') ?? '').trim());
   if (!Number.isFinite(price) || price < 0) {
     return { error: 'Price must be a non-negative number.' };
@@ -62,7 +64,7 @@ export function parseProductForm(
   }
 
   return {
-    data: { name, description, price_cents, currency, stock, active, weight_grams, requires_shipping },
+    data: { name, subname, description, price_cents, currency, stock, active, weight_grams, requires_shipping },
   };
 }
 

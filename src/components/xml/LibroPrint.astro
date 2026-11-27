@@ -1,0 +1,66 @@
+---
+// src/pages/libro-print.astro
+import RenderLecturaXml from './RenderLecturaXml.astro';
+import type { NodoXML } from "../../features/xml/xmlParser";
+
+interface Props {
+  nodo: NodoXML;
+}
+
+const { nodo } = Astro.props;
+
+
+---
+
+<!-- 1. Aquí Astro renderiza tu componente normalmente (oculto) -->
+<div id="contenido-fuente" style="display: none;">
+    <RenderLecturaXml nodo={nodo} />
+</div>
+
+<!-- 2. Aquí Paged.js dibujará las páginas del libro -->
+<div id="libro-renderizado"></div>
+
+<!-- 3. Script en el cliente para ejecutar la paginación -->
+<script>
+    //@ts-ignore
+    import { Previewer } from 'pagedjs';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Obtenemos el HTML generado por tu componente de Astro
+        const fuente = document.querySelector('#contenido-fuente');
+        const destino = document.querySelector('#libro-renderizado');
+
+        // Esperar a que el script async de MathJax termine de cargar
+        await new Promise<void>((resolve) => {
+            if ((window as any).MathJax?.startup?.promise) {
+                resolve();
+            } else {
+                const script = document.querySelector('#MathJax-script');
+                script?.addEventListener('load', () => resolve());
+            }
+        });
+
+        // 1. Renderizar las fórmulas matemáticas dentro del contenedor oculto
+        await (window as any).MathJax.startup.promise;
+        await (window as any).MathJax.typesetPromise([fuente]);
+
+        const paged = new Previewer();
+        
+
+        if (fuente && destino) {
+        // Ejecutamos la paginación
+        const flow = await paged.preview(
+            fuente.innerHTML, 
+            [], // Ruta a tu CSS de impresión
+            destino
+        );
+
+        
+        
+        console.log(`Libro generado con éxito: ${flow.total} páginas.`);
+        
+        // Limpiamos el contenedor original para no duplicar nodos en el DOM
+        fuente.remove();
+        }
+    });
+</script>

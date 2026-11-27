@@ -1,0 +1,103 @@
+---
+//src/pages/lecturas/[id]/leer.astro
+import Layout from "../../../layouts/Layout.astro";
+import { env } from "cloudflare:workers";
+import {
+  accountsEnabled,
+  getCustomerEmail,
+} from "../../../features/auth/customer";
+
+import { getCustomerByEmail } from "../../../features/customers_new/db";
+
+import {
+  getLecturasCustomerByCustomerId,
+  getLecturaById,
+} from "../../../features/lecturas/db";
+
+import { parsearXML } from "../../../features/xml/xmlParser";
+import { extractMetaXml } from "../../../features/lecturas/utils";
+
+import VisorBlocNotas from "../../../components/xml/VisorBlocNotas.astro";
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect("/lecturas");
+}
+
+// ----------------------------------------------------
+// AUTENTICACIÓN
+// ----------------------------------------------------
+
+const accountRequired = await accountsEnabled();
+
+let customer = null;
+
+if (accountRequired) {
+  const email = await getCustomerEmail(Astro.cookies);
+
+  if (!email) {
+    return Astro.redirect("/account");
+  }
+
+  customer = await getCustomerByEmail(env.DB,email);
+
+  if (!customer) {
+    return Astro.redirect("/account");
+  }
+}
+
+// ----------------------------------------------------
+// LECTURA
+// ----------------------------------------------------
+
+const lectura = await getLecturaById(env.DB, Number(id));
+
+if (!lectura) {
+  return Astro.redirect("/lecturas");
+}
+
+// ----------------------------------------------------
+// ACCESO A LA LECTURA
+// ----------------------------------------------------
+
+// Si tu proyecto tiene un sistema específico de permisos,
+// conserva aquí exactamente la validación de [id].astro.
+
+if (customer) {
+  const lecturasCustomer =
+    await getLecturasCustomerByCustomerId(env.DB, customer.id);
+
+  const tieneAcceso =
+    lecturasCustomer?.some((item) => item.school_lectura_id === Number(id));
+
+  // Si tu lectura no es pública y requiere autorización,
+  // valida aquí según las reglas de tu sistema.
+  if(!tieneAcceso) {
+    return Astro.redirect("/lecturas");
+  }
+}
+
+// ----------------------------------------------------
+// XML 
+// ----------------------------------------------------
+
+const nodo = parsearXML(lectura.content_xml);
+
+const metaXml = extractMetaXml(nodo);
+
+const pageTitle = metaXml?.title ?? "Lectura";
+
+// ----------------------------------------------------
+// DATOS
+// ----------------------------------------------------
+
+const titulo = metaXml?.title ?? "Lectura";
+const autor = metaXml?.author ?? "Autor desconocido";
+
+//import '../../../../src/styles/libro.css'
+---
+
+<Layout title={pageTitle} fullWidth={true}>
+  <VisorBlocNotas nodo={nodo} tituloLibro={titulo} />
+</Layout>
