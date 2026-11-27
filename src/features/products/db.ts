@@ -7,6 +7,7 @@ export interface Product {
   name: string;
   slug: string;
   description: string | null;
+  subname: string | null;
   price_cents: number;
   currency: string;
   image_key: string | null;
@@ -35,6 +36,7 @@ export interface ProductFields {
   name: string;
   description: string | null;
   price_cents: number;
+  subname: string | null;
   currency: string;
   stock: number;
   active: number;
@@ -410,11 +412,11 @@ export async function updateProduct(db: D1Database, id: number, p: ProductInput)
   await db
     .prepare(
       `UPDATE products
-         SET name = ?, slug = ?, description = ?, price_cents = ?, currency = ?, image_key = ?, stock = ?, active = ?,
+         SET name = ?, subname = ?, slug = ?, description = ?, price_cents = ?, currency = ?, image_key = ?, stock = ?, active = ?,
              weight_grams = ?, requires_shipping = ?
        WHERE id = ?`,
     )
-    .bind(p.name, p.slug, p.description, p.price_cents, p.currency, p.image_key, p.stock, p.active, p.weight_grams, p.requires_shipping, id)
+    .bind(p.name, p.subname, p.slug, p.description, p.price_cents, p.currency, p.image_key, p.stock, p.active, p.weight_grams, p.requires_shipping, id)
     .run();
 }
 

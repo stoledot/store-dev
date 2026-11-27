@@ -11,6 +11,10 @@ import StudentHome from '../features/school/StudentHome.astro';
 import { getUserConferencesSessions } from '../features/conferences/db';
 import { formatConferenceSession, sessionStart, sortConferenceSessions } from '../features/conferences/dates';
 import AppControls from '../components/AppControls.astro';
+import { getAllLecturasWithoutXmlHtml } from '../features/lecturas/db';
+import ProductosLecturasHero from '../components/ProductsLecturasHero.astro';
+import type { D1Database } from '@cloudflare/workers-types';
+import { getAllProductLecturasWithFeatures } from '../features/lecturas/db';
 
 const config = getConfig();
 const configuredName = Astro.locals.settings?.storeName ?? config.storeName;
@@ -26,118 +30,124 @@ const socialGroups=studentEmail?((await env.DB.prepare('SELECT g.id,g.title FROM
 const subscriptionContent=studentEmail?((await env.DB.prepare(`SELECT DISTINCT c.title,c.slug,c.summary,c.content_kind,(SELECT l.slug FROM school_lessons l WHERE l.course_id=c.id AND l.status='published' ORDER BY l.sequence_no LIMIT 1) AS first_lesson FROM school_courses c JOIN content_subscription_courses sc ON sc.course_id=c.id JOIN school_subscriptions ss ON ss.content_subscription_id=sc.subscription_id WHERE c.status='published' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now')) ORDER BY c.content_kind,c.title COLLATE NOCASE`).bind(studentEmail).all<any>()).results??[]):[];
 const mathMagazines=(await env.DB.prepare(`SELECT m.id,m.slug,m.title,m.description,m.cover_image_key,(SELECT i.title FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_title,(SELECT i.slug FROM math_magazine_issues i WHERE i.magazine_id=m.id AND i.status='published' ORDER BY i.issue_date DESC,i.updated_at DESC LIMIT 1) AS latest_slug,(SELECT CASE WHEN MAX(CASE WHEN cs.magazine_access='all' THEN 1 ELSE 0 END)=1 THEN 'all' WHEN COUNT(*)>0 THEN 'latest' ELSE '' END FROM school_subscriptions ss JOIN content_subscriptions cs ON cs.id=ss.content_subscription_id WHERE cs.magazine_id=m.id AND cs.status='active' AND lower(trim(ss.student_email))=lower(trim(?)) AND ss.status IN ('active','trialing') AND (ss.current_period_end IS NULL OR ss.current_period_end>strftime('%Y-%m-%dT%H:%M:%fZ','now'))) AS access_mode FROM math_magazines m WHERE m.status='published' ORDER BY m.title COLLATE NOCASE LIMIT 12`).bind(studentEmail??'').all<any>()).results??[];
 const schoolPrograms = (await env.DB.prepare(`SELECT p.slug,p.title,p.description,p.image_url FROM school_programs p WHERE p.status='active' ORDER BY p.title COLLATE NOCASE LIMIT 12`).all<any>()).results??[];
+//const allLecturas = (await getAllLecturasWithoutXmlHtml(env.DB)) ?? [];
+const productsLecturas = await getAllProductLecturasWithFeatures(env.DB);
 ---
 
 <Layout title="Aprende matemáticas y lectura" description="Programas de matemáticas y lectura con una ruta clara, contenidos accesibles y acompañamiento para aprender a tu ritmo.">
 
+  <!-- <ProductosLecturasIndex lecturas={allLecturas} />-->
+  <ProductosLecturasHero productsLecturas={productsLecturas} />
 
+  <section
+  aria-labelledby="home-hero-title"
+  class="relative isolate my-5 overflow-hidden rounded-[2rem] border border-line bg-brand sm:my-8">
+
+    <!-- Acento decorativo sutil de fondo -->
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute -right-16 -top-20 -z-10 h-64 w-64 rounded-full border-[32px] border-white/10 sm:h-80 sm:w-80"
+    ></div>
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute -bottom-24 left-1/3 -z-10 h-72 w-72 rounded-full bg-white/5 blur-3xl"
+    ></div>
+
+    <div class="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-10 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12 lg:px-14 lg:py-20">
+      <!-- Columna izquierda: Mensaje principal y CTA -->
+      <div class="max-w-2xl">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold tracking-wider text-white uppercase backdrop-blur-xs">
+          <span class="h-2 w-2 rounded-full bg-red-500"></span>
+          <span>{schoolName}</span>
+        </div>
+
+        <h1
+          id="home-hero-title"
+          class="mt-5 font-serif text-4xl leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl"
+        >
+          Escuela de Matemáticas
+        </h1>
+
+        <h2 class="mt-4 font-serif text-2xl leading-snug tracking-tight text-white/95 sm:text-3xl">
+          Las matemáticas y la lectura, a tu ritmo y con sentido.
+        </h2>
+
+        <p class="mt-4 max-w-xl text-base leading-7 text-white/85 sm:text-lg sm:leading-8">
+          Aprende paso a paso, comprende las ideas de fondo y construye confianza con programas pensados para acompañarte desde donde estás.
+        </p>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <a
+            href="#programas"
+            class="inline-flex min-h-14 items-center justify-center rounded-full bg-red-600 px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:text-lg"
+          >
+            Conocer programas
+            <span aria-hidden="true" class="ml-2">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna derecha: Tarjetas con imagen cuadrada -->
+      {schoolPrograms.length > 0 && (
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
+          {schoolPrograms.map((program) => (
+            <a
+              href={`/programas/${program.slug}`}
+              class="group flex items-center gap-4 rounded-2xl border border-white/15 bg-white p-3.5 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl sm:p-4"
+            >
+              <!-- Miniatura cuadrada -->
+              <div class="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:w-24">
+                {program.image_url ? (
+                  <img
+                    src={program.image_url}
+                    alt={program.title}
+                    class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                    loading="eager"
+                    decoding="async"
+                  />
+                ) : (
+                  <div class="flex h-full w-full items-center justify-center bg-azul-cielo-eri/40 text-2xl">
+                    📘
+                  </div>
+                )}
+              </div>
+
+              <!-- Información del programa -->
+              <div class="min-w-0 flex-1">
+                <h3 class="truncate text-base font-bold tracking-tight text-slate-900 transition-colors group-hover:text-brand sm:text-lg">
+                  {program.title}
+                </h3>
+
+                {program.description && (
+                  <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
+                    {program.description}
+                  </p>
+                )}
+
+                <div class="mt-2.5 inline-flex items-center text-xs font-semibold text-brand sm:text-sm">
+                  <span>Explorar</span>
+                  <span
+                    class="ml-1 transition-transform duration-300 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  >
+                    →
+                  </span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  {/** Sección de resumen del estudiante y próximas conferencias */}
   {schoolSummary && <StudentHome summary={schoolSummary} />}
+
   {schoolSummary && upcomingSessions.length > 0 && <section aria-labelledby="upcoming-conferences" class="my-5 rounded-3xl border border-line bg-surface p-6 sm:p-8">
     <div class="flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-[0.16em] text-brand">Tu agenda</p><h2 id="upcoming-conferences" class="mt-1 font-serif text-2xl">Próximas conferencias</h2></div><a href="/account/conferences" class="text-sm font-semibold text-brand underline underline-offset-4">Ver todas →</a></div>
     <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{upcomingSessions.map(session => <article class="rounded-2xl border border-line bg-paper p-5"><p class="text-xs font-semibold uppercase tracking-wide text-muted">{session.conference_title}</p><h3 class="mt-2 font-semibold">{session.title}</h3><p class="mt-2 text-sm text-muted">{formatConferenceSession(session)} · {session.time_zone}</p><a href="/account/conferences" class="mt-4 inline-block text-sm font-semibold text-brand underline underline-offset-4">Ver sesión →</a></article>)}</div>
   </section>}
-
-  <section
-  aria-labelledby="home-hero-title"
-  class="relative isolate my-5 overflow-hidden rounded-[2rem] border border-line bg-brand sm:my-8"
->
-  <!-- Acento decorativo sutil de fondo -->
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute -right-16 -top-20 -z-10 h-64 w-64 rounded-full border-[32px] border-white/10 sm:h-80 sm:w-80"
-  ></div>
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute -bottom-24 left-1/3 -z-10 h-72 w-72 rounded-full bg-white/5 blur-3xl"
-  ></div>
-
-  <div class="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-10 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12 lg:px-14 lg:py-20">
-    <!-- Columna izquierda: Mensaje principal y CTA -->
-    <div class="max-w-2xl">
-      <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-semibold tracking-wider text-white uppercase backdrop-blur-xs">
-        <span class="h-2 w-2 rounded-full bg-red-500"></span>
-        <span>{schoolName}</span>
-      </div>
-
-      <h1
-        id="home-hero-title"
-        class="mt-5 font-serif text-4xl leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl"
-      >
-        Escuela de Matemáticas
-      </h1>
-
-      <h2 class="mt-4 font-serif text-2xl leading-snug tracking-tight text-white/95 sm:text-3xl">
-        Las matemáticas y la lectura, a tu ritmo y con sentido.
-      </h2>
-
-      <p class="mt-4 max-w-xl text-base leading-7 text-white/85 sm:text-lg sm:leading-8">
-        Aprende paso a paso, comprende las ideas de fondo y construye confianza con programas pensados para acompañarte desde donde estás.
-      </p>
-
-      <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a
-          href="#programas"
-          class="inline-flex min-h-14 items-center justify-center rounded-full bg-red-600 px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:text-lg"
-        >
-          Conocer programas
-          <span aria-hidden="true" class="ml-2">↗</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- Columna derecha: Tarjetas con imagen cuadrada -->
-    {schoolPrograms.length > 0 && (
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1">
-        {schoolPrograms.map((program) => (
-          <a
-            href={`/programas/${program.slug}`}
-            class="group flex items-center gap-4 rounded-2xl border border-white/15 bg-white p-3.5 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl sm:p-4"
-          >
-            <!-- Miniatura cuadrada -->
-            <div class="relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:w-24">
-              {program.image_url ? (
-                <img
-                  src={program.image_url}
-                  alt={program.title}
-                  class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                  loading="eager"
-                  decoding="async"
-                />
-              ) : (
-                <div class="flex h-full w-full items-center justify-center bg-azul-cielo-eri/40 text-2xl">
-                  📘
-                </div>
-              )}
-            </div>
-
-            <!-- Información del programa -->
-            <div class="min-w-0 flex-1">
-              <h3 class="truncate text-base font-bold tracking-tight text-slate-900 transition-colors group-hover:text-brand sm:text-lg">
-                {program.title}
-              </h3>
-
-              {program.description && (
-                <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
-                  {program.description}
-                </p>
-              )}
-
-              <div class="mt-2.5 inline-flex items-center text-xs font-semibold text-brand sm:text-sm">
-                <span>Explorar</span>
-                <span
-                  class="ml-1 transition-transform duration-300 group-hover:translate-x-1"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
-    )}
-  </div>
-</section>
 
 
   {subscriptionContent.length>0&&<section class="my-8 rounded-2xl border border-line bg-surface p-5 sm:p-7"><div class="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-widest text-brand">Tu biblioteca</p><h2 class="mt-1 font-serif text-2xl">Incluido en tus suscripciones</h2></div><a href="/account/suscripciones" class="text-sm underline">Administrar suscripciones</a></div><div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{subscriptionContent.map(item=><article class="rounded-xl border border-line bg-white p-4"><p class="text-xs uppercase tracking-wider text-muted">{item.content_kind==='reading'?'Lectura':'Curso'}</p><h3 class="mt-1 font-semibold">{item.title}</h3>{item.summary&&<p class="mt-2 text-sm text-muted">{item.summary}</p>}<a class="mt-4 inline-flex rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white" href={item.content_kind==='reading'?`/lecturas/${item.slug}`:`/escuela/cursos/${item.slug}/${item.first_lesson??''}`}>Abrir contenido →</a></article>)}</div></section>}

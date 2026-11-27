@@ -92,6 +92,11 @@ const inputClass =
   </div>
 
   <div>
+    <label class="block text-sm font-medium" for="subname">Subname</label>
+    <input id="subname" name="subname" type="text" value={product?.subname ?? ''} class={inputClass} />
+  </div>
+
+  <div>
     <label class="block text-sm font-medium" for="slug">
       Slug <span class="text-faint">(URL — blank to auto-generate from name)</span>
     </label>

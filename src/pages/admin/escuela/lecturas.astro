@@ -45,7 +45,7 @@ if (Astro.request.method === "POST") {
       message = "No se guardó: corrige los errores de validación.";
     } else if (!titulo.trim()) {
       message = "No se guardó: falta el título.";
-    } else if (!["book", "article", "magazine-edition", "blog"].includes(type)) 
+    } else if (!["book", "article", "magazine-edition", "blog", "plan-estudio"].includes(type)) 
     {
       message = "No se guardó: selecciona un tipo de contenido válido.";
     } else if (id && !validId(id)) {
@@ -184,6 +184,7 @@ const lecturas = await getAllLecturas(env.DB);
               Edición de revista
             </option>
             <option value="blog" selected={type === "blog"}>Blog</option>
+            <option value="plan-estudio" selected={type === "plan-estudio"}>Plan de estudio</option>
           </select>
         </div>
 

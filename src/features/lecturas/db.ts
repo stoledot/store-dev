@@ -79,6 +79,16 @@ export const getAllLecturas = async (
   return lecturas.results ?? [];
 };
 
+export const getAllLecturasWithoutXmlHtml = async (
+  db: D1Database
+): Promise<Lectura[]> => {
+  const lecturas = await db
+    .prepare('SELECT id, title, image_url, type, description, created_at, updated_at FROM school_lecturas')
+    .all<Lectura>();
+
+  return lecturas.results ?? [];
+};
+
 export const deleteLecturaById = async (
   db: D1Database,
   id: number
@@ -211,6 +221,22 @@ export const getAllProductLecturas = async (
   return result.results ?? [];
 };
 
+export const getAllProductLecturasWithFeatures = async (
+  db: D1Database
+): Promise<{ p_name: string; l_title: string; product_id: number; lectura_id: number; p_subname: string; pl_display_section: string; p_image_key: string; p_slug: string }[]> => {
+  const result = await db
+    .prepare(
+      'SELECT p.name AS p_name, l.title AS l_title, pl.product_id, pl.lectura_id, p.subname AS p_subname, pl.display_section AS pl_display_section, p.image_key AS p_image_key, p.slug AS p_slug FROM products_lecturas pl ' +
+      'LEFT JOIN school_lecturas l ON pl.lectura_id = l.id ' +
+      'LEFT JOIN products p ON pl.product_id = p.id '
+    )
+    .all<{ p_name: string; l_title: string; product_id: number; lectura_id: number; p_subname: string; pl_display_section: string; p_image_key: string; p_slug: string }>();
+
+  return result.results ?? [];
+};
+
+
+
 export const getProductLecturasByProductId = async (
   db: D1Database,
   product_id: number
@@ -231,18 +257,18 @@ export const getProductLecturasByProductId = async (
 export const getProductLecturasByProductIds = async (
   db: D1Database,
   product_ids: number[]
-): Promise<{ p_name: string; l_title: string; product_id: number; lectura_id: number }[]> => {
+): Promise<{ p_name: string; l_title: string; product_id: number; lectura_id: number; expiration_days: number; number_of_plans: number; simultaneous_devices: number }[]> => {
   if (product_ids.length === 0) return [];
   const placeholders = product_ids.map(() => '?').join(',');
   const result = await db
     .prepare(
-      'SELECT p.name AS p_name, l.title AS l_title, pl.product_id, pl.lectura_id FROM products_lecturas pl ' +
+      'SELECT p.name AS p_name, l.title AS l_title, pl.product_id, pl.lectura_id, pl.expiration_days, pl.number_of_plans, pl.simultaneous_devices FROM products_lecturas pl ' +
       'LEFT JOIN school_lecturas l ON pl.lectura_id = l.id ' +
       'LEFT JOIN products p ON pl.product_id = p.id ' +
       `WHERE pl.product_id IN (${placeholders})`
     )
     .bind(...product_ids)
-    .all<{ p_name: string; l_title: string; product_id: number; lectura_id: number }>();
+    .all<{ p_name: string; l_title: string; product_id: number; lectura_id: number; expiration_days: number; number_of_plans: number; simultaneous_devices: number }>();
 
   return result.results ?? [];
 };
@@ -260,6 +286,25 @@ export const setLecturasCustomerByLecturaIdsCustomerId = async (
     lectura_ids.map(() => "(?, ?)").join(", ")
   )
   .bind(...lectura_ids.flatMap(id => [id, customer_id]))
+  .run();
+  if (!result.success) return false;
+  return true;
+};
+
+export const setLecturaCustomer = async (
+  db: D1Database,
+  lectura_id: number,
+  customer_id: number,
+  expiration_date: string,
+  purchase_date: string,
+  number_of_plans: number,
+  simultaneous_devices: number
+
+): Promise<boolean> => {
+  const result = await db.prepare(
+    "INSERT INTO school_lecturas_customers (school_lectura_id, customer_id, expiration_date, purchase_date, number_of_plans, simultaneous_devices) VALUES (?, ?, ?, ?, ?, ?)"
+  )
+  .bind(lectura_id, customer_id, expiration_date, purchase_date, number_of_plans, simultaneous_devices)
   .run();
   if (!result.success) return false;
   return true;
