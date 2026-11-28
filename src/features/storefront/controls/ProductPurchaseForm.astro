@@ -98,7 +98,7 @@ const showAny = model.showAddToCart || model.showBuyNow;
 
         {model.soldOut ? (
           <span class="inline-block cursor-not-allowed rounded-md border border-line px-8 py-3 text-sm font-medium uppercase tracking-wider text-faint">
-            Sold out
+              Agotado
           </span>
         ) : (
           <div class="flex flex-wrap gap-3">
@@ -107,7 +107,7 @@ const showAny = model.showAddToCart || model.showBuyNow;
                 type="submit"
                 class="rounded-md border border-line px-8 py-3 text-sm font-medium uppercase tracking-wider text-muted transition hover:border-brand hover:text-brand"
               >
-                Add to cart
+                Añadir al carrito
               </button>
             )}
             {model.showBuyNow && (
@@ -118,7 +118,7 @@ const showAny = model.showAddToCart || model.showBuyNow;
                 data-fullpage
                 class="rounded-md bg-brand px-8 py-3 text-sm font-medium uppercase tracking-wider text-on-brand transition hover:bg-brand-hover"
               >
-                Buy now
+                Comprar ahora
               </button>
             )}
           </div>
@@ -128,7 +128,7 @@ const showAny = model.showAddToCart || model.showBuyNow;
       <div class="mt-10 flex gap-3">
         {model.soldOut && (
           <span class="cursor-not-allowed rounded-md border border-line px-8 py-3 text-sm font-medium uppercase tracking-wider text-faint">
-            Sold out
+            Agotado
           </span>
         )}
         {!model.soldOut && model.showAddToCart && (
@@ -139,7 +139,7 @@ const showAny = model.showAddToCart || model.showBuyNow;
               type="submit"
               class="rounded-md border border-line px-8 py-3 text-sm font-medium uppercase tracking-wider text-muted transition hover:border-brand hover:text-brand"
             >
-              Add to cart
+              Añadir al carrito
             </button>
           </form>
         )}
@@ -150,7 +150,7 @@ const showAny = model.showAddToCart || model.showBuyNow;
               type="submit"
               class="rounded-md bg-brand px-8 py-3 text-sm font-medium uppercase tracking-wider text-on-brand transition hover:bg-brand-hover"
             >
-              Buy now
+              Comprar ahora
             </button>
           </form>
         )}

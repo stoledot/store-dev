@@ -45,10 +45,23 @@ Si tienes un examen en puerta o necesitas explicación en vivo paso a paso, agen
 
 
 ```json
-{
-  "title": "¿Cómo funciona Plan Maestro Matemático?",
-  "text": "1. **Configura tu ruta a la medida:** Selecciona exactamente los temas que necesitas dominar (desde aritmética básica hasta cálculo) y crea tu propio plan de estudio personalizado.
-2. **Entiende y practica:** Lee explicaciones directas al grano y resuelve ejercicios diseñados para que domines el procedimiento real paso a paso.
-3. **Marca tu progreso:** Lleva el control exacto de tus temas completados y avanza a tu propio ritmo desde cualquier dispositivo."
-}
+[
+  {
+    "title": "¿Cómo funciona Plan Maestro Matemático?",
+    "text": "1. **Configura tu ruta a la medida:** Selecciona exactamente los temas que necesitas dominar (desde aritmética básica hasta cálculo) y crea tu propio plan de estudio personalizado.\n2. **Entiende y practica:** Lee explicaciones directas al grano y resuelve ejercicios diseñados para que domines el procedimiento real paso a paso.\n3. **Marca tu progreso:** Lleva el control exacto de tus temas completados y avanza a tu propio ritmo desde cualquier dispositivo."
+  },
+  {
+    "title": "¿Para quién es esta plataforma?",
+    "text": "* **Estudiantes de primaria, secundaria y prepa:** El apoyo diario para entender lo que no quedó claro en el salón y subir calificaciones.\n* **Aspirantes a exámenes de admisión:** Repasa todos los temas clave en un solo lugar para llegar seguro a tu examen de ingreso.\n* **Familias con hermanos en casa:** Con 2 planes independientes y 2 dispositivos simultáneos incluidos, dos estudiantes pueden llevar su propio avance al mismo tiempo."
+  },
+  {
+    "title": "¿Qué incluye la Membresía Anual Base?",
+    "text": "* Acceso completo de Primaria a Prepa (explicaciones + ejercicios).\n* Hasta 2 planes de estudio configurables activos.\n* Uso en 2 dispositivos simultáneos (celular, tablet o computadora).\n* Acceso a la Comunidad Privada de Estudio por nivel."
+  },
+  {
+    "title": "Comunidad Privada de Estudio",
+    "text": "* Acceso a la Comunidad Privada de Estudio por nivel, donde puedes interactuar con otros estudiantes, resolver dudas y compartir estrategias de aprendizaje."
+  }
+]
+
 ```
