@@ -11,7 +11,7 @@ if (!(await accountsEnabled())) return Astro.redirect('/',303);
 const email=await getCustomerEmail(Astro.cookies); 
 if(!email) return Astro.redirect('/account/login?next=/mis-cursos',303);
 const customerId = (await getCustomerByEmail(env.DB, email))?.id;
-if (!customerId) return Astro.redirect('/account/login?next=/mis-cursos',303);
+if (!customerId) return Astro.redirect('/account/login?next=' + encodeURIComponent('/mis-cursos'),303);
 
 const lecturas = await getLecturasWithoutXmlHtmlByCustomerId(env.DB, Number(customerId));
 
