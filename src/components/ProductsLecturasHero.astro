@@ -18,7 +18,6 @@ const heroProducts = productsLecturas.filter(
   (item) => item.pl_display_section === "hero-index"
 );
 ---
-
 {heroProducts.length > 0 && (
   <section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="flex flex-col gap-10">
@@ -28,8 +27,8 @@ const heroProducts = productsLecturas.filter(
             href={`/products/${product.p_slug}`}
             class="grid grid-cols-1 lg:grid-cols-12 items-stretch focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
           >
-            {/* Contenedor de imagen (7 de 12 columnas en escritorio) */}
-            <div class="relative lg:col-span-7 aspect-square sm:aspect-[16/10] lg:aspect-auto lg:min-h-[460px] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+            {/* Contenedor de imagen cuadrada (6 de 12 columnas en escritorio) */}
+            <div class="relative lg:col-span-6 aspect-square w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
               <img
                 src={`/images/${product.p_image_key}`}
                 alt={product.p_name}
@@ -44,12 +43,11 @@ const heroProducts = productsLecturas.filter(
               )}
             </div>
 
-            {/* Información del súper producto (5 de 12 columnas en escritorio) */}
-            <div class="lg:col-span-5 flex flex-col justify-center p-8 sm:p-10 lg:p-12">
+            {/* Información del súper producto (6 de 12 columnas en escritorio) */}
+            <div class="lg:col-span-6 flex flex-col justify-center p-8 sm:p-10 lg:p-12">
               <h3 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-900 dark:text-white tracking-tight group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors">
                 {product.p_name}
               </h3>
-
               {product.p_subname && (
                 <p class="mt-4 text-base sm:text-lg text-neutral-500 dark:text-neutral-400 leading-relaxed">
                   {product.p_subname}
