@@ -1,0 +1,104 @@
+---
+import { env } from 'cloudflare:workers';
+import Layout from '../../layouts/Layout.astro';
+
+interface SchoolProgram {
+  slug: string;
+  title: string;
+  description: string;
+  image_url: string | null;
+}
+
+const { results } = await env.DB.prepare(
+  `SELECT p.slug, p.title, p.description, p.image_url FROM school_programs p`
+).all<SchoolProgram>();
+
+const schoolPrograms = results ?? [];
+---
+<Layout
+  title="Programas escolares"
+  description="Explora nuestros programas escolares disponibles"
+  image=""
+>
+  <main class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="mb-10 border-b border-gray-200 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <span class="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 ring-1 ring-inset ring-blue-600/20 mb-3">
+          Oferta académica
+        </span>
+        <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+          Programas escolares
+        </h1>
+        <p class="mt-2 text-lg text-gray-600">
+          Explora nuestros programas escolares disponibles
+        </p>
+      </div>
+      <span class="text-sm font-medium text-gray-500">
+        {schoolPrograms.length} {schoolPrograms.length === 1 ? 'programa disponible' : 'programas disponibles'}
+      </span>
+    </div>
+
+    {schoolPrograms.length === 0 ? (
+      <div class="rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/50 p-16 text-center">
+        <p class="text-base font-medium text-gray-600">No hay programas disponibles por el momento.</p>
+      </div>
+    ) : (
+      <div class="flex flex-col gap-8">
+        {schoolPrograms.map((program) => (
+          <article class="group relative flex flex-col md:flex-row overflow-hidden rounded-3xl border border-gray-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl">
+            <div class="relative aspect-square w-full md:w-72 lg:w-80 shrink-0 overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700">
+              {program.image_url ? (
+                <img
+                  src={program.image_url}
+                  alt={program.title}
+                  loading="lazy"
+                  class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div class="flex h-full w-full flex-col items-center justify-center p-6 text-white/90">
+                  <svg class="h-14 w-14 mb-2 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+                  </svg>
+                  <span class="text-xs font-semibold uppercase tracking-widest opacity-80">Programa Escolar</span>
+                </div>
+              )}
+            </div>
+
+            <div class="flex flex-1 flex-col justify-between p-6 sm:p-8 lg:p-10">
+              <div>
+                <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-blue-600 mb-2">
+                  <span class="h-2 w-2 rounded-full bg-blue-600"></span>
+                  <span>Programa Destacado</span>
+                </div>
+
+                <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {program.title}
+                </h2>
+
+                <p class="mt-3 text-base leading-relaxed text-gray-600 line-clamp-3">
+                  {program.description}
+                </p>
+              </div>
+
+              <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <span class="text-sm text-gray-500">
+                  Inscripciones e información detallada
+                </span>
+
+                <a
+                  href={`/programas/${program.slug}`}
+                  class="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-blue-600/20 transition-all hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:shadow-blue-600/30 active:scale-[0.99]"
+                >
+                  <span>Explorar programa</span>
+                  <svg class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    )}
+  </main>
+</Layout>
