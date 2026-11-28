@@ -78,7 +78,7 @@ const productsLecturas = await getAllProductLecturasWithFeatures(env.DB);
 
         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <a
-            href="#programas"
+            href="/programas"
             class="inline-flex min-h-14 items-center justify-center rounded-full bg-red-600 px-8 py-4 text-base font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:text-lg"
           >
             Conocer programas
@@ -154,12 +154,13 @@ const productsLecturas = await getAllProductLecturasWithFeatures(env.DB);
 
   {mathMagazines.length>0&&<section class="my-8 rounded-2xl border border-line bg-surface p-5 sm:p-7"><div class="mb-4 flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs font-bold uppercase tracking-widest text-brand">Publicaciones</p><h2 class="mt-1 font-serif text-2xl">Revistas matemáticas</h2></div>{studentEmail&&<a href="/account/revistas" class="text-sm underline">Mis revistas</a>}</div><div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{mathMagazines.map(m=><article class="overflow-hidden rounded-xl border border-line bg-white">{m.cover_image_key&&<img src={mediaUrl(m.cover_image_key,config.images.baseUrl)} alt={`Portada ${m.title}`} class="h-48 w-full object-cover" loading="lazy"/>}<div class="p-4"><p class="text-xs font-semibold uppercase tracking-wider text-muted">{m.access_mode?'Tu suscripción':m.latest_title?'Edición disponible':'Nueva revista'}</p><h3 class="mt-1 font-semibold">{m.title}</h3>{m.latest_title&&<p class="mt-2 text-sm text-muted">Última edición: {m.latest_title}</p>}{m.description&&<p class="mt-2 line-clamp-3 text-sm text-muted">{m.description}</p>}<a href={`/revistas/${m.slug}`} class="mt-4 inline-flex rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white">{m.access_mode?'Abrir revista':'Ver revista y suscripciones'} →</a></div></article>)}</div></section>}
 
+  <!--
   <section class="my-8 rounded-2xl border border-line bg-surface p-5 sm:my-10 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-7">
     <div class="max-w-2xl"><p class="text-xs font-bold uppercase tracking-[.16em] text-brand">Escuela en línea</p><h2 class="mt-2 font-serif text-2xl tracking-tight sm:text-3xl">Estudia con una ruta hecha para ti</h2><p class="mt-2 text-sm leading-6 text-muted">Inscríbete, realiza un diagnóstico y recibe un curso de acuerdo con tu nivel. Consulta tus actividades y fechas desde tu espacio académico.</p></div>
     <div class="mt-4 flex shrink-0 flex-col gap-2 sm:mt-0 sm:min-w-44"><a href="/escuela" class="inline-flex min-h-11 items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold text-on-brand">Conocer la escuela →</a><a href="/escuela/mi-escuela" class="text-center text-sm font-medium text-brand underline underline-offset-4">Ya soy alumno</a></div>
   </section>
-
-
+  -->
+  <!-- 
   <section id="programas" class="my-12 sm:my-16">
     <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
@@ -178,7 +179,9 @@ const productsLecturas = await getAllProductLecturasWithFeatures(env.DB);
       </a>
     </div>
 
-    <div class="grid gap-5 sm:grid-cols-2">
+    {
+      /**
+       *<div class="grid gap-5 sm:grid-cols-2">
       {schoolPrograms.map((program) => (
         <a
           href={`/programas/${program.slug}`}
@@ -218,8 +221,12 @@ const productsLecturas = await getAllProductLecturasWithFeatures(env.DB);
         </a>
       ))}
     </div>
+      */
+    }
   </section>
-
+ 
+     -->
+    
   
 
   <section class="my-10 rounded-2xl border border-line bg-brand p-6 text-white sm:flex sm:items-center sm:justify-between"><div><h2 class="font-serif text-2xl">Ir a la tienda</h2><p class="mt-2 text-sm text-white/80">Explora cursos, lecturas y materiales disponibles.</p></div><a href="/shop" class="mt-4 rounded-full bg-white px-5 py-3 text-sm font-semibold text-brand sm:mt-0">Visitar tienda →</a></section>

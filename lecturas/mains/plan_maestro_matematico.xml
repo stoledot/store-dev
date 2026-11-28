@@ -482,40 +482,18 @@ EN PROCESO
 <lectura>
 
   <meta>
-    <title>Porquería Matemática: guía de supervivencia escolar</title>
+    <title>Plan Maestro Matemático</title>
     <author>Brillinury y Samuel</author>
-    <summary>Conversión estructural del documento LaTeX a XML. Se conserva la organización, los ejemplos, las fórmulas, los avisos y los ejercicios del original.</summary>
-    <source>porqueria_matematica.tex</source>
+    <summary>Guía completa de matemáticas, desde aritmética básica hasta cálculo avanzado, organizada por temas y niveles educativos.</summary>
   </meta>
 
   
   <chapter id="introduccion" data-title="Introducción">
     <section id="antes-de-empezar" data-title="Antes de empezar">
       <sub-section id="antes-de-empezar-contenido" data-title="Orientaciones iniciales" class="tema in-one-page">
-        <p>Este documento es un acordeón ampliado. No sustituye un curso
-        completo ni garantiza que aparezcan todos los temas de tu examen.
-        Los programas cambian según el grado, la escuela y el subsistema
-        de bachillerato.</p>
-        <p>La estrategia es sencilla:</p>
-        <ol>
-          <li>
-            <p>Identifica qué tipo de problema tienes.</p>
-          </li>
-          <li>
-            <p>Busca la fórmula correspondiente.</p>
-          </li>
-          <li>
-            <p>Sustituye los datos.</p>
-          </li>
-          <li>
-            <p>Haz las operaciones.</p>
-          </li>
-          <li>
-            <p>Comprueba que el resultado tenga sentido.</p>
-          </li>
-        </ol>
-        <p>Las matemáticas no siempre son difíciles. A veces solamente
-            están escritas de una forma poco amable.</p>
+        <p>Bienvenido al Plan Maestro Matemático. Esta guía te acompañará a lo largo de los conceptos fundamentales de las matemáticas, desde aritmética básica hasta cálculo avanzado. Aquí encontrarás explicaciones claras, ejemplos y ejercicios para reforzar tu aprendizaje.</p>
+        <p>Antes de comenzar, asegúrate de tener a mano papel, lápiz y una actitud positiva para aprender matemáticas de manera efectiva.</p>
+        <p>Recuerda que el aprendizaje de las matemáticas requiere práctica constante y paciencia. No te desanimes si algún concepto no queda claro de inmediato; vuelve a los ejemplos y ejercicios hasta que lo comprendas completamente.</p>
       </sub-section>
 
     </section>
