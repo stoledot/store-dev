@@ -31,7 +31,7 @@ const heroProducts = productsLecturas.filter(
             {/* Contenedor de imagen (7 de 12 columnas en escritorio) */}
             <div class="relative lg:col-span-7 aspect-square sm:aspect-[16/10] lg:aspect-auto lg:min-h-[460px] w-full overflow-hidden bg-neutral-100 dark:bg-neutral-800">
               <img
-                src={product.p_image_key}
+                src={`/images/${product.p_image_key}`}
                 alt={product.p_name}
                 loading="lazy"
                 class="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
