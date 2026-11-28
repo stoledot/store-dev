@@ -89,6 +89,22 @@ export const getAllLecturasWithoutXmlHtml = async (
   return lecturas.results ?? [];
 };
 
+export const getLecturasWithoutXmlHtmlByCustomerId = async (
+  db: D1Database,
+  customer_id: number
+): Promise<Lectura[]> => {
+  const lecturas = await db
+    .prepare(
+      'SELECT l.id, l.title, l.image_url, l.type, l.description, l.created_at, l.updated_at FROM school_lecturas l ' +
+      'INNER JOIN school_lecturas_customers slc ' +
+      'ON l.id = slc.school_lectura_id WHERE slc.customer_id = ?'
+    )
+    .bind(customer_id)
+    .all<Lectura>();
+
+  return lecturas.results ?? [];
+};
+
 export const deleteLecturaById = async (
   db: D1Database,
   id: number
