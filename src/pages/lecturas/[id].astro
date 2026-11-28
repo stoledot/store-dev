@@ -59,6 +59,13 @@ if (error) return Astro.redirect('/account/lecturas', 303);
  * Lógica para los planes
  */
 
+ const tiposLectura: Record<string, string> = {
+  "book": "Libro",
+  "article": "Artículo",
+  "comic": "Cómic",
+  "plan-estudio": "Plan de estudio"
+};
+
 
 ---
 <Layout title={metaXml.title ?? "Lectura"}>
@@ -92,8 +99,7 @@ if (error) return Astro.redirect('/account/lecturas', 303);
           : "flex flex-col justify-center p-6 sm:p-10 lg:col-span-5"}>
 
           <div class="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-brand">
-            <span>📚</span>
-            {lectura?.type === "book" ? "Libro" : "Lectura"}
+            {tiposLectura[lectura?.type ?? ""] ?? "Lectura"}
           </div>
 
           <h1 class="font-serif text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
@@ -128,7 +134,7 @@ if (error) return Astro.redirect('/account/lecturas', 303);
               href={`/lecturas/${id}/leer`}
               class="inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl bg-brand px-8 py-4 font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
             >
-              <span>📖</span>
+              
               <span>Continuar leyendo</span>
               <span aria-hidden="true">→</span>
             </a>
